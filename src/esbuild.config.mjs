@@ -1,6 +1,8 @@
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
+import fs from "fs";
+import path from "path";
 
 const banner =
 `/*
@@ -11,11 +13,14 @@ if you want to view the source, please visit the github repository of this plugi
 
 const prod = (process.argv[2] === "production");
 
+const outputFile = "dist/main.js";
+const additionalDirs = ["C:\\Users\\elias\\OneDrive\\Documents\\OneDrive\\Obsidian\\develop\\.obsidian\\plugins\\obsidian-agenda"];
+
 const context = await esbuild.context({
 	banner: {
 		js: banner,
 	},
-	entryPoints: ["main.ts"],
+	entryPoints: ["src/main.ts"],
 	bundle: true,
 	external: [
 		"obsidian",
@@ -37,13 +42,24 @@ const context = await esbuild.context({
 	logLevel: "info",
 	sourcemap: prod ? false : "inline",
 	treeShaking: true,
-	outfile: "main.js",
+	outfile: outputFile,
 	minify: prod,
 });
 
+async function copyToAdditionalDirs() {
+    for (const dir of additionalDirs) {
+        const targetPath = path.join(dir, "main.js");
+        await fs.promises.mkdir(dir, { recursive: true });
+        await fs.promises.copyFile(outputFile, targetPath);
+        console.log(`Copied to ${targetPath}`);
+    }
+}
+
 if (prod) {
-	await context.rebuild();
-	process.exit(0);
+    await context.rebuild();
+    await copyToAdditionalDirs();
+    process.exit(0);
 } else {
-	await context.watch();
+    await context.watch();
+    await copyToAdditionalDirs();
 }

@@ -3,7 +3,7 @@
 	"name": "Agenda Plugin",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
+	"description": "Obsidian API.",
 	"author": "elias-shalom",
 	"authorUrl": "https://github.com/elias-shalom/",
 	"fundingUrl": "",

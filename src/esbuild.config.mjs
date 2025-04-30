@@ -52,6 +52,10 @@ const context = await esbuild.context({
 						to: "dist/templates", // Ruta de destino
 				},
 				{
+					from: "src/locales/**/*", // Ruta de origen
+					to: "dist/locales", // Ruta de destino
+				},
+				{
 						from: "src/styles/**/*", // Ruta de origen
 						to: "dist/styles", // Ruta de destino
 				},

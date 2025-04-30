@@ -1,17 +1,20 @@
 import { App, ItemView, WorkspaceLeaf } from 'obsidian';
 import { TaskManager } from '../core/task-manager';
 import { ITask } from '../types/interfaces';
-
+import { I18n } from '../core/i18n';
+import Handlebars from 'handlebars';
 
 export const MAIN_VIEW_TYPE = 'main-view';
 
 export class MainView extends ItemView {
   private tasks: ITask[] = []; // Lista de tareas
   private taskManager: TaskManager; // Instancia de TaskManager
+  private i18n: I18n;
 
-  constructor(leaf: WorkspaceLeaf, private plugin: any) {
+  constructor(leaf: WorkspaceLeaf, private plugin: any, i18n: I18n) {
     super(leaf);
     this.taskManager = new TaskManager(plugin.app);
+    this.i18n = i18n;
   }
 
   getViewType(): string {
@@ -47,7 +50,7 @@ export class MainView extends ItemView {
     const container = this.containerEl.children[1]; // Contenedor principal de la vista
     container.empty(); // Limpia el contenido previo
 
-    const templatePath = this.app.vault.adapter.getResourcePath('.obsidian/plugins/obsidian-agenda/templates/main-view.html');
+    const templatePath = this.app.vault.adapter.getResourcePath('.obsidian/plugins/obsidian-agenda/templates/main-view.hbs');
     console.log("Ruta generada con getResourcePath:", templatePath);
     const response = await fetch(templatePath);
     
@@ -55,7 +58,15 @@ export class MainView extends ItemView {
       console.error("Error al cargar la plantilla:", response.statusText);
       return;
     }
-    const html = await response.text();
+
+    const templateSource = await response.text();
+    const template = Handlebars.compile(templateSource);
+
+    // Registrar el helper para traducciones
+    Handlebars.registerHelper("t", (key: string) => this.i18n.t(key));
+
+    // Dibujar la plantilla con datos
+    const html = template({ tasks: this.tasks });
 
     // Insertar el contenido HTML en el contenedor
     container.innerHTML = html;

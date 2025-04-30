@@ -1,14 +1,17 @@
 import { App, Plugin } from "obsidian";
 import { ViewManager } from "./core/view-manager";
+import { I18n } from "./core/i18n";
 
 export default class ObsidianAgenda extends Plugin {
   private viewManager: ViewManager;
+  private i18n: I18n;
   
   /// <summary>
   /// Constructor de la clase ObsidianAgendaPlugin.
   constructor(app: App, manifest: any) {
       super(app, manifest);
-      this.viewManager = new ViewManager(this); // Pasar la instancia del plugin
+      this.i18n = new I18n(app);
+      this.viewManager = new ViewManager(this, this.i18n); // Pasar la instancia del plugin
   }
 
   /// <summary>
@@ -16,7 +19,10 @@ export default class ObsidianAgenda extends Plugin {
   async onload(): Promise<void> {
     const MAIN_VIEW_TYPE = 'main-view';
 
-    this.addRibbonIcon("calendar-check", "Agenda", async () => {
+     // Cargar idioma (puedes usar una configuración o detectar el idioma del sistema)
+     await this.i18n.loadLanguage("es");
+
+    this.addRibbonIcon("calendar-check", this.i18n.t("agenda_title"), async () => {
       this.viewManager.activateView(MAIN_VIEW_TYPE);
     });
 
@@ -27,5 +33,4 @@ export default class ObsidianAgenda extends Plugin {
     console.log('Descargando mi plugin');
     // Limpiar recursos si es necesario
   }
-
 }

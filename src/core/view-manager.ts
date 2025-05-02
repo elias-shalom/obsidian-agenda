@@ -3,6 +3,11 @@ import { MainView, MAIN_VIEW_TYPE } from "../views/main-view";
 import { MonthView, MONTH_VIEW_TYPE } from "../views/month-view";
 import { WeekView, WEEK_VIEW_TYPE } from "../views/week-view";
 import { DayView, DAY_VIEW_TYPE } from "../views/day-view";
+import { ListView, LIST_VIEW_TYPE } from "../views/list-view";
+import { CalendarView, CALENDAR_VIEW_TYPE } from "../views/calendar-view";
+import { TimelineView, TIMELINE_VIEW_TYPE } from "../views/timeline-view";
+import { GanttView, GANTT_VIEW_TYPE } from "../views/gantt-view";
+import { TableView, TABLE_VIEW_TYPE } from "../views/table-view";
 import { I18n } from "./i18n";
 
 export class ViewManager {
@@ -12,15 +17,19 @@ export class ViewManager {
   constructor(plugin: Plugin, i18n: I18n) {
     this.i18n = i18n;
     this.plugin = plugin;
-
   }
 
-  // Método para registrar todas las vistas
+// Método para registrar todas las vistas
   public registerViews(): void {    
     this.plugin.registerView(MAIN_VIEW_TYPE, (leaf: WorkspaceLeaf) => new MainView(leaf, this.plugin, this.i18n));
-    this.plugin.registerView(MONTH_VIEW_TYPE, (leaf: WorkspaceLeaf) => new MonthView(leaf, this.plugin));
+    this.plugin.registerView(MONTH_VIEW_TYPE, (leaf: WorkspaceLeaf) => new MonthView(leaf, this.plugin, this.i18n));
     this.plugin.registerView(WEEK_VIEW_TYPE, (leaf: WorkspaceLeaf) => new WeekView(leaf, this.plugin));
     this.plugin.registerView(DAY_VIEW_TYPE, (leaf: WorkspaceLeaf) => new DayView(leaf, this.plugin));
+    this.plugin.registerView(LIST_VIEW_TYPE, (leaf: WorkspaceLeaf) => new ListView(leaf, this.plugin, this.i18n));
+    this.plugin.registerView(GANTT_VIEW_TYPE, (leaf: WorkspaceLeaf) => new GanttView(leaf, this.plugin, this.i18n));
+    this.plugin.registerView(CALENDAR_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarView(leaf, this.plugin, this.i18n));
+    this.plugin.registerView(TABLE_VIEW_TYPE, (leaf: WorkspaceLeaf) => new TableView(leaf, this.plugin, this.i18n));
+    this.plugin.registerView(TIMELINE_VIEW_TYPE, (leaf: WorkspaceLeaf) => new TimelineView(leaf, this.plugin, this.i18n));
   }
 
   // Método para activar una vista específica

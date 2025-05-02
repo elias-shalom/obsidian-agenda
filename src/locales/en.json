@@ -1,7 +1,15 @@
 {
-  "agenda_title": "Task Agenda",
-  "no_tasks": "No tasks available.",
+  "agenda_title": "Agenda",
+  "calendar_view_tab": "Calendar",
+  "day_view": "Day View",
+  "gantt_view_tab": "Gantt",
+  "list_view_tab": "List",
+  "list_view_title": "List title",
+  "main_view_tab": "Overview",
+  "main_view_title": "Principal",
   "month_view": "Month View",
-  "week_view": "Week View",
-  "day_view": "Day View"
+  "no_tasks": "No tasks available.",
+  "table_view_tab": "Table",
+  "timeline_view_tab": "Timeline",
+  "week_view": "Week View"
 }

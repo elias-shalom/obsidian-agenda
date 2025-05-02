@@ -1,0 +1,11 @@
+<h2>{{t "list_view_title"}}</h2>
+
+{{#if tasks.length}}
+  <ul>
+    {{#each tasks}}
+      <li>{{this.text}}</li>
+    {{/each}}
+  </ul>
+{{else}}
+  <p>{{t "no_tasks"}}</p>
+{{/if}}

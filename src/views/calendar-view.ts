@@ -4,9 +4,9 @@ import { ITask } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import Handlebars from 'handlebars';
 
-export const MAIN_VIEW_TYPE = 'main-view';
+export const CALENDAR_VIEW_TYPE = 'calendar-view';
 
-export class MainView extends ItemView {
+export class CalendarView extends ItemView {
   private tasks: ITask[] = []; // Lista de tareas
   private taskManager: TaskManager; // Instancia de TaskManager
   private i18n: I18n;
@@ -18,11 +18,11 @@ export class MainView extends ItemView {
   }
 
   getViewType(): string {
-    return MAIN_VIEW_TYPE;
+    return CALENDAR_VIEW_TYPE;
   }
 
   getDisplayText(): string {
-    return this.i18n.t("main_view_title"); // Título de la vista principal
+    return this.i18n.t("calendar_view_title"); // Título de la vista principal
   }
 
   getIcon(): string {
@@ -91,7 +91,7 @@ export class MainView extends ItemView {
 
   // Función para cargar y dibuja la plantilla principal
   private async renderTemplate(container: HTMLElement): Promise<void> {
-    const templatePath = this.app.vault.adapter.getResourcePath('.obsidian/plugins/obsidian-agenda/templates/main-view.hbs');
+    const templatePath = this.app.vault.adapter.getResourcePath('.obsidian/plugins/obsidian-agenda/templates/calendar-view.hbs');
     const response = await fetch(templatePath);
 
     if (!response.ok) {
@@ -113,6 +113,11 @@ export class MainView extends ItemView {
   private attachEventListeners(container: HTMLElement): void {
     console.log("Agregando eventos a los botones"); // Debugging line
 
+    const mainTab = container.querySelector("#main-view-tab");
+    mainTab?.addEventListener("click", () => {
+      this.plugin.viewManager.activateView("main-view", this.leaf);
+    });
+
     const listTab = container.querySelector("#list-view-tab");
     listTab?.addEventListener("click", () => {
       this.plugin.viewManager.activateView("list-view", this.leaf);
@@ -121,11 +126,6 @@ export class MainView extends ItemView {
     const tableTab = container.querySelector("#table-view-tab");
     tableTab?.addEventListener("click", () => {
       this.plugin.viewManager.activateView("table-view", this.leaf);
-    });
-
-    const calendarTab = container.querySelector("#calendar-view-tab");
-    calendarTab?.addEventListener("click", () => {
-      this.plugin.viewManager.activateView("calendar-view", this.leaf);
     });
 
     const timelineTab = container.querySelector("#timeline-view-tab");
@@ -137,27 +137,6 @@ export class MainView extends ItemView {
     ganttTab?.addEventListener("click", () => {
       this.plugin.viewManager.activateView("gantt-view", this.leaf);
     });
-
-    /*    // Agregar eventos a los tabs del encabezado
-    const mainTab = container.querySelector("#main-view-tab");
-    mainTab?.addEventListener("click", () => {
-      this.plugin.viewManager.activateView("main-view", this.leaf);
-    });
-
-    const monthTab = container.querySelector("#month-view-tab");
-    monthTab?.addEventListener("click", () => {
-      this.plugin.viewManager.activateView("month-view", this.leaf);
-    });
-
-    const weekTab = container.querySelector("#week-view-tab");
-    weekTab?.addEventListener("click", () => {
-      this.plugin.viewManager.activateView("week-view", this.leaf);
-    });
-
-    const dayTab = container.querySelector("#day-view-tab");
-    dayTab?.addEventListener("click", () => {
-      this.plugin.viewManager.activateView("day-view", this.leaf);
-    });*/
   }
 
   // Dibuja las tareas en el contenedor

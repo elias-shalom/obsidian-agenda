@@ -1,7 +1,15 @@
 {
-  "agenda_title": "Agenda de Tareas",
-  "no_tasks": "No hay tareas disponibles.",
+  "agenda_title": "Agenda",
+  "calendar_view_tab": "Calendario",
+  "day_view": "Vista Diaria",
+  "gantt_view_tab": "Gantt",
+  "list_view_tab": "Lista",
+  "list_view_title": "Título lista",
+  "main_view_tab": "General",
+  "main_view_title": "Principal",
   "month_view": "Vista Mensual",
-  "week_view": "Vista Semanal",
-  "day_view": "Vista Diaria"
+  "no_tasks": "No hay tareas disponibles.",
+  "table_view_tab": "Tabla",
+  "timeline_view_tab": "Linea de tiempo",
+  "week_view": "Vista Semanal"
 }

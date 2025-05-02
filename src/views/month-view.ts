@@ -1,16 +1,20 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { TaskManager } from "../core/task-manager";
 import { ITask } from '../types/interfaces';
+import { I18n } from '../core/i18n';
+import Handlebars from 'handlebars';
 
 export const MONTH_VIEW_TYPE = "month-view";
 
 export class MonthView extends ItemView {
   private tasks: ITask[] = [];
-  private taskManager: TaskManager; 
+  private taskManager: TaskManager;
+  private i18n: I18n;
 
-  constructor(leaf: WorkspaceLeaf, private plugin: any) {
+  constructor(leaf: WorkspaceLeaf, private plugin: any, i18n: I18n) {
     super(leaf);
     this.taskManager = new TaskManager(plugin.app);
+    this.i18n = i18n;
   }
 
   getViewType(): string {

@@ -2,6 +2,7 @@ import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
 import copy from "esbuild-plugin-copy";
+import { sassPlugin } from 'esbuild-sass-plugin';
 
 const banner =
 `/*
@@ -12,13 +13,13 @@ if you want to view the source, please visit the github repository of this plugi
 
 const prod = (process.argv[2] === "production");
 
-const outputFile = "dist/main.js";
+const outputDir = "dist"; // Cambiado de outfile a outdir
 
 const context = await esbuild.context({
 	banner: {
 		js: banner,
 	},
-	entryPoints: ["src/main.ts"],
+	entryPoints: ["src/main.ts", "src/styles/styles.scss"], // Incluye tu archivo SCSS como entrada
 	bundle: true,
 	external: [
 		"obsidian",
@@ -36,13 +37,19 @@ const context = await esbuild.context({
 		"@lezer/lr",
 		...builtins],
 	format: "cjs",
-	target: "es2018",
+	target: "es2020", // Ajusta según tus necesidades
 	logLevel: "info",
 	sourcemap: prod ? false : "inline",
 	treeShaking: true,
-	outfile: outputFile,
+	outdir: outputDir,
 	minify: prod,
+	loader: {
+		'.svg': 'file', // Si usas SVG en tu proyecto
+	},
 	plugins: [
+		sassPlugin({
+			type: 'css', // Genera un archivo CSS
+		}),
 		copy({
 			// Configuración del plugin
 			resolveFrom: "cwd", // Usa la ruta relativa al directorio actual
@@ -57,7 +64,7 @@ const context = await esbuild.context({
 				},
 				{
 						from: "src/styles/**/*", // Ruta de origen
-						to: "dist/styles", // Ruta de destino
+						to: "dist", // Ruta de destino
 				},
 				{
 						from: "manifest.json", // Ruta de origen

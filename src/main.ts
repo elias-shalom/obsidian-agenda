@@ -1,6 +1,7 @@
 import { App, Plugin } from "obsidian";
 import { ViewManager } from "./core/view-manager";
 import { I18n } from "./core/i18n";
+import logger from './core/logger';
 
 export default class ObsidianAgenda extends Plugin {
   private viewManager: ViewManager;
@@ -15,30 +16,36 @@ export default class ObsidianAgenda extends Plugin {
 
   /// Método de inicializa del plugin.
   async onload(): Promise<void> {
+    logger.info("Cargando el plugin Obsidian Agenda...");
     const MAIN_VIEW_TYPE = 'main-view';
 
-    // Leer el contenido del archivo CSS y agregarlo al DOM
-    const cssPath = this.app.vault.adapter.getResourcePath('.obsidian/plugins/obsidian-agenda/styles/styles.css');
-    const response = await fetch(cssPath);
+    try {
+      // Leer el contenido del archivo CSS y agregarlo al DOM
+      const cssPath = this.app.vault.adapter.getResourcePath('.obsidian/plugins/obsidian-agenda/styles/styles.css');
+      const response = await fetch(cssPath);
 
-    if (response.ok) {
-      const cssContent = await response.text();
-      const style = document.createElement("style");
-      style.textContent = cssContent;
-      document.head.appendChild(style);
-      console.log("Archivo CSS cargado correctamente.");
-    } else {
-      console.error("Error al cargar el archivo CSS:", response.statusText);
+      if (response.ok) {
+        const cssContent = await response.text();
+        const style = document.createElement("style");
+        style.textContent = cssContent;
+        document.head.appendChild(style);
+        logger.info("Archivo CSS cargado correctamente.");
+      } else {
+        logger.error("Error al cargar el archivo CSS:", response.statusText);
+      }
+
+      // Cargar idioma (puedes usar una configuración o detectar el idioma del sistema)
+      await this.i18n.loadLanguage("es");
+
+      this.addRibbonIcon("calendar-check", this.i18n.t("agenda_title"), async () => {
+        this.viewManager.activateView(MAIN_VIEW_TYPE);
+      });
+
+      this.viewManager.registerViews();
+      logger.info("Vistas registradas correctamente.");
+    } catch (error) {
+      logger.error(`Error durante la carga del plugin: ${error}`);
     }
-
-     // Cargar idioma (puedes usar una configuración o detectar el idioma del sistema)
-     await this.i18n.loadLanguage("es");
-
-    this.addRibbonIcon("calendar-check", this.i18n.t("agenda_title"), async () => {
-      this.viewManager.activateView(MAIN_VIEW_TYPE);
-    });
-
-    this.viewManager.registerViews();
   }
 
   onunload() {

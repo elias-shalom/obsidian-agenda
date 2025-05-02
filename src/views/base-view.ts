@@ -66,12 +66,13 @@ export abstract class BaseView extends ItemView {
 
     const templateSource = await response.text();
     const template = Handlebars.compile(templateSource);
-
+    
     // Dibujar la plantilla con los datos proporcionados
     const html = template(data);
 
     // Insertar el contenido HTML en el contenedor
     container.innerHTML += html;
+    console.log("Plantilla:", html); // Debugging line
   }
 
   protected attachEventTabs(container: HTMLElement, plugin: any, leaf: any): void {
@@ -105,10 +106,10 @@ export abstract class BaseView extends ItemView {
     const container = this.containerEl.children[1] as HTMLElement;
     container.empty(); // Limpia el contenido previo    
   
-    // Renderizar el encabezado
+    // Dibujar el encabezado
     await this.renderHeader(container, i18n);
   
-    // Renderizar la plantilla principal
+    // Dibujar la plantilla principal
     await this.renderTemplate(container, viewType, data);
   
     // Agregar eventos a los botones

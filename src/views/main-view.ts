@@ -3,6 +3,7 @@ import { BaseView } from '../views/base-view';
 import { TaskManager } from '../core/task-manager';
 import { ITask } from '../types/interfaces';
 import { I18n } from '../core/i18n';
+import { console } from 'inspector';
 
 export const MAIN_VIEW_TYPE = 'main-view';
 
@@ -31,7 +32,8 @@ export class MainView extends BaseView {
   }
 
   async onOpen(): Promise<void> {
-    await this.setTasks(this.taskManager);
+    this.tasks = await this.setTasks(this.taskManager);
+    console.log("Tareas obtenidas:", this.tasks); // Debugging line
     await this.render(MAIN_VIEW_TYPE, { tasks: this.tasks }, this.i18n, this.plugin, this.leaf);
   }
 

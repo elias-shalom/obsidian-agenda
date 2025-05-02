@@ -12,6 +12,8 @@ export class TaskManager {
     const tasks: ITask[] = [];
     const files = this.app.vault.getMarkdownFiles();
 
+    console.log("Archivos de Markdown encontrados:", files); // Debugging line
+
     for (const file of files) {
       const content = await this.app.vault.read(file);
       const fileTasks = this.extractTasksFromContent(content, file.path);
@@ -25,6 +27,7 @@ export class TaskManager {
   private extractTasksFromContent(content: string, filePath: string): ITask[] {
     const taskRegex = /- \[( |x)\] .+/g; // Busca líneas con tareas
     const matches = content.match(taskRegex) || [];
+    console.log("Tareas encontradas en el archivo:", filePath, matches); // Debugging line
 
     return matches.map((match, index) => {
       const isCompleted = match.includes("[x]");

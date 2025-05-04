@@ -1,14 +1,10 @@
 import { App, Plugin, WorkspaceLeaf} from "obsidian";
-import { MainView, MAIN_VIEW_TYPE } from "../views/main-view";
-import { MonthView, MONTH_VIEW_TYPE } from "../views/month-view";
-import { WeekView, WEEK_VIEW_TYPE } from "../views/week-view";
-import { DayView, DAY_VIEW_TYPE } from "../views/day-view";
-import { ListView, LIST_VIEW_TYPE } from "../views/list-view";
-import { CalendarView, CALENDAR_VIEW_TYPE } from "../views/calendar-view";
-import { TimelineView, TIMELINE_VIEW_TYPE } from "../views/timeline-view";
-import { GanttView, GANTT_VIEW_TYPE } from "../views/gantt-view";
-import { TableView, TABLE_VIEW_TYPE } from "../views/table-view";
+import {
+  MainView, MAIN_VIEW_TYPE, MonthView, MONTH_VIEW_TYPE, WeekView, WEEK_VIEW_TYPE, DayView, DAY_VIEW_TYPE, ListView, LIST_VIEW_TYPE, 
+  CalendarView, CALENDAR_VIEW_TYPE, TimelineView, TIMELINE_VIEW_TYPE, GanttView, GANTT_VIEW_TYPE, TableView, TABLE_VIEW_TYPE
+} from "../views";
 import { I18n } from "./i18n";
+import logger from '../core/logger';
 
 export class ViewManager {
   private plugin: Plugin;
@@ -34,9 +30,8 @@ export class ViewManager {
 
   // Método para activar una vista específica
   public async activateView(viewType: string, leaf?: WorkspaceLeaf): Promise<void> {
-    console.log(`Activando vista: ${viewType}`);
     this.plugin.app.workspace.detachLeavesOfType(viewType);
-
+    
     if (!leaf) {
       leaf = this.plugin.app.workspace.getLeaf(true);
     } 

@@ -72,7 +72,7 @@ const context = await esbuild.context({
 				},
 				{
 					from: "dist/**/*",
-					to: "C:/Users/elias/OneDrive/Documents/OneDrive/Obsidian/everything/.obsidian/plugins/obsidian-agenda",
+					to: "C:/Users/elias/OneDrive/Documents/OneDrive/Obsidian/develop/.obsidian/plugins/obsidian-agenda",
 				},
 			],
 		}),

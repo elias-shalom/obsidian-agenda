@@ -7,12 +7,12 @@ export abstract class BaseView extends ItemView {
   private hbs: string = '.hbs'; // Extensión de los archivos de plantilla
 
   protected async setTasks(taskManager: any): Promise<ITask[]> {
-    console.log("Actualizando tareas"); // Debugging line
+    //console.log("Actualizando tareas"); // Debugging line
     return await taskManager.getAllTasks();
   }
 
   protected async renderHeader(container: HTMLElement, i18n: any): Promise<void> {
-    console.log("Dibuja encabezado"); // Debugging line
+    //console.log("Dibuja encabezado"); // Debugging line
     const headerPath = this.app.vault.adapter.getResourcePath(this.pathHbs + 'header.hbs');
     const headerResponse = await fetch(headerPath);
 
@@ -72,11 +72,11 @@ export abstract class BaseView extends ItemView {
 
     // Insertar el contenido HTML en el contenedor
     container.innerHTML += html;
-    console.log("Plantilla:", html); // Debugging line
+    //console.log("Plantilla:", html); // Debugging line
   }
 
   protected attachEventTabs(container: HTMLElement, plugin: any, leaf: any): void {
-    console.log("Agregando eventos a los botones"); // Debugging line
+    //console.log("Agregando eventos a los botones"); // Debugging line
   
     const activeViewType = this.getViewType(); // Obtiene el tipo de vista actual
     const tabs = [
@@ -102,7 +102,7 @@ export abstract class BaseView extends ItemView {
   }
 
   protected async render(viewType: string, data: any, i18n: any, plugin: any, leaf: any): Promise<void> {
-    console.log(`Dibuja vista: ${viewType}`); // Debugging line
+    //console.log(`Dibuja vista: ${viewType}`); // Debugging line
     const container = this.containerEl.children[1] as HTMLElement;
     container.empty(); // Limpia el contenido previo    
   

@@ -36,7 +36,6 @@ export class DayView extends ItemView {
 
   // Método para actualizar las tareas y dibuja la vista
   public async setTasks(): Promise<void> {
-    console.log("Actualizando tareas en vista principal"); // Debugging line
     this.tasks = await this.taskManager.getAllTasks();
   }
 

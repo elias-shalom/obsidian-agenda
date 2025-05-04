@@ -1,0 +1,11 @@
+{
+	"id": "agenda-plugin",
+	"name": "Agenda Plugin",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Obsidian API.",
+	"author": "elias-shalom",
+	"authorUrl": "https://github.com/elias-shalom/",
+	"fundingUrl": "",
+	"isDesktopOnly": false
+}

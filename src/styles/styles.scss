@@ -1,0 +1,99 @@
+// Variables
+$primary-bg-color: #1e1e1e;
+$text-color: #989898;
+$hover-bg-color: #444;
+$active-border-color: #555;
+$active-line-color: #fff;
+$transition: all 0.3s ease;
+
+// Estilo base para contenedores flexibles
+%flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// Estilo base para botones
+%tab-base {
+  padding: 8px 15px !important;
+  border: 1px solid transparent !important; // Sin borde visible
+  background-color: $primary-bg-color !important; // Mismo color que el fondo
+  color: $text-color !important; // Texto gris oscuro
+  cursor: pointer !important;
+  transition: $transition !important; // Transición suave
+  box-shadow: none !important; // Sin sombra
+  border-radius: 5px !important; // Bordes redondeados
+  font-size: 14px !important; // Tamaño de fuente
+}
+
+/* Fondo oscuro para el encabezado */
+.header {
+  background-color: #1e1e1e !important; // Fondo oscuro 
+  border-bottom: 1px solid #333 !important; // Línea sutil 
+}
+
+// Contenedor de tabs
+.tabs {
+  @extend %flex-center;
+  width: 100%; // Ocupa todo el ancho del contenedor
+  gap: 10px; // Espaciado entre los botones
+  padding: 0 !important; // Sin padding
+  margin: 0 !important; // Sin margen
+  background-color: $primary-bg-color !important; // Fondo oscuro
+  border-radius: 5px !important; // Bordes redondeados
+  box-shadow: none !important; // Sin sombra
+}
+
+// Clase para un contenedor de tabs con espacio alrededor
+.tab-container {
+  @extend %flex-center;
+  gap: 10px; // Espaciado de 10px entre los botones
+  padding: 10px; // Espaciado interno de 10px alrededor del contenedor
+
+  &.active {
+    border-bottom: 3px solid $active-line-color !important; // Línea en la parte inferior
+    padding-bottom: 5px; // Ajustar el espacio interno para que la línea no toque el contenido
+  }
+
+  // Estilo de los botones (difuminados con el fondo)
+  .agenda-tab {
+    @extend %tab-base;
+
+    svg {
+      margin-right: 8px; // Espaciado entre el ícono y el texto
+      vertical-align: middle; // Alinear el ícono verticalmente con el texto
+      color: $text-color; // Color del ícono
+    }
+
+    .tab-text {
+      vertical-align: middle; // Alinear el texto verticalmente con el ícono
+      font-weight: normal;
+      color: $text-color;
+    }
+
+    &:hover {
+      background-color: $hover-bg-color !important; // Fondo más claro al pasar el ratón
+      color: #fff !important; // Texto blanco
+      svg {
+        color: #fff !important; // Cambia el color del ícono
+      }
+      .tab-text {
+        color: #fff !important; // Cambia el color del texto
+      }
+      border: 1px solid $active-border-color !important; // Borde visible al pasar el ratón
+    }
+
+    &.active {
+      background-color: $hover-bg-color !important; // Fondo más claro
+      color: #fff !important; // Texto blanco
+      svg {
+        color: #fff !important; // Cambia el color del ícono
+      }
+      .tab-text {
+        color: #fff !important; // Cambia el color del texto
+      }
+      font-weight: bold !important;
+      border: 1px solid $active-border-color !important; // Borde visible
+    }
+  }
+}

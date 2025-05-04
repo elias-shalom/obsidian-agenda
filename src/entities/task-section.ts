@@ -86,15 +86,10 @@ export class TaskSection {
   initialize(text: string): void {
       try {
           this.header = this.extractHeader(text);
-          //console.log("Header extracted:", this.header);
           let remainingText = this.removeText(text, this.header);
-          console.log("1 Remaining text after header removal:", remainingText);
           this.description = this.extractDescription(remainingText);
-          console.log("2 Description extracted:", this.description);
           remainingText = this.removeText(remainingText, this.description);
-          console.log("3 Remaining text after description removal:", remainingText);
           this.tasksFields = this.extractTasksFields(remainingText);
-          console.log("4 Tasks fields extracted:", this.tasksFields);
       } catch (error) {
           // Si ocurre un error, inicializar todo como vacío
           console.warn("Error al inicializar TaskSection:", error.message);
@@ -167,14 +162,8 @@ export class TaskSection {
     const iconEmptyRegex = /(⏬|⏫|🔼|🔽|🔺)\s*$/g; // Ícono seguido solo por espacios o tabulaciones
     const iconCompletionRegex = /🏁\s*(keep|delete)/g; // Ícono 🏁 seguido de valores válidos de OnCompletion
     const otherIconsRegex = /(🔁|🆔|⛔)\s*(.*)/g; // Otros íconos que no requieren validación adicional
-    const combinedRegex = new RegExp(
-        `${iconDateRegex.source}|${iconEmptyRegex.source}|${iconCompletionRegex.source}|${otherIconsRegex.source}`,
-        "g"
-    );
 
     const matches = Array.from(text.matchAll(this.iconRegex)); // Encontrar todas las coincidencias de íconos
-
-    //console.log("Matches found:", matches); // Debugging line
 
     for (let i = 0; i < matches.length; i++) {
       const match = matches[i];
@@ -222,7 +211,6 @@ export class TaskSection {
       // Agregar el texto extraído al arreglo
       fields.push(fieldText);
     }
-
     return fields;
   }
 }

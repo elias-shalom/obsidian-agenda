@@ -27,4 +27,30 @@ export enum OnCompletion {
   Keep = "keep",
   Delete = "delete"
 }
+
+export enum TaskPriority {
+  Lowest = "⏬",
+  Low = "🔽", 
+  Normal = "normal", // Sin ícono específico
+  Medium = "🔼",
+  High = "⏫",
+  Highest = "🔺"
+}
+
+export enum TaskDateType {
+  Created = "➕",
+  Start = "🛫",
+  Scheduled = "⏳",
+  Due = "📅",
+  Done = "✅",
+  Cancelled = "❌"
+}
+
+export enum TaskMisc {
+  Recurrence = "🔁",
+  ID = "🆔", 
+  Blocked = "⛔",
+  Completion = "🏁"
+}
+
 // Otras enumeraciones pueden ir aquí

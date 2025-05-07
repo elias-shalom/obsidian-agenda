@@ -18,6 +18,7 @@
     "invalidCompletion": "Icon {icon} is not followed by a valid OnCompletion value.",
     "invalidDependency": "Icon {icon} is not followed by a valid dependency list.",
     "invalidRecurrence": "Icon {icon} is not followed by a valid recurrence pattern.",
-    "initializeTaskSection": "Error initializing TaskSection: {error}"
+    "initializeTaskSection": "Error initializing TaskSection: {error}",
+    "invalidRecurrencePattern": "Icon {icon} is not followed by a valid recurrence pattern."
   }
 }

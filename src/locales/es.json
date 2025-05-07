@@ -18,6 +18,7 @@
     "invalidCompletion": "El ícono {icon} no está seguido por un valor válido de OnCompletion.",
     "invalidDependency": "El ícono {icon} no está seguido por una lista de dependencias válida.",
     "invalidRecurrence": "El ícono {icon} no está seguido por un patrón de recurrencia válido.",
-    "initializeTaskSection": "Error al inicializar TaskSection: {error}"
+    "initializeTaskSection": "Error al inicializar TaskSection: {error}",
+    "invalidRecurrencePattern": "El ícono {icon} no está seguido por un patrón de recurrencia válido."
   }
 }

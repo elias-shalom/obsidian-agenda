@@ -73,18 +73,16 @@ export class TaskManager {
           section: taskSection, // Sección de la tarea (opcional)          
           status: status, // Default status
           tags: tags, // Default tags
-          priority: (taskSection.taskData.isValid && taskSection.taskData.priority) 
-          ? taskSection.taskData.priority 
-          : "undefined", // Default priority
+          priority: (taskSection.taskData.priority) ? taskSection.taskData.priority : "undefined", // Default priority
           createdDate: taskSection.taskData.createdDate || null, // Default created date
           startDate: taskSection.taskData.startDate || null, // Fecha de inicio (🛫)
           scheduledDate: taskSection.taskData.scheduledDate || null, // Fecha programada (⏳)
           dueDate: taskSection.taskData.dueDate || null, // Fecha de vencimiento (📅)
           doneDate: taskSection.taskData.doneDate || null, // Fecha de finalización (✅)
           cancelledDate: taskSection.taskData.cancelledDate || null, // Fecha de cancelación (❌)
-          recurrence: "", //Recurrence | null; Indica si la tarea es recurrente (🔁)
+          recurrence: (taskSection.taskData.recurrence) ? taskSection.taskData.recurrence : "", //Recurrence | null; Indica si la tarea es recurrente (🔁)
           onCompletion: taskSection.taskData.onCompletion,//OnCompletion;
-          dependsOn: [],
+          dependsOn: taskSection.taskData.dependsOn, // Dependencias de la tarea (⛔)
           blockLink: taskSection.blockLink, // Block link;
           scheduledDateIsInferred: false,
           file: file, // Archivo donde se encuentra la tarea

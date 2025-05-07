@@ -1,9 +1,11 @@
-import { OnCompletion } from "../types/enums.ts";
+import { OnCompletion, TaskPriority } from "../types/enums.ts";
 
 export class TaskSection {
   header: string; // Representa el encabezado de la tarea
   description: string; // Representa la descripción de la tarea
   tasksFields: string[]; // Representa los campos específicos de la tarea como un arreglo de strings
+  blockLink: string;
+  taskData: Record<string, any> = {};
 
   /**
        * Expresión regular para validar el formato de una tarea.
@@ -63,17 +65,43 @@ export class TaskSection {
        * - `- [x]` (sin texto después de los corchetes).
        */
   // Propiedades para las expresiones regulares
-  headerRegex: RegExp;
-  taskFormatRegex: RegExp;
-  iconRegex: RegExp;
+  private headerRegex: RegExp;
+  private iconRegex: RegExp;
+
+  // Nueva propiedad estática para el formato de tareas
+  static readonly taskFormatRegex: RegExp = /^[\t ]*(>*)\s*(-|\*|\+|\d+[.)]) {0,4}\[(.)\] {0,4}\S.+/g;
+
+  private readonly iconMapping = {
+    // Iconos de fechas
+    "📅": { type: "date", property: "dueDate", format: "YYYY-MM-DD" },
+    "🛫": { type: "date", property: "startDate", format: "YYYY-MM-DD" },
+    "⏳": { type: "date", property: "scheduledDate", format: "YYYY-MM-DD" },
+    "✅": { type: "date", property: "doneDate", format: "YYYY-MM-DD" },
+    "❌": { type: "date", property: "cancelledDate", format: "YYYY-MM-DD" },
+    "➕": { type: "date", property: "createdDate", format: "YYYY-MM-DD" },
+    
+    // Iconos de prioridad con nombre legible
+    "⏬": { type: "priority", property: "priority", value: TaskPriority.Lowest, name: "lowest" },
+    "🔽": { type: "priority", property: "priority", value: TaskPriority.Low, name: "low" },
+    "🔼": { type: "priority", property: "priority", value: TaskPriority.Medium, name: "medium" },
+    "⏫": { type: "priority", property: "priority", value: TaskPriority.High, name: "high" },
+    "🔺": { type: "priority", property: "priority", value: TaskPriority.Highest, name: "highest" },
+    
+    // Otros iconos
+    "🔁": { type: "recurrence", property: "recurrence" },
+    "🆔": { type: "id", property: "id" },
+    "⛔": { type: "blocked", property: "blockedBy" },
+    "🏁": { type: "completion", property: "onCompletion", 
+            values: [OnCompletion.Keep, OnCompletion.Delete] }
+  };
 
   constructor() {
       // Inicializar las propiedades como cadenas vacías
       this.header = "";
       this.description = "";
-      this.tasksFields = [];        
+      this.tasksFields = [];
+      this.blockLink = "";
       this.headerRegex = /^[\t ]*(>*)\s*(-|\*|\+|\d+[.)]) {0,4}\[(.)\] {0,4}/;
-      this.taskFormatRegex = /^[\t ]*(>*)\s*(-|\*|\+|\d+[.)]) {0,4}\[(.)\] {0,4}\S.+/g;
       this.iconRegex = /📅|🛫|⏳|✅|❌|➕|⏬|⏫|🔼|🔽|🔺|🔁|🆔|⛔|🏁/g;
   iconRegex: RegExp;
 
@@ -87,15 +115,28 @@ export class TaskSection {
       try {
           this.header = this.extractHeader(text);
           let remainingText = this.removeText(text, this.header);
+          remainingText = this.removeAllTags(remainingText); // Eliminar tags del texto restante
+
           this.description = this.extractDescription(remainingText);
+
           remainingText = this.removeText(remainingText, this.description);
-          this.tasksFields = this.extractTasksFields(remainingText);
+          const result = this.extractTasksFields(remainingText);
+          this.tasksFields = result.fields;
+          this.taskData = result.taskData;
+
+          // Establecer prioridad predeterminada si no se especificó
+          if (!this.taskData.priority) {
+            this.taskData.priority = "normal";
+          }
+
+          this.blockLink = this.extractBlockLink(text);
       } catch (error) {
           // Si ocurre un error, inicializar todo como vacío
           console.warn("Error al inicializar TaskSection:", error.message);
           this.header = "";
           this.description = "";
           this.tasksFields = [];
+          this.blockLink = "";
       }
   }
 
@@ -122,6 +163,21 @@ export class TaskSection {
   private removeText(text: string, cutText: string): string {
       const endIndex = text.indexOf(cutText) + cutText.length;
       return text.slice(endIndex).trim();
+  }
+
+  /**
+   * Elimina todos los tags (palabras que comienzan con #) de un texto.
+   * @param text Texto del que se eliminarán los tags.
+   * @returns El texto sin tags.
+   */
+  private removeAllTags(text: string): string {
+  // Eliminar todas las palabras que comienzan con #
+  let textWithoutTags = text.replace(/#[a-zA-Z0-9_\-\/]+\b/g, '');
+
+  // Eliminar espacios múltiples que pueden haber quedado
+  textWithoutTags = textWithoutTags.replace(/\s+/g, ' ').trim();
+
+  return textWithoutTags;
   }
 
   /**
@@ -154,14 +210,19 @@ export class TaskSection {
   /**
    * Extrae los campos específicos de la tarea del texto restante.
    * @param text Texto restante después de eliminar el encabezado.
-   * @returns Un arreglo de cadenas, donde cada entrada comienza con un ícono.
+   * @returns Un objeto que contiene el arreglo de campos y los datos estructurados extraídos.
    */
-  private extractTasksFields(text: string): string[] {
+  private extractTasksFields(text: string): { fields: string[], taskData: Record<string, any> } {
     const fields: string[] = [];
+    const taskData: Record<string, any> = {};
+    const errors: string[] = [];
+
     const iconDateRegex = /(📅|🛫|⏳|✅|❌|➕)\s*(\d{4}-\d{2}-\d{2})\s*$/g // Ícono seguido de una fecha en formato YYYY-MM-DD
     const iconEmptyRegex = /(⏬|⏫|🔼|🔽|🔺)\s*$/g; // Ícono seguido solo por espacios o tabulaciones
     const iconCompletionRegex = /🏁\s*(keep|delete)/g; // Ícono 🏁 seguido de valores válidos de OnCompletion
-    const otherIconsRegex = /(🔁|🆔|⛔)\s*(.*)/g; // Otros íconos que no requieren validación adicional
+    const iconBlockedRegex = /⛔\s*(.*)/g; // Ícono bloqueado seguido de una cadena de identificadores
+    const iconRecurrenceRegex = /🔁\s*(.*)/g; // Ícono de recurrencia seguido de una cadena de texto
+    const idIconsRegex = /🆔\s*(.*)/g; // Otros íconos que no requieren validación adicional
 
     const matches = Array.from(text.matchAll(this.iconRegex)); // Encontrar todas las coincidencias de íconos
 
@@ -172,45 +233,149 @@ export class TaskSection {
 
       // Extraer el texto desde el inicio del ícono actual hasta justo antes del siguiente ícono
       let fieldText = text.slice(matchIndex, nextMatchIndex).trim();
-      console.log("a Field text extracted:", fieldText); // Debugging line
-
+      
       const icon = match[0]; // Obtener el ícono actual
-      switch (icon) {
-        case "📅":
-        case "🛫":
-        case "⏳":
-        case "✅":
-        case "❌":
-        case "➕":
-          // Validar que el texto contenga una fecha válida
-          if (!fieldText.match(iconDateRegex)) {
-              console.log("b Field text :", fieldText);
-              fieldText = `${fieldText} @invalid El ícono ${icon} no está seguido por una fecha válida o contiene texto adicional.`;
-          }
-          break;
-        case "⏬":
-        case "⏫":
-        case "🔼":
-        case "🔽":
-        case "🔺":
-          // Validar que el texto contenga solo espacios o tabulaciones
-          if (!fieldText.match(iconEmptyRegex)) {
-            fieldText = `${fieldText} @invalid El ícono ${icon} no está seguido solo por espacios o tabulaciones.`;
-          }
-          break;
-        case "🏁":
-          // Validar que el texto contenga un valor válido de OnCompletion
-          if (!fieldText.match(iconCompletionRegex)) {
-              fieldText = `${fieldText} @invalid El ícono ${icon} no está seguido por un valor válido de OnCompletion.`;
-          }
-          break;
-        default:
-          break;
+
+      // Obtener la configuración del icono desde el mapeo
+      const iconConfig = this.iconMapping[icon];
+
+      if (iconConfig) {
+        let isValid = true;
+        let extractedValue: string | null = null;
+        let errorMessage = "";
+
+        switch (iconConfig.type) {
+          case "date":
+            // Reiniciar la expresión regular (debido a 'g')
+            iconDateRegex.lastIndex = 0;
+
+            // Verificar si el campo es válido usando la expresión regular específica
+            if (iconDateRegex.test(fieldText)) {
+              // Extraer la fecha YYYY-MM-DD
+              const dateMatch = fieldText.match(/\d{4}-\d{2}-\d{2}/);
+              if (dateMatch) {
+                extractedValue = dateMatch[0];
+              }
+            } else {
+              isValid = false;
+              errorMessage = `El ícono ${icon} no está seguido por una fecha válida o contiene texto adicional.`;
+              fieldText = `${fieldText} @${errorMessage}`;
+            }
+            break;
+
+          case "priority":
+            // Reiniciar la expresión regular (debido a 'g')
+            iconEmptyRegex.lastIndex = 0;
+
+            // Verificar si el campo es válido usando la expresión regular específica
+            if (iconEmptyRegex.test(fieldText)) {
+              extractedValue = iconConfig.name || "normal";
+            } else {
+              isValid = false;
+              errorMessage = `El ícono ${icon} no está seguido solo por espacios o tabulaciones.`;
+              fieldText = `${fieldText} @${errorMessage}`;
+            }
+            break;
+
+          case "completion":
+            // Reiniciar la expresión regular (debido a 'g')
+            iconCompletionRegex.lastIndex = 0;
+
+            // Verificar si el campo es válido usando la expresión regular específica
+            if (iconCompletionRegex.test(fieldText)) {
+              const completionMatch = fieldText.match(/keep|delete/i);
+              if (completionMatch) {
+                extractedValue = completionMatch[0].toLowerCase();
+              }
+            } else {
+              isValid = false;
+              errorMessage = `El ícono ${icon} no está seguido por un valor válido de OnCompletion.`;
+              fieldText = `${fieldText} @${errorMessage}`;
+            }
+            break;
+          case "blocked":
+            // Reiniciar la expresión regular (debido a 'g')
+            iconBlockedRegex.lastIndex = 0;
+
+            if (iconBlockedRegex.test(fieldText) ) {
+              extractedValue = fieldText.substring(icon.length).trim();
+              const dependencies = extractedValue.split(',').map(dep => dep.trim()).filter(dep => dep.length > 0);
+              console.log(dependencies); // Depuración: mostrar las dependencias extraídas
+              // Asignar como array en lugar de string
+              if (dependencies.length > 0) {
+                taskData.dependsOn = dependencies;
+              }
+            } else {
+              isValid = false;
+              errorMessage = `El ícono ${icon} no está una cadena de identificadores.`;
+              fieldText = `${fieldText} @${errorMessage}`;
+            }
+            break;
+          case "recurrence":
+            // Reiniciar la expresión regular (debido a 'g')            
+            iconRecurrenceRegex.lastIndex = 0;
+
+            if (iconRecurrenceRegex.test(fieldText)) {
+              // todo: extraer el valor de recurrencia
+              extractedValue =  fieldText.substring(icon.length).trim();
+            } else {
+              isValid = false;
+              errorMessage = `El ícono ${icon} no está seguido por un valor válido de recurrencia.`;
+              fieldText = `${fieldText} @${errorMessage}`;
+            }
+            break;
+          case "id":
+            // Reiniciar la expresión regular (debido a 'g')
+            idIconsRegex.lastIndex = 0;
+
+            // Para otros tipos de iconos, usar la expresión regular de otros iconos
+            const otherMatch = idIconsRegex.exec(fieldText);
+            if (otherMatch && otherMatch[2] !== undefined) {
+              extractedValue = otherMatch[2].trim();
+            } else {
+              extractedValue = fieldText.substring(icon.length).trim();
+            }
+            break;
+        }
+
+        // Si el campo es válido y tiene una propiedad definida, guardarla en taskData
+        if (isValid && iconConfig.property) {
+          taskData[iconConfig.property] = extractedValue;
+        } else if (!isValid) {
+          // Si el campo es inválido, guardar el error en taskData
+          const errorProperty = `${iconConfig.property || 'field'}_error`;
+          taskData[errorProperty] = errorMessage;
+          errors.push(errorMessage); // Agregar al array de errores
+          errors.push(errorMessage); // Agregar al array de errores
+        }
       }
 
-      // Agregar el texto extraído al arreglo
+      // Agregar el texto del campo al arreglo de fields
       fields.push(fieldText);
     }
-    return fields;
+
+    // Agregar array de errores al taskData si hay errores
+    if (errors.length > 0) {
+      taskData.errors = errors;
+      taskData.isValid = false;
+    } else {
+      taskData.isValid = true;
+    }
+
+    return { fields, taskData };
+  }
+
+  /**
+ * Extrae el blockLink del texto completo.
+ * @param text Texto completo de la tarea.
+ * @returns El blockLink extraído o una cadena vacía si no se encuentra.
+ */
+  private extractBlockLink(text: string): string {
+    // Buscar la última ocurrencia de ^ en el texto
+    const blockLinkMatch = text.match(/\^([a-zA-Z0-9-]+)/);
+    if (blockLinkMatch) {
+      return blockLinkMatch[0]; // Devuelve el blockLink completo con el ^
+    }
+    return "";
   }
 }

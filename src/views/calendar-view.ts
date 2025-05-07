@@ -9,12 +9,10 @@ export const CALENDAR_VIEW_TYPE = 'calendar-view';
 export class CalendarView extends BaseView {
   private tasks: ITask[] = []; // Lista de tareas
   private taskManager: TaskManager; // Instancia de TaskManager
-  private i18n: I18n;
 
-  constructor(leaf: WorkspaceLeaf, private plugin: any, i18n: I18n) {
+  constructor(leaf: WorkspaceLeaf, private plugin: any, private i18n: I18n) {
     super(leaf);
     this.taskManager = new TaskManager(plugin.app);
-    this.i18n = i18n;
   }
 
   getViewType(): string {

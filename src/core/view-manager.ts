@@ -7,13 +7,8 @@ import { I18n } from "./i18n";
 import logger from '../core/logger';
 
 export class ViewManager {
-  private plugin: Plugin;
-  private i18n: I18n;
 
-  constructor(plugin: Plugin, i18n: I18n) {
-    this.i18n = i18n;
-    this.plugin = plugin;
-  }
+  constructor(private plugin: Plugin, private i18n: I18n) {  }
 
 // Método para registrar todas las vistas
   public registerViews(): void {    

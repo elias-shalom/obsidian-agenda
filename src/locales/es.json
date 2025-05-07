@@ -11,5 +11,13 @@
   "no_tasks": "No hay tareas disponibles.",
   "table_view_tab": "Tabla",
   "timeline_view_tab": "Linea de tiempo",
-  "week_view": "Vista Semanal"
+  "week_view": "Vista Semanal",
+  "errors": {
+    "invalidDate": "El ícono {icon} no está seguido por una fecha válida o contiene texto adicional.",
+    "invalidPriority": "El ícono {icon} no debe tener texto adicional.",
+    "invalidCompletion": "El ícono {icon} no está seguido por un valor válido de OnCompletion.",
+    "invalidDependency": "El ícono {icon} no está seguido por una lista de dependencias válida.",
+    "invalidRecurrence": "El ícono {icon} no está seguido por un patrón de recurrencia válido.",
+    "initializeTaskSection": "Error al inicializar TaskSection: {error}"
+  }
 }

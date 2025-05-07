@@ -13,7 +13,7 @@ export class MonthView extends ItemView {
 
   constructor(leaf: WorkspaceLeaf, private plugin: any, i18n: I18n) {
     super(leaf);
-    this.taskManager = new TaskManager(plugin.app);
+    this.taskManager = new TaskManager(plugin.app, i18n); // Inicializa TaskManager
     this.i18n = i18n;
   }
 
@@ -73,11 +73,11 @@ export class MonthView extends ItemView {
     });
 
     // Obtener las tareas desde TaskManager
-    const taskManager = new TaskManager(this.app);
+    const taskManager = new TaskManager(this.app, this.i18n);
     taskManager.getAllTasks().then((tasks) => {
         const monthlyTasks = tasks.filter((task) => {
         // Filtrar tareas por el mes actual
-        const dueDate = task.due ? new Date(task.due) : null;
+        const dueDate = task.dueDate ? new Date(task.dueDate) : null;
         const now = new Date();
         return dueDate && dueDate.getMonth() === now.getMonth() && dueDate.getFullYear() === now.getFullYear();
         });
@@ -87,7 +87,7 @@ export class MonthView extends ItemView {
         } else {
         const ul = container.createEl("ul");
         monthlyTasks.forEach((task) => {
-            ul.createEl("li", { text: `${task.title} - ${task.due}` });
+            ul.createEl("li", { text: `${task.title} - ${task.dueDate}` });
         });
         }
     });

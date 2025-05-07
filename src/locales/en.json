@@ -11,5 +11,13 @@
   "no_tasks": "No tasks available.",
   "table_view_tab": "Table",
   "timeline_view_tab": "Timeline",
-  "week_view": "Week View"
+  "week_view": "Week View",
+  "errors": {
+    "invalidDate": "Icon {icon} is not followed by a valid date or contains extra text.",
+    "invalidPriority": "Icon {icon} should not have extra text.",
+    "invalidCompletion": "Icon {icon} is not followed by a valid OnCompletion value.",
+    "invalidDependency": "Icon {icon} is not followed by a valid dependency list.",
+    "invalidRecurrence": "Icon {icon} is not followed by a valid recurrence pattern.",
+    "initializeTaskSection": "Error initializing TaskSection: {error}"
+  }
 }

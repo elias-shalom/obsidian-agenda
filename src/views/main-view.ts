@@ -14,7 +14,7 @@ export class MainView extends BaseView {
 
   constructor(leaf: WorkspaceLeaf, private plugin: any, private i18n: I18n) {
     super(leaf);
-    this.taskManager = new TaskManager(plugin.app);
+    this.taskManager = new TaskManager(plugin.app, i18n); // Inicializa TaskManager
   }
 
   getViewType(): string {

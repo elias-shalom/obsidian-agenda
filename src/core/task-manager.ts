@@ -4,10 +4,11 @@ import logger from "./logger";
 import { log } from "console";
 import { TaskSection } from "../entities/task-section";
 import { Task } from "../entities/task";
+import { I18n } from "./i18n";
 
 export class TaskManager {
 
-  constructor(private app: App) {  }
+  constructor(private app: App, private i18n: I18n) {  }
 
   async getAllTasks(): Promise<ITask[]> {
     const tasks: ITask[] = [];
@@ -57,7 +58,7 @@ export class TaskManager {
     lines.forEach((line, lineNumber) => {
       if (line) {
 
-        const taskSection = new TaskSection();
+        const taskSection = new TaskSection(this.i18n);
 
         taskSection.initialize(line); // Inicializar la sección de tareas con el texto de la línea actual
         const status = Task.extractStatusFromHeader(taskSection.header);

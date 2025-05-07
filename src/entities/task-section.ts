@@ -1,4 +1,5 @@
 import { OnCompletion, TaskPriority } from "../types/enums.ts";
+import { I18n } from "../core/i18n";
 
 export class TaskSection {
   header: string; // Representa el encabezado de la tarea
@@ -95,7 +96,7 @@ export class TaskSection {
             values: [OnCompletion.Keep, OnCompletion.Delete] }
   };
 
-  constructor() {
+  constructor(private i18n: I18n) {
       // Inicializar las propiedades como cadenas vacías
       this.header = "";
       this.description = "";
@@ -125,14 +126,14 @@ export class TaskSection {
           this.taskData = result.taskData;
 
           // Establecer prioridad predeterminada si no se especificó
-          if (!this.taskData.priority) {
+          if (!this.taskData.priority && !this.taskData.priority_error) {
             this.taskData.priority = "normal";
           }
 
           this.blockLink = this.extractBlockLink(text);
       } catch (error) {
           // Si ocurre un error, inicializar todo como vacío
-          console.warn("Error al inicializar TaskSection:", error.message);
+          console.warn(this.i18n.t('errors.initializeTaskSection', { error: error.message }));
           this.header = "";
           this.description = "";
           this.tasksFields = [];
@@ -258,7 +259,7 @@ export class TaskSection {
               }
             } else {
               isValid = false;
-              errorMessage = `El ícono ${icon} no está seguido por una fecha válida o contiene texto adicional.`;
+              errorMessage = this.i18n.t('errors.invalidDate', { icon: icon });
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
@@ -272,7 +273,7 @@ export class TaskSection {
               extractedValue = iconConfig.name || "normal";
             } else {
               isValid = false;
-              errorMessage = `El ícono ${icon} no está seguido solo por espacios o tabulaciones.`;
+              errorMessage = this.i18n.t('errors.invalidPriority', { icon: icon });
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
@@ -289,7 +290,7 @@ export class TaskSection {
               }
             } else {
               isValid = false;
-              errorMessage = `El ícono ${icon} no está seguido por un valor válido de OnCompletion.`;
+              errorMessage = this.i18n.t('errors.invalidCompletion', { icon: icon });;
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
@@ -307,7 +308,7 @@ export class TaskSection {
               }
             } else {
               isValid = false;
-              errorMessage = `El ícono ${icon} no está una cadena de identificadores.`;
+              errorMessage = this.i18n.t('errors.invalidDependency', { icon: icon });
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
@@ -320,7 +321,7 @@ export class TaskSection {
               extractedValue =  fieldText.substring(icon.length).trim();
             } else {
               isValid = false;
-              errorMessage = `El ícono ${icon} no está seguido por un valor válido de recurrencia.`;
+              errorMessage = this.i18n.t('errors.invalidRecurrence', { icon: icon });
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
@@ -345,7 +346,6 @@ export class TaskSection {
           // Si el campo es inválido, guardar el error en taskData
           const errorProperty = `${iconConfig.property || 'field'}_error`;
           taskData[errorProperty] = errorMessage;
-          errors.push(errorMessage); // Agregar al array de errores
           errors.push(errorMessage); // Agregar al array de errores
         }
       }

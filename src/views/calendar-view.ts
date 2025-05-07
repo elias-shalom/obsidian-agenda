@@ -12,7 +12,7 @@ export class CalendarView extends BaseView {
 
   constructor(leaf: WorkspaceLeaf, private plugin: any, private i18n: I18n) {
     super(leaf);
-    this.taskManager = new TaskManager(plugin.app);
+    this.taskManager = new TaskManager(plugin.app, i18n); // Inicializa TaskManager con la instancia de I18n
   }
 
   getViewType(): string {

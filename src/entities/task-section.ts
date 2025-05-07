@@ -402,6 +402,8 @@ export class TaskSection {
    * @returns Texto en formato RRULE o null si no se pudo convertir
    */
   private convertToRRuleFormat(recurrenceText: string): string | null {
+    // todo: Se debe de implementar un auto compelete para el texto de recurrencia
+    // todo: Ejemplo: every 2 weeks until 2023-12-31 count 5 by weekdays
     try {
       let frequency = "";
       let interval = 1;
@@ -497,7 +499,7 @@ export class TaskSection {
       if (count > 0) rule += `;COUNT=${count}`;
       if (byDay) rule += `;${byDay}`;
       
-      console.log(`Convertido: "${text}" → "${rule}"`);
+      //console.log(`Convertido: "${text}" → "${rule}"`);
       return rule;
     } catch (error) {
       console.error("Error al convertir a formato RRULE:", error);

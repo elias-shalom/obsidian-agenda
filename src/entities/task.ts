@@ -35,6 +35,7 @@ export class Task implements ITask {
   description: string; // Representa la descripción de la tarea
   tasksFields: string[]; // Representa los campos específicos de la tarea como un arreglo de strings
   taskData: Record<string, any> = {};
+  groupLabel?: string | undefined;
   isValid: boolean; // Indica si la tarea es válida o no
 
   constructor(taskData: Partial<Task>) {
@@ -63,6 +64,7 @@ export class Task implements ITask {
     this.description = taskData.description || ''; // Representa la descripción de la tarea
     this.tasksFields = taskData.tasksFields || []; // Representa los campos específicos de la tarea como un arreglo de strings
     this.taskData = taskData.taskData || {}; // Objeto que contiene datos adicionales de la tarea
+    this.groupLabel = taskData.groupLabel || ''; // Etiqueta de grupo para la tarea
     this.isValid = taskData.isValid || false; // Indica si la tarea es válida o no
     this.tags = taskData.tags || []; // Array de tags encontrados en el texto
   }

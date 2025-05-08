@@ -10,7 +10,7 @@ export class Task implements ITask {
   text: string; // Texto de la tarea
   link: { path: string }; // Enlace al archivo de la tarea  
   lineNumber?: number; // Número de línea donde se encuentra la tarea
-  section?: TaskSection; // Sección de la tarea (opcional)
+  //section?: TaskSection; // Sección de la tarea (opcional)
   status: string; //Status;
   tags: string[];
   priority: string; //Priority; // Prioridad de la tarea (⏬|⏫|🔼|🔽|🔺 o por defecto "C")
@@ -27,7 +27,14 @@ export class Task implements ITask {
   * Cualquier valor no vacío debe comenzar con '^'. */
   blockLink: string;
   scheduledDateIsInferred: boolean;
-  file?: TFile; // Archivo donde se encuentra la tarea
+  filePath: string;
+  fileName: string;
+  fileBasename: string;
+  fileExtension: string;
+  header: string; // Representa el encabezado de la tarea
+  description: string; // Representa la descripción de la tarea
+  tasksFields: string[]; // Representa los campos específicos de la tarea como un arreglo de strings
+  taskData: Record<string, any> = {};
   isValid: boolean; // Indica si la tarea es válida o no
 
   constructor(taskData: Partial<Task>) {
@@ -48,8 +55,14 @@ export class Task implements ITask {
     this.dependsOn = taskData.dependsOn || [];
     this.blockLink = taskData.blockLink || '';
     this.scheduledDateIsInferred = taskData.scheduledDateIsInferred || false;
-    this.file = taskData.file || undefined; // Archivo donde se encuentra la tarea
-    this.section = taskData.section || undefined; // Sección de la tarea (opcional)
+    this.filePath = taskData.filePath || '';
+    this.fileName = taskData.fileName || ''; // Nombre del archivo
+    this.fileBasename = taskData.fileBasename || ''; // Nombre base del archivo (sin extensión)
+    this.fileExtension = taskData.fileExtension || '';
+    this.header = taskData.header || ''; // Representa el encabezado de la tarea
+    this.description = taskData.description || ''; // Representa la descripción de la tarea
+    this.tasksFields = taskData.tasksFields || []; // Representa los campos específicos de la tarea como un arreglo de strings
+    this.taskData = taskData.taskData || {}; // Objeto que contiene datos adicionales de la tarea
     this.isValid = taskData.isValid || false; // Indica si la tarea es válida o no
     this.tags = taskData.tags || []; // Array de tags encontrados en el texto
   }

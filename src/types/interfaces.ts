@@ -1,7 +1,6 @@
 // This file exports interfaces and types used throughout the project.
 import { TaskSection } from "../entities/task-section";
 import { DateTime } from 'luxon';
-import { TFile } from "obsidian";
 
 export interface ITask {
   id: string;
@@ -9,7 +8,6 @@ export interface ITask {
   text: string; // Texto de la tarea
   link: { path: string }; // Enlace al archivo de la tarea  
   lineNumber?: number; // Número de línea donde se encuentra la tarea
-  section?: TaskSection; // Sección de la tarea (opcional)
   status: string; //Status;
   tags: string[];
   priority: string; //Priority; // Prioridad de la tarea (⏬|⏫|🔼|🔽|🔺 o por defecto "C")
@@ -24,7 +22,14 @@ export interface ITask {
   dependsOn: string[];
   blockLink: string;
   scheduledDateIsInferred: boolean;
-  file?: TFile; // Archivo donde se encuentra la tarea
+  filePath: string;
+  fileName: string;
+  fileBasename: string;
+  fileExtension: string;
+  header: string; // Representa el encabezado de la tarea
+  description: string; // Representa la descripción de la tarea
+  tasksFields: string[]; // Representa los campos específicos de la tarea como un arreglo de strings
+  taskData: Record<string, any>;
   isValid: boolean; // Indica si la tarea es válida o no
 }
 

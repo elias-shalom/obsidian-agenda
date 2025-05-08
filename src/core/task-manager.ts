@@ -12,17 +12,36 @@ export class TaskManager {
 
   async getAllTasks(): Promise<ITask[]> {
     try {
-      const tasks: ITask[] = [];
       const files = this.app.vault.getMarkdownFiles();
 
-      for (const file of files) {
-        const fileTasks = await this.extractTasksFromContent(file);
-        tasks.push(...fileTasks);
+      // Configuración de tamaño de lote (ajustable según necesidades)
+      const batchSize = 10;
+      const allTasks: ITask[] = [];
+
+      // Procesamiento por lotes
+      for (let i = 0; i < files.length; i += batchSize) {
+        // Obtener un lote de archivos
+        const batch = files.slice(i, i + batchSize);
+        
+        // Crear un array de promesas (una por cada archivo en el lote)
+        const batchPromises = batch.map(file => this.extractTasksFromContent(file));
+        
+        // Ejecutar todas las promesas en paralelo y esperar a que todas terminen
+        const batchResults = await Promise.all(batchPromises);
+        
+        // Añadir los resultados al array principal
+        batchResults.forEach(fileTasks => {
+          allTasks.push(...fileTasks);
+        });
+        
+        // Opcional: reportar progreso
+        //logger.debug(`Procesado lote ${Math.floor(i/batchSize) + 1}/${Math.ceil(files.length/batchSize)} (${i+batch.length}/${files.length} archivos)`);
       }
 
-      console.log("Tareas extraídas:", tasks); // Debugging line
-
-      return tasks;
+      logger.debug(`Tareas extraídas: ${allTasks.length} de ${files.length} archivos`);
+      //logger.debug(`Resumen de tareas: ${JSON.stringify(allTasks, null, 2)}`);
+      console.log('Resumen de tareas:', allTasks);
+      return allTasks;
     } catch (error) {
       logger.error("Error al obtener tareas:", error);
       return [];
@@ -123,7 +142,7 @@ export class TaskManager {
         text: line.trim(),
         link: { path: file.path },
         lineNumber: lineNumber + 1, // Ajustar a base 1 para consistencia
-        section: taskSection,
+        //section: taskSection,
         status: status,
         tags: tags,
         priority: taskSection.taskData.priority || "undefined",
@@ -138,7 +157,14 @@ export class TaskManager {
         dependsOn: taskSection.taskData.dependsOn,
         blockLink: taskSection.blockLink,
         scheduledDateIsInferred: false,
-        file: file,
+        filePath: file.path,
+        fileName: file.name,
+        fileBasename: file.basename,
+        fileExtension: file.extension,
+        header: taskSection.header,
+        description: taskSection.description,
+        tasksFields: taskSection.tasksFields,
+        taskData: taskSection.taskData,
         isValid: taskSection.taskData.isValid || false,
       } as ITask;
     } catch (error) {

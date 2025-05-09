@@ -30,8 +30,11 @@ export class ListView extends BaseView {
   }
 
   async onOpen(): Promise<void> {
-    this.tasks = await this.getTodayTasks(this.taskManager); // Cargar tareas
-    await this.render(LIST_VIEW_TYPE, { tasks: this.tasks }, this.i18n, this.plugin, this.leaf);
+    this.tasks = await this.getAllTasks(this.taskManager); // Cargar tareas
+
+    const groupedTasks = this.groupTasksByFolder(this.tasks);
+
+    await this.render(LIST_VIEW_TYPE, { tasks: this.tasks, groupedTasks: groupedTasks }, this.i18n, this.plugin, this.leaf);
   }
 
   async onClose(): Promise<void> {

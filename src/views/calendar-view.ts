@@ -27,7 +27,7 @@ export class CalendarView extends BaseView {
   }
 
   async onOpen(): Promise<void> {
-    this.tasks = await this.setTasks(this.taskManager);
+    this.tasks = await this.getAllTasks(this.taskManager);
     await this.render(CALENDAR_VIEW_TYPE, { tasks: this.tasks }, this.i18n, this.plugin, this.leaf);
   }
 

@@ -1,5 +1,7 @@
+@use "sass:color";
+
 // Variables
-$primary-bg-color: #1e1e1e;
+$primary-bg-color: #111111;
 $text-color: #989898;
 $hover-bg-color: #444;
 $active-border-color: #555;
@@ -28,7 +30,7 @@ $transition: all 0.3s ease;
 
 /* Fondo oscuro para el encabezado */
 .header {
-  background-color: #1e1e1e !important; // Fondo oscuro 
+  background-color: $primary-bg-color !important; // Fondo oscuro 
   border-bottom: 1px solid #333 !important; // Línea sutil
   width: 100%;
   display: flex;
@@ -135,6 +137,178 @@ $transition: all 0.3s ease;
   }
 }
 
+// Estilos para el layout con header fijo y contenido scrollable
+.agenda-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: $primary-bg-color !important; // Fondo oscuro
+}
+
+.agenda-header-container {
+  flex-shrink: 0;
+  z-index: 10;
+  background-color: $primary-bg-color; // Usar la variable existente
+  //border-bottom: 1px solid #333; // Usar mismo estilo que el header existente
+  padding-bottom: 8px;
+}
+
+.agenda-content-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 10px;
+  
+  // Estilizar scrollbar para navegadores webkit (Chrome, Safari)
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: $active-border-color;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  // Estilo para Firefox
+  scrollbar-width: thin;
+  scrollbar-color: $active-border-color transparent;
+}
+
+// Estilos para las carpetas en la vista de lista
+.folder-group {
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  background-color: rgba($primary-bg-color, 0.4);
+  
+  h3.folder-name {
+    margin-top: 0;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(#333, 0.5);
+    font-size: 16px;
+    font-weight: 600;
+    color: color.adjust($text-color, $lightness: 40%);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    
+    .folder-toggle {
+      display: inline-block;
+      margin-right: 6px;
+      transition: transform 0.2s ease;
+      font-size: 12px;
+    }
+    
+    .folder-title {
+      flex-grow: 1;
+    }
+    
+    .task-count {
+      font-size: 12px;
+      font-weight: normal;
+      color: color.adjust($text-color, $lightness: 20%);
+      margin-left: 10px;
+    }
+  }
+  
+  &.collapsed {
+    h3.folder-name {
+      margin-bottom: 0;
+      border-bottom: none;
+      
+      .folder-toggle {
+        transform: rotate(-90deg);
+      }
+    }
+    
+    ul.folder-tasks {
+      display: none;
+    }
+  }
+  
+  ul.folder-tasks {
+    margin: 0;
+    padding-left: 20px;
+    
+    li {
+      margin-bottom: 6px;
+      color: $text-color;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Estilos para los elementos de la lista de tareas
+.folder-tasks {
+  margin: 0;
+  padding-left: 20px;
+  
+  .task-item {
+    display: flex;
+    margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 6px;
+    background-color: rgba($primary-bg-color, 0.6);
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: rgba($hover-bg-color, 0.2);
+    }
+    
+    .task-priority {
+      margin-right: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      min-width: 20px;
+      text-align: center;
+    }
+    
+    .task-content {
+      flex: 1;
+      
+      .task-description {
+        margin-bottom: 4px;
+        color: $text-color;
+      }
+      
+      .task-metadata {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 12px;
+        color: color.adjust($text-color, $lightness: -20%);
+        
+        .task-due-date {
+          padding: 2px 6px;
+          border-radius: 4px;
+          background-color: rgba($hover-bg-color, 0.3);
+        }
+        
+        .task-path {
+          opacity: 0.7;
+        }
+      }
+    }
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
 // Media queries para adaptar el diseño según el ancho de la ventana
 @media screen and (max-width: 1200px) {
   .tabs {
@@ -236,6 +410,23 @@ $transition: all 0.3s ease;
         display: none; // Ocultar completamente el texto
         width: 0;
       }
+    }
+  }
+
+  .agenda-content-container {
+    padding: 8px;
+  }
+
+  .folder-group {
+    padding: 10px;
+    
+    h3.folder-name {
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+    
+    ul {
+      padding-left: 16px;
     }
   }
 }

@@ -31,7 +31,7 @@ export enum OnCompletion {
 export enum TaskPriority {
   Lowest = "⏬",
   Low = "🔽", 
-  Normal = "normal", // Sin ícono específico
+  Normal = "  ", // Sin ícono específico
   Medium = "🔼",
   High = "⏫",
   Highest = "🔺"

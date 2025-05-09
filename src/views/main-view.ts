@@ -27,7 +27,7 @@ export class MainView extends BaseView {
   }
 
   async onOpen(): Promise<void> {
-    this.tasks = await this.setTasks(this.taskManager);
+    this.tasks = await this.getAllTasks(this.taskManager);
     //console.log("Tareas obtenidas:", this.tasks); // Debugging line
     await this.render(MAIN_VIEW_TYPE, { tasks: this.tasks }, this.i18n, this.plugin, this.leaf);
   }

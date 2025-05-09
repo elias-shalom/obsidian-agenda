@@ -2,19 +2,47 @@ import { ItemView } from 'obsidian';
 import Handlebars from 'handlebars';
 import { ITask } from '../types/interfaces';
 import { TaskManager } from '../core/task-manager';
+import { DateTime } from 'luxon';
+import { TaskPriority } from '../types/enums';
 
 export abstract class BaseView extends ItemView {
   private pathHbs: string = '.obsidian/plugins/obsidian-agenda/templates/'; 
   private hbs: string = '.hbs'; // Extensión de los archivos de plantilla
 
-  protected async setTasks(taskManager: any): Promise<ITask[]> {
+  protected async getAllTasks(taskManager: any): Promise<ITask[]> {
     //console.log("Actualizando tareas"); // Debugging line
     return await taskManager.getAllTasks();
   }
 
-  async getTodayTasks(taskManager: TaskManager): Promise<ITask[]> {
+  protected async getTodayTasks(taskManager: TaskManager): Promise<ITask[]> {
     return await taskManager.getTodayTasks();
   }
+
+  // Método para agrupar tareas por carpeta
+  protected groupTasksByFolder(tasks: ITask[]): Record<string, ITask[]> {
+    const groupedTasks: Record<string, ITask[]> = {};
+    
+    tasks.forEach(task => {
+      if (!task.filePath) return;
+      
+      // Obtener el nombre de la carpeta principal (primera parte de la ruta)
+      const pathParts = task.filePath.split('/');
+      const folderName = pathParts.length > 1 ? pathParts[0] : 'Root';
+      
+      // Inicializar el array si no existe
+      if (!groupedTasks[folderName]) {
+        groupedTasks[folderName] = [];
+      }
+      
+      // Añadir la tarea al grupo correspondiente
+      groupedTasks[folderName].push(task);
+    });
+    
+    return groupedTasks;
+  }
+
+  /// Funciones para dibujar las vistas
+  ///
 
   protected async renderHeader(container: HTMLElement, i18n: any): Promise<void> {
     //console.log("Dibuja encabezado"); // Debugging line
@@ -72,6 +100,50 @@ export abstract class BaseView extends ItemView {
     const templateSource = await response.text();
     const template = Handlebars.compile(templateSource);
     
+    // Registrar helper para formatear fechas usando Luxon
+    Handlebars.registerHelper("formatDate", function(date) {
+      if (!date) return "";
+
+      // Si es un string, convertir a objeto DateTime
+      if (typeof date === 'string') {
+        return DateTime.fromISO(date).toFormat('dd MMM yyyy');
+      }
+      
+      // Si ya es un objeto DateTime de Luxon
+      if (date.isLuxonDateTime) {
+        return date.toFormat('dd MMM yyyy');
+      }
+      
+      // Si es un objeto Date de JavaScript
+      if (date instanceof Date) {
+        return DateTime.fromJSDate(date).toFormat('dd MMM yyyy');
+      }
+      
+      // Fallback: intentar convertir cualquier otro formato
+      return DateTime.fromISO(date.toString()).toFormat('dd MMM yyyy');
+    });
+
+    // Helper para convertir prioridad a ícono según el enum
+    Handlebars.registerHelper("priorityIcon", function(priority) {
+      if (!priority) return "";
+      
+      // Devolver directamente el valor del enum si existe
+      if (Object.values(TaskPriority).includes(priority)) {
+        return priority;
+      }
+      
+      // Si es un string que coincide con una clave del enum (case insensitive)
+      const uppercasePriority = priority.toUpperCase?.() || priority;
+      for (const key in TaskPriority) {
+        if (key.toUpperCase() === uppercasePriority) {
+          return TaskPriority[key];
+        }
+      }
+      
+      // Valor por defecto si no hay coincidencia
+      return ' ';
+    });
+
     // Dibujar la plantilla con los datos proporcionados
     const html = template(data);
 
@@ -106,18 +178,63 @@ export abstract class BaseView extends ItemView {
     });
   }
 
+  // Añadir método para manejar eventos de los grupos de carpetas
+  private addFolderToggleListeners(container: HTMLElement): void {
+    const folderHeaders = container.querySelectorAll('.folder-name');
+
+    folderHeaders.forEach(header => {
+      header.addEventListener('click', () => {
+        const folderGroup = header.closest('.folder-group');
+        folderGroup?.classList.toggle('collapsed');
+
+        // Opcional: guardar estado de plegado en localStorage
+        if (folderGroup) {
+          const folderName = folderGroup.getAttribute('data-folder');
+          if (folderName) {
+            const isCollapsed = folderGroup.classList.contains('collapsed');
+            localStorage.setItem(`folder_${folderName}_collapsed`, isCollapsed.toString());
+          }
+        }
+      });
+    });
+
+    // Restaurar estado de plegado desde localStorage
+    const folderGroups = container.querySelectorAll('.folder-group');
+    folderGroups.forEach(group => {
+      const folderName = group.getAttribute('data-folder');
+      if (folderName) {
+        const isCollapsed = localStorage.getItem(`folder_${folderName}_collapsed`) === 'true';
+        if (isCollapsed) {
+          group.classList.add('collapsed');
+        }
+      }
+    });
+  }
+
   protected async render(viewType: string, data: any, i18n: any, plugin: any, leaf: any): Promise<void> {
     //console.log(`Dibuja vista: ${viewType}`); // Debugging line
     const container = this.containerEl.children[1] as HTMLElement;
-    container.empty(); // Limpia el contenido previo    
-  
+    container.empty(); // Limpia el contenido previo
+
+    // Crear estructura con header fijo y contenido con scroll
+    container.addClass("agenda-container");
+
+    // Contenedor del header (fijo)
+    const headerContainer = container.createDiv({ cls: "agenda-header-container" });
+
+    // Contenedor del contenido (scrollable)
+    const contentContainer = container.createDiv({ cls: "agenda-content-container" });
+
     // Dibujar el encabezado
-    await this.renderHeader(container, i18n);
+    await this.renderHeader(headerContainer, i18n);
   
     // Dibujar la plantilla principal
-    await this.renderTemplate(container, viewType, data);
+    await this.renderTemplate(contentContainer, viewType, data);
   
     // Agregar eventos a los botones
-    this.attachEventTabs(container, plugin, leaf);
+    this.attachEventTabs(headerContainer, plugin, leaf);
+
+    // Añadir interactividad a los grupos de carpetas
+    this.addFolderToggleListeners(contentContainer);
   }
 }

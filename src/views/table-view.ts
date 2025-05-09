@@ -30,7 +30,7 @@ export class TableView extends BaseView {
   }
 
   async onOpen(): Promise<void> {
-    await this.setTasks(this.taskManager);
+    await this.getAllTasks(this.taskManager);
     await this.render(TABLE_VIEW_TYPE, { tasks: this.tasks }, this.i18n, this.plugin, this.leaf);
   }
 

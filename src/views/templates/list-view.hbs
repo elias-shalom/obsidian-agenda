@@ -1,11 +1,29 @@
-<h2>{{t "list_view_title"}}</h2>
-
 {{#if tasks.length}}
-  <ul>
-    {{#each tasks}}
-      <li>{{this.text}}</li>
-    {{/each}}
-  </ul>
+  {{#each groupedTasks as |folderTasks folderName|}}
+    <div class="folder-group" data-folder="{{folderName}}">
+      <h3 class="folder-name">
+        <span class="folder-toggle">⯆</span>
+        <span class="folder-title">{{folderName}}</span>
+        <span class="task-count">({{folderTasks.length}})</span>
+      </h3>
+      <ul class="folder-tasks">
+        {{#each folderTasks}}
+          <li class="task-item">
+            <div class="task-priority">{{priorityIcon this.priority}}</div>
+            <div class="task-content">
+              <div class="task-description">{{this.description}}</div>
+              <div class="task-metadata">
+                {{#if this.dueDate}}
+                  <span class="task-due-date">📅 {{formatDate this.dueDate}}</span>
+                {{/if}}
+                <span class="task-path">📄 {{this.filePath}}</span>
+              </div>
+            </div>
+          </li>
+        {{/each}}
+      </ul>
+    </div>
+  {{/each}}
 {{else}}
   <p>{{t "no_tasks"}}</p>
 {{/if}}

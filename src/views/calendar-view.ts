@@ -7,12 +7,11 @@ import { I18n } from '../core/i18n';
 export const CALENDAR_VIEW_TYPE = 'calendar-view';
 
 export class CalendarView extends BaseView {
-  private tasks: ITask[] = []; // Lista de tareas
-  private taskManager: TaskManager; // Instancia de TaskManager
+  private tasks: ITask[] = []; // Lista de tareas  
 
-  constructor(leaf: WorkspaceLeaf, private plugin: any, private i18n: I18n) {
+  constructor(leaf: WorkspaceLeaf, private plugin: any, private i18n: I18n, private taskManager: TaskManager) {
     super(leaf);
-    this.taskManager = new TaskManager(plugin.app, i18n); // Inicializa TaskManager con la instancia de I18n
+    // Inicializa TaskManager con la instancia de I18n
   }
 
   getViewType(): string {
@@ -28,7 +27,7 @@ export class CalendarView extends BaseView {
   }
 
   async onOpen(): Promise<void> {
-    await this.setTasks(this.taskManager);
+    this.tasks = await this.setTasks(this.taskManager);
     await this.render(CALENDAR_VIEW_TYPE, { tasks: this.tasks }, this.i18n, this.plugin, this.leaf);
   }
 

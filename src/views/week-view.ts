@@ -10,7 +10,7 @@ export class WeekView extends ItemView {
 
   constructor(leaf: WorkspaceLeaf, private plugin: any) {
     super(leaf);
-    this.taskManager = new TaskManager(plugin.app, plugin.i18n); // Inicializa TaskManager
+    this.taskManager = new TaskManager(plugin.app, plugin.i18n, this.plugin); // Inicializa TaskManager
   }
 
   getViewType(): string {

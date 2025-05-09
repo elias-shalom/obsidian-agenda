@@ -13,7 +13,7 @@ export class MonthView extends ItemView {
 
   constructor(leaf: WorkspaceLeaf, private plugin: any, i18n: I18n) {
     super(leaf);
-    this.taskManager = new TaskManager(plugin.app, i18n); // Inicializa TaskManager
+    this.taskManager = new TaskManager(plugin.app, i18n, this.plugin); // Inicializa TaskManager
     this.i18n = i18n;
   }
 
@@ -73,7 +73,7 @@ export class MonthView extends ItemView {
     });
 
     // Obtener las tareas desde TaskManager
-    const taskManager = new TaskManager(this.app, this.i18n);
+    const taskManager = new TaskManager(this.app, this.i18n, this.plugin);
     taskManager.getAllTasks().then((tasks) => {
         const monthlyTasks = tasks.filter((task) => {
         // Filtrar tareas por el mes actual

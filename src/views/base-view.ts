@@ -1,6 +1,7 @@
 import { ItemView } from 'obsidian';
 import Handlebars from 'handlebars';
 import { ITask } from '../types/interfaces';
+import { TaskManager } from '../core/task-manager';
 
 export abstract class BaseView extends ItemView {
   private pathHbs: string = '.obsidian/plugins/obsidian-agenda/templates/'; 
@@ -9,6 +10,10 @@ export abstract class BaseView extends ItemView {
   protected async setTasks(taskManager: any): Promise<ITask[]> {
     //console.log("Actualizando tareas"); // Debugging line
     return await taskManager.getAllTasks();
+  }
+
+  async getTodayTasks(taskManager: TaskManager): Promise<ITask[]> {
+    return await taskManager.getTodayTasks();
   }
 
   protected async renderHeader(container: HTMLElement, i18n: any): Promise<void> {

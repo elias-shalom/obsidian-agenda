@@ -10,7 +10,7 @@ export class DayView extends ItemView {
 
   constructor(leaf: WorkspaceLeaf, private plugin: any) {
     super(leaf);
-    this.taskManager = new TaskManager(plugin.app);
+    this.taskManager = new TaskManager(plugin.app, this.plugin.i18n, this.plugin); // Inicializa TaskManager
   }
 
   getViewType(): string {

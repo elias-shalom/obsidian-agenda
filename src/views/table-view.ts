@@ -13,7 +13,7 @@ export class TableView extends BaseView {
 
   constructor(leaf: WorkspaceLeaf, private plugin: any, i18n: I18n) {
     super(leaf);
-    this.taskManager = new TaskManager(plugin.app, i18n); // Inicializa TaskManager
+    this.taskManager = new TaskManager(plugin.app, i18n, this.plugin); // Inicializa TaskManager
     this.i18n = i18n;
   }
 

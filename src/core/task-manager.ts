@@ -1,51 +1,241 @@
-import { App, TFile } from "obsidian";
+import { App, TFile, Plugin } from "obsidian";
 import { ITask, TaskFilterCriteria, SortField, GroupField } from "../types/interfaces";
 import logger from "./logger";
-
 import { TaskSection } from "../entities/task-section";
 import { Task } from "../entities/task";
 import { I18n } from "./i18n";
+import { EventBus, EVENTS } from "./event-bus";
 
 export class TaskManager {
+  private tasksCache: Map<string, ITask[]> = new Map(); // Cache por archivo
+  private allTasksCache: ITask[] | null = null; // Cache global de todas las tareas
+  private lastRefreshTime: number = 0;
+  private readonly CACHE_TTL = 300000; // 5 minutos (ajustable)
+  private refreshInProgress: boolean = false;
+  private refreshPromise: Promise<ITask[]> | null = null;
+  private eventBus: EventBus;
 
-  constructor(private app: App, private i18n: I18n) {  }
+  constructor(private app: App, private i18n: I18n, private plugin: Plugin) {
+    this.eventBus = EventBus.getInstance();
+  }
 
-  async getAllTasks(): Promise<ITask[]> {
+  /**
+  * Configura los escuchadores de eventos usando registerEvent
+  * para una limpieza automática cuando el plugin se descarga
+  */
+  public registerEvents(plugin: Plugin): void {
+    // Escuchar modificaciones de archivos Markdown
+    console.log("Escuchando eventos de modificación de archivos Markdown");
+    this.plugin.registerEvent(
+      this.app.vault.on('modify', (file: any) => {
+        if (file instanceof TFile && file.extension === 'md') {          
+          this.invalidateFileCache(file.path);
+        }
+      })
+    );
+
+    // Escuchar creación de archivos Markdown
+    this.plugin.registerEvent(
+      this.app.vault.on('create', (file: any) => {
+        if (file instanceof TFile && file.extension === 'md') {
+          this.invalidateCache();
+        }
+      })
+    );
+
+    // Escuchar eliminación de archivos Markdown
+    this.plugin.registerEvent(
+      this.app.vault.on('delete', (file: any) => {
+        if (file instanceof TFile && file.extension === 'md') {
+          this.invalidateFileCache(file.path);
+        }
+      })
+    );
+
+    // Escuchar renombrado de archivos Markdown
+    this.plugin.registerEvent(
+      this.app.vault.on('rename', (file: any, oldPath: string) => {
+        if (file instanceof TFile && file.extension === 'md') {
+          this.invalidateFileCache(oldPath);
+          this.invalidateFileCache(file.path);
+        }
+      })
+    );
+  }
+
+  /**
+   * Invalida el cache de un archivo específico
+   */
+  public invalidateFileCache(filePath: string): void {
+    this.tasksCache.delete(filePath);
+    this.allTasksCache = null; // Invalidar cache global
+    this.eventBus.emit(EVENTS.TASKS_UPDATED, filePath);
+    logger.debug(`Cache invalidado para: ${filePath}`);
+  }
+
+  /**
+   * Invalida todo el cache
+   */
+  public invalidateCache(): void {    
+    this.tasksCache.clear();
+    this.allTasksCache = null;
+    this.lastRefreshTime = 0;
+    this.eventBus.emit(EVENTS.TASKS_UPDATED);
+    logger.debug("Cache de tareas completamente invalidado");
+  }
+
+  /**
+   * Limpia recursos del TaskManager
+   * Ya no necesitamos eliminar manualmente los eventos
+   * ya que registerEvent se encarga de eso
+   */
+  public cleanup(): void {
+    // Limpiar caches
+    console.log("Limpiando Task Manager...");
+    this.invalidateCache();
+    logger.debug("Task Manager limpiado correctamente");
+  }
+
+  /**
+   * Actualiza el cache completo de tareas
+   */
+  private async refreshAllTasksCache(): Promise<ITask[]> {
     try {
       const files = this.app.vault.getMarkdownFiles();
-
-      // Configuración de tamaño de lote (ajustable según necesidades)
-      const batchSize = 10; //! poner en cofiguraciones
+      const batchSize = 10;
       const allTasks: ITask[] = [];
 
       // Procesamiento por lotes
       for (let i = 0; i < files.length; i += batchSize) {
-        // Obtener un lote de archivos
         const batch = files.slice(i, i + batchSize);
         
-        // Crear un array de promesas (una por cada archivo en el lote)
-        const batchPromises = batch.map(file => this.extractTasksFromContent(file));
+        // Array para almacenar promesas
+        const batchPromises = batch.map(async file => {
+          // Primero verificar si hay un cache válido para este archivo
+          if (this.tasksCache.has(file.path)) {
+            return this.tasksCache.get(file.path) || [];
+          }
+          
+          // Si no hay cache para el archivo, extraer las tareas
+          const fileTasks = await this.extractTasksFromContent(file);
+          
+          // Actualizar el cache para este archivo
+          this.tasksCache.set(file.path, fileTasks);
+          
+          return fileTasks;
+        });
         
-        // Ejecutar todas las promesas en paralelo y esperar a que todas terminen
         const batchResults = await Promise.all(batchPromises);
-        
-        // Añadir los resultados al array principal
         batchResults.forEach(fileTasks => {
           allTasks.push(...fileTasks);
         });
-        
-        // Opcional: reportar progreso
-        //logger.debug(`Procesado lote ${Math.floor(i/batchSize) + 1}/${Math.ceil(files.length/batchSize)} (${i+batch.length}/${files.length} archivos)`);
       }
 
       logger.debug(`Tareas extraídas: ${allTasks.length} de ${files.length} archivos`);
-      //logger.debug(`Resumen de tareas: ${JSON.stringify(allTasks, null, 2)}`);
-      console.log('Resumen de tareas:', allTasks);
+      
+      // Actualizar el cache global y el timestamp
+      this.allTasksCache = allTasks;
+      this.lastRefreshTime = Date.now();
+
+      //console.log(this.allTasksCache, this.lastRefreshTime);
+      
       return allTasks;
     } catch (error) {
       logger.error("Error al obtener tareas:", error);
-      return [];
+      return this.allTasksCache || [];
     }
+  }
+
+  /**
+  * Recarga forzada de todas las tareas
+  * Útil para llamadas desde la UI
+  */
+  async forceRefreshTasks(): Promise<ITask[]> {
+    this.invalidateCache();
+    return this.getAllTasks();
+  }
+
+  /**
+ * Obtiene todas las tareas, usando cache si es posible
+ * @returns Lista de tareas
+ */
+  async getAllTasks(): Promise<ITask[]> {
+    // Si hay un refresh en progreso, esperar a que termine
+    if (this.refreshInProgress && this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    console.log(this.allTasksCache, this.lastRefreshTime, this.CACHE_TTL);
+
+    const now = Date.now();
+    // Si el cache global es válido y reciente, usarlo
+    if (this.allTasksCache && (now - this.lastRefreshTime < this.CACHE_TTL)) {
+      logger.debug("Usando cache global de tareas");
+      return this.allTasksCache;
+    }
+
+    // Iniciar un nuevo refresh
+    this.refreshInProgress = true;
+    this.refreshPromise = this.refreshAllTasksCache();
+    
+    try {
+      const tasks = await this.refreshPromise;
+      return tasks;
+    } finally {
+      this.refreshInProgress = false;
+      this.refreshPromise = null;
+    }
+  }
+
+  // El resto de métodos existentes...
+  // Todos los métodos que llamen a this.getAllTasks() 
+  // ahora usarán automáticamente el cache...
+
+  /**
+  * Filtra tareas según criterios especificados
+  * @param criteria Criterios de filtrado (opcional)
+  * @returns Tareas filtradas
+  */
+  async getFilteredTasks(criteria?: TaskFilterCriteria): Promise<ITask[]> {
+    // Obtener todas las tareas
+    const allTasks = await this.getAllTasks();
+    
+    // Si no hay criterios, devolver todas
+    if (!criteria) return allTasks;
+    
+    // Aplicar filtros
+    let filteredTasks = allTasks.filter(task => {
+      // Implementamos una función por cada categoría de filtro para mayor claridad
+      return this.matchesStatusFilters(task, criteria) &&
+              this.matchesTextFilters(task, criteria) &&
+              this.matchesTagFilters(task, criteria) &&
+              this.matchesPriorityFilters(task, criteria) &&
+              this.matchesDateFilters(task, criteria) &&
+              this.matchesLocationFilters(task, criteria) &&
+              this.matchesAdvancedFilters(task, criteria);
+    });
+
+    // Aplicar ordenación
+    if (criteria.sort) {
+      filteredTasks = this.sortTasksByMultipleFields(
+        filteredTasks, 
+        criteria.sort.by, 
+        criteria.sort.direction
+      );
+    }
+
+    // Aplicar límite
+    if (criteria.limit && criteria.limit > 0) {
+      filteredTasks = filteredTasks.slice(0, criteria.limit);
+    }
+
+    // Opcionalmente agrupar resultados
+    if (criteria.groupBy) {
+      return this.groupTasks(filteredTasks, criteria.groupBy);
+    }
+
+    logger.debug(`Filtrado: ${filteredTasks.length} de ${allTasks.length} tareas coinciden con los criterios`);
+    return filteredTasks;
   }
 
   /**
@@ -67,8 +257,8 @@ export class TaskManager {
   }
 
   /**
-   * Obtiene las tareas para hoy
-   */
+  * Obtiene las tareas para hoy
+  */
   async getTodayTasks(): Promise<ITask[]> {
     return this.getFilteredTasks({
       isCompleted: false,
@@ -178,8 +368,35 @@ export class TaskManager {
     });
   }
 
-  //
-  /// Método para obtener tareas de un archivo específico
+  /**
+   * Obtiene las tareas para un archivo específico
+   * (método nuevo que puede ser útil)
+   */
+  async getTasksForFile(filePath: string): Promise<ITask[]> {
+    // Si hay en el cache, devolver desde ahí
+    if (this.tasksCache.has(filePath)) {
+      return this.tasksCache.get(filePath) || [];
+    }
+
+    // Si no, intentar obtener el archivo
+    const file = this.app.vault.getAbstractFileByPath(filePath);
+    if (file instanceof TFile) {
+      const tasks = await this.extractTasksFromContent(file);
+      this.tasksCache.set(filePath, tasks);
+      return tasks;
+    }
+    return [];
+  }
+
+  ///
+  /// Funciones para extraer tareas de archivos
+  ///
+
+  /**
+   * Extrae tareas de un archivo específico
+   * @param file El archivo del cual extraer tareas
+   * @returns Una promesa que resuelve a un array de tareas
+   */
   private async extractTasksFromContent(file: TFile): Promise <ITask[]> {
     try {
       const content = await this.app.vault.read(file);
@@ -304,52 +521,8 @@ export class TaskManager {
     }
   }
 
-  /**
- * Filtra tareas según criterios especificados
- * @param criteria Criterios de filtrado (opcional)
- * @returns Tareas filtradas
- */
-  async getFilteredTasks(criteria?: TaskFilterCriteria): Promise<ITask[]> {
-    // Obtener todas las tareas
-    const allTasks = await this.getAllTasks();
-    
-    // Si no hay criterios, devolver todas
-    if (!criteria) return allTasks;
-    
-    // Aplicar filtros
-    let filteredTasks = allTasks.filter(task => {
-      // Implementamos una función por cada categoría de filtro para mayor claridad
-      return this.matchesStatusFilters(task, criteria) &&
-             this.matchesTextFilters(task, criteria) &&
-             this.matchesTagFilters(task, criteria) &&
-             this.matchesPriorityFilters(task, criteria) &&
-             this.matchesDateFilters(task, criteria) &&
-             this.matchesLocationFilters(task, criteria) &&
-             this.matchesAdvancedFilters(task, criteria);
-    });
-    
-    // Aplicar ordenación
-    if (criteria.sort) {
-      filteredTasks = this.sortTasksByMultipleFields(
-        filteredTasks, 
-        criteria.sort.by, 
-        criteria.sort.direction
-      );
-    }
-    
-    // Aplicar límite
-    if (criteria.limit && criteria.limit > 0) {
-      filteredTasks = filteredTasks.slice(0, criteria.limit);
-    }
-    
-    // Opcionalmente agrupar resultados
-    if (criteria.groupBy) {
-      return this.groupTasks(filteredTasks, criteria.groupBy);
-    }
-    
-    logger.debug(`Filtrado: ${filteredTasks.length} de ${allTasks.length} tareas coinciden con los criterios`);
-    return filteredTasks;
-  }
+  ///
+  /// Funciones para filtrar tareas
 
   /**
    * Verifica si una tarea coincide con los filtros de estado
@@ -361,7 +534,7 @@ export class TaskManager {
         return false;
       }
     }
-    
+
     // Filtrar por estado completado/no completado
     if (criteria.isCompleted !== undefined) {
       const isTaskCompleted = task.status === 'DONE' || task.status === 'CANCELLED';
@@ -369,7 +542,7 @@ export class TaskManager {
         return false;
       }
     }
-    
+
     return true;
   }
 
@@ -378,9 +551,9 @@ export class TaskManager {
    */
   private matchesTextFilters(task: ITask, criteria: TaskFilterCriteria): boolean {
     if (!criteria.text) return true;
-    
+
     const taskText = task.text?.toLowerCase() || '';
-    
+
     // Texto que debe incluir
     if (criteria.text.includes && criteria.text.includes.length > 0) {
       if (!criteria.text.includes.every(term => 
@@ -388,7 +561,7 @@ export class TaskManager {
         return false;
       }
     }
-    
+
     // Texto que NO debe incluir
     if (criteria.text.excludes && criteria.text.excludes.length > 0) {
       if (criteria.text.excludes.some(term => 
@@ -396,7 +569,7 @@ export class TaskManager {
         return false;
       }
     }
-    
+
     // Regex para coincidir
     if (criteria.text.regex) {
       try {
@@ -409,7 +582,7 @@ export class TaskManager {
         // Si hay error en la regex, ignoramos este filtro
       }
     }
-    
+
     return true;
   }
 
@@ -420,7 +593,7 @@ export class TaskManager {
     if (!criteria.tags) return true;
     
     const taskTags = task.tags || [];
-    
+
     // Etiquetas que debe tener
     if (criteria.tags.includes && criteria.tags.includes.length > 0) {
       // Verificar que la tarea tenga TODAS las etiquetas requeridas
@@ -428,7 +601,7 @@ export class TaskManager {
         return false;
       }
     }
-    
+
     // Etiquetas que NO debe tener
     if (criteria.tags.excludes && criteria.tags.excludes.length > 0) {
       // Verificar que la tarea NO tenga NINGUNA de las etiquetas excluidas
@@ -436,7 +609,7 @@ export class TaskManager {
         return false;
       }
     }
-    
+
     return true;
   }
 
@@ -445,38 +618,38 @@ export class TaskManager {
    */
   private matchesPriorityFilters(task: ITask, criteria: TaskFilterCriteria): boolean {
     if (!criteria.priority) return true;
-    
+
     const taskPriority = task.priority || 'undefined';
-    
+
     // Prioridad exacta
     if (criteria.priority.is && criteria.priority.is.length > 0) {
       if (!criteria.priority.is.includes(taskPriority)) {
         return false;
       }
     }
-    
+
     // Prioridad mayor que
     if (criteria.priority.above) {
       const priorities = ['high', 'medium', 'low', 'undefined'];
       const taskIndex = priorities.indexOf(taskPriority);
       const thresholdIndex = priorities.indexOf(criteria.priority.above);
-      
+
       if (taskIndex === -1 || thresholdIndex === -1 || taskIndex >= thresholdIndex) {
         return false;
       }
     }
-    
+
     // Prioridad menor que
     if (criteria.priority.below) {
       const priorities = ['high', 'medium', 'low', 'undefined'];
       const taskIndex = priorities.indexOf(taskPriority);
       const thresholdIndex = priorities.indexOf(criteria.priority.below);
-      
+
       if (taskIndex === -1 || thresholdIndex === -1 || taskIndex <= thresholdIndex) {
         return false;
       }
     }
-    
+
     return true;
   }
 
@@ -490,14 +663,14 @@ export class TaskManager {
     if (!this.matchesSpecificDateFilter(task.scheduledDate, criteria.scheduledDate)) return false;
     if (!this.matchesSpecificDateFilter(task.doneDate, criteria.doneDate)) return false;
     if (!this.matchesSpecificDateFilter(task.createdDate, criteria.createdDate)) return false;
-    
+
     // Luego verificamos los filtros de fecha relativos (solo para dueDate)
     if (criteria.dueDateRelative) {
       if (!this.matchesRelativeDateFilter(task.dueDate, criteria.dueDateRelative)) {
         return false;
       }
     }
-    
+
     return true;
   }
 
@@ -506,13 +679,13 @@ export class TaskManager {
    */
   private matchesSpecificDateFilter(taskDate: Date | string | null, filterCriteria: any): boolean {
     if (!filterCriteria) return true;
-    
+
     // Convertir a Date si es string
     let dateObj: Date | null = null;
     if (taskDate) {
       dateObj = typeof taskDate === 'string' ? new Date(taskDate) : taskDate;
     }
-    
+
     // Verificar existencia
     if (filterCriteria.exists !== undefined) {
       const hasDate = dateObj !== null;
@@ -520,10 +693,10 @@ export class TaskManager {
         return false;
       }
     }
-    
+
     // Solo seguir verificando si la tarea tiene fecha
     if (!dateObj) return true;
-    
+
     // Comparar con fechas específicas
     if (filterCriteria.before && dateObj >= filterCriteria.before) return false;
     if (filterCriteria.on) {
@@ -535,7 +708,7 @@ export class TaskManager {
       }
     }
     if (filterCriteria.after && dateObj <= filterCriteria.after) return false;
-    
+
     return true;
   }
 
@@ -544,17 +717,17 @@ export class TaskManager {
    */
   private matchesRelativeDateFilter(taskDate: Date | string | null, filterCriteria: any): boolean {
     if (!taskDate) return true;
-    
+
     const dateObj = typeof taskDate === 'string' ? new Date(taskDate) : taskDate;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     // Verificar vencida
     if (filterCriteria.overdue) {
       const isOverdue = dateObj < today;
       if (!isOverdue) return false;
     }
-    
+
     // Verificar para hoy
     if (filterCriteria.today) {
       const isToday = dateObj.getFullYear() === today.getFullYear() &&
@@ -562,7 +735,7 @@ export class TaskManager {
                     dateObj.getDate() === today.getDate();
       if (!isToday) return false;
     }
-    
+
     // Verificar para mañana
     if (filterCriteria.tomorrow) {
       const tomorrow = new Date(today);
@@ -572,7 +745,7 @@ export class TaskManager {
                         dateObj.getDate() === tomorrow.getDate();
       if (!isTomorrow) return false;
     }
-    
+
     // Verificar esta semana
     if (filterCriteria.thisWeek) {
       const endOfWeek = new Date(today);
@@ -582,38 +755,38 @@ export class TaskManager {
       const isThisWeek = dateObj >= today && dateObj <= endOfWeek;
       if (!isThisWeek) return false;
     }
-    
+
     // Verificar próxima semana
     if (filterCriteria.nextWeek) {
       const startOfNextWeek = new Date(today);
       const daysUntilNextWeek = 7 - today.getDay() + 1;
       startOfNextWeek.setDate(startOfNextWeek.getDate() + daysUntilNextWeek);
-      
+
       const endOfNextWeek = new Date(startOfNextWeek);
       endOfNextWeek.setDate(endOfNextWeek.getDate() + 6);
-      
+
       const isNextWeek = dateObj >= startOfNextWeek && dateObj <= endOfNextWeek;
       if (!isNextWeek) return false;
     }
-    
+
     // Verificar días pasados
     if (filterCriteria.pastDays !== undefined) {
       const pastDate = new Date(today);
       pastDate.setDate(pastDate.getDate() - filterCriteria.pastDays);
-      
+
       const isInPastDays = dateObj >= pastDate && dateObj < today;
       if (!isInPastDays) return false;
     }
-    
+
     // Verificar días futuros
     if (filterCriteria.futureDays !== undefined) {
       const futureDate = new Date(today);
       futureDate.setDate(futureDate.getDate() + filterCriteria.futureDays);
-      
+
       const isInFutureDays = dateObj >= today && dateObj <= futureDate;
       if (!isInFutureDays) return false;
     }
-    
+
     return true;
   }
 
@@ -622,7 +795,7 @@ export class TaskManager {
    */
   private matchesLocationFilters(task: ITask, criteria: TaskFilterCriteria): boolean {
     if (!criteria.location) return true;
-    
+
     // Filtrar por carpeta
     if (criteria.location.folder) {
       const taskFolder = task.filePath?.substring(0, task.filePath.lastIndexOf('/') + 1) || '';
@@ -630,14 +803,14 @@ export class TaskManager {
         return false;
       }
     }
-    
+
     // Filtrar por archivo
     if (criteria.location.file) {
       if (!task.filePath?.includes(criteria.location.file)) {
         return false;
       }
     }
-    
+
     return true;
   }
 
@@ -648,12 +821,12 @@ export class TaskManager {
     // Filtros de recurrencia
     if (criteria.recurrence) {
       const hasRecurrence = !!task.recurrence && task.recurrence.length > 0;
-      
+
       // Verificar si tiene recurrencia
       if (criteria.recurrence.has !== undefined && hasRecurrence !== criteria.recurrence.has) {
         return false;
       }
-      
+
       // Verificar patrón específico
       if (criteria.recurrence.pattern && task.recurrence) {
         if (!task.recurrence.includes(criteria.recurrence.pattern)) {
@@ -661,20 +834,19 @@ export class TaskManager {
         }
       }
     }
-    
+
     // Filtros de dependencias
     if (criteria.dependencies) {
       const hasDependencies = !!task.dependsOn && task.dependsOn.length > 0;
-      
+
       // Verificar si tiene dependencias
       if (criteria.dependencies.has !== undefined && hasDependencies !== criteria.dependencies.has) {
         return false;
       }
-      
       // Nota: Para blocking y blockedBy necesitaríamos implementar relaciones entre tareas
       // Esto requeriría implementación adicional
     }
-    
+
     return true;
   }
 
@@ -687,25 +859,22 @@ export class TaskManager {
     directions: ('asc' | 'desc')[]
   ): ITask[] {
     if (!sortFields || sortFields.length === 0) return tasks;
-    
+
     const sortedTasks = [...tasks]; // Crear copia para no modificar el original
-    
+
     sortedTasks.sort((a, b) => {
       for (let i = 0; i < sortFields.length; i++) {
         const field = sortFields[i];
         const direction = directions && directions[i] ? directions[i] : 'asc';
         const dirFactor = direction === 'asc' ? 1 : -1;
-        
         const compareResult = this.compareTasks(a, b, field) * dirFactor;
         
         if (compareResult !== 0) {
           return compareResult;
         }
       }
-      
       return 0; // Si todos los campos son iguales
     });
-    
     return sortedTasks;
   }
 
@@ -716,19 +885,14 @@ export class TaskManager {
     switch (field) {
       case 'dueDate':
         return this.compareDates(a.dueDate, b.dueDate);
-        
       case 'startDate':
         return this.compareDates(a.startDate, b.startDate);
-        
       case 'scheduledDate':
         return this.compareDates(a.scheduledDate, b.scheduledDate);
-        
       case 'doneDate':
         return this.compareDates(a.doneDate, b.doneDate);
-        
       case 'createdDate':
         return this.compareDates(a.createdDate, b.createdDate);
-        
       case 'priority':
         const priorityMap: {[key: string]: number} = {
           'high': 1,
@@ -739,7 +903,6 @@ export class TaskManager {
         const priorityA = priorityMap[a.priority || 'undefined'] || 4;
         const priorityB = priorityMap[b.priority || 'undefined'] || 4;
         return priorityA - priorityB;
-        
       case 'status':
         const statusMap: {[key: string]: number} = {
           'TODO': 1,
@@ -751,13 +914,10 @@ export class TaskManager {
         const statusA = statusMap[a.status || 'TODO'] || 1;
         const statusB = statusMap[b.status || 'TODO'] || 1;
         return statusA - statusB;
-        
       case 'text':
         return (a.text || '').localeCompare(b.text || '');
-        
       case 'path':
         return (a.filePath || '').localeCompare(b.filePath || '');
-        
       default:
         return 0;
     }
@@ -785,20 +945,18 @@ export class TaskManager {
    */
   private groupTasks(tasks: ITask[], groupField: GroupField): ITask[] {
     const groupedTasks = new Map<string, ITask[]>();
-    
+
     // Agrupar tareas
     tasks.forEach(task => {
       let groupKey = 'Unknown';
-      
+
       switch (groupField) {
         case 'status':
           groupKey = task.status || 'Unknown';
           break;
-          
         case 'priority':
           groupKey = task.priority || 'undefined';
           break;
-          
         case 'dueDate':
           if (!task.dueDate) {
             groupKey = 'No Due Date';
@@ -807,7 +965,6 @@ export class TaskManager {
             groupKey = dueDate.toISOString().split('T')[0]; // YYYY-MM-DD
           }
           break;
-          
         case 'path':
           if (task.filePath) {
             const lastSlashIndex = task.filePath.lastIndexOf('/');
@@ -816,7 +973,6 @@ export class TaskManager {
             groupKey = 'Unknown';
           }
           break;
-          
         case 'tags':
           if (!task.tags || task.tags.length === 0) {
             groupKey = 'No Tags';
@@ -826,11 +982,11 @@ export class TaskManager {
           }
           break;
       }
-      
+
       if (!groupedTasks.has(groupKey)) {
         groupedTasks.set(groupKey, []);
       }
-      
+
       groupedTasks.get(groupKey)?.push(task);
     });
     
@@ -840,7 +996,7 @@ export class TaskManager {
     groupedTasks.forEach((tasksInGroup, groupKey) => {
       // Opcionalmente podrías añadir aquí una tarea "cabecera" para cada grupo
       // O podrías modificar tu interfaz ITask para incluir una propiedad de grupo
-      
+
       // Por ahora, solo añadimos las tareas con una propiedad temporal
       tasksInGroup.forEach(task => {
         result.push({
@@ -849,9 +1005,6 @@ export class TaskManager {
         });
       });
     });
-    
     return result;
   }
-
-
 }

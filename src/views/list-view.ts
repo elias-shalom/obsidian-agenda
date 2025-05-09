@@ -8,12 +8,12 @@ export const LIST_VIEW_TYPE = 'list-view';
 
 export class ListView extends BaseView {
   private tasks: ITask[] = []; // Lista de tareas
-  private taskManager: TaskManager; // Instancia de TaskManager
-  private i18n: I18n;
+   // Instancia de TaskManager
 
-  constructor(leaf: WorkspaceLeaf, private plugin: any, i18n: I18n) {
+  constructor(leaf: WorkspaceLeaf, private plugin: any, private i18n: I18n, private taskManager: TaskManager) {
+    // Constructor de la clase ListView
     super(leaf);
-    this.taskManager = new TaskManager(plugin.app, i18n); // Inicializa TaskManager
+    
     this.i18n = i18n;
   }
 
@@ -30,7 +30,7 @@ export class ListView extends BaseView {
   }
 
   async onOpen(): Promise<void> {
-    await this.setTasks(this.taskManager); // Cargar tareas
+    this.tasks = await this.getTodayTasks(this.taskManager); // Cargar tareas
     await this.render(LIST_VIEW_TYPE, { tasks: this.tasks }, this.i18n, this.plugin, this.leaf);
   }
 

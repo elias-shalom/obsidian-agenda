@@ -16,6 +16,8 @@
   "timeline_view_tab": "Linea de tiempo",
   "timeline_view_title": "Linea de tiempo",
   "week_view": "Vista Semanal",
+  "show_flat_view": "Mostrar vista plana",
+  "show_hierarchical_view": "Mostrar vista jerárquica",
   "errors": {
     "invalidDate": "El ícono {icon} no está seguido por una fecha válida o contiene texto adicional.",
     "invalidPriority": "El ícono {icon} no debe tener texto adicional.",

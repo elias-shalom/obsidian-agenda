@@ -16,6 +16,8 @@
   "timeline_view_tab": "Timeline",
   "timeline_view_title": "Timeline", 
   "week_view": "Week View",
+  "show_flat_view": "Show flat view",
+  "show_hierarchical_view": "Show hierarchical view",
   "errors": {
     "invalidDate": "Icon {icon} is not followed by a valid date or contains extra text.",
     "invalidPriority": "Icon {icon} should not have extra text.",

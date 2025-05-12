@@ -249,6 +249,148 @@ $transition: all 0.3s ease;
   &:last-child {
     margin-bottom: 0;
   }
+
+  // Estilo para carpetas anidadas
+  .folder-group {
+    margin-left: 15px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-left: 2px solid rgba(#555, 0.5);
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  // Indicador visual de nivel
+  h3.folder-name {
+    .folder-title {
+      position: relative;
+    }
+  }
+}
+
+// Comportamiento de colapso para carpetas
+.folder-group.collapsed {
+  // Estilos existentes para elementos colapsados
+  
+  // Ocultar las tareas de la carpeta cuando está colapsada
+  .folder-tasks {
+    display: none;
+  }
+  
+  // Ocultar las subcarpetas cuando la carpeta padre está colapsada
+  .subfolders-container {
+    display: none;
+  }
+}
+
+// Estilos para la estructura anidada de carpetas
+.folder-structure {
+  margin-bottom: 20px;
+}
+
+// Estilo base para grupos de carpetas
+.folder-group {
+  margin-bottom: 15px;
+  
+  // Carpetas principales: más grandes y destacadas
+  > h3.folder-name {
+    font-size: 1.2em; // Aumentar tamaño de texto para carpetas principales
+    font-weight: 600; // Más negrita
+    padding: 10px 12px; // Más espacio
+    background-color: $primary-bg-color; // Cambiado a usar el mismo color de fondo
+    border-radius: 6px;
+    margin-bottom: 10px;
+    
+    .folder-toggle {
+      font-size: 1.1em; // Ícono más grande
+      margin-right: 8px; // Más espacio después del ícono
+    }
+    
+    .folder-title {
+      font-weight: 600;
+    }
+    
+    .task-count {
+      font-size: 0.9em;
+      margin-left: 8px;
+    }
+  }
+  
+  // Estilos para subcarpetas (menor jerarquía)
+  .folder-group {
+    margin-bottom: 6px;
+    
+    // Título de subcarpeta menos prominente
+    h3.folder-name {
+      font-size: 0.9em; // Más pequeño que la carpeta principal
+      font-weight: normal; // Menos negrita
+      opacity: 0.85; // Ligeramente más transparente
+      padding: 5px 8px; // Menos padding
+      background-color: transparent; // Sin fondo
+      
+      // Color más tenue para el indicador de expansión
+      .folder-toggle {
+        font-size: 0.9em; // Ícono más pequeño
+        opacity: 0.7;
+        margin-right: 5px;
+      }
+      
+      // Contador de tareas menos prominente
+      .task-count {
+        font-size: 0.85em;
+        opacity: 0.7;
+      }
+    }
+    
+    // Tareas dentro de subcarpetas
+    .folder-tasks {
+      li.task-item {
+        padding: 4px 8px; // Menos padding = más compacto
+      }
+    }
+  }
+}
+
+// Estilo para el contenedor de subcarpetas
+.subfolders-container {
+  margin-top: 3px;
+  margin-bottom: 4px;
+  padding-left: 10px;
+  //border-left: 1px dotted rgba(120, 120, 120, 0.4); // Línea punteada sutil
+}
+
+// Ajustes para los márgenes en carpetas anidadas
+.folder-group {
+  // Mantén los estilos existentes
+
+  // Ajustes para subcarpetas
+  .folder-group {
+    margin-bottom: 10px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// Estilo para el indicador de expansión/colapso
+.folder-toggle {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.folder-group.collapsed .folder-toggle {
+  transform: rotate(-90deg);
+}
+
+// Ajusta el espaciado para el título de la carpeta
+.folder-title {
+  margin-left: 5px;
 }
 
 // Estilos para los elementos de la lista de tareas
@@ -320,6 +462,31 @@ $transition: all 0.3s ease;
       background-color: rgba($hover-bg-color, 0.5);
     }
   }
+}
+
+/* Estilos para el encabezado y botón de alternancia */
+.view-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  justify-content: flex-start;
+}
+
+.view-toggle-button {
+  background-color: $primary-bg-color !important;
+  color: $text-color;
+  border: 1px solid $active-border-color;
+  border-radius: 20px; // Esquinas más redondeadas
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.85em;
+  transition: all 0.3s ease;
+  float: left;
+}
+
+.view-toggle-button:hover {
+  background-color: $hover-bg-color;
+  color: #fff;
 }
 
 // Media queries para adaptar el diseño según el ancho de la ventana

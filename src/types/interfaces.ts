@@ -162,3 +162,10 @@ export interface IFile<T> {
   setContentAsync(val: string): Promise<void>,
   isInFolder(folder: string): boolean
 }
+
+export interface FolderNode {
+  name: string;         // Nombre de la carpeta actual
+  fullPath: string;     // Ruta completa a esta carpeta
+  tasks: ITask[];       // Tareas directamente en esta carpeta
+  subfolders: Record<string, FolderNode>; // Subcarpetas
+}

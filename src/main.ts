@@ -5,7 +5,7 @@ import logger from './core/logger';
 import { TaskManager } from "./core/task-manager";
 
 export default class ObsidianAgenda extends Plugin {
-  private viewManager: ViewManager;
+  private viewManager: ViewManager ;
   private i18n: I18n;
   private taskManager: TaskManager; 
   
@@ -23,8 +23,35 @@ export default class ObsidianAgenda extends Plugin {
     const MAIN_VIEW_TYPE = 'main-view';
 
     try {
-      // Leer el contenido del archivo CSS y agregarlo al DOM
-      const cssPath = this.app.vault.adapter.getResourcePath('.obsidian/plugins/obsidian-agenda/styles/styles.css');
+      // Cargar estilos CSS
+      await this.loadStyles();
+
+      // Cargar idioma (puedes usar una configuración o detectar el idioma del sistema)
+      await this.i18n.loadLanguage("es");
+
+      this.addRibbonIcon("calendar-check", this.i18n.t("agenda_title"), async () => {
+        await this.viewManager.activateView(MAIN_VIEW_TYPE);
+      });
+
+      // Registrar eventos
+      this.taskManager.registerEvents(this);
+
+      this.viewManager.registerViews();
+      logger.info("Vistas registradas correctamente.");
+    } catch (error) {
+      logger.error(`Error durante la carga del plugin: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+  * Carga los estilos CSS del plugin
+  * @returns Promesa que se resuelve cuando los estilos se han cargado
+  */
+  private async loadStyles(): Promise<void> {
+    try {
+      const cssPath = this.app.vault.adapter.getResourcePath(
+        '.obsidian/plugins/obsidian-agenda/styles/styles.css'
+      );
       const response = await fetch(cssPath);
 
       if (response.ok) {
@@ -36,25 +63,45 @@ export default class ObsidianAgenda extends Plugin {
       } else {
         logger.error("Error al cargar el archivo CSS:", response.statusText);
       }
-
-      // Cargar idioma (puedes usar una configuración o detectar el idioma del sistema)
-      await this.i18n.loadLanguage("es");
-
-      this.addRibbonIcon("calendar-check", this.i18n.t("agenda_title"), async () => {
-        this.viewManager.activateView(MAIN_VIEW_TYPE);
-      });
-
-      // Registrar eventos
-      this.taskManager.registerEvents(this);
-
-      this.viewManager.registerViews();
-      logger.info("Vistas registradas correctamente.");
     } catch (error) {
-      logger.error(`Error durante la carga del plugin: ${error}`);
+      logger.error(`Error al cargar estilos CSS: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
   onunload() {
-    console.log('Descargando plugin Obsidian Agenda'); 
+    console.log('Descargando plugin Obsidian Agenda');
+
+    try {
+      // Desregistrar vistas
+      if (this.viewManager) {
+        this.viewManager.unregisterViews();
+        logger.info('Vistas desregistradas correctamente');
+      }
+      
+      // Desregistrar eventos
+      if (this.taskManager) {
+        this.taskManager.unregisterEvents();
+        logger.info('Eventos desregistrados correctamente');
+      }
+      
+      // Eliminar estilos aplicados
+      document.querySelectorAll('style[data-plugin="obsidian-agenda"]').forEach(element => {
+        element.remove();
+      });
+      
+      // Limpiar cualquier tiempo/intervalo que pueda estar activo
+      // Si tu plugin utiliza setInterval o setTimeout
+      // clearInterval(this.someIntervalId);
+      // clearTimeout(this.someTimeoutId);
+      
+      // Limpiar referencias
+      // this.viewManager = null;
+      // this.taskManager = null;
+      // this.i18n = null;
+      
+      logger.info('Limpieza completada, plugin desactivado con éxito');
+    } catch (error) {
+      logger.error(`Error durante la descarga del plugin: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 }

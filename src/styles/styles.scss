@@ -307,6 +307,19 @@ $transition: all 0.3s ease;
       margin-bottom: 0;
     }
   }
+  
+  .task-item.clickable {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: rgba($hover-bg-color, 0.3);
+    }
+    
+    &:active {
+      background-color: rgba($hover-bg-color, 0.5);
+    }
+  }
 }
 
 // Media queries para adaptar el diseño según el ancho de la ventana

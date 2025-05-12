@@ -8,7 +8,7 @@
       </h3>
       <ul class="folder-tasks">
         {{#each folderTasks}}
-          <li class="task-item">
+          <li class="task-item" data-file-path="{{this.filePath}}" data-line-number="{{this.lineNumber}}">
             <div class="task-priority">{{priorityIcon this.priority}}</div>
             <div class="task-content">
               <div class="task-description">{{this.description}}</div>

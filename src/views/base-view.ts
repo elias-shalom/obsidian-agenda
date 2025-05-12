@@ -1,4 +1,4 @@
-import { ItemView } from 'obsidian';
+import { ItemView, TFolder } from 'obsidian';
 import Handlebars from 'handlebars';
 import { ITask } from '../types/interfaces';
 import { TaskManager } from '../core/task-manager';
@@ -211,6 +211,53 @@ export abstract class BaseView extends ItemView {
     });
   }
 
+  private addTaskItemClickListeners(container: HTMLElement): void {
+    const taskItems = container.querySelectorAll('.task-item');
+    
+    taskItems.forEach(item => {
+      // Agregar cursor pointer para indicar que es clickeable
+      item.addClass('clickable');
+      
+      item.addEventListener('dblclick', (event) => {
+        const filePath = item.getAttribute('data-file-path');
+        const lineNumber = item.getAttribute('data-line-number');
+        
+        if (filePath) {
+          this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined);
+        }
+      });
+    });
+  }
+  
+  private async openTaskFile(filePath: string, lineNumber?: number): Promise<void> {
+    try {
+      // Obtener el archivo desde el vault
+      const file = this.app.vault.getAbstractFileByPath(filePath);
+      
+      if (!file || file instanceof TFolder) {
+        console.error(`No se pudo encontrar el archivo: ${filePath}`);
+        return;
+      }
+      
+      // Abrir el archivo en una nueva hoja
+      const leaf = this.app.workspace.getLeaf('tab');
+      await leaf.openFile(file as any);
+      
+      // Si hay un número de línea, desplazarse a esa línea
+      if (lineNumber !== undefined) {
+        const editor = this.app.workspace.activeEditor?.editor;
+        if (editor) {
+          // Posicionar en la línea específica
+          const position = { line: lineNumber, ch: 0 };
+          editor.setCursor(position);
+          editor.scrollIntoView({ from: position, to: position }, true);
+        }
+      }
+    } catch (error) {
+      console.error(`Error al abrir el archivo: ${error}`);
+    }
+  }
+
   protected async render(viewType: string, data: any, i18n: any, plugin: any, leaf: any): Promise<void> {
     //console.log(`Dibuja vista: ${viewType}`); // Debugging line
     const container = this.containerEl.children[1] as HTMLElement;
@@ -236,5 +283,8 @@ export abstract class BaseView extends ItemView {
 
     // Añadir interactividad a los grupos de carpetas
     this.addFolderToggleListeners(contentContainer);
+
+    // Añadir manejo de doble clic para abrir archivos
+    this.addTaskItemClickListeners(contentContainer);
   }
 }

@@ -14,6 +14,7 @@ export class TaskManager {
   private refreshInProgress: boolean = false;
   private refreshPromise: Promise<ITask[]> | null = null;
   private eventBus: EventBus;
+  private registeredEvents: any[] = [];
 
   constructor(private app: App, private i18n: I18n, private plugin: Plugin) {
     this.eventBus = EventBus.getInstance();
@@ -26,7 +27,7 @@ export class TaskManager {
   public registerEvents(plugin: Plugin): void {
     // Escuchar modificaciones de archivos Markdown
     console.log("Escuchando eventos de modificación de archivos Markdown");
-    this.plugin.registerEvent(
+    const event = this.plugin.registerEvent(
       this.app.vault.on('modify', (file: any) => {
         if (file instanceof TFile && file.extension === 'md') {          
           this.invalidateFileCache(file.path);
@@ -34,8 +35,10 @@ export class TaskManager {
       })
     );
 
+    this.registeredEvents.push(event);
+
     // Escuchar creación de archivos Markdown
-    this.plugin.registerEvent(
+    const createEvent = this.plugin.registerEvent(
       this.app.vault.on('create', (file: any) => {
         if (file instanceof TFile && file.extension === 'md') {
           this.invalidateCache();
@@ -43,8 +46,10 @@ export class TaskManager {
       })
     );
 
+    this.registeredEvents.push(createEvent);
+
     // Escuchar eliminación de archivos Markdown
-    this.plugin.registerEvent(
+    const deleteEvent = this.plugin.registerEvent(
       this.app.vault.on('delete', (file: any) => {
         if (file instanceof TFile && file.extension === 'md') {
           this.invalidateFileCache(file.path);
@@ -52,8 +57,10 @@ export class TaskManager {
       })
     );
 
+    this.registeredEvents.push(deleteEvent);
+
     // Escuchar renombrado de archivos Markdown
-    this.plugin.registerEvent(
+    const renameEvent = this.plugin.registerEvent(
       this.app.vault.on('rename', (file: any, oldPath: string) => {
         if (file instanceof TFile && file.extension === 'md') {
           this.invalidateFileCache(oldPath);
@@ -61,6 +68,16 @@ export class TaskManager {
         }
       })
     );
+
+    this.registeredEvents.push(renameEvent);
+  }
+
+  unregisterEvents(): void {
+    // Código para eliminar los eventos registrados
+    // Por ejemplo:
+    this.registeredEvents.forEach(event => {
+      event.unsubscribe();
+    });
   }
 
   /**
@@ -1007,4 +1024,6 @@ export class TaskManager {
     });
     return result;
   }
+
+
 }

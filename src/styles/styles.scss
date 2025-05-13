@@ -634,3 +634,498 @@ $transition: all 0.3s ease;
     }
   }
 }
+
+/* Calendar View Styles */
+.calendar-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 10px;
+}
+
+.calendar-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 5px 0;
+}
+
+.calendar-current-month h2 {
+  margin: 0; // Eliminar márgenes del título
+  font-size: 1.2em; // Opcional: reducir tamaño de fuente
+  line-height: 1.2; // Ajustar altura de línea
+}
+
+.calendar-navigation {
+  display: flex;
+  gap: 8px;
+}
+
+.calendar-navigation button {
+  padding: 4px 8px; // Reducir el padding de los botones
+  font-size: 0.9em; // Opcional: reducir tamaño de texto de botones
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding-bottom: 8px;
+  flex: 1;
+}
+
+.calendar-grid {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.calendar-week {
+  display: flex;
+  width: 100%;
+  min-height: 120px; // Aumentar la altura mínima
+  margin-bottom: 5px; // Agregar espacio entre semanas
+}
+
+.calendar-week-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: auto;
+  font-size: 0.8em;
+  margin-right: 5px;
+  
+  /* Aplicar estilos similares a las celdas de días */
+  border: 1px solid var(--background-modifier-border);
+  background-color: rgba($primary-bg-color, 0.6);
+  border-radius: 4px;
+  padding: 8px 0;
+  transition: background-color 0.2s ease;
+}
+
+.calendar-days-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  flex: 1;
+  min-height: 120px; // Mantener consistencia con .calendar-week
+}
+
+.calendar-day {
+  border: 1px solid var(--background-modifier-border);
+  min-height: 120px; // Aumentar para mejor proporción
+  padding: 8px; // Aumentar el padding interno
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 1.2; // Añadir proporción de aspecto (opcional)
+  transition: background-color 0.2s ease; // Añadir transición suave
+}
+
+.calendar-other-month {
+  opacity: 0.5;
+  background-color: var(--background-secondary);
+}
+
+.calendar-today {
+  background-color: var(--background-modifier-hover);
+  border: 1px solid var(--interactive-accent);
+}
+
+.calendar-day-number {
+  font-weight: bold;
+  margin-bottom: 8px; // Más espacio después del número
+  font-size: 1.1em; // Número más grande
+  color: $text-color; // Usar la variable de color existente
+}
+
+.calendar-day-content {
+  overflow-y: auto;
+  flex-grow: 1;
+  // Aumentar o eliminar el max-height para evitar compresión
+  max-height: 100px; 
+}
+
+.calendar-task {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  font-size: 0.8em;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%; /* Asegura que no exceda el ancho de la celda */
+}
+
+.calendar-task:hover {
+  opacity: 0.9;
+}
+
+.task-title {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+/* Estilos para el número de semana */
+.calendar-header-row {
+  display: flex;
+  align-items: center;
+}
+
+.calendar-week-number-header {
+  display: grid;
+  width: 40px;
+  text-align: center;
+  //font-size: 0.8em;
+  font-weight: bold;
+  //margin-right: 5px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--background-modifier-border); 
+  color: $text-color;
+  margin-bottom: 8px;
+}
+
+/* Estilos para el selector de vista de calendario */
+.calendar-view-controls {
+  margin: 0 10px;
+  
+  select.calendar-view-type {
+    background-color: rgba($primary-bg-color, 0.8);
+    color: $text-color;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: $hover-bg-color;
+    }
+    
+    option {
+      background-color: var(--background-primary);
+      color: var(--text-normal);
+    }
+  }
+}
+
+/* Estilos para las vistas semanales y diarias */
+.calendar-week-view, 
+.calendar-workweek-view, 
+.calendar-day-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.calendar-week-header, 
+.calendar-day-header {
+  display: flex;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+.calendar-day-column-header {
+  flex: 1;
+  text-align: center;
+  padding: 8px 0;
+  border-left: 1px solid var(--background-modifier-border);
+  min-width: 80px;
+  
+  .calendar-day-name {
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  
+  .calendar-date {
+    font-size: 1.1em;
+  }
+  
+  &.calendar-today {
+    background-color: var(--background-modifier-hover);
+    border: 1px solid var(--interactive-accent);
+  }
+}
+
+.calendar-time-column {
+  width: 60px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--background-modifier-border);
+  
+  .calendar-hour-label {
+    font-size: 0.85em;
+    color: var(--text-muted);
+  }
+}
+
+.calendar-week-hour-header, 
+.calendar-day-hour-header {
+  height: 50px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.calendar-week-body, 
+.calendar-day-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-hour-row {
+  display: flex;
+  min-height: 50px;
+  border-bottom: 1px solid rgba(var(--background-modifier-border-rgb), 0.5);
+}
+
+.calendar-day-column {
+  flex: 1;
+  border-left: 1px solid rgba(var(--background-modifier-border-rgb), 0.5);
+  min-width: 80px;
+  
+  &.calendar-today {
+    background-color: rgba(var(--background-modifier-hover-rgb), 0.2);
+  }
+}
+
+.calendar-hour-cell {
+  height: 100%;
+  padding: 2px 4px;
+  overflow: hidden;
+  
+  .calendar-task {
+    margin-bottom: 3px;
+    max-width: 100%;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+/* Adaptar botones de navegación para las diferentes vistas */
+.calendar-navigation {
+  button {
+    background-color: rgba($primary-bg-color, 0.8);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: $hover-bg-color;
+    }
+  }
+}
+
+/* Adaptar período actual en toolbar */
+.calendar-current-period h2 {
+  margin: 0;
+  font-size: 1.2em;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+}
+
+/* Adaptaciones responsive */
+@media screen and (max-width: 768px) {
+  .calendar-toolbar {
+    flex-wrap: wrap;
+    justify-content: center;
+    
+    .calendar-current-period {
+      order: 1;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    
+    .calendar-view-controls {
+      order: 2;
+    }
+    
+    .calendar-navigation {
+      order: 3;
+    }
+  }
+  
+  .calendar-time-column {
+    width: 40px;
+  }
+  
+  .calendar-day-column {
+    min-width: 60px;
+  }
+}
+
+/* Estilos para las vistas semanales (sin horas) */
+.calendar-week-view, 
+.calendar-workweek-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.calendar-week-header {
+  display: flex;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+  
+  .calendar-weekday {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    font-weight: bold;
+    font-size: 0.9em;
+  }
+}
+
+.calendar-week-body {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.calendar-days-row {
+  display: flex;
+  height: calc(100% - 20px);
+  min-height: 150px;
+}
+
+.calendar-day-container {
+  flex: 1;
+  border: 1px solid var(--background-modifier-border);
+  margin: 4px;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  
+  .calendar-day-header {
+    background-color: rgba(var(--background-modifier-border-rgb), 0.2);
+    padding: 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--background-modifier-border);
+    flex-shrink: 0;
+    
+    .calendar-day-name {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    
+    .calendar-date {
+      font-size: 1.2em;
+    }
+  }
+  
+  .calendar-day-content {
+    flex-grow: 1;
+    overflow-y: visible;
+    padding: 8px;
+    display: flex; // Añadido para mejor control del espacio
+    flex-direction: column; // Organiza las tareas verticalmente
+    min-height: 0; // Permite que el contenedor se contraiga si es necesario
+  }
+  
+  &.calendar-today {
+    border: 2px solid var(--interactive-accent);
+    
+    .calendar-day-header {
+      background-color: rgba(var(--interactive-accent-rgb), 0.2);
+    }
+  }
+}
+
+/* Estilos de tareas en vistas semanales */
+.calendar-day-container .calendar-task {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  font-size: 0.8em;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%; // Asegura que ocupe todo el ancho disponible
+  box-sizing: border-box; // Incluye padding y border en el ancho
+  
+  &:hover {
+    background-color: rgba(var(--interactive-accent-rgb), 0.2);
+  }
+  
+  .task-title {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.9em;
+  }
+}
+
+
+/* Modificador para la vista semanal que activa el scroll solo cuando es necesario */
+.calendar-week-view, 
+.calendar-workweek-view {
+  .calendar-day-container {
+    .calendar-day-content {
+      overflow-y: auto; // Vuelve a 'auto' para controlar el scroll
+      max-height: none; // Elimina cualquier altura máxima
+      min-height: 0; // Permite contraerse si es necesario
+    }
+  }
+}
+
+// Al final del archivo, añadir este ajuste para el contenedor principal
+.agenda-content-container {
+  // ...existing code...
+  display: flex;
+  flex-direction: column;
+  
+  .calendar-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; // Permite que el contenedor se adapte correctamente
+  }
+}
+
+/* Adaptaciones responsive para las vistas semanales */
+@media screen and (max-width: 768px) {
+  .calendar-day-container {
+    .calendar-day-header {
+      padding: 4px;
+      
+      .calendar-day-name {
+        font-size: 0.8em;
+      }
+      
+      .calendar-date {
+        font-size: 1em;
+      }
+    }
+    
+    .calendar-day-content {
+      padding: 4px;
+    }
+  }
+}

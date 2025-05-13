@@ -21,7 +21,6 @@ export abstract class BaseView extends ItemView {
     return await taskManager.getTodayTasks();
   }
 
-  // Método para agrupar tareas por carpeta
   protected groupTasksByFolder(tasks: ITask[]): Record<string, FolderNode> {
     const rootFolders: Record<string, FolderNode> = {};
     
@@ -92,16 +91,24 @@ export abstract class BaseView extends ItemView {
     return rootFolders;
   }
 
-  /// Funciones para dibujar las vistas
-  ///
+  private registerHandlebarsHelpers(i18n: any): void {
+    // Si ya están registrados, no hacer nada
+    if (this.helpersRegistered) return;
+    
+    // Registrar helpers comunes para todas las vistas
+    this.registerCommonHelpers(i18n);
+    
+    // Registrar helpers específicos para la vista actual
+    this.registerViewSpecificHelpers(i18n);
+  
+    this.helpersRegistered = true;
+  }
 
   /**
    * Registra todos los helpers de Handlebars de una sola vez
    * @param i18n Servicio de internacionalización
    */
-  private registerHandlebarsHelpers(i18n: any): void {
-    // Si ya están registrados, no hacer nada
-    if (this.helpersRegistered) return;
+  private registerCommonHelpers(i18n: any): void {
     
     // Helper para traducción
     Handlebars.registerHelper("t", (key: string) => i18n.t(key));
@@ -150,25 +157,7 @@ export abstract class BaseView extends ItemView {
       return ' ';
     });
 
-    // Helper para recorrer recursivamente la estructura de carpetas
-    Handlebars.registerHelper("renderFolderHierarchy", function(folder, options) {
-      let output = '';
-      if (!folder) return output;
-      
-      // Renderizar tareas directas de esta carpeta
-      if (folder.tasks && folder.tasks.length > 0) {
-        output += options.fn({ folderName: folder.name, fullPath: folder.fullPath, tasks: folder.tasks, level: 0 });
-      }
-      
-      // Recorrer subcarpetas recursivamente
-      if (folder.subfolders) {
-        Object.values(folder.subfolders).forEach(subfolder => {
-          output += Handlebars.helpers.renderFolderHierarchy(subfolder, options);
-        });
-      }
-      
-      return new Handlebars.SafeString(output);
-    });
+
 
     // Helper para multiplicar números (útil para la sangría)
     Handlebars.registerHelper("multiply", function(a, b) {
@@ -180,37 +169,21 @@ export abstract class BaseView extends ItemView {
       return a + b;
     });
 
-    // Helper para calcular el número total de tareas, incluyendo subcarpetas
-    Handlebars.registerHelper("totalTaskCount", function(folder) {
-      if (!folder) return 0;
-      
-      // Función recursiva para contar tareas
-      function countAllTasks(folderNode) {
-        // Contar tareas directas
-        let count = folderNode.tasks ? folderNode.tasks.length : 0;
-        
-        // Contar tareas en subcarpetas
-        if (folderNode.subfolders) {
-          Object.values(folderNode.subfolders).forEach(subfolder => {
-            count += countAllTasks(subfolder);
-          });
-        }
-        
-        return count;
-      }
-      
-      return countAllTasks(folder);
-    });
 
-    
-    
-    this.helpersRegistered = true;
+
+  }
+
+  /**
+ * Método para registrar helpers específicos para cada vista.
+ * Las clases hijas pueden sobrescribir este método para registrar sus propios helpers.
+ */
+  protected registerViewSpecificHelpers(i18n: any): void {
+    // Por defecto no registra ningún helper específico
+    // Las clases hijas sobrescribirán este método según sea necesario
   }
 
   protected async renderHeader(container: HTMLElement, i18n: any): Promise<void> {
     //console.log("Dibuja encabezado"); // Debugging line
-    // Registrar helpers (solo se ejecutará una vez)
-    this.registerHandlebarsHelpers(i18n);
     
     // Buscar la plantilla en el caché primero
     let headerTemplate = this.templateCache['header'];
@@ -260,8 +233,6 @@ export abstract class BaseView extends ItemView {
 
   protected async renderTemplate(container: HTMLElement, templatePath: string, data: any): Promise<void> {
     try {
-      // Registrar helpers (solo se ejecutará una vez)
-      this.registerHandlebarsHelpers(data.i18n || null);
       
       // Buscar la plantilla en el caché primero
       let template = this.templateCache[templatePath];
@@ -415,6 +386,9 @@ export abstract class BaseView extends ItemView {
     // Contenedor del contenido (scrollable)
     const contentContainer = container.createDiv({ cls: "agenda-content-container" });
 
+    // Registrar helpers antes de cualquier renderizado
+    this.registerHandlebarsHelpers(i18n || null);
+
     try {
       // Paralelizar operaciones de renderizado
       await Promise.all([
@@ -425,14 +399,8 @@ export abstract class BaseView extends ItemView {
       // Agregar eventos a los botones
       this.attachEventTabs(headerContainer, plugin, leaf);
 
-      // Añadir interactividad a los grupos de carpetas
-      //this.addFolderToggleListeners(contentContainer);
-
-      // Añadir manejo de doble clic para abrir archivos
-      //this.addTaskItemClickListeners(contentContainer);
-
       // POR un método que las clases hijas pueden sobrescribir:
-    this.setupViewSpecificEventListeners(contentContainer, data);
+      this.setupViewSpecificEventListeners(contentContainer, data);
     } catch (error) {
       console.error(`Error renderizando vista ${viewType}:`, error);
       contentContainer.innerHTML = `<div class="error-message">Error al cargar: ${error.message}</div>`;

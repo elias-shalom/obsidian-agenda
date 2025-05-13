@@ -169,3 +169,9 @@ export interface FolderNode {
   tasks: ITask[];       // Tareas directamente en esta carpeta
   subfolders: Record<string, FolderNode>; // Subcarpetas
 }
+
+export interface HourSlot {
+  hour: number;
+  formattedHour: string;
+  tasks: ITask[];
+}

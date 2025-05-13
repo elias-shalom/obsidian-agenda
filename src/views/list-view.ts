@@ -3,6 +3,7 @@ import { BaseView } from '../views/base-view';
 import { TaskManager } from '../core/task-manager';
 import { ITask } from '../types/interfaces';
 import { I18n } from '../core/i18n';
+import Handlebars from 'handlebars';
 
 export const LIST_VIEW_TYPE = 'list-view';
 
@@ -54,6 +55,50 @@ export class ListView extends BaseView {
     }, this.i18n, this.plugin, this.leaf);
   }
 
+  protected registerViewSpecificHelpers(i18n: any): void {
+    // Helper para calcular el número total de tareas, incluyendo subcarpetas
+    Handlebars.registerHelper("totalTaskCount", function(folder) {
+      if (!folder) return 0;
+      
+      // Función recursiva para contar tareas
+      function countAllTasks(folderNode) {
+        // Contar tareas directas
+        let count = folderNode.tasks ? folderNode.tasks.length : 0;
+        
+        // Contar tareas en subcarpetas
+        if (folderNode.subfolders) {
+          Object.values(folderNode.subfolders).forEach(subfolder => {
+            count += countAllTasks(subfolder);
+          });
+        }
+        
+        return count;
+      }
+      
+      return countAllTasks(folder);
+    });
+
+    // Helper para recorrer recursivamente la estructura de carpetas
+    Handlebars.registerHelper("renderFolderHierarchy", function(folder, options) {
+      let output = '';
+      if (!folder) return output;
+      
+      // Renderizar tareas directas de esta carpeta
+      if (folder.tasks && folder.tasks.length > 0) {
+        output += options.fn({ folderName: folder.name, fullPath: folder.fullPath, tasks: folder.tasks, level: 0 });
+      }
+      
+      // Recorrer subcarpetas recursivamente
+      if (folder.subfolders) {
+        Object.values(folder.subfolders).forEach(subfolder => {
+          output += Handlebars.helpers.renderFolderHierarchy(subfolder, options);
+        });
+      }
+      
+      return new Handlebars.SafeString(output);
+    });
+  }
+
   /**
    * Sobrescribe el método de BaseView para implementar event listeners específicos de ListView
    * @param container Contenedor donde se aplican los listeners
@@ -67,56 +112,40 @@ export class ListView extends BaseView {
         this.toggleViewMode();
       });
     }
-    
+
     // 1. Eventos para carpetas (igual que en BaseView)
     this.addFolderToggleListeners(container);
-    
+
     // 2. Eventos para tareas (personalizado para ListView)
     const taskItems = container.querySelectorAll('.task-item');
-    
+
     taskItems.forEach(item => {
       // Añadir indicador visual
       item.addClass('clickable');
-      
+
       // Evento de doble clic para abrir el archivo
       item.addEventListener('dblclick', (event) => {
         const filePath = item.getAttribute('data-file-path');
         const lineNumber = item.getAttribute('data-line-number');
-        
+
         if (filePath) {
           this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined);
         }
       });
-      
+
       // Evento ADICIONAL para ListView - clic simple para seleccionar
       item.addEventListener('click', (event) => {
         // Remover selección previa
         container.querySelectorAll('.task-item.selected').forEach(el => {
           el.removeClass('selected');
         });
-        
+
         // Marcar como seleccionada
         item.addClass('selected');
-        
-        // Opcional: mostrar acciones para esta tarea
-        //this.showTaskActions(item as HTMLElement);
+
       });
     });
-    
-    // 3. Añadir otros listeners específicos de ListView si es necesario
-    // Por ejemplo, botones de filtro, ordenación, etc.
-    //this.setupListViewFilters(container, data);
-  }
 
-  /**
-  * Función específica para mostrar acciones en tareas seleccionadas
-  */
-  protected showTaskActions(taskItem: HTMLElement): void {
-    const taskId = taskItem.getAttribute('data-id');
-    console.log(`Mostrando acciones para tarea ${taskId}`);
-    
-    // Implementar la lógica para mostrar acciones (por ejemplo, un menú contextual)
-    // ...
   }
 
   /**

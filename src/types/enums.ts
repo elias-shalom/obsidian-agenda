@@ -53,4 +53,11 @@ export enum TaskMisc {
   Completion = "🏁"
 }
 
+export enum CalendarViewType {
+  Month = 'month',
+  Week = 'week',
+  WorkWeek = 'workweek',
+  Day = 'day'
+}
+
 // Otras enumeraciones pueden ir aquí

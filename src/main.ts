@@ -20,7 +20,7 @@ export default class ObsidianAgenda extends Plugin {
   /// Método de inicializa del plugin.
   async onload(): Promise<void> {
     logger.info("Cargando el plugin Obsidian Agenda...");
-    const MAIN_VIEW_TYPE = 'main-view';
+    const OVERVIEW_VIEW_TYPE = 'overview-view';
 
     try {
       // Cargar estilos CSS
@@ -30,7 +30,7 @@ export default class ObsidianAgenda extends Plugin {
       await this.i18n.loadLanguage("es");
 
       this.addRibbonIcon("calendar-check", this.i18n.t("agenda_title"), async () => {
-        await this.viewManager.activateView(MAIN_VIEW_TYPE);
+        await this.viewManager.activateView(OVERVIEW_VIEW_TYPE);
       });
 
       // Registrar eventos

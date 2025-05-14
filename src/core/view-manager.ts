@@ -1,6 +1,6 @@
 import { App, Plugin, WorkspaceLeaf} from "obsidian";
 import { I18n } from "./i18n";
-import { MainView, MAIN_VIEW_TYPE, MonthView, MONTH_VIEW_TYPE, WeekView, 
+import { OverviewView, OVERVIEW_VIEW_TYPE, MonthView, MONTH_VIEW_TYPE, WeekView, 
   WEEK_VIEW_TYPE, DayView, DAY_VIEW_TYPE, ListView, LIST_VIEW_TYPE, 
   CalendarView, CALENDAR_VIEW_TYPE, TimelineView, TIMELINE_VIEW_TYPE, 
   GanttView, GANTT_VIEW_TYPE, TableView, TABLE_VIEW_TYPE } from "../views";
@@ -12,8 +12,8 @@ export class ViewManager {
 
   // Método para registrar todas las vistas
   public registerViews(): void {
-    this.plugin.registerView(MAIN_VIEW_TYPE, (leaf: WorkspaceLeaf) => new MainView(leaf, this.plugin, this.i18n, this.taskManager));
-    this.registeredViewTypes.push(MAIN_VIEW_TYPE);
+    this.plugin.registerView(OVERVIEW_VIEW_TYPE, (leaf: WorkspaceLeaf) => new OverviewView(leaf, this.plugin, this.i18n, this.taskManager));
+    this.registeredViewTypes.push(OVERVIEW_VIEW_TYPE);
     this.plugin.registerView(MONTH_VIEW_TYPE, (leaf: WorkspaceLeaf) => new MonthView(leaf, this.plugin, this.i18n));
     this.registeredViewTypes.push(MONTH_VIEW_TYPE);
     this.plugin.registerView(WEEK_VIEW_TYPE, (leaf: WorkspaceLeaf) => new WeekView(leaf, this.plugin));

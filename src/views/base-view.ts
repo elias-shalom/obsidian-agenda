@@ -270,7 +270,7 @@ export abstract class BaseView extends ItemView {
   
     const activeViewType = this.getViewType(); // Obtiene el tipo de vista actual
     const tabs = [
-      { id: "main-view-tab", view: "main-view" },
+      { id: "overview-view-tab", view: "overview-view" },
       { id: "list-view-tab", view: "list-view" },
       { id: "table-view-tab", view: "table-view" },
       { id: "calendar-view-tab", view: "calendar-view" },

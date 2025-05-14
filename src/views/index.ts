@@ -1,4 +1,4 @@
-export { MainView, MAIN_VIEW_TYPE } from './main-view';
+export { OverviewView, OVERVIEW_VIEW_TYPE } from './overview-view';
 export { MonthView, MONTH_VIEW_TYPE } from './month-view';
 export { WeekView, WEEK_VIEW_TYPE } from './week-view';
 export { DayView, DAY_VIEW_TYPE } from './day-view';

@@ -375,6 +375,14 @@ export class CalendarView extends BaseView {
     Handlebars.registerHelper('equals', function(arg1, arg2, options) {
       return (arg1 === arg2) ? options.fn(this) : options.inverse(this);
     });
+
+    Handlebars.registerHelper('toISODate', (date) => {
+      if (!date) return '';
+      if (typeof date === 'string') {
+        return DateTime.fromISO(date).toISODate();
+      }
+      return date.toISODate();
+    });
   }
 
   /**

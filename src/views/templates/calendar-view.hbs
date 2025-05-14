@@ -11,6 +11,11 @@
         <option value="day">{{t 'day_view'}}</option>
       </select>
     </div>
+    <div class="view-buttons">    
+      <button id="month-view-button">{{t "month_view"}}</button>
+      <button id="week-view-button">{{t "week_view"}}</button>
+      <button id="day-view-button">{{t "day_view"}}</button>
+  </div>
     <div class="calendar-navigation">
       <button class="calendar-prev" aria-label="{{t 'previous'}}">
         <span class="icon">←</span>
@@ -43,7 +48,7 @@
           
           <div class="calendar-days-row">
             {{#each days}}
-              <div class="calendar-day {{#unless isCurrentMonth}}calendar-other-month{{/unless}} {{#if isToday}}calendar-today{{/if}}" data-date="{{date.toISODate}}">
+              <div class="calendar-day {{#unless isCurrentMonth}}calendar-other-month{{/unless}} {{#if isToday}}calendar-today{{/if}}" data-date="{{toISODate dateValue}}">
                 <div class="calendar-day-header">
                   <span class="calendar-day-number">{{dayOfMonth}}</span>
                 </div>
@@ -78,7 +83,7 @@
     <div class="calendar-week-body">
       <div class="calendar-days-row">
         {{#each calendar.days}}
-          <div class="calendar-day-container {{#if isToday}}calendar-today{{/if}}" data-date="{{date.toISODate}}">
+          <div class="calendar-day-container {{#if isToday}}calendar-today{{/if}}" data-date="{{toISODate dateValue}}">
             <div class="calendar-day-header">
               <div class="calendar-day-name">{{dayName}}</div>
               <div class="calendar-date">{{dayOfMonth}}</div>
@@ -112,7 +117,7 @@
     <div class="calendar-week-body">
       <div class="calendar-days-row">
         {{#each calendar.days}}
-          <div class="calendar-day-container {{#if isToday}}calendar-today{{/if}}" data-date="{{date.toISODate}}">
+          <div class="calendar-day-container {{#if isToday}}calendar-today{{/if}}" data-date="{{toISODate dateValue}}">
             <div class="calendar-day-header">
               <div class="calendar-day-name">{{dayName}}</div>
               <div class="calendar-date">{{dayOfMonth}}</div>

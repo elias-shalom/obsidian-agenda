@@ -29,6 +29,9 @@
   "day_fri": "Fri",
   "day_sat": "Sat",
   "week": "Week",
+  "workweek_view": "Workweek View",
+  "previous": "Previous",
+  "next": "Next",
   "errors": {
     "invalidDate": "Icon {icon} is not followed by a valid date or contains extra text.",
     "invalidPriority": "Icon {icon} should not have extra text.",

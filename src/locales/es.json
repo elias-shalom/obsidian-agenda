@@ -29,6 +29,9 @@
   "day_fri": "Vie",
   "day_sat": "Sáb",
   "week": "Semana",
+  "workweek_view": "Semana laboral",
+  "previous": "Anterior",
+  "next": "Siguiente",
   "errors": {
     "invalidDate": "El ícono {icon} no está seguido por una fecha válida o contiene texto adicional.",
     "invalidPriority": "El ícono {icon} no debe tener texto adicional.",

@@ -1,0 +1,267 @@
+@use "sass:color";
+@use '../variables' as *;
+
+/* ==========================================================================
+   HEADER COMPONENT
+   Header container and its elements following MACSS methodology
+   ========================================================================== */
+
+/* Header - Main container */
+.c-header {
+  background-color: $primary-bg-color !important;
+  border-bottom: 1px solid #333 !important;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+}
+
+/* ==========================================================================
+   TABS MODULE
+   All tab-related components
+   ========================================================================== */
+
+/* Tabs - Container for navigation tabs */
+.c-tabs {
+  display: flex;
+  justify-content: space-between; // Distribuye el espacio entre los items
+  align-items: center;
+  width: 100%; // Ocupa todo el ancho disponible
+  max-width: 100%; // Usar todo el ancho disponible
+  gap: 8px; // Espaciado inicial entre los botones
+  padding: 0 12px !important; // Padding horizontal para evitar que toque los bordes
+  margin: 0 !important; // Sin margen
+  background-color: $primary-bg-color !important; // Fondo oscuro
+  border-radius: 5px !important; // Bordes redondeados
+  box-shadow: none !important; // Sin sombra
+  flex-wrap: nowrap; // Evita que los elementos salten a la siguiente línea
+  overflow-x: auto; // Permite scroll horizontal si es necesario
+  scrollbar-width: thin; // Barra de desplazamiento delgada (Firefox)
+  
+  // Estilizar scrollbar para navegadores webkit (Chrome, Safari)
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: $active-border-color;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+// Clase para un contenedor de tabs con espacio alrededor
+.c-tab-container {
+  flex: 1 1 0; // Crecimiento y encogimiento iguales con base 0
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 1px; // Padding horizontal reducido
+  min-width: 0; // Permite que se encoja si es necesario
+  
+  &.active {
+    border-bottom: 3px solid $active-line-color !important; // Línea en la parte inferior
+    padding-bottom: 5px; // Ajustar el espacio interno para que la línea no toque el contenido
+  }
+
+  // Estilo de los botones (difuminados con el fondo)
+  .c-tab {
+    @extend %tab-base;
+    display: flex;
+    align-items: center;
+    white-space: nowrap; // Evita que el texto se envuelva
+    width: 100%; // Ocupa todo el ancho del contenedor
+    min-width: 0; // Permite que se encoja si es necesario
+    justify-content: center; // Centra el contenido
+
+    svg {
+      margin-right: 8px; // Espaciado entre el ícono y el texto
+      vertical-align: middle; // Alinear el ícono verticalmente con el texto
+      color: $text-color; // Color del ícono
+      flex-shrink: 0; // Evita que el icono se encoja
+    }
+
+    .tab-text {
+      vertical-align: middle; // Alinear el texto verticalmente con el ícono
+      font-weight: normal;
+      color: $text-color;
+      overflow: hidden; // Oculta el texto que excede el ancho
+      text-overflow: ellipsis; // Muestra "..." si el texto es demasiado largo
+      max-width: 100%; // Permite que se ajuste al espacio disponible
+    }
+
+    &:hover {
+      background-color: $hover-bg-color !important; // Fondo más claro al pasar el ratón
+      color: #fff !important; // Texto blanco
+      svg {
+        color: #fff !important; // Cambia el color del ícono
+      }
+      .tab-text {
+        color: #fff !important; // Cambia el color del texto
+      }
+      border: 1px solid $active-border-color !important; // Borde visible al pasar el ratón
+    }
+
+    &.active {
+      background-color: $hover-bg-color !important; // Fondo más claro
+      color: #fff !important; // Texto blanco
+      svg {
+        color: #fff !important; // Cambia el color del ícono
+      }
+      .tab-text {
+        color: #fff !important; // Cambia el color del texto
+      }
+      font-weight: bold !important;
+      border: 1px solid $active-border-color !important; // Borde visible
+    }
+  }
+}
+
+// Media queries para adaptar el diseño según el ancho de la ventana
+@media screen and (max-width: 1200px) {
+  .c-tabs {
+    gap: 6px; // Reducir un poco el espacio entre tabs
+    padding: 0 10px !important;
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  .c-tabs {
+    gap: 4px; // Reducir más el espacio entre tabs
+    padding: 0 8px !important;
+  }
+
+  .c-tab-container {
+    .c-tab {
+      .tab-text {
+        max-width: 70px; // Limitar el ancho del texto
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .c-tabs {
+    gap: 3px; // Reducir aún más el espacio entre tabs
+    padding: 0 6px !important;
+  }
+
+  .c-tab-container {
+    padding: 7px 1px;
+    
+    .c-tab {
+      .tab-text {
+        max-width: 60px; // Reducir más el ancho máximo del texto
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 800px) {
+  .c-tabs {
+    gap: 2px; // Espacio mínimo entre tabs
+    padding: 0 5px !important;
+  }
+  
+  .c-tab-container {
+    padding: 6px 0;
+    
+    .c-tab {
+      padding: 6px 8px !important; // Reduce el padding horizontal
+      
+      .tab-text {
+        max-width: 45px; // Texto muy limitado
+        font-size: 13px !important;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 700px) {
+  .c-tabs {
+    gap: 1px; // Casi sin espacio entre tabs
+    padding: 0 4px !important;
+  }
+  
+  .c-tab-container {
+    .c-tab {
+      svg {
+        margin-right: 5px; // Reducir espacio entre icono y texto
+      }
+      
+      .tab-text {
+        max-width: 30px; // Texto extremadamente limitado
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .c-tabs {
+    gap: 0; // Sin espacio entre tabs
+    padding: 0 3px !important;
+  }
+  
+  .c-tab-container {
+    padding: 5px 0;
+    
+    .c-tab {
+      padding: 5px 4px !important;
+      
+      svg {
+        margin-right: 0; // Eliminar espacio entre icono y texto
+      }
+      
+      .tab-text {
+        display: none; // Ocultar completamente el texto
+        width: 0;
+      }
+    }
+  }
+
+  .agenda-content-container {
+    padding: 8px;
+  }
+
+  .folder-group {
+    padding: 10px;
+    
+    h3.folder-name {
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+    
+    ul {
+      padding-left: 16px;
+    }
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .c-tab-container {
+    padding: 4px 0;
+    
+    .c-tab {
+      padding: 4px 8px !important; // Aumentar un poco el padding horizontal para los iconos
+      justify-content: center; // Centrar el icono
+      
+      svg {
+        margin-right: 0;
+      }
+    }
+  }
+}
+
+// Si la pantalla es muy estrecha, dar más espacio a los iconos
+@media screen and (max-width: 400px) {
+  .c-tab-container {
+    .c-tab {
+      padding: 4px 6px !important;
+    }
+  }
+}

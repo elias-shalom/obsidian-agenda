@@ -208,7 +208,7 @@ export abstract class BaseView extends ItemView {
 
     // Identificar la vista activa y aplicar la clase "active"
     const activeViewType = this.getViewType(); // Obtiene el tipo de vista actual
-    const tabs = container.querySelectorAll(".agenda-tab");
+    const tabs = container.querySelectorAll(".c-tab");
 
     tabs.forEach((tab) => {
       const tabId = tab.getAttribute("id");
@@ -219,7 +219,7 @@ export abstract class BaseView extends ItemView {
       }
     });
 
-    const tabContainers = container.querySelectorAll(".tab-container");
+    const tabContainers = container.querySelectorAll(".c-tab-container");
 
     tabContainers.forEach((buttonContainer) => {
       const divId = buttonContainer.getAttribute("id");

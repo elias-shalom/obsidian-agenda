@@ -1,0 +1,30 @@
+
+
+// Variables de colores y estilos base
+$primary-bg-color: #111111;
+$text-color: #989898;
+$hover-bg-color: #444;
+$active-border-color: #555;
+$active-line-color: #fff;
+$transition: all 0.3s ease;
+
+// Estilo base para contenedores flexibles
+%flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// Estilo base para botones
+%tab-base {
+  padding: 8px 15px !important;
+  border: 1px solid transparent !important; // Sin borde visible
+  background-color: $primary-bg-color !important; // Mismo color que el fondo
+  color: $text-color !important; // Texto gris oscuro
+  cursor: pointer !important;
+  transition: $transition !important; // Transición suave
+  box-shadow: none !important; // Sin sombra
+  border-radius: 5px !important; // Bordes redondeados
+  font-size: 14px !important; // Tamaño de fuente
+}
+

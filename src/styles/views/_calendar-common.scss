@@ -1,0 +1,152 @@
+@use "sass:color";
+@use '../variables' as *;
+
+/* Calendar View Styles */
+.calendar-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 10px;
+}
+
+.calendar-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 5px 0;
+}
+
+/* Estilos para el selector de vista de calendario */
+.calendar-view-controls {
+  margin: 0 10px;
+  
+  select.calendar-view-type {
+    background-color: rgba($primary-bg-color, 0.8);
+    color: $text-color;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: $hover-bg-color;
+    }
+    
+    option {
+      background-color: var(--background-primary);
+      color: var(--text-normal);
+    }
+  }
+}
+
+.calendar-navigation {
+  display: flex;
+  gap: 8px;
+}
+
+.calendar-navigation button {
+  padding: 4px 8px; // Reducir el padding de los botones
+  font-size: 0.9em; // Opcional: reducir tamaño de texto de botones
+}
+
+/* Adaptar botones de navegación para las diferentes vistas */
+.calendar-navigation {
+  button {
+    background-color: rgba($primary-bg-color, 0.8);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: $hover-bg-color;
+    }
+  }
+}
+
+.calendar-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.calendar-buttons button {
+  padding: 4px 8px; // Reducir el padding de los botones
+  font-size: 0.9em; // Opcional: reducir tamaño de texto de botones
+}
+
+/* Adaptar botones de navegación para las diferentes vistas */
+.calendar-buttons {
+  button {
+    background-color: rgba($primary-bg-color, 0.8);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: $hover-bg-color;
+    }
+  }
+}
+
+.calendar-today {
+  background-color: var(--background-modifier-hover);
+  border: 1px solid var(--interactive-accent);
+}
+
+
+
+.calendar-task {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  font-size: 0.8em;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%; /* Asegura que no exceda el ancho de la celda */
+  box-sizing: border-box;
+
+   &:hover {
+    background-color: rgba(var(--interactive-accent-rgb), 0.2);
+  }
+}
+
+.task-title {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.calendar-task:hover {
+  opacity: 0.9;
+}
+
+/* Adaptaciones responsive */
+@media screen and (max-width: 768px) {
+  .calendar-toolbar {
+    flex-wrap: wrap;
+    justify-content: center;
+    
+    .calendar-current-period {
+      order: 1;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    
+    .calendar-view-controls {
+      order: 2;
+    }
+    
+    .calendar-navigation {
+      order: 3;
+    }
+  }
+}

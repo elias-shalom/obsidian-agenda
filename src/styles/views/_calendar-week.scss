@@ -1,0 +1,99 @@
+@use "sass:color";
+@use '../variables' as *;
+
+.calendar-week-header {
+  display: flex;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+  
+  .calendar-weekday {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    font-weight: bold;
+    font-size: 0.9em;
+  }
+}
+
+.calendar-week-body {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.calendar-week-day-container {
+  flex: 1;
+  border: 1px solid var(--background-modifier-border);
+  margin: 4px;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  
+  .calendar-week-day-header {
+    background-color: rgba(var(--background-modifier-border-rgb), 0.2);
+    padding: 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--background-modifier-border);
+    flex-shrink: 0;
+    
+    .calendar-day-name {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    
+    .calendar-date {
+      font-size: 1.2em;
+    }
+  }
+  
+  .calendar-day-content {
+    flex-grow: 1;
+    overflow-y: visible;
+    padding: 8px;
+    display: flex; // Añadido para mejor control del espacio
+    flex-direction: column; // Organiza las tareas verticalmente
+    min-height: 0; // Permite que el contenedor se contraiga si es necesario
+  }
+  
+  &.calendar-today {
+    border: 2px solid var(--interactive-accent);
+    
+    .calendar-week-day-header {
+      background-color: rgba(var(--interactive-accent-rgb), 0.2);
+    }
+  }
+}
+
+/* Modificador para la vista semanal que activa el scroll solo cuando es necesario */
+.calendar-week-view, 
+.calendar-workweek-view {
+  .calendar-week-day-container {
+    .calendar-day-content {
+      overflow-y: auto; // Vuelve a 'auto' para controlar el scroll
+      max-height: none; // Elimina cualquier altura máxima
+      min-height: 0; // Permite contraerse si es necesario
+    }
+  }
+}
+
+/* Adaptaciones responsive para las vistas semanales */
+@media screen and (max-width: 768px) {
+  .calendar-week-day-container {
+    .calendar-week-day-header {
+      padding: 4px;
+      
+      .calendar-day-name {
+        font-size: 0.8em;
+      }
+      
+      .calendar-date {
+        font-size: 1em;
+      }
+    }
+    
+    .calendar-day-content {
+      padding: 4px;
+    }
+  }
+}

@@ -13,7 +13,7 @@ export class TimelineView extends BaseView {
 
   constructor(leaf: WorkspaceLeaf, private plugin: any, i18n: I18n) {
     super(leaf);
-    this.taskManager = new TaskManager(plugin.app);
+    this.taskManager = new TaskManager(plugin.app, i18n, this.plugin); // Inicializa TaskManager
     this.i18n = i18n;
   }
 
@@ -30,7 +30,7 @@ export class TimelineView extends BaseView {
   }
 
   async onOpen(): Promise<void> {
-    await this.setTasks(this.taskManager);
+    await this.getAllTasks(this.taskManager);
     await this.render(TIMELINE_VIEW_TYPE, { tasks: this.tasks }, this.i18n, this.plugin, this.leaf);
   }
 

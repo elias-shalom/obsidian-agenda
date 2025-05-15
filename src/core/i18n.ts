@@ -23,7 +23,35 @@ export class I18n {
     }
   }
 
-  t(key: string): string {
-    return this.translations[key] || key;
+  t(key: string, params?: Record<string, any>): string {
+    // Dividir la clave por puntos para navegar en la estructura jerárquica
+  const keys = key.split('.');
+  let result: any = this.translations;
+  
+  // Navegar a través del objeto de traducciones
+  for (const k of keys) {
+    if (result && result[k] !== undefined) {
+      result = result[k];
+    } else {
+      console.warn(`Translation key not found: ${key}`);
+      return key; // Devolver la clave si no se encuentra la traducción
+    }
+  }
+  
+  // Si el resultado no es un string, devolver la clave
+  if (typeof result !== 'string') {
+    console.warn(`Translation key does not resolve to a string: ${key}`);
+    return key;
+  }
+  
+  // Reemplazar los placeholders
+  let translation = result;
+  if (params) {
+    for (const [paramKey, paramValue] of Object.entries(params)) {
+      translation = translation.replace(new RegExp(`{${paramKey}}`, 'g'), String(paramValue));
+    }
+  }
+  
+  return translation;
   }
 }

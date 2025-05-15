@@ -1,0 +1,60 @@
+@use "sass:color";
+@use '../variables' as *;
+
+.calendar-time-column {
+  width: 60px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--background-modifier-border);
+  
+  .calendar-hour-label {
+    font-size: 0.85em;
+    color: var(--text-muted);
+  }
+}
+
+.calendar-day-column-header {
+  flex: 1;
+  text-align: center;
+  padding: 8px 0;
+  border-left: 1px solid var(--background-modifier-border);
+  min-width: 80px;
+
+  .calendar-day-name {
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+
+  .calendar-date {
+    font-size: 1.1em;
+  }
+
+  &.calendar-today {
+    background-color: var(--background-modifier-hover);
+    border: 1px solid var(--interactive-accent);
+  }
+}
+
+.calendar-day-column {
+  flex: 1;
+  border-left: 1px solid rgba(var(--background-modifier-border-rgb), 0.5);
+  min-width: 80px;
+  
+  &.calendar-today {
+    background-color: rgba(var(--background-modifier-hover-rgb), 0.2);
+  }
+}
+
+.calendar-hour-row {
+  display: flex;
+  min-height: 50px;
+  border-bottom: 1px solid rgba(var(--background-modifier-border-rgb), 0.5);
+}
+
+.calendar-hour-cell {
+  height: 100%;
+  padding: 2px 4px;
+  overflow: hidden;
+}

@@ -1,4 +1,6 @@
 import { OnCompletion, TaskPriority } from "../types/enums.ts";
+import { I18n } from "../core/i18n";
+import { RRule, rrulestr } from 'rrule';
 
 export class TaskSection {
   header: string; // Representa el encabezado de la tarea
@@ -95,7 +97,7 @@ export class TaskSection {
             values: [OnCompletion.Keep, OnCompletion.Delete] }
   };
 
-  constructor() {
+  constructor(private i18n: I18n) {
       // Inicializar las propiedades como cadenas vacías
       this.header = "";
       this.description = "";
@@ -125,14 +127,14 @@ export class TaskSection {
           this.taskData = result.taskData;
 
           // Establecer prioridad predeterminada si no se especificó
-          if (!this.taskData.priority) {
+          if (!this.taskData.priority && !this.taskData.priority_error) {
             this.taskData.priority = "normal";
           }
 
           this.blockLink = this.extractBlockLink(text);
       } catch (error) {
           // Si ocurre un error, inicializar todo como vacío
-          console.warn("Error al inicializar TaskSection:", error.message);
+          console.warn(this.i18n.t('errors.initializeTaskSection', { error: error.message }));
           this.header = "";
           this.description = "";
           this.tasksFields = [];
@@ -258,7 +260,7 @@ export class TaskSection {
               }
             } else {
               isValid = false;
-              errorMessage = `El ícono ${icon} no está seguido por una fecha válida o contiene texto adicional.`;
+              errorMessage = this.i18n.t('errors.invalidDate', { icon: icon });
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
@@ -272,7 +274,7 @@ export class TaskSection {
               extractedValue = iconConfig.name || "normal";
             } else {
               isValid = false;
-              errorMessage = `El ícono ${icon} no está seguido solo por espacios o tabulaciones.`;
+              errorMessage = this.i18n.t('errors.invalidPriority', { icon: icon });
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
@@ -289,7 +291,7 @@ export class TaskSection {
               }
             } else {
               isValid = false;
-              errorMessage = `El ícono ${icon} no está seguido por un valor válido de OnCompletion.`;
+              errorMessage = this.i18n.t('errors.invalidCompletion', { icon: icon });;
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
@@ -300,27 +302,43 @@ export class TaskSection {
             if (iconBlockedRegex.test(fieldText) ) {
               extractedValue = fieldText.substring(icon.length).trim();
               const dependencies = extractedValue.split(',').map(dep => dep.trim()).filter(dep => dep.length > 0);
-              console.log(dependencies); // Depuración: mostrar las dependencias extraídas
+              
               // Asignar como array en lugar de string
               if (dependencies.length > 0) {
                 taskData.dependsOn = dependencies;
               }
             } else {
               isValid = false;
-              errorMessage = `El ícono ${icon} no está una cadena de identificadores.`;
+              errorMessage = this.i18n.t('errors.invalidDependency', { icon: icon });
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
           case "recurrence":
-            // Reiniciar la expresión regular (debido a 'g')            
+            // ! Error en la recurrencia no invalida la tarea
+            // Reiniciar la expresión regular (debido a 'g')
             iconRecurrenceRegex.lastIndex = 0;
 
             if (iconRecurrenceRegex.test(fieldText)) {
-              // todo: extraer el valor de recurrencia
-              extractedValue =  fieldText.substring(icon.length).trim();
-            } else {
-              isValid = false;
-              errorMessage = `El ícono ${icon} no está seguido por un valor válido de recurrencia.`;
+              const recurrenceText = fieldText.substring(icon.length).trim();
+
+              try {
+                // Convertir texto de recurrencia al formato RRULE
+                const rruleText = this.convertToRRuleFormat(recurrenceText);               
+
+                if (rruleText) {
+                  // Intentar crear un objeto RRule para validar
+                  const rule = rrulestr(rruleText);
+                  // Si llegamos aquí, el patrón es válido
+                  extractedValue = recurrenceText;
+                } else {
+                  throw new Error("No se pudo convertir al formato RRULE");
+                }
+              } catch (e) {                
+                errorMessage = this.i18n.t('errors.invalidRecurrencePattern', { icon });
+                fieldText = `${fieldText} @${errorMessage}`;
+              }
+            } else {              
+              errorMessage = this.i18n.t('errors.invalidRecurrence', { icon });
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
@@ -345,7 +363,6 @@ export class TaskSection {
           // Si el campo es inválido, guardar el error en taskData
           const errorProperty = `${iconConfig.property || 'field'}_error`;
           taskData[errorProperty] = errorMessage;
-          errors.push(errorMessage); // Agregar al array de errores
           errors.push(errorMessage); // Agregar al array de errores
         }
       }
@@ -377,5 +394,116 @@ export class TaskSection {
       return blockLinkMatch[0]; // Devuelve el blockLink completo con el ^
     }
     return "";
+  }
+
+    /**
+   * Convierte el formato de texto de recurrencia de Obsidian a formato RRULE
+   * @param recurrenceText Texto de recurrencia en formato Obsidian (ejemplo: "every week")
+   * @returns Texto en formato RRULE o null si no se pudo convertir
+   */
+  private convertToRRuleFormat(recurrenceText: string): string | null {
+    // todo: Se debe de implementar un auto compelete para el texto de recurrencia
+    // todo: Ejemplo: every 2 weeks until 2023-12-31 count 5 by weekdays
+    try {
+      let frequency = "";
+      let interval = 1;
+      let until = "";
+      let count = 0;
+      let byDay = "";
+      
+      const text = recurrenceText.toLowerCase().trim();
+      
+      // Verificar que comience con "every"
+      if (!text.startsWith("every")) {
+        console.warn("El patrón de recurrencia debe comenzar con 'every'");
+        return null;
+      }
+      
+      // Validar formato con expresión regular
+      const validPatternRegex = /^every\s+(?:(\d+)\s+)?(day|days|week|weeks|month|months|year|years|weekday|weekend|monday|tuesday|wednesday|thursday|friday|saturday|sunday)(?:\s+.*)?$/i;
+      
+      if (!validPatternRegex.test(text)) {
+        console.warn("Formato de recurrencia inválido");
+        return null;
+      }
+      
+      // Extraer frecuencia básica usando palabras completas con límites de palabra
+      const timeWords = {
+        day: /\b(day|days)\b/,
+        week: /\b(week|weeks)\b/,
+        month: /\b(month|months)\b/,
+        year: /\b(year|years)\b/
+      };
+      
+      if (timeWords.day.test(text)) frequency = "DAILY";
+      else if (timeWords.week.test(text)) frequency = "WEEKLY";
+      else if (timeWords.month.test(text)) frequency = "MONTHLY";
+      else if (timeWords.year.test(text)) frequency = "YEARLY";
+      else {
+        // Si no es una frecuencia estándar, verificamos si es un día específico
+        // que se considera frecuencia semanal
+        const dayWords = /\b(weekday|weekend|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/;
+        if (dayWords.test(text)) {
+          frequency = "WEEKLY";
+        } else {
+          console.warn("Frecuencia no reconocida en el patrón de recurrencia");
+          return null;
+        }
+      }
+      
+      // Extraer intervalo (cada X días/semanas/etc)
+      const intervalMatch = text.match(/every\s+(\d+)\s+/);
+      if (intervalMatch && intervalMatch[1]) {
+        interval = parseInt(intervalMatch[1], 10);
+      }
+      
+      // Extraer hasta cuándo (until)
+      const untilMatch = text.match(/\buntil\s+(\d{4}-\d{2}-\d{2})\b/);
+      if (untilMatch && untilMatch[1]) {
+        const dateStr = untilMatch[1];
+        until = `UNTIL=${dateStr.replace(/-/g, "")}T000000Z`;
+      }
+      
+      // Extraer cuántas veces (count)
+      const countMatch = text.match(/\b(\d+)\s+times\b/);
+      if (countMatch && countMatch[1]) {
+        count = parseInt(countMatch[1], 10);
+      }
+      
+      // Extraer días específicos de la semana
+      const weekdays = {
+        monday: "MO",
+        tuesday: "TU",
+        wednesday: "WE",
+        thursday: "TH",
+        friday: "FR",
+        saturday: "SA",
+        sunday: "SU",
+        weekday: "MO,TU,WE,TH,FR",
+        weekend: "SA,SU"
+      };
+      
+      for (const [day, abbr] of Object.entries(weekdays)) {
+        // Usamos límites de palabra para evitar coincidencias parciales
+        const dayRegex = new RegExp(`\\b${day}\\b`, 'i');
+        if (dayRegex.test(text)) {
+          byDay = `BYDAY=${abbr}`;
+          break;
+        }
+      }
+      
+      // Construir la regla RRULE
+      let rule = `RRULE:FREQ=${frequency}`;
+      if (interval > 1) rule += `;INTERVAL=${interval}`;
+      if (until) rule += `;${until}`;
+      if (count > 0) rule += `;COUNT=${count}`;
+      if (byDay) rule += `;${byDay}`;
+      
+      //console.log(`Convertido: "${text}" → "${rule}"`);
+      return rule;
+    } catch (error) {
+      console.error("Error al convertir a formato RRULE:", error);
+      return null;
+    }
   }
 }

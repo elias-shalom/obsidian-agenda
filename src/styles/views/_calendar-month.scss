@@ -1,0 +1,106 @@
+@use "sass:color";
+@use '../variables' as *;
+
+/* Estilos para el número de semana */
+.calendar-month-header-row {
+  display: flex;
+  align-items: center;
+}
+
+.calendar-month-week-number-header {
+  display: grid;
+  width: 40px;
+  text-align: center;
+  //font-size: 0.8em;
+  font-weight: bold;
+  //margin-right: 5px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--background-modifier-border); 
+  color: $text-color;
+  margin-bottom: 8px;
+}
+
+.calendar-month-week {
+  display: flex;
+  width: 100%;
+  min-height: 120px; // Aumentar la altura mínima
+  margin-bottom: 5px; // Agregar espacio entre semanas
+}
+
+.calendar-month-week-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: auto;
+  font-size: 0.8em;
+  margin-right: 5px;
+  
+  /* Aplicar estilos similares a las celdas de días */
+  border: 1px solid var(--background-modifier-border);
+  background-color: rgba($primary-bg-color, 0.6);
+  border-radius: 4px;
+  padding: 8px 0;
+  transition: background-color 0.2s ease;
+}
+
+.calendar-month-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding-bottom: 8px;
+  flex: 1;
+}
+
+.calendar-month-grid {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.calendar-month-day-header {
+  display: flex;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+.calendar-month-days-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  flex: 1;
+  min-height: 120px; // Mantener consistencia con .calendar-week
+}
+
+.calendar-other-month {
+  opacity: 0.5;
+  background-color: var(--background-secondary);
+}
+
+.calendar-month-day {
+  border: 1px solid var(--background-modifier-border);
+  min-height: 120px; // Aumentar para mejor proporción
+  padding: 8px; // Aumentar el padding interno
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 1.2; // Añadir proporción de aspecto (opcional)
+  transition: background-color 0.2s ease; // Añadir transición suave
+}
+
+.calendar-month-day-number {
+  font-weight: bold;
+  margin-bottom: 8px; // Más espacio después del número
+  font-size: 1.1em; // Número más grande
+  color: $text-color; // Usar la variable de color existente
+}
+
+.calendar-month-day-content {
+  overflow-y: auto;
+  flex-grow: 1;
+  // Aumentar o eliminar el max-height para evitar compresión
+  max-height: 100px; 
+}

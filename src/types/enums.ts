@@ -31,7 +31,7 @@ export enum OnCompletion {
 export enum TaskPriority {
   Lowest = "⏬",
   Low = "🔽", 
-  Normal = "normal", // Sin ícono específico
+  Normal = "  ", // Sin ícono específico
   Medium = "🔼",
   High = "⏫",
   Highest = "🔺"
@@ -51,6 +51,13 @@ export enum TaskMisc {
   ID = "🆔", 
   Blocked = "⛔",
   Completion = "🏁"
+}
+
+export enum CalendarViewType {
+  Month = 'month',
+  Week = 'week',
+  WorkWeek = 'workweek',
+  Day = 'day'
 }
 
 // Otras enumeraciones pueden ir aquí

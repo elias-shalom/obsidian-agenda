@@ -137,6 +137,47 @@
   opacity: 0.9;
 }
 
+/* Estilos para las vistas semanales y diarias */
+.calendar-week-view, 
+.calendar-workweek-view, 
+.calendar-day-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.calendar-week-header, 
+.calendar-day-header {
+  display: flex;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+.calendar-week-hour-header, 
+.calendar-day-hour-header {
+  height: 50px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.calendar-week-body, 
+.calendar-day-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Estilos para las vistas semanales (sin horas) */
+.calendar-week-view, 
+.calendar-workweek-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+
 /* Adaptaciones responsive */
 @media screen and (max-width: 768px) {
   .calendar-toolbar {

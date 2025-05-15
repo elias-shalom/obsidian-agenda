@@ -9,18 +9,20 @@ import { CalendarViewType } from '../types/enums';
 
 export const CALENDAR_VIEW_TYPE = 'calendar-view';
 
-export class CalendarView extends BaseView {
-  private tasks: ITask[] = []; 
-  private currentDate: DateTime = DateTime.now();
-  private viewType: CalendarViewType = CalendarViewType.Month;
-  
-  constructor(leaf: WorkspaceLeaf, private plugin: any, private i18n: I18n, private taskManager: TaskManager) {
+export abstract class CalendarView extends BaseView {
+  protected tasks: ITask[] = []; 
+  protected currentDate: DateTime = DateTime.now();
+  //private viewType: CalendarViewType = CalendarViewType.Month;
+
+  constructor(leaf: WorkspaceLeaf, protected plugin: any, protected i18n: I18n, protected taskManager: TaskManager) {
     super(leaf);
   }
 
-  getViewType(): string {
-    return CALENDAR_VIEW_TYPE;
-  }
+  // Método que todas las vistas derivadas deben implementar
+  protected abstract generateViewData(): any;
+  
+  // Método común para obtener el tipo de vista
+  abstract getViewType(): string;
 
   getDisplayText(): string {
     return this.i18n.t("calendar_view_title");
@@ -32,18 +34,18 @@ export class CalendarView extends BaseView {
 
   async onOpen(): Promise<void> {
     // Intentar recuperar la preferencia de vista del usuario
-    const savedViewType = localStorage.getItem('calendar_view_type');
-    if (savedViewType && Object.values(CalendarViewType).includes(savedViewType as CalendarViewType)) {
+    // const savedViewType = localStorage.getItem('calendar_view_type');
+    /*if (savedViewType && Object.values(CalendarViewType).includes(savedViewType as CalendarViewType)) {
       this.viewType = savedViewType as CalendarViewType;
-    }
+    }*/
     
     this.tasks = await this.getAllTasks(this.taskManager);
     await this.refreshView();
   }
 
-  private async refreshView(): Promise<void> {
+  protected async refreshView(): Promise<void> {
     // Preparamos los datos según el tipo de vista actual
-    let calendarData;
+    /*let calendarData;
     
     switch (this.viewType) {
       case CalendarViewType.Month:
@@ -60,89 +62,19 @@ export class CalendarView extends BaseView {
         break;
       default:
         calendarData = this.generateMonthData();
-    }
+    }*/
     
     const viewData = {
       tasks: this.tasks,
       currentDate: this.currentDate,
-      calendar: calendarData,
-      viewType: this.viewType
+      calendar: this.generateViewData()//calendarData,
+      //viewType: this.viewType
     };
     
-    await this.render(CALENDAR_VIEW_TYPE, viewData, this.i18n, this.plugin, this.leaf);
+    await this.render(this.getViewType(), viewData, this.i18n, this.plugin, this.leaf);
   }
 
-  /**
-   * Genera datos para la vista mensual del calendario
-   */
-  private generateMonthData(): any {
-    const startOfMonth = this.currentDate.startOf('month');
-    const endOfMonth = this.currentDate.endOf('month');
-    
-    // Comienza desde el primer día de la semana que contiene el primer día del mes
-    let startDate = startOfMonth.startOf('week');
-    
-    // Termina en el último día de la semana que contiene el último día del mes
-    let endDate = endOfMonth.endOf('week');
-    
-    // Define el tipo de datos para los días
-    type DayData = {
-      date: DateTime;
-      isCurrentMonth: boolean;
-      isToday: boolean;
-      dayOfMonth: number;
-      tasksForDay: ITask[];
-    };
-    
-    // Define el tipo para una semana con su número
-    type WeekData = {
-      days: DayData[];
-      weekNumber: number;
-    };
-    
-    // Genera el array de fechas
-    const weeks: WeekData[] = [];
-    let currentWeekDays: DayData[] = [];
-    let currentDay = startDate;
-    
-    while (currentDay <= endDate) {
-      // Añade los datos del día
-      const dayData: DayData = {
-        date: currentDay,
-        isCurrentMonth: currentDay.month === startOfMonth.month,
-        isToday: currentDay.hasSame(DateTime.now(), 'day'),
-        dayOfMonth: currentDay.day,
-        tasksForDay: this.getTasksForDate(currentDay)
-      };
-      
-      currentWeekDays.push(dayData);
-      
-      // Comienza una nueva semana si hemos llegado al final de una semana
-      if (currentWeekDays.length === 7) {
-        // Obtiene el número de semana del primer día de la semana
-        const weekNumber = currentWeekDays[0].date.weekNumber;
-        
-        // Añade la semana completa con su número
-        weeks.push({
-          days: [...currentWeekDays],
-          weekNumber: weekNumber
-        });
-        
-        currentWeekDays = [];
-      }
-      
-      // Avanza al siguiente día
-      currentDay = currentDay.plus({ days: 1 });
-    }
-    
-    return {
-      viewType: CalendarViewType.Month,
-      weeks: weeks,
-      monthName: startOfMonth.toFormat('MMMM yyyy'),
-      dayNames: this.getLocalizedDayNames(),
-      periodName: startOfMonth.toFormat('MMMM yyyy')
-    };
-  }
+ 
 
   /**
    * Genera datos para la vista semanal o de semana laboral
@@ -249,7 +181,7 @@ export class CalendarView extends BaseView {
   /**
    * Formatea una hora en formato 12 horas con AM/PM
    */
-  private formatHour(hour: number): string {
+  protected formatHour(hour: number): string {
     // Usar Luxon para formatear la hora
     return DateTime.fromObject({ hour }).toFormat('h a');
   }
@@ -257,7 +189,7 @@ export class CalendarView extends BaseView {
   /**
    * Obtiene los nombres localizados de los días de la semana
    */
-  private getLocalizedDayNames(): string[] {
+  protected getLocalizedDayNames(): string[] {
     return [
       this.i18n.t('day_sun'),
       this.i18n.t('day_mon'),
@@ -272,7 +204,7 @@ export class CalendarView extends BaseView {
   /**
    * Gets tasks for a specific date
    */
-  private getTasksForDate(date: DateTime): ITask[] {
+  protected getTasksForDate(date: DateTime): ITask[] {
     return this.tasks.filter(task => {
       if (!task.dueDate) return false;
       
@@ -287,7 +219,7 @@ export class CalendarView extends BaseView {
 
   /**
    * Cambia el tipo de vista y refresca la visualización
-   */
+
   private changeViewType(newViewType: CalendarViewType): void {
     this.viewType = newViewType;
     
@@ -296,10 +228,20 @@ export class CalendarView extends BaseView {
     
     this.refreshView();
   }
+       */
+
+  // Métodos de navegación común que cada vista sobrescribirá según necesite
+  protected abstract navigateToPrevious(): void;
+  protected abstract navigateToNext(): void;
+
+  // Método que todas las vistas utilizarán para ir a la fecha actual
+  protected navigateToToday(): void {
+    this.currentDate = DateTime.now();
+    this.refreshView();
+  }
 
   /**
-   * Navega al período anterior según el tipo de vista actual
-   */
+   * Navega al período anterior según el tipo de vista actual   
   private navigateToPrevious(): void {
     switch (this.viewType) {
       case CalendarViewType.Month:
@@ -318,7 +260,7 @@ export class CalendarView extends BaseView {
 
   /**
    * Navega al período siguiente según el tipo de vista actual
-   */
+
   private navigateToNext(): void {
     switch (this.viewType) {
       case CalendarViewType.Month:
@@ -333,7 +275,7 @@ export class CalendarView extends BaseView {
         break;
     }
     this.refreshView();
-  }
+  }*/
 
   /**
    * Sobrescribe el método de BaseView para registrar helpers específicos de CalendarView
@@ -395,7 +337,7 @@ export class CalendarView extends BaseView {
     const prevButton = container.querySelector('.calendar-prev');
     const nextButton = container.querySelector('.calendar-next');
     const todayButton = container.querySelector('.calendar-today');
-    const viewTypeSelect = container.querySelector('.calendar-view-type') as HTMLSelectElement;
+    //const viewTypeSelect = container.querySelector('.calendar-view-type') as HTMLSelectElement;
     
     if (prevButton) {
       prevButton.addEventListener('click', () => {
@@ -410,23 +352,49 @@ export class CalendarView extends BaseView {
     }
     
     if (todayButton) {
-      todayButton.addEventListener('click', () => {
+      todayButton.addEventListener('click', () => this.navigateToToday());
+      /*todayButton.addEventListener('click', () => {
         this.currentDate = DateTime.now();
         this.refreshView();
-      });
+      });*/
     }
     
     // Event listener para el selector de tipo de vista
-    if (viewTypeSelect) {
+    /*if (viewTypeSelect) {
       // Establecer el valor actual
       viewTypeSelect.value = this.viewType;
       
       viewTypeSelect.addEventListener('change', () => {
         this.changeViewType(viewTypeSelect.value as CalendarViewType);
       });
+    }*/
+
+    const monthViewButton = container.querySelector('#month-view-button');
+    const weekViewButton = container.querySelector('#week-view-button');
+    const dayViewButton = container.querySelector('#day-view-button');
+    
+    // Botón de vista mensual
+    if (monthViewButton) {
+      monthViewButton.addEventListener('click', () => {
+        this.switchToViewType(CalendarViewType.Month);
+      });
+    }
+    
+    // Botón de vista semanal
+    if (weekViewButton) {
+      weekViewButton.addEventListener('click', () => {
+        this.switchToViewType(CalendarViewType.Week);
+      });
+    }
+    
+    // Botón de vista diaria
+    if (dayViewButton) {
+      dayViewButton.addEventListener('click', () => {
+        this.switchToViewType(CalendarViewType.Day);
+      });
     }
 
-    // Add event listeners for task items to open task details
+  // Event listeners para tareas
     const taskItems = container.querySelectorAll('.calendar-task');
     taskItems.forEach(item => {
       item.addEventListener('click', (e) => {
@@ -439,6 +407,42 @@ export class CalendarView extends BaseView {
         }
       });
     });
+  }
+
+  /**
+   * Cambia el tipo de vista actual
+   * @param viewType El tipo de vista al que cambiar
+   */
+  private switchToViewType(viewType: CalendarViewType): void {
+    // Guardar preferencia del usuario
+    localStorage.setItem('calendar_view_type', viewType);
+    
+    // Determinar el ID de vista según el tipo
+    let viewId;
+    switch (viewType) {
+      case CalendarViewType.Month:
+        viewId = 'calendar-month-view';
+        break;
+      case CalendarViewType.Week:
+        viewId = 'calendar-week-view';
+        break;
+      case CalendarViewType.WorkWeek:
+        viewId = 'calendar-work-week-view';
+        break;
+      case CalendarViewType.Day:
+        viewId = 'calendar-day-view';
+        break;
+      default:
+        viewId = 'month-view';
+    }
+    
+    // Usar la factory para crear la vista correcta
+    if (this.plugin && this.plugin.app) {
+      const leaf = this.plugin.app.workspace.activeLeaf;
+      if (leaf) {
+        leaf.setViewState({ type: viewId });
+      }
+    }
   }
 
   async onClose(): Promise<void> {

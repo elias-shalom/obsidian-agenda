@@ -65,6 +65,14 @@
   }
 }
 
+.calendar-week-days-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  flex: 1;
+  height: calc(100% - 20px);
+  min-height: 120px; // Mantener consistencia con .calendar-week
+}
+
 /* Modificador para la vista semanal que activa el scroll solo cuando es necesario */
 .calendar-week-view, 
 .calendar-workweek-view {

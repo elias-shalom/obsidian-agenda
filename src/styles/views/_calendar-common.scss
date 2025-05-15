@@ -17,6 +17,17 @@
   padding: 5px 0;
 }
 
+/* Adaptar período actual en toolbar */
+.calendar-current-period h2 {
+  margin: 0;
+  font-size: 1.2em;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+}
+
 /* Estilos para el selector de vista de calendario */
 .calendar-view-controls {
   margin: 0 10px;
@@ -94,8 +105,6 @@
   background-color: var(--background-modifier-hover);
   border: 1px solid var(--interactive-accent);
 }
-
-
 
 .calendar-task {
   background-color: var(--interactive-accent);

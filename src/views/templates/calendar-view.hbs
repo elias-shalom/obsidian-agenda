@@ -81,7 +81,7 @@
     </div>
     
     <div class="calendar-week-body">
-      <div class="calendar-days-row">
+      <div class="calendar-week-days-row">
         {{#each calendar.days}}
           <div class="calendar-week-day-container {{#if isToday}}calendar-today{{/if}}" data-date="{{toISODate dateValue}}">
             <div class="calendar-week-day-header">
@@ -115,7 +115,7 @@
     </div>
     
     <div class="calendar-week-body">
-      <div class="calendar-days-row">
+      <div class="calendar-week-days-row">
         {{#each calendar.days}}
           <div class="calendar-week-day-container {{#if isToday}}calendar-today{{/if}}" data-date="{{toISODate dateValue}}">
             <div class="calendar-week-day-header">

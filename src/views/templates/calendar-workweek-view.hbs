@@ -3,6 +3,7 @@
     <div class="calendar-current-period">
       <h2>{{calendar.periodName}}</h2>
     </div>
+    
     <div class="calendar-nav-container">
       <div class="calendar-view-selector">
         <select id="calendar-view-dropdown" class="calendar-view-dropdown">
@@ -26,10 +27,9 @@
       </div>
     </div>
   </div>
-
-  {{!-- Vista semanal --}}
-  {{#equals calendar.viewType "week"}}
-  <div class="calendar-week-view">
+  {{!-- Vista de semana laboral --}}
+  {{#equals calendar.viewType "workweek"}}
+  <div class="calendar-workweek-view">
     <div class="calendar-week-header">
       {{#each calendar.dayNames}}
         <div class="calendar-weekday">{{this}}</div>

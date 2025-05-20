@@ -2,6 +2,7 @@ export { OverviewView, OVERVIEW_VIEW_TYPE } from './overview-view';
 export { CalendarMonthView, CALENDAR_MONTH_VIEW_TYPE } from './calendar-month-view';
 export { CalendarWeekView, CALENDAR_WEEK_VIEW_TYPE } from './calendar-week-view';
 export { CalendarDayView, CALENDAR_DAY_VIEW_TYPE } from './calendar-day-view';
+export { CalendarWorkWeekView, CALENDAR_WORK_WEEK_VIEW_TYPE } from './calendar-workweek-view';
 export { ListView, LIST_VIEW_TYPE } from './list-view';
 export { CalendarView, CALENDAR_VIEW_TYPE } from './calendar-view';
 export { TimelineView, TIMELINE_VIEW_TYPE } from './timeline-view';

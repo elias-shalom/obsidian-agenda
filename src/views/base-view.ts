@@ -91,7 +91,7 @@ export abstract class BaseView extends ItemView {
     return rootFolders;
   }
 
-  private registerHandlebarsHelpers(i18n: any): void {
+  protected registerHandlebarsHelpers(i18n: any): void {
     // Si ya están registrados, no hacer nada
     if (this.helpersRegistered) return;
     
@@ -108,7 +108,7 @@ export abstract class BaseView extends ItemView {
    * Registra todos los helpers de Handlebars de una sola vez
    * @param i18n Servicio de internacionalización
    */
-  private registerCommonHelpers(i18n: any): void {
+  protected registerCommonHelpers(i18n: any): void {
     
     // Helper para traducción
     Handlebars.registerHelper("t", (key: string) => i18n.t(key));

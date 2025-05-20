@@ -3,22 +3,28 @@
     <div class="calendar-current-period">
       <h2>{{calendar.periodName}}</h2>
     </div>
-
-    <div class="calendar-buttons">
-      <button id="month-view-button">{{t "month_view"}}</button>
-      <button id="week-view-button">{{t "week_view"}}</button>
-      <button id="day-view-button">{{t "day_view"}}</button>
-  </div>
-    <div class="calendar-navigation">
-      <button class="calendar-prev" aria-label="{{t 'previous'}}">
-        <span class="icon">←</span>
-      </button>
-      <button class="calendar-today" aria-label="{{t 'today'}}">
-        {{t 'today'}}
-      </button>
-      <button class="calendar-next" aria-label="{{t 'next'}}">
-        <span class="icon">→</span>
-      </button>
+    
+    <div class="calendar-nav-container">
+      <div class="calendar-view-selector">
+        <select id="calendar-view-dropdown" class="calendar-view-dropdown">
+          <option value="month" {{#equals calendar.viewType "month"}}selected{{/equals}}>{{t "month_view"}}</option>
+          <option value="week" {{#equals calendar.viewType "week"}}selected{{/equals}}>{{t "week_view"}}</option>
+          <option value="workweek" {{#equals calendar.viewType "workweek"}}selected{{/equals}}>{{t "workweek_view"}}</option>
+          <option value="day" {{#equals calendar.viewType "day"}}selected{{/equals}}>{{t "day_view"}}</option>
+        </select>
+      </div>
+      
+      <div class="calendar-navigation">
+        <button class="calendar-prev" aria-label="{{t 'previous'}}">
+          <span class="icon">←</span>
+        </button>
+        <button class="calendar-today" aria-label="{{t 'today'}}">
+          {{t 'today'}}
+        </button>
+        <button class="calendar-next" aria-label="{{t 'next'}}">
+          <span class="icon">→</span>
+        </button>
+      </div>
     </div>
   </div>
   {{!-- Vista diaria --}}
@@ -28,7 +34,7 @@
       <div class="calendar-time-column calendar-day-hour-header"></div>
       <div class="calendar-day-column-header {{#if calendar.isToday}}calendar-today{{/if}}">
         <div class="calendar-day-name">{{calendar.dayName}}</div>
-        <div class="calendar-date">{{calendar.date.day}}</div>
+        <div class="calendar-date">{{getDayOfMonth calendar.date}}</div>
       </div>
     </div>
     
@@ -39,7 +45,7 @@
             <div class="calendar-hour-label">{{formattedHour}}</div>
           </div>
           
-          <div class="calendar-day-column {{#if ../calendar.isToday}}calendar-today{{/if}}" data-date="{{../calendar.date.toISODate}}" data-hour="{{hour}}">
+          <div class="calendar-day-column {{#if ../calendar.isToday}}calendar-today{{/if}}" data-date="{{toISODate ../calendar.date}}" data-hour="{{hour}}">
             <div class="calendar-hour-cell">
               {{#each tasks}}
                 <div class="calendar-task" 

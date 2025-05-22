@@ -28,65 +28,63 @@ export class CalendarWeekView extends CalendarView {
     return 'calendar-check';
   }
 
- /**
-   * Genera datos para la vista mensual del calendario
+  /**
+   * Genera datos para la vista semanal del calendario
    */
-  protected generateViewData(workWeekOnly: boolean = false): any {
-    // Ajustar la semana actual según la fecha seleccionada
-       const startOfWeek = this.currentDate.startOf('week');
-       
-       // Para la vista de semana laboral, comenzamos en lunes (weekday 1 en Luxon)
-       const weekStartDate = workWeekOnly 
-         ? startOfWeek.plus({ days: 1 }) // Comenzar en lunes (Luxon: domingo=0, lunes=1)
-         : startOfWeek;
-       
-       const daysToGenerate = workWeekOnly ? 5 : 7;
-       
-       // Define a type for day data
-       type WeekDayData = {
-         date: DateTime;
-         isToday: boolean;
-         dayOfweek: number;
-         dayOfWeek: number;
-         dayName: string;
-         formattedDate: string;
-         tasksForDay: ITask[];
-       };
-       
-       // Prepara los datos de los días
-       const days: WeekDayData[] = [];
-       let currentDay = weekStartDate;
-       
-       for (let i = 0; i < daysToGenerate; i++) {
-         const dayTasks = this.getTasksForDate(currentDay);
-         
-         days.push({
-           date: currentDay,
-           isToday: currentDay.hasSame(DateTime.now(), 'day'),
-           dayOfweek: currentDay.day,
-           dayOfWeek: currentDay.weekday,
-           dayName: currentDay.toFormat('ccc'),
-           formattedDate: currentDay.toFormat('ccc d'),
-           tasksForDay: dayTasks
-         });
-         
-         currentDay = currentDay.plus({ days: 1 });
-       }
-       
-       // Calcular el nombre del periodo (rango de fechas)
-       const weekEnd = weekStartDate.plus({ days: daysToGenerate - 1 });
-       const periodName = `${weekStartDate.toFormat('MMM d')} - ${weekEnd.toFormat('MMM d, yyyy')}`;
-       
-       return {
-         viewType: workWeekOnly ? CalendarViewType.WorkWeek : CalendarViewType.Week,
-         weekNumber: weekStartDate.weekNumber,
-         days: days,
-         dayNames: workWeekOnly 
-           ? this.getLocalizedDayNames().slice(1, 6) // Solo lunes a viernes
-           : this.getLocalizedDayNames(),
-         periodName: periodName,
-         workWeekOnly: workWeekOnly
-       };
+  protected generateViewData(): any {
+    // Obtener la fecha de inicio de la semana actual
+    const startOfWeek = this.currentDate.startOf('week');
+    
+    // Siempre generamos los 7 días de la semana
+    const daysToGenerate = 7;
+    
+    // Obtener los nombres de los días localizados
+    const localizedDayNames = this.getLocalizedDayNames();
+    
+    // Define a type for day data
+    type WeekDayData = {
+      date: DateTime;
+      isToday: boolean;
+      dayOfMonth: number;
+      dayOfWeek: number;
+      dayName: string;
+      formattedDate: string;
+      tasksForDay: ITask[];
+    };
+    
+    // Prepara los datos de los días
+    const days: WeekDayData[] = [];
+    let currentDay = startOfWeek;
+    
+    for (let i = 0; i < daysToGenerate; i++) {
+      const dayTasks = this.getTasksForDate(currentDay);
+      const dayIndex = currentDay.weekday % 7; // Asegura que el índice sea 0-6
+      
+      days.push({
+        date: currentDay,
+        isToday: currentDay.hasSame(DateTime.now(), 'day'),
+        dayOfMonth: currentDay.day,
+        dayOfWeek: currentDay.weekday,
+        // Usar el nombre localizado del día en lugar de toFormat()
+        dayName: localizedDayNames[dayIndex],
+        formattedDate: `${localizedDayNames[dayIndex]} ${currentDay.day}`,
+        tasksForDay: dayTasks
+      });
+      
+      currentDay = currentDay.plus({ days: 1 });
+    }
+    
+    // Calcular el nombre del periodo (rango de fechas)
+    const weekEnd = startOfWeek.plus({ days: daysToGenerate - 1 });
+    const periodName = `${startOfWeek.toFormat('MMM d')} - ${weekEnd.toFormat('MMM d, yyyy')}`;
+    
+    return {
+      viewType: CalendarViewType.Week,
+      weekNumber: startOfWeek.weekNumber,
+      days: days,
+      dayNames: localizedDayNames,
+      periodName: periodName
+    };
   }
 
   protected navigateToPrevious(): void {
@@ -97,6 +95,52 @@ export class CalendarWeekView extends CalendarView {
   protected navigateToNext(): void {
     this.currentDate = this.currentDate.plus({ weeks: 1 });
     this.refreshView();
+  }
+
+  /**
+   * Sobrescribe el método de CalendarView para implementar event listeners específicos
+   * @param container Contenedor donde se aplican los listeners
+   * @param data Datos utilizados para renderizar la vista
+   */
+  protected setupViewSpecificEventListeners(container: HTMLElement, data: any): void {
+    // Primero ejecuta los event listeners comunes
+    super.setupViewSpecificEventListeners(container, data);
+    
+    // Añadir manejo del selector de estilo de cuadrícula
+    const gridStyleSelector = container.querySelector('#calendar-grid-style') as HTMLSelectElement;
+    
+    if (gridStyleSelector) {
+      // Manejar cambios en el selector
+      gridStyleSelector.addEventListener('change', () => {
+        const selectedStyle = gridStyleSelector.value;
+        const weekDaysRow = container.querySelector('.calendar-week-days-row');
+        
+        if (weekDaysRow) {
+          // Eliminar clases de estilo anteriores
+          for (let i = 1; i <= 11; i++) {
+            weekDaysRow.classList.remove(`style${i}`);
+          }
+          
+          // Aplicar nuevo estilo si no es el predeterminado
+          if (selectedStyle !== 'default') {
+            weekDaysRow.classList.add(selectedStyle);
+          }
+          
+          // Guardar la preferencia del usuario
+          localStorage.setItem('calendar-grid-style', selectedStyle);
+        }
+      });
+      
+      // Restaurar preferencia guardada al cargar la vista
+      const savedStyle = localStorage.getItem('calendar-grid-style');
+      if (savedStyle) {
+        gridStyleSelector.value = savedStyle;
+        
+        // Disparar el evento change manualmente para aplicar el estilo
+        const event = new Event('change');
+        gridStyleSelector.dispatchEvent(event);
+      }
+    }
   }
 
   async onClose(): Promise<void> {

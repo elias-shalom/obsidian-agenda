@@ -79,7 +79,7 @@
 
 .calendar-today {
   background-color: var(--background-modifier-hover);
-  border: 1px solid var(--interactive-accent);
+  border: 2px solid $today-border-color; 
 }
 
 .calendar-task {
@@ -88,13 +88,14 @@
   border-radius: 4px;
   padding: 2px 4px;
   margin-bottom: 2px;
-  font-size: 0.8em;
+  font-size: 0.85em; // Aumentado de 0.8em a 0.85em
   cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%; /* Asegura que no exceda el ancho de la celda */
   box-sizing: border-box;
+  max-height: 24px; // Añadido para acomodar el texto más grande
 
    &:hover {
     opacity: 0.8;
@@ -153,9 +154,72 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+
+  // Estilos comunes para los selectores
+  .calendar-view-selector,
+  .calendar-grid-style-selector {
+    margin-right: 8px;
+  }
+
+  // Estilos comunes para los dropdowns
+  .calendar-view-dropdown,
+  .calendar-grid-style-dropdown {
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-primary);
+    color: var(--text-normal);
+    font-size: 0.9em;
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--background-modifier-hover);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--interactive-accent);
+    }
+  }
+
+  // Estilo para los botones de navegación
+  .calendar-navigation {
+    display: flex;
+    gap: 4px;
+
+    button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background-color: var(--background-primary);
+      border: 1px solid var(--background-modifier-border);
+      color: var(--text-normal);
+      cursor: pointer;
+
+      &:hover, &:focus {
+        background-color: $hover-bg-color !important; // Fondo más claro al pasar el ratón
+        color: #fff !important; // Texto blanco
+        border: 1px solid $active-border-color !important; // Borde visible al pasar el ratón
+        outline: none; // Elimina el contorno del focus
+      }
+
+      &:focus-visible {
+        box-shadow: 0 0 0 2px rgba($active-border-color, 0.5); // Sutil indicador de focus para accesibilidad
+      }
+
+      &:active {
+        background-color: var(--background-modifier-active);
+      }
+    }
+  }
 }
 
-.calendar-view-dropdown {
+/* Estilos existentes para el dropdown de vista */
+.calendar-view-dropdown,
+.calendar-grid-style-dropdown {
   padding: 6px 8px;
   border-radius: 4px;
   border: 1px solid var(--background-modifier-border);
@@ -172,37 +236,36 @@
     border: 1px solid $active-border-color !important; // Borde visible al pasar el ratón
     outline: none; // Elimina el contorno del focus
   }
-  
+
   &:focus-visible {
     box-shadow: 0 0 0 2px rgba($active-border-color, 0.5); // Sutil indicador de focus para accesibilidad
   }
 }
 
-
-.calendar-view-selector {
+.calendar-view-selector,
+.calendar-grid-style-selector {
   margin-right: 16px;
   display: flex;
   align-items: center;
 }
-
 
 /* Adaptaciones responsive */
 @media screen and (max-width: 768px) {
   .calendar-toolbar {
     flex-wrap: wrap;
     justify-content: center;
-    
+
     .calendar-current-period {
       order: 1;
       width: 100%;
       text-align: center;
       margin-bottom: 8px;
     }
-    
+
     .calendar-view-controls {
       order: 2;
     }
-    
+
     .calendar-navigation {
       order: 3;
     }

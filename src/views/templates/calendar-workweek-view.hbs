@@ -5,6 +5,24 @@
     </div>
     
     <div class="calendar-nav-container">
+      {{#equals calendar.viewType "workweek"}}
+      <div class="calendar-grid-style-selector">
+        <select id="calendar-grid-style" class="calendar-grid-style-dropdown">
+          <option value="default">{{t "default_grid"}}</option>
+          <option value="style1">{{t "grid_style1"}}</option>
+          <option value="style2">{{t "grid_style2"}}</option>
+          <option value="style3">{{t "grid_style3"}}</option>
+          <option value="style4">{{t "grid_style4"}}</option>
+          <option value="style5">{{t "grid_style5"}}</option>
+          <option value="style6">{{t "grid_style6"}}</option>
+          <option value="style7">{{t "grid_style7"}}</option>
+          <option value="style8">{{t "grid_style8"}}</option>
+          <option value="style9">{{t "grid_style9"}}</option>
+          <option value="style10">{{t "grid_style10"}}</option>
+          <option value="style11">{{t "grid_style11"}}</option>
+        </select>
+      </div>
+      {{/equals}}
       <div class="calendar-view-selector">
         <select id="calendar-view-dropdown" class="calendar-view-dropdown">
           <option value="month" {{#equals calendar.viewType "month"}}selected{{/equals}}>{{t "month_view"}}</option>
@@ -13,7 +31,6 @@
           <option value="day" {{#equals calendar.viewType "day"}}selected{{/equals}}>{{t "day_view"}}</option>
         </select>
       </div>
-      
       <div class="calendar-navigation">
         <button class="calendar-prev" aria-label="{{t 'previous'}}">
           <span class="icon">←</span>
@@ -30,30 +47,25 @@
   {{!-- Vista de semana laboral --}}
   {{#equals calendar.viewType "workweek"}}
   <div class="calendar-workweek-view">
-    <div class="calendar-week-header">
-      {{#each calendar.dayNames}}
-        <div class="calendar-weekday">{{this}}</div>
-      {{/each}}
-    </div>
-    
     <div class="calendar-week-body">
       <div class="calendar-week-days-row">
         {{#each calendar.days}}
           <div class="calendar-week-day-container {{#if isToday}}calendar-today{{/if}}" data-date="{{toISODate dateValue}}">
             <div class="calendar-week-day-header">
               <div class="calendar-day-name">{{dayName}}</div>
-              <div class="calendar-date">{{dayOfMonth}}</div>
+              
             </div>
             <div class="calendar-day-content">
               {{#each tasksForDay}}
                 <div class="calendar-task" 
                      data-file-path="{{filePath}}" 
                      data-line-number="{{lineNumber}}"
-                     title="{{description}}">
+                     title="{{fileBasename}}:{{lineNumber}} - {{description}}">
                   <span class="task-title">{{description}}</span>
                 </div>
               {{/each}}
             </div>
+            <div class="calendar-date">{{dayOfMonth}}</div>
           </div>
         {{/each}}
       </div>

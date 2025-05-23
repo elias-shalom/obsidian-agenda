@@ -8,6 +8,8 @@ export interface ITask {
   link: { path: string }; // Enlace al archivo de la tarea  
   lineNumber?: number; // Número de línea donde se encuentra la tarea
   status: string; //Status;
+  statusIcon: string; //StatusIcon;
+  statusText: string; //StatusText;
   tags: string[];
   priority: string; //Priority; // Prioridad de la tarea (⏬|⏫|🔼|🔽|🔺 o por defecto "C")
   createdDate: DateTime | null; // Fecha de creación (➕)
@@ -25,6 +27,7 @@ export interface ITask {
   fileName: string;
   fileBasename: string;
   fileExtension: string;
+  rootFolder: string; // Carpeta raíz del archivo
   header: string; // Representa el encabezado de la tarea
   description: string; // Representa la descripción de la tarea
   tasksFields: string[]; // Representa los campos específicos de la tarea como un arreglo de strings

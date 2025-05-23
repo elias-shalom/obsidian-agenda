@@ -1,8 +1,8 @@
 import { App, Plugin, WorkspaceLeaf} from "obsidian";
 import { I18n } from "./i18n";
-import { OverviewView, OVERVIEW_VIEW_TYPE, MonthView, MONTH_VIEW_TYPE, WeekView, 
-  WEEK_VIEW_TYPE, DayView, DAY_VIEW_TYPE, ListView, LIST_VIEW_TYPE, 
-  CalendarView, CALENDAR_VIEW_TYPE, TimelineView, TIMELINE_VIEW_TYPE, 
+import { OverviewView, OVERVIEW_VIEW_TYPE, CalendarMonthView, CALENDAR_MONTH_VIEW_TYPE, CalendarWeekView, CALENDAR_WEEK_VIEW_TYPE, 
+  CalendarWorkWeekView, CALENDAR_WORK_WEEK_VIEW_TYPE, CalendarDayView, CALENDAR_DAY_VIEW_TYPE, ListView, LIST_VIEW_TYPE,
+  CalendarView, CALENDAR_VIEW_TYPE, TimelineView, TIMELINE_VIEW_TYPE,
   GanttView, GANTT_VIEW_TYPE, TableView, TABLE_VIEW_TYPE } from "../views";
 
 export class ViewManager {
@@ -14,19 +14,21 @@ export class ViewManager {
   public registerViews(): void {
     this.plugin.registerView(OVERVIEW_VIEW_TYPE, (leaf: WorkspaceLeaf) => new OverviewView(leaf, this.plugin, this.i18n, this.taskManager));
     this.registeredViewTypes.push(OVERVIEW_VIEW_TYPE);
-    this.plugin.registerView(MONTH_VIEW_TYPE, (leaf: WorkspaceLeaf) => new MonthView(leaf, this.plugin, this.i18n));
-    this.registeredViewTypes.push(MONTH_VIEW_TYPE);
-    this.plugin.registerView(WEEK_VIEW_TYPE, (leaf: WorkspaceLeaf) => new WeekView(leaf, this.plugin));
-    this.registeredViewTypes.push(WEEK_VIEW_TYPE);
-    this.plugin.registerView(DAY_VIEW_TYPE, (leaf: WorkspaceLeaf) => new DayView(leaf, this.plugin));
-    this.registeredViewTypes.push(DAY_VIEW_TYPE);
+    this.plugin.registerView(CALENDAR_MONTH_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarMonthView(leaf, this.plugin, this.i18n, this.taskManager));
+    this.registeredViewTypes.push(CALENDAR_MONTH_VIEW_TYPE);
+    this.plugin.registerView(CALENDAR_WEEK_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarWeekView(leaf, this.plugin, this.i18n, this.taskManager));
+    this.registeredViewTypes.push(CALENDAR_WEEK_VIEW_TYPE);
+    this.plugin.registerView(CALENDAR_WORK_WEEK_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarWorkWeekView(leaf, this.plugin, this.i18n, this.taskManager));
+    this.registeredViewTypes.push(CALENDAR_WORK_WEEK_VIEW_TYPE);
+    this.plugin.registerView(CALENDAR_DAY_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarDayView(leaf, this.plugin, this.i18n, this.taskManager));
+    this.registeredViewTypes.push(CALENDAR_DAY_VIEW_TYPE);
     this.plugin.registerView(LIST_VIEW_TYPE, (leaf: WorkspaceLeaf) => new ListView(leaf, this.plugin, this.i18n, this.taskManager));
     this.registeredViewTypes.push(LIST_VIEW_TYPE);
     //this.plugin.registerView(GANTT_VIEW_TYPE, (leaf: WorkspaceLeaf) => new GanttView(leaf, this.plugin, this.i18n));
     //this.registeredViewTypes.push(GANTT_VIEW_TYPE);
-    this.plugin.registerView(CALENDAR_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarView(leaf, this.plugin, this.i18n, this.taskManager));
-    this.registeredViewTypes.push(CALENDAR_VIEW_TYPE);
-    this.plugin.registerView(TABLE_VIEW_TYPE, (leaf: WorkspaceLeaf) => new TableView(leaf, this.plugin, this.i18n));
+    //this.plugin.registerView(CALENDAR_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarView(leaf, this.plugin, this.i18n, this.taskManager));
+    //this.registeredViewTypes.push(CALENDAR_VIEW_TYPE);
+    this.plugin.registerView(TABLE_VIEW_TYPE, (leaf: WorkspaceLeaf) => new TableView(leaf, this.plugin, this.i18n, this.taskManager));
     this.registeredViewTypes.push(TABLE_VIEW_TYPE);
     //this.plugin.registerView(TIMELINE_VIEW_TYPE, (leaf: WorkspaceLeaf) => new TimelineView(leaf, this.plugin, this.i18n));
     //this.registeredViewTypes.push(TIMELINE_VIEW_TYPE);

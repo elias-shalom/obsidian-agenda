@@ -1,6 +1,19 @@
 @use "sass:color";
 @use '../variables' as *;
 
+// Estilos para el selector de cuadrícula
+.calendar-grid-style-selector {
+  margin-left: 10px;
+  
+  .calendar-grid-style-dropdown {
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-primary);
+    color: var(--text-normal);
+  }
+}
+
 .calendar-week-header {
   display: flex;
   border-bottom: 1px solid var(--background-modifier-border);
@@ -18,18 +31,12 @@
 .calendar-week-body {
   flex-grow: 1;
   overflow-y: auto;
+  height: calc(100% - 40px);
 }
 
 .calendar-week-day-container {
-  flex: 1;
-  border: 1px solid var(--background-modifier-border);
-  margin: 4px;
-  border-radius: 4px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  
+  @include calendar-day-styles("week");
+
   .calendar-week-day-header {
     background-color: rgba(var(--background-modifier-border-rgb), 0.2);
     padding: 8px;
@@ -42,51 +49,214 @@
       margin-bottom: 4px;
     }
     
+    // Ocultar la fecha original que estaba en el encabezado
     .calendar-date {
-      font-size: 1.2em;
+      display: none;
     }
+  }
+  
+  // Añadir nuevo estilo para la fecha en la esquina inferior derecha
+  .calendar-date {
+    position: absolute; 
+    bottom: 2px; 
+    right: 5px; 
+    font-weight: bold;
+    font-size: 1em;
+    color: $text-color;
+    background-color: var(--background-secondary);
+    padding: 2px 4px;
+    border-radius: 3px;
+    opacity: 0.8;
   }
   
   .calendar-day-content {
     flex-grow: 1;
-    overflow-y: visible;
+    overflow-y: auto;
     padding: 8px;
-    display: flex; // Añadido para mejor control del espacio
-    flex-direction: column; // Organiza las tareas verticalmente
-    min-height: 0; // Permite que el contenedor se contraiga si es necesario
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;  // Importante para que no haya espacios entre filas
+    gap: 4px;
+    padding-bottom: 28px; // Agregar espacio para el número del día
+    background-color: $primary-bg-color;
+
+    // Ocultar la barra de scroll pero mantener la funcionalidad
+    @include custom-scrollbar($visible: false);
+
+    .calendar-task {
+      @include calendar-task-styles;
+      
+      // Agregar cualquier estilo específico para vista semanal
+    }
   }
   
   &.calendar-today {
-    border: 2px solid var(--interactive-accent);
+    background-color: rgba($today-border-color, 0.05);
+    border: 2px solid $today-border-color;
     
     .calendar-week-day-header {
-      background-color: rgba(var(--interactive-accent-rgb), 0.2);
+      background-color: rgba($today-border-color, 0.1);
+    }
+    
+    // Estilo específico para el número del día actual
+    .calendar-date {
+      color: $today-border-color;
+      font-weight: bold;
+      opacity: 1;
+      background-color: rgba($today-border-color, 0.1);
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
     }
   }
 }
 
 .calendar-week-days-row {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  flex: 1;
-  height: calc(100% - 20px);
-  min-height: 120px; // Mantener consistencia con .calendar-week
-}
-
-/* Modificador para la vista semanal que activa el scroll solo cuando es necesario */
-.calendar-week-view, 
-.calendar-workweek-view {
-  .calendar-week-day-container {
-    .calendar-day-content {
-      overflow-y: auto; // Vuelve a 'auto' para controlar el scroll
-      max-height: none; // Elimina cualquier altura máxima
-      min-height: 0; // Permite contraerse si es necesario
+  // Estilo por defecto
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  height: 100%;
+  min-height: 300px;
+  gap: 8px;
+  padding: 8px;
+  
+  // Modificadores de estilo
+  &.style1 {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    
+    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 3; }
+    .calendar-week-day-container:nth-child(2) { grid-area: 3 / 1 / 5 / 3; }
+    .calendar-week-day-container:nth-child(3) { grid-area: 5 / 1 / 7 / 3; }
+    .calendar-week-day-container:nth-child(4) { grid-area: 1 / 3 / 3 / 5; }
+    .calendar-week-day-container:nth-child(5) { grid-area: 3 / 3 / 5 / 5; }
+    .calendar-week-day-container:nth-child(6) { grid-area: 5 / 3 / 6 / 5; }
+    .calendar-week-day-container:nth-child(7) { grid-area: 6 / 3 / 7 / 5; }
+  }
+  
+  &.style2 {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    
+    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 3; }
+    .calendar-week-day-container:nth-child(3) { grid-area: 3 / 1 / 5 / 3; }
+    .calendar-week-day-container:nth-child(5) { grid-area: 5 / 1 / 7 / 3; }
+    .calendar-week-day-container:nth-child(2) { grid-area: 1 / 3 / 3 / 5; }
+    .calendar-week-day-container:nth-child(4) { grid-area: 3 / 3 / 5 / 5; }
+    .calendar-week-day-container:nth-child(6) { grid-area: 5 / 3 / 6 / 5; }
+    .calendar-week-day-container:nth-child(7) { grid-area: 6 / 3 / 7 / 5; }
+  }
+  
+  &.style3 {
+    grid-template-rows: repeat(7, 1fr);
+    grid-template-columns: 1fr;
+  }
+  
+  &.style4 {
+    grid-template-rows: 1fr;
+    grid-template-columns: repeat(7, 1fr);
+  }
+  
+  &.style5 {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    
+    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 2; }
+    .calendar-week-day-container:nth-child(2) { grid-area: 3 / 1 / 5 / 2; }
+    .calendar-week-day-container:nth-child(3) { grid-area: 5 / 1 / 7 / 2; }
+    .calendar-week-day-container:nth-child(4) { grid-area: 7 / 1 / 9 / 2; }
+    .calendar-week-day-container:nth-child(5) { grid-area: 9 / 1 / 11 / 2; }
+    .calendar-week-day-container:nth-child(6) { grid-area: 1 / 2 / 6 / 3; }
+    .calendar-week-day-container:nth-child(7) { grid-area: 6 / 2 / 11 / 3; }
+  }
+  
+  &.style6 {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    
+    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 3; }
+    .calendar-week-day-container:nth-child(2) { grid-area: 3 / 1 / 5 / 3; }
+    .calendar-week-day-container:nth-child(3) { grid-area: 5 / 1 / 7 / 3; }
+    .calendar-week-day-container:nth-child(4) { grid-area: 7 / 1 / 9 / 3; }
+    .calendar-week-day-container:nth-child(5) { grid-area: 9 / 1 / 11 / 3; }
+    .calendar-week-day-container:nth-child(6) { grid-area: 1 / 3 / 6 / 4; }
+    .calendar-week-day-container:nth-child(7) { grid-area: 6 / 3 / 11 / 4; }
+  }
+  
+  &.style7 {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    
+    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 2; }
+    .calendar-week-day-container:nth-child(2) { grid-area: 3 / 1 / 5 / 2; }
+    .calendar-week-day-container:nth-child(3) { grid-area: 5 / 1 / 7 / 2; }
+    .calendar-week-day-container:nth-child(4) { grid-area: 7 / 1 / 9 / 2; }
+    .calendar-week-day-container:nth-child(5) { grid-area: 1 / 2 / 3 / 3; }
+    .calendar-week-day-container:nth-child(6) { grid-area: 3 / 2 / 6 / 3; }
+    .calendar-week-day-container:nth-child(7) { grid-area: 6 / 2 / 9 / 3; }
+  }
+  
+  &.style8 {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    
+    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 2; }
+    .calendar-week-day-container:nth-child(2) { grid-area: 1 / 2 / 3 / 3; }
+    .calendar-week-day-container:nth-child(3) { grid-area: 1 / 3 / 3 / 4; }
+    .calendar-week-day-container:nth-child(4) { grid-area: 3 / 1 / 5 / 2; }
+    .calendar-week-day-container:nth-child(5) { grid-area: 3 / 2 / 5 / 3; }
+    .calendar-week-day-container:nth-child(6) { grid-area: 3 / 3 / 5 / 4; }
+    .calendar-week-day-container:nth-child(7) { grid-area: 5 / 1 / 6 / 4; }
+  }
+  
+  &.style9 {
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    
+    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 3; }
+    .calendar-week-day-container:nth-child(2) { grid-area: 1 / 3 / 3 / 5; }
+    .calendar-week-day-container:nth-child(3) { grid-area: 1 / 5 / 3 / 7; }
+    .calendar-week-day-container:nth-child(4) { grid-area: 1 / 7 / 3 / 9; }
+    .calendar-week-day-container:nth-child(5) { grid-area: 1 / 9 / 3 / 11; }
+    .calendar-week-day-container:nth-child(6) { grid-area: 3 / 1 / 4 / 6; }
+    .calendar-week-day-container:nth-child(7) { grid-area: 3 / 6 / 4 / 11; }
+  }
+  
+  &.style10 {
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    
+    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 4 / 3; }
+    .calendar-week-day-container:nth-child(2) { grid-area: 1 / 3 / 4 / 5; }
+    .calendar-week-day-container:nth-child(3) { grid-area: 1 / 5 / 4 / 7; }
+    .calendar-week-day-container:nth-child(4) { grid-area: 1 / 7 / 3 / 9; }
+    .calendar-week-day-container:nth-child(5) { grid-area: 1 / 9 / 3 / 11; }
+    .calendar-week-day-container:nth-child(6) { grid-area: 3 / 7 / 4 / 9; }
+    .calendar-week-day-container:nth-child(7) { grid-area: 3 / 9 / 4 / 11; }
+  }
+  
+  &.style11 {
+    grid-template-rows: 1fr;
+    grid-template-columns: repeat(5, 1fr);
+    
+    .calendar-week-day-container:nth-child(1),
+    .calendar-week-day-container:nth-child(7) {
+      display: none;
     }
   }
 }
 
 /* Adaptaciones responsive para las vistas semanales */
-@media screen and (max-width: 768px) {
+@include respond-to("md-lg") {
+  .calendar-week-days-row {
+    gap: 4px;
+    padding: 4px;
+  }
+  
   .calendar-week-day-container {
     .calendar-week-day-header {
       padding: 4px;
@@ -102,6 +272,29 @@
     
     .calendar-day-content {
       padding: 4px;
+    }
+  }
+}
+
+/* Adaptaciones para pantallas más pequeñas */
+@include respond-to("md-lg") {
+  .calendar-day-content {
+    .calendar-task {
+      // En pantallas pequeñas, mantener una columna para 1-3 tareas
+      &:nth-child(-n+3) {
+        flex: 0 0 100%;
+      }
+      
+      // A partir de la cuarta tarea - dos columnas
+      &:nth-child(n+4) {
+        flex: 0 0 calc(50% - 2px);
+        font-size: 0.9em;
+      }
+      
+      // No usar tres columnas en móvil 
+      &:nth-child(n+11) {
+        flex: 0 0 calc(50% - 2px);
+      }
     }
   }
 }

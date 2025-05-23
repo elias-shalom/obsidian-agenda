@@ -1,0 +1,71 @@
+<div class="calendar-container">
+  <div class="calendar-toolbar">
+    <div class="calendar-current-period">
+      <h2>{{calendar.periodName}}</h2>
+    </div>
+
+    <div class="calendar-nav-container">
+      <div class="calendar-view-selector">
+        <select id="calendar-view-dropdown" class="calendar-view-dropdown">
+          <option value="month" {{#equals calendar.viewType "month"}}selected{{/equals}}>{{t "month_view"}}</option>
+          <option value="week" {{#equals calendar.viewType "week"}}selected{{/equals}}>{{t "week_view"}}</option>
+          <option value="workweek" {{#equals calendar.viewType "workweek"}}selected{{/equals}}>{{t "workweek_view"}}</option>
+          <option value="day" {{#equals calendar.viewType "day"}}selected{{/equals}}>{{t "day_view"}}</option>
+        </select>
+      </div>
+      
+      <div class="calendar-navigation">
+        <button class="calendar-prev" aria-label="{{t 'previous'}}">
+          <span class="icon">←</span>
+        </button>
+        <button class="calendar-today" aria-label="{{t 'today'}}">
+          {{t 'today'}}
+        </button>
+        <button class="calendar-next" aria-label="{{t 'next'}}">
+          <span class="icon">→</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {{!-- Vista mensual --}}
+  {{#equals calendar.viewType "month"}}
+  <div class="calendar-month-view">
+    <div class="calendar-month-header-row">
+      <div class="calendar-month-week-number-header"> </div>
+      <div class="calendar-month-weekdays">
+        {{#each calendar.dayNames}}
+          <div class="calendar-weekday">{{this}}</div>
+        {{/each}}
+      </div>
+    </div>
+    <div class="calendar-month-grid">
+      {{#each calendar.weeks}}
+        <div class="calendar-month-week">
+          <div class="calendar-month-week-number">w{{weekNumber}}</div>
+
+          <div class="calendar-month-days-row">
+            {{#each days}}
+              <div class="calendar-month-day {{#unless isCurrentMonth}}calendar-other-month{{/unless}} {{#if isToday}}calendar-today{{/if}}" data-date="{{toISODate dateValue}}">
+                <div class="calendar-month-day-header">
+                  <span class="calendar-month-day-number">{{dayOfMonth}}</span>
+                </div>
+                <div class="calendar-month-day-content">
+                  {{#each tasksForDay}}
+                    <div class="calendar-task" 
+                         data-file-path="{{filePath}}" 
+                         data-line-number="{{lineNumber}}"
+                         title="{{fileBasename}}:{{lineNumber}} - {{description}}">
+                      <span class="task-title">{{description}}</span>
+                    </div>
+                  {{/each}}
+                </div>
+              </div>
+            {{/each}}
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+  {{/equals}}
+</div>

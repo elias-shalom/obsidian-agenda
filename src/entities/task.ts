@@ -2,7 +2,7 @@ import { TFile } from "obsidian";
 import { ITask } from "../types/interfaces";
 import { TaskSection } from "./task-section";
 import { DateTime } from 'luxon';
-import { CustomStatus } from "../types/enums";
+import { CustomStatus, CoreTaskStatus, CoreTaskStatusIcon } from "../types/enums";
 
 export class Task implements ITask {
   id: string;
@@ -12,6 +12,8 @@ export class Task implements ITask {
   lineNumber?: number; // Número de línea donde se encuentra la tarea
   //section?: TaskSection; // Sección de la tarea (opcional)
   status: string; //Status;
+  statusIcon: string; //StatusIcon;
+  statusText: string; //StatusText;
   tags: string[];
   priority: string; //Priority; // Prioridad de la tarea (⏬|⏫|🔼|🔽|🔺 o por defecto "C")
   createdDate: DateTime | null; // Fecha de creación (➕)
@@ -31,6 +33,7 @@ export class Task implements ITask {
   fileName: string;
   fileBasename: string;
   fileExtension: string;
+  rootFolder: string; // Carpeta raíz del archivo
   header: string; // Representa el encabezado de la tarea
   description: string; // Representa la descripción de la tarea
   tasksFields: string[]; // Representa los campos específicos de la tarea como un arreglo de strings
@@ -44,6 +47,8 @@ export class Task implements ITask {
     this.text = taskData.text || '';
     this.lineNumber = taskData.lineNumber || 0; 
     this.status = taskData.status || '';
+    this.statusIcon = taskData.statusIcon || '';
+    this.statusText = taskData.statusText || '';
     this.priority = taskData.priority || '';
     this.cancelledDate = taskData.cancelledDate || null;
     this.onCompletion = taskData.onCompletion || '';
@@ -60,6 +65,7 @@ export class Task implements ITask {
     this.fileName = taskData.fileName || ''; // Nombre del archivo
     this.fileBasename = taskData.fileBasename || ''; // Nombre base del archivo (sin extensión)
     this.fileExtension = taskData.fileExtension || '';
+    this.rootFolder = taskData.rootFolder || ''; // Carpeta raíz del archivo
     this.header = taskData.header || ''; // Representa el encabezado de la tarea
     this.description = taskData.description || ''; // Representa la descripción de la tarea
     this.tasksFields = taskData.tasksFields || []; // Representa los campos específicos de la tarea como un arreglo de strings
@@ -72,22 +78,22 @@ export class Task implements ITask {
   /**
    * Extrae el estado de la tarea desde el texto del header.
    * @param headerText El texto del encabezado que contiene el estado entre corchetes.
-   * @returns El estado correspondiente del enum CustomStatus.
+   * @returns El estado correspondiente del enum CoreTaskStatus.
   */
-  static extractStatusFromHeader(headerText: string): CustomStatus {
+  static extractStatusFromHeader(headerText: string): CoreTaskStatus {
     const statusMatch = headerText.match(/\[(.)\]/);
 
     if (statusMatch && statusMatch[1]) {
       const statusChar = statusMatch[1];
 
-      // Verificar si el carácter existe en el enum CustomStatus
-      if (Object.values(CustomStatus).includes(statusChar as CustomStatus)) {
-          return statusChar as CustomStatus;
+      // Verificar si el carácter existe en el enum CoreTaskStatus
+      if (Object.values(CoreTaskStatus).includes(statusChar as CoreTaskStatus)) {
+          return statusChar as CoreTaskStatus;
       }
     }
 
     // Si no se encontró un estado válido, devolver el valor predeterminado
-    return CustomStatus.Space;
+    return CoreTaskStatus.Todo;
   }
 
   /**

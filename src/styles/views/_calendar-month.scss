@@ -11,11 +11,8 @@
   display: grid;
   width: 40px;
   text-align: center;
-  //font-size: 0.8em;
   font-weight: bold;
-  //margin-right: 5px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--background-modifier-border); 
   color: $text-color;
   margin-bottom: 8px;
 }
@@ -63,7 +60,6 @@
 
 .calendar-month-day-header {
   display: flex;
-  border-bottom: 1px solid var(--background-modifier-border);
   flex-shrink: 0;
 }
 
@@ -71,36 +67,72 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   flex: 1;
-  min-height: 120px; // Mantener consistencia con .calendar-week
+  min-height: 150px; // Mantener consistencia con .calendar-week
 }
 
 .calendar-other-month {
   opacity: 0.5;
-  background-color: var(--background-secondary);
+  background-color: $heather-bg-color !important;
 }
 
 .calendar-month-day {
-  border: 1px solid var(--background-modifier-border);
-  min-height: 120px; // Aumentar para mejor proporción
-  padding: 8px; // Aumentar el padding interno
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  width: 100%;
-  aspect-ratio: 1.2; // Añadir proporción de aspecto (opcional)
-  transition: background-color 0.2s ease; // Añadir transición suave
+  @include calendar-day-styles("month");
 }
 
 .calendar-month-day-number {
+  position: absolute; // Posición absoluta para colocarlo en la esquina
+  bottom: 2px; // Distancia desde abajo
+  right: 5px; // Distancia desde la derecha
   font-weight: bold;
-  margin-bottom: 8px; // Más espacio después del número
-  font-size: 1.1em; // Número más grande
+  font-size: 1em; // Ajustar tamaño según necesites
   color: $text-color; // Usar la variable de color existente
+  background-color: transparent; // Fondo transparente
+  padding: 2px 4px; // Pequeño padding para mejorar la visualización
+  border-radius: 3px; // Bordes redondeados (opcional)
+  opacity: 0.8; // Semi-transparente para no distraer demasiado
 }
 
 .calendar-month-day-content {
   overflow-y: auto;
   flex-grow: 1;
-  // Aumentar o eliminar el max-height para evitar compresión
-  max-height: 100px; 
+  height: 100%;
+
+  // Ocultar la barra de scroll pero mantener la funcionalidad
+  @include custom-scrollbar($visible: false);
+
+  // Configurar un layout flexible para las tareas
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-content: flex-start;
 }
+
+// Estilo mejorado para las tareas del calendario
+.calendar-month-day-content .calendar-task {
+  @include calendar-task-styles;
+  
+  // Estilos específicos adicionales solo para vista mensual
+  &:nth-child(n+2) {
+    flex: 0 0 calc(50% - 2px);
+  }
+}
+
+.calendar-month-day.calendar-today {
+  background-color: rgba($today-border-color, 0.05);
+  border: 2px solid $today-border-color;
+  
+  .calendar-month-day-number {
+    color: $today-border-color;
+    font-weight: bold;
+    opacity: 1;
+    background-color: rgba($today-border-color, 0.1);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+}
+

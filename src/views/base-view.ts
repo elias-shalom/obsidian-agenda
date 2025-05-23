@@ -91,7 +91,7 @@ export abstract class BaseView extends ItemView {
     return rootFolders;
   }
 
-  private registerHandlebarsHelpers(i18n: any): void {
+  protected registerHandlebarsHelpers(i18n: any): void {
     // Si ya están registrados, no hacer nada
     if (this.helpersRegistered) return;
     
@@ -108,7 +108,7 @@ export abstract class BaseView extends ItemView {
    * Registra todos los helpers de Handlebars de una sola vez
    * @param i18n Servicio de internacionalización
    */
-  private registerCommonHelpers(i18n: any): void {
+  protected registerCommonHelpers(i18n: any): void {
     
     // Helper para traducción
     Handlebars.registerHelper("t", (key: string) => i18n.t(key));
@@ -157,8 +157,6 @@ export abstract class BaseView extends ItemView {
       return ' ';
     });
 
-
-
     // Helper para multiplicar números (útil para la sangría)
     Handlebars.registerHelper("multiply", function(a, b) {
       return a * b;
@@ -168,8 +166,6 @@ export abstract class BaseView extends ItemView {
     Handlebars.registerHelper("add", function(a, b) {
       return a + b;
     });
-
-
 
   }
 
@@ -273,7 +269,7 @@ export abstract class BaseView extends ItemView {
       { id: "overview-view-tab", view: "overview-view" },
       { id: "list-view-tab", view: "list-view" },
       { id: "table-view-tab", view: "table-view" },
-      { id: "calendar-view-tab", view: "calendar-view" },
+      { id: "calendar-view-tab", view: "calendar-month-view" },
       { id: "timeline-view-tab", view: "timeline-view" },
       { id: "gantt-view-tab", view: "gantt-view" },
     ];

@@ -89,14 +89,28 @@ export class TableView extends BaseView {
         this.filterTasks(container);
       });
     });
-    
-    // Listener para checkboxes de completado
-    const checkboxes = container.querySelectorAll('.task-checkbox');
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('click', (e) => {
-        this.toggleTaskCompletion(e.currentTarget as HTMLElement);
+
+    // Configurar el botón de limpiar búsqueda
+    const searchClearButton = container.querySelector('#table-search-clear') as HTMLButtonElement;
+
+    if (searchInput && searchClearButton) {
+      // Mostrar/ocultar botón según el contenido
+      searchInput.addEventListener('input', () => {
+        searchClearButton.style.display = searchInput.value ? 'block' : 'none';
+        this.filterTasks(container);
       });
-    });
+      
+      // Limpiar el campo de búsqueda al hacer clic en el botón
+      searchClearButton.addEventListener('click', () => {
+        searchInput.value = '';
+        searchClearButton.style.display = 'none';
+        searchInput.focus(); // Opcional: mantiene el foco en el campo
+        this.filterTasks(container); // Volver a aplicar filtros sin el texto
+      });
+      
+      // Inicialmente ocultar el botón si no hay texto
+      searchClearButton.style.display = searchInput.value ? 'block' : 'none';
+    }
 
     const tableRows = container.querySelectorAll('tr.task-row');
   
@@ -288,24 +302,7 @@ export class TableView extends BaseView {
       emptyMessage.style.display = visibleCount === 0 ? 'block' : 'none';
     }
     
-    // Actualizar información de paginación si es necesario
-    this.updatePaginationInfo(container, visibleCount);
-  }
-  
-  // Método auxiliar para actualizar información de paginación
-  private updatePaginationInfo(container: HTMLElement, visibleCount: number): void {
-    const paginationInfo = container.querySelector('.pagination-info');
-    if (paginationInfo) {
-      // Si tienes implementada la paginación, actualiza la información aquí
-      // Por ejemplo: 
-      // paginationInfo.textContent = `Mostrando 1-${visibleCount} de ${visibleCount} tareas`;
-    }
-  }
 
-  private toggleTaskCompletion(checkbox: HTMLElement): void {
-    // Implementar lógica para marcar/desmarcar tareas como completadas
-    const taskId = checkbox.dataset.taskId;
-    // Actualizar el estado de la tarea en los datos y en la UI
   }
 
   async onClose(): Promise<void> {

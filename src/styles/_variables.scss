@@ -257,3 +257,26 @@ $breakpoints: (
     line-height: $line-height;
   }
 }
+
+@mixin interactive-control {
+  padding: 4px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--background-modifier-border);
+  background-color: $primary-bg-color !important;
+  color: var(--text-normal);
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  
+  &:hover, &:focus {
+    background-color: $hover-bg-color !important;
+    color: #fff;
+    border-color: $active-border-color;
+    outline: none;
+  }
+  
+  &:focus-visible {
+    box-shadow: 0 0 0 2px rgba($active-border-color, 0.5);
+  }
+}

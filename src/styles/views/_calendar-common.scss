@@ -53,25 +53,25 @@
   }
 }
 
+/* Adaptar botones de navegación para las diferentes vistas */
 .calendar-navigation {
   display: flex;
   gap: 8px;
-}
 
-.calendar-navigation button {
-  padding: 4px 8px; // Reducir el padding de los botones
-  font-size: 0.9em; // Opcional: reducir tamaño de texto de botones
-}
-
-/* Adaptar botones de navegación para las diferentes vistas */
-.calendar-navigation {
   button {
     background-color: rgba($primary-bg-color, 0.8);
     border: 1px solid var(--background-modifier-border);
-    border-radius: 4px;
     transition: all 0.2s ease;
     
     @include interactive-states($hover-bg-color, #fff);
+
+    svg {
+      // Elimina cualquier margen o posición que pueda estar afectando
+      position: static;
+      display: block;
+      margin-right: 3px;
+      margin-bottom: 4px;
+    }
   }
 }
 
@@ -132,62 +132,29 @@
   gap: 8px;
   flex-wrap: wrap;
 
-  // Estilos comunes para los selectores
+  // Selectores con margen
   .calendar-view-selector,
   .calendar-grid-style-selector {
     margin-right: 8px;
   }
 
-  // Estilos comunes para los dropdowns
+  // Estilos comunes para todos los dropdowns
   .calendar-view-dropdown,
   .calendar-grid-style-dropdown {
-    padding: 4px 8px;
-    border-radius: 4px;
-    border: 1px solid var(--background-modifier-border);
-    background-color: var(--background-primary);
-    color: var(--text-normal);
-    font-size: 0.9em;
-    cursor: pointer;
-
-    &:hover, &:focus {
-      background-color: $hover-bg-color !important; // Fondo más claro al pasar el ratón
-      color: #fff !important; // Texto blanco
-      border: 1px solid $active-border-color !important; // Borde visible al pasar el ratón
-      outline: none; // Elimina el contorno del focus
-    }
-
-    &:focus-visible {
-      box-shadow: 0 0 0 2px rgba($active-border-color, 0.5); // Sutil indicador de focus para accesibilidad
-    }
+    @include interactive-control;
   }
 
-  // Estilo para los botones de navegación
+  // Navegación y botones
   .calendar-navigation {
     display: flex;
     gap: 4px;
 
     button {
+      @include interactive-control;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 4px 8px;
-      border-radius: 4px;
-      background-color: var(--background-primary);
-      border: 1px solid var(--background-modifier-border);
-      color: var(--text-normal);
-      cursor: pointer;
-
-      &:hover, &:focus {
-        background-color: $hover-bg-color !important; // Fondo más claro al pasar el ratón
-        color: #fff !important; // Texto blanco
-        border: 1px solid $active-border-color !important; // Borde visible al pasar el ratón
-        outline: none; // Elimina el contorno del focus
-      }
-
-      &:focus-visible {
-        box-shadow: 0 0 0 2px rgba($active-border-color, 0.5); // Sutil indicador de focus para accesibilidad
-      }
-
+      
       &:active {
         background-color: var(--background-modifier-active);
       }

@@ -296,18 +296,5 @@
 }
 
 .view-toggle-button {
-  background-color: $primary-bg-color !important;
-  color: $text-color;
-  border: 1px solid $active-border-color;
-  border-radius: 20px; // Esquinas más redondeadas
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 0.85em;
-  transition: all 0.3s ease;
-  float: left;
-}
-
-.view-toggle-button:hover {
-  background-color: $hover-bg-color;
-  color: #fff;
+  @include interactive-control;
 }

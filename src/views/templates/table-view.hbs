@@ -1,49 +1,49 @@
 <div class="table-view-container">
   <div class="table-toolbar">
+
+    <div class="table-filters">
+            <select id="table-priority-filter" class="table-filter-dropdown">
+        <option value="all">{{t 'all_priorities'}}</option>
+        <option value="Highest">{{t 'highest_priority'}} 🔺</option>
+        <option value="High">{{t 'high_priority'}} ⏫</option>
+        <option value="Medium">{{t 'medium_priority'}} 🔼</option>
+        <option value="Normal">{{t 'normal_priority'}} ▶️</option>
+        <option value="Low">{{t 'low_priority'}} 🔽</option>
+        <option value="Lowest">{{t 'lowest_priority'}} ⏬</option>
+        <option value="none">{{t 'no_priority'}}</option>
+      </select>
+
+      <select id="table-status-filter" class="table-filter-dropdown">
+        <option value="all">{{t 'all_tasks'}}</option>
+        <option value="Todo">{{t 'status_todo'}}</option>
+        <option value="InProgress">{{t 'status_in_progress'}}</option>
+        <option value="Done">{{t 'status_done'}}</option>
+        <option value="Cancelled">{{t 'status_cancelled'}}</option>
+        <option value="nonTask">{{t 'status_non_task'}}</option>
+      </select>
+
+      <select id="table-folder-filter" class="table-filter-dropdown">
+        <option value="all">{{t 'all_folders'}}</option>
+        {{#each uniqueFolders}}
+        <option value="{{this}}">{{this}}</option>
+        {{/each}}
+      </select>
+
+      <select id="table-due-filter" class="table-filter-dropdown">
+        <option value="all">{{t 'all_dates'}}</option>
+        <option value="overdue">{{t 'overdue'}}</option>
+        <option value="today">{{t 'due_today'}}</option>
+        <option value="thisweek">{{t 'due_this_week'}}</option>
+        <option value="future">{{t 'future_tasks'}}</option>
+        <option value="nodate">{{t 'no_date'}}</option>
+      </select>
+    </div>
+
     <div class="table-search">
       <input type="text" id="table-search-input" placeholder="{{t 'search_tasks'}}" class="search-input">
       <button id="table-search-clear" class="search-clear-button">×</button>
     </div>
 
-    <select id="table-priority-filter" class="table-filter-dropdown">
-      <option value="all">{{t 'all_priorities'}}</option>
-      <option value="Highest">{{t 'highest_priority'}} 🔺</option>
-      <option value="High">{{t 'high_priority'}} ⏫</option>
-      <option value="Medium">{{t 'medium_priority'}} 🔼</option>
-      <option value="Normal">{{t 'normal_priority'}} ▶️</option>
-      <option value="Low">{{t 'low_priority'}} 🔽</option>
-      <option value="Lowest">{{t 'lowest_priority'}} ⏬</option>
-      <option value="none">{{t 'no_priority'}}</option>
-    </select>
-
-    <div class="table-filters">
-    <select id="table-status-filter" class="table-filter-dropdown">
-      <option value="all">{{t 'all_tasks'}}</option>
-      <option value="Todo">{{t 'status_todo'}}</option>
-      <option value="InProgress">{{t 'status_in_progress'}}</option>
-      <option value="Done">{{t 'status_done'}}</option>
-      <option value="Cancelled">{{t 'status_cancelled'}}</option>
-      <option value="nonTask">{{t 'status_non_task'}}</option>
-    </select>
-
-    <select id="table-folder-filter" class="table-filter-dropdown">
-      <option value="all">{{t 'all_folders'}}</option>
-      {{#each uniqueFolders}}
-      <option value="{{this}}">{{this}}</option>
-      {{/each}}
-    </select>
-
-    <select id="table-due-filter" class="table-filter-dropdown">
-      <option value="all">{{t 'all_dates'}}</option>
-      <option value="overdue">{{t 'overdue'}}</option>
-      <option value="today">{{t 'due_today'}}</option>
-      <option value="thisweek">{{t 'due_this_week'}}</option>
-      <option value="future">{{t 'future_tasks'}}</option>
-      <option value="nodate">{{t 'no_date'}}</option>
-    </select>
-      
-      
-    </div>
   </div>
   
   <div class="table-container">
@@ -123,7 +123,6 @@
             </div>
             {{/if}}
           </td>
-          
           <td class="table-col-tags">
             <div class="task-tags">
               {{#each tags}}
@@ -142,7 +141,7 @@
     <p>{{t 'no_tasks_match_filters'}}</p>
   </div>
   {{/unless}}
-  
+
   <div class="table-pagination">
     <div class="pagination-info">
       {{t 'showing'}} {{paginationStart}}-{{paginationEnd}} {{t 'of'}} {{totalTasks}} {{t 'tasks'}}

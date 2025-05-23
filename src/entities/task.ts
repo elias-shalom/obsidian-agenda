@@ -33,6 +33,7 @@ export class Task implements ITask {
   fileName: string;
   fileBasename: string;
   fileExtension: string;
+  rootFolder: string; // Carpeta raíz del archivo
   header: string; // Representa el encabezado de la tarea
   description: string; // Representa la descripción de la tarea
   tasksFields: string[]; // Representa los campos específicos de la tarea como un arreglo de strings
@@ -64,6 +65,7 @@ export class Task implements ITask {
     this.fileName = taskData.fileName || ''; // Nombre del archivo
     this.fileBasename = taskData.fileBasename || ''; // Nombre base del archivo (sin extensión)
     this.fileExtension = taskData.fileExtension || '';
+    this.rootFolder = taskData.rootFolder || ''; // Carpeta raíz del archivo
     this.header = taskData.header || ''; // Representa el encabezado de la tarea
     this.description = taskData.description || ''; // Representa la descripción de la tarea
     this.tasksFields = taskData.tasksFields || []; // Representa los campos específicos de la tarea como un arreglo de strings

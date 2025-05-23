@@ -27,6 +27,7 @@ export interface ITask {
   fileName: string;
   fileBasename: string;
   fileExtension: string;
+  rootFolder: string; // Carpeta raíz del archivo
   header: string; // Representa el encabezado de la tarea
   description: string; // Representa la descripción de la tarea
   tasksFields: string[]; // Representa los campos específicos de la tarea como un arreglo de strings

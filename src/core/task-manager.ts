@@ -506,6 +506,8 @@ export class TaskManager {
       // Obtiene el icono del enum CoreTaskStatusIcon
       const statusIcon = this.getCoreTaskStatusIcon(status);
 
+      const rootFolder = this.getRootFolder(file.path);
+
       return {
         id: taskSection.taskData.id || `${file.path}-${lineNumber + 1}`,
         title: line,
@@ -533,6 +535,7 @@ export class TaskManager {
         fileName: file.name,
         fileBasename: file.basename,
         fileExtension: file.extension,
+        rootFolder: rootFolder,
         header: taskSection.header,
         description: taskSection.description,
         tasksFields: taskSection.tasksFields,
@@ -542,6 +545,24 @@ export class TaskManager {
     } catch (error) {
       logger.error(`Error creando tarea de línea ${lineNumber + 1} en ${file.path}:`, error);
       return null;
+    }
+  }
+
+  private getRootFolder(filePath: string): string {
+    if (filePath) {
+      // Dividir la ruta del archivo en partes
+      const pathParts = filePath.split('/');
+      
+      // El rootFolder es la primera parte de la ruta (si existe)
+      if (pathParts.length > 1) {
+        return pathParts[0];
+      } else {
+        // Si no hay separador de ruta, asignar "Root"
+        return "root";
+      }
+    } else {
+      // Si no hay ruta de archivo, asignar "Sin carpeta"
+      return  "undefined";
     }
   }
 

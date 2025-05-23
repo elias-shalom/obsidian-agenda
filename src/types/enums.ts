@@ -1,7 +1,7 @@
 export enum CustomStatus {
-    Space = " ", // #task `space` to-do
+    Todo = " ", // #task `space` to-do
     Slash = "/", // #task `/` incomplete
-    X = "x",     // #task `x` done
+    Done = "x",     // #task `x` done
     Dash = "-",  // #task `-` canceled
     Greater = ">", // #task `>` forwarded
     Less = "<",  // #task `<` scheduling
@@ -23,6 +23,22 @@ export enum CustomStatus {
     Down = "d"    // #task `d` down
 }
 
+export enum CoreTaskStatus {
+  Todo = " ",
+  InProgress = "/",
+  Done = "x",
+  Cancelled = "-",
+  nonTask = "~"
+}
+
+export enum CoreTaskStatusIcon {
+  Todo = "⭕",
+  InProgress = "🛠️",
+  Done = "✅",
+  Cancelled = "❌",
+  nonTask = "🗑️"
+}
+
 export enum OnCompletion {
   Keep = "keep",
   Delete = "delete"
@@ -31,7 +47,7 @@ export enum OnCompletion {
 export enum TaskPriority {
   Lowest = "⏬",
   Low = "🔽", 
-  Normal = "  ", // Sin ícono específico
+  Normal = "▶️", // Sin ícono específico
   Medium = "🔼",
   High = "⏫",
   Highest = "🔺"

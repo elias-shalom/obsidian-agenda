@@ -177,13 +177,13 @@
     .calendar-task {
       // Más destacados en la vista de semana laboral
       padding: 6px 8px;
-      
+
       // Mostrar encabezado de archivo
       .calendar-file-header {
         display: block;
         margin-bottom: 3px;
       }
-      
+
       // Más espacio para el título de la tarea
       .task-title {
         line-height: 1.5;
@@ -201,10 +201,10 @@
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      
+
       .calendar-task {
         flex: 0 0 calc(50% - 8px);
-        
+
         // Permite mostrar todo el texto en celdas más grandes
         .task-title {
           white-space: normal;
@@ -219,7 +219,7 @@
 }
 
 /* Adaptaciones responsive para workweek */
-@media screen and (max-width: 768px) {
+@include respond-to("md-lg") {
   .calendar-workweek-view {
     .calendar-week-days-row {
       gap: 4px;

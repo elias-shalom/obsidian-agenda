@@ -39,18 +39,7 @@
   scrollbar-width: thin; // Barra de desplazamiento delgada (Firefox)
   
   // Estilizar scrollbar para navegadores webkit (Chrome, Safari)
-  &::-webkit-scrollbar {
-    height: 4px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background-color: $active-border-color;
-    border-radius: 4px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  @include custom-scrollbar();
 }
 
 // Clase para un contenedor de tabs con espacio alrededor
@@ -93,16 +82,13 @@
       max-width: 100%; // Permite que se ajuste al espacio disponible
     }
 
-    &:hover {
-      background-color: $hover-bg-color !important; // Fondo más claro al pasar el ratón
-      color: #fff !important; // Texto blanco
+    &:hover {  
       svg {
         color: #fff !important; // Cambia el color del ícono
       }
       .tab-text {
         color: #fff !important; // Cambia el color del texto
       }
-      border: 1px solid $active-border-color !important; // Borde visible al pasar el ratón
     }
 
     &.active {
@@ -117,18 +103,20 @@
       font-weight: bold !important;
       border: 1px solid $active-border-color !important; // Borde visible
     }
+
+    @include interactive-states($hover-bg-color, #fff, transparent, 0.3s, true);
   }
 }
 
 // Media queries para adaptar el diseño según el ancho de la ventana
-@media screen and (max-width: 1200px) {
+@include  respond-to("xxl") {
   .c-tabs {
     gap: 6px; // Reducir un poco el espacio entre tabs
     padding: 0 10px !important;
   }
 }
 
-@media screen and (max-width: 1000px) {
+@include  respond-to("xl") {
   .c-tabs {
     gap: 4px; // Reducir más el espacio entre tabs
     padding: 0 8px !important;
@@ -145,7 +133,7 @@
   }
 }
 
-@media screen and (max-width: 900px) {
+@include respond-to("lg-xl") {
   .c-tabs {
     gap: 3px; // Reducir aún más el espacio entre tabs
     padding: 0 6px !important;
@@ -162,7 +150,7 @@
   }
 }
 
-@media screen and (max-width: 800px) {
+@include respond-to("lg") {
   .c-tabs {
     gap: 2px; // Espacio mínimo entre tabs
     padding: 0 5px !important;
@@ -182,7 +170,7 @@
   }
 }
 
-@media screen and (max-width: 700px) {
+@include respond-to("md") {
   .c-tabs {
     gap: 1px; // Casi sin espacio entre tabs
     padding: 0 4px !important;
@@ -201,7 +189,7 @@
   }
 }
 
-@media screen and (max-width: 600px) {
+@include respond-to("md-sm") {
   .c-tabs {
     gap: 0; // Sin espacio entre tabs
     padding: 0 3px !important;
@@ -242,7 +230,7 @@
   }
 }
 
-@media screen and (max-width: 480px) {
+@include respond-to("sm") {
   .c-tab-container {
     padding: 4px 0;
     
@@ -258,7 +246,7 @@
 }
 
 // Si la pantalla es muy estrecha, dar más espacio a los iconos
-@media screen and (max-width: 400px) {
+@include respond-to("xs") {
   .c-tab-container {
     .c-tab {
       padding: 4px 6px !important;

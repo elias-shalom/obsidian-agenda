@@ -28,7 +28,7 @@ export class ViewManager {
     //this.registeredViewTypes.push(GANTT_VIEW_TYPE);
     //this.plugin.registerView(CALENDAR_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarView(leaf, this.plugin, this.i18n, this.taskManager));
     //this.registeredViewTypes.push(CALENDAR_VIEW_TYPE);
-    this.plugin.registerView(TABLE_VIEW_TYPE, (leaf: WorkspaceLeaf) => new TableView(leaf, this.plugin, this.i18n));
+    this.plugin.registerView(TABLE_VIEW_TYPE, (leaf: WorkspaceLeaf) => new TableView(leaf, this.plugin, this.i18n, this.taskManager));
     this.registeredViewTypes.push(TABLE_VIEW_TYPE);
     //this.plugin.registerView(TIMELINE_VIEW_TYPE, (leaf: WorkspaceLeaf) => new TimelineView(leaf, this.plugin, this.i18n));
     //this.registeredViewTypes.push(TIMELINE_VIEW_TYPE);

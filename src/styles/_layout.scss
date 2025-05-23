@@ -26,22 +26,7 @@
   flex-direction: column;
   
   // Estilizar scrollbar para navegadores webkit (Chrome, Safari)
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background-color: $active-border-color;
-    border-radius: 4px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
-  // Estilo para Firefox
-  scrollbar-width: thin;
-  scrollbar-color: $active-border-color transparent;
+  @include custom-scrollbar();
 
     .calendar-container {
     flex: 1;

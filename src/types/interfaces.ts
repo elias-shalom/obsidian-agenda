@@ -8,6 +8,8 @@ export interface ITask {
   link: { path: string }; // Enlace al archivo de la tarea  
   lineNumber?: number; // Número de línea donde se encuentra la tarea
   status: string; //Status;
+  statusIcon: string; //StatusIcon;
+  statusText: string; //StatusText;
   tags: string[];
   priority: string; //Priority; // Prioridad de la tarea (⏬|⏫|🔼|🔽|🔺 o por defecto "C")
   createdDate: DateTime | null; // Fecha de creación (➕)

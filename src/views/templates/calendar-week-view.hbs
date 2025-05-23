@@ -45,16 +45,15 @@
       </div>
     </div>
   </div>
-
   {{!-- Vista semanal --}}
   {{#equals calendar.viewType "week"}}
-  <div class="calendar-week-view">    
+  <div class="calendar-week-view">
     <div class="calendar-week-body">
       <div class="calendar-week-days-row">
         {{#each calendar.days}}
           <div class="calendar-week-day-container {{#if isToday}}calendar-today{{/if}}" data-date="{{toISODate dateValue}}">
             <div class="calendar-week-day-header">
-              <div class="calendar-day-name">{{dayName}}</div>              
+              <div class="calendar-day-name">{{dayName}}</div>
             </div>
             <div class="calendar-day-content">
               {{#each tasksForDay}}

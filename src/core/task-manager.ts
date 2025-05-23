@@ -5,6 +5,7 @@ import { TaskSection } from "../entities/task-section";
 import { Task } from "../entities/task";
 import { I18n } from "./i18n";
 import { EventBus, EVENTS } from "./event-bus";
+import { CoreTaskStatus, CoreTaskStatusIcon } from "../types/enums";
 
 export class TaskManager {
   private tasksCache: Map<string, ITask[]> = new Map(); // Cache por archivo
@@ -501,6 +502,10 @@ export class TaskManager {
       const status = Task.extractStatusFromHeader(taskSection.header);
       const tags = Task.extractTags(line);
 
+      const statusText = this.getCoreTaskStatusName(status);
+      // Obtiene el icono del enum CoreTaskStatusIcon
+      const statusIcon = this.getCoreTaskStatusIcon(status);
+
       return {
         id: taskSection.taskData.id || `${file.path}-${lineNumber + 1}`,
         title: line,
@@ -509,6 +514,8 @@ export class TaskManager {
         lineNumber: lineNumber + 1, // Ajustar a base 1 para consistencia
         //section: taskSection,
         status: status,
+        statusText: statusText,
+        statusIcon: statusIcon,
         tags: tags,
         priority: taskSection.taskData.priority || "undefined",
         createdDate: taskSection.taskData.createdDate || null,
@@ -535,6 +542,40 @@ export class TaskManager {
     } catch (error) {
       logger.error(`Error creando tarea de línea ${lineNumber + 1} en ${file.path}:`, error);
       return null;
+    }
+  }
+
+  private getCoreTaskStatusName(status: string): string {
+    switch (status) {
+      case CoreTaskStatus.Todo:
+        return "Todo";
+      case CoreTaskStatus.InProgress:
+        return "InProgress";
+      case CoreTaskStatus.Done:
+        return "Done";
+      case CoreTaskStatus.Cancelled:
+        return "Cancelled";
+      case CoreTaskStatus.nonTask:
+        return "NonTask";
+      default:
+        return "Unknown";
+    }
+  }
+
+  private getCoreTaskStatusIcon(status: CoreTaskStatus): string {
+    switch (status) {
+      case CoreTaskStatus.Todo:
+        return CoreTaskStatusIcon.Todo;
+      case CoreTaskStatus.InProgress:
+        return CoreTaskStatusIcon.InProgress;
+      case CoreTaskStatus.Done:
+        return CoreTaskStatusIcon.Done;
+      case CoreTaskStatus.Cancelled:
+        return CoreTaskStatusIcon.Cancelled;
+      case CoreTaskStatus.nonTask:
+        return CoreTaskStatusIcon.nonTask;
+      default:
+        return CoreTaskStatusIcon.Todo;
     }
   }
 

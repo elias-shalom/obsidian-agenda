@@ -1,0 +1,417 @@
+@use "sass:color";
+@use '../variables' as *;
+
+.table-view-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 12px;
+}
+
+.table-toolbar {
+  display: flex;
+  gap: 10px;
+  padding: 8px;
+  background-color: var(--background-secondary);
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  flex-wrap: wrap;
+  align-items: center;
+  
+  .table-search {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    
+    .search-input {
+      flex: 1;
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--background-modifier-border);
+      background-color: var(--background-primary);
+    }
+    
+    .search-clear-button {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 16px;
+      padding: 0 8px;
+    }
+  }
+  
+  .table-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    
+    .table-filter-dropdown {
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--background-modifier-border);
+      background-color: var(--background-primary);
+    }
+  }
+}
+
+.table-container {
+  flex: 1;
+  overflow: auto;
+  @include custom-scrollbar();
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background-color: $primary-bg-color;
+  
+  .tasks-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    
+    th {
+      background-color: $heather-bg-color;
+      text-align: left;
+      font-weight: bold;
+      font-size: 0.9em;
+      padding: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      border: 1px solid var(--background-modifier-border);
+      
+      &.sortable {
+        cursor: pointer;
+        
+        &:hover {
+          background-color: $hover-bg-color;
+        }
+      }
+      
+      .sort-indicator {
+        display: inline-flex;
+        align-items: center;
+        
+        &::after {
+          content: "↕";
+          margin-left: 4px;
+          font-size: 0.8em;
+          opacity: 0.5;
+        }
+        
+        &.sort-asc::after {
+          content: "↑";
+          opacity: 1;
+        }
+        
+        &.sort-desc::after {
+          content: "↓";
+          opacity: 1;
+        }
+      }
+    }
+    
+    td {
+      padding: 8px 10px;
+      border: 1px solid var(--background-modifier-border);
+      transition: background-color 0.2s ease;
+      background-color: $primary-bg-color;
+      
+      // Adding some depth with subtle shadows
+      box-shadow: inset 0 0 0 1px rgba(var(--background-primary-rgb), 0.3);
+    }
+    
+    .task-row {
+      &:hover td {
+        background-color: var(--background-modifier-hover);
+      }
+      
+      &.task-completed {
+        opacity: 0.7;
+        
+        td {
+          background-color: rgba(var(--background-primary-rgb), 0.8);
+        }
+        
+        .task-description {
+          text-decoration: line-through;
+          color: var(--text-muted);
+        }
+      }
+      
+      &.priority-high td:first-child {
+        border-left: 3px solid $high-priority-color;
+      }
+      
+      &.priority-medium td:first-child {
+        border-left: 3px solid $medium-priority-color;
+      }
+      
+      &.priority-low td:first-child {
+        border-left: 3px solid $low-priority-color;
+      }
+    }
+  }
+}
+
+// Specific column styling
+.table-col-priority {
+  width: 60px;
+  text-align: center;
+}
+
+.task-priority {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  &.priority-high {
+    color: $high-priority-color;
+  }
+  
+  &.priority-medium {
+    color: $medium-priority-color;
+  }
+  
+  &.priority-low {
+    color: $low-priority-color;
+  }
+  
+  
+}
+
+.table-col-status {
+  width: 60px;
+  text-align: center;
+}
+
+.task-checkbox {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--text-muted);
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0 auto;
+  
+  &.checked {
+    background-color: var(--interactive-accent);
+    border-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+  }
+}
+
+.table-col-task {
+  min-width: 200px;
+}
+
+.table-col-due {
+  width: 140px;
+  
+  &.overdue {
+    color: $overdue-color;
+    font-weight: bold;
+  }
+  
+  &.due-today {
+    color: $today-color;
+    font-weight: bold;
+  }
+}
+
+.table-col-file {
+  width: 150px;
+  
+  .task-file {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    
+    .file-icon {
+      opacity: 0.7;
+    }
+  }
+}
+
+.table-col-tags {
+  width: 180px;
+  
+  .task-tag {
+    display: inline-block;
+    background-color: rgba(var(--interactive-accent-rgb), 0.1);
+    color: var(--text-accent);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 4px;
+    margin-bottom: 4px;
+    font-size: 0.85em;
+  }
+}
+
+// Empty state and pagination
+.empty-table-message {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+  background-color: var(--background-primary);
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  margin: 20px 0;
+}
+
+.table-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background-color: var(--background-secondary);
+  margin-top: 10px;
+  
+  .pagination-info {
+    color: var(--text-muted);
+    font-size: 0.9em;
+  }
+  
+  .pagination-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    
+    button {
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--background-modifier-border);
+      background-color: var(--background-primary);
+      cursor: pointer;
+      
+      &:hover:not(:disabled) {
+        background-color: var(--background-modifier-hover);
+      }
+      
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      
+      &.active {
+        background-color: var(--interactive-accent);
+        color: var(--text-on-accent);
+      }
+    }
+    
+    .pagination-pages {
+      display: flex;
+      gap: 4px;
+    }
+  }
+}
+
+// Grid styles for different views
+.table-grid-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+  padding: 12px;
+  
+  .task-card {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: var(--background-primary);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .task-card-header {
+      padding: 10px;
+      background-color: rgba(var(--background-modifier-border-rgb), 0.2);
+      border-bottom: 1px solid var(--background-modifier-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .task-card-body {
+      padding: 12px;
+    }
+    
+    .task-card-footer {
+      padding: 8px 12px;
+      background-color: rgba(var(--background-modifier-border-rgb), 0.1);
+      border-top: 1px solid var(--background-modifier-border);
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    &.priority-high {
+      border-top: 3px solid $high-priority-color;
+    }
+    
+    &.priority-medium {
+      border-top: 3px solid $medium-priority-color;
+    }
+    
+    &.priority-low {
+      border-top: 3px solid $low-priority-color;
+    }
+    
+    &.task-completed {
+      opacity: 0.7;
+      
+      .task-description {
+        text-decoration: line-through;
+        color: var(--text-muted);
+      }
+    }
+  }
+}
+
+.task-status-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+  margin: 0 auto;
+  cursor: pointer;
+
+  .status-icon {
+    font-size: 16px;
+  }
+  
+  &:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+  }
+}
+
+// Responsive adjustments
+@include respond-to("md-lg") {
+  .table-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    
+    .table-search, .table-filters {
+      width: 100%;
+    }
+  }
+  
+  .table-container {
+    overflow-x: auto;
+    
+    .tasks-table {
+      min-width: 700px;
+    }
+  }
+  
+  .table-grid-view {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}

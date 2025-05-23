@@ -1,0 +1,140 @@
+<div class="table-view-container">
+  <div class="table-toolbar">
+    <div class="table-search">
+      <input type="text" id="table-search-input" placeholder="{{t 'search_tasks'}}" class="search-input">
+      <button id="table-search-clear" class="search-clear-button">×</button>
+    </div>
+    
+    <div class="table-filters">
+      <select id="table-status-filter" class="table-filter-dropdown">
+        <option value="all">{{t 'all_tasks'}}</option>
+        <option value="pending">{{t 'pending_tasks'}}</option>
+        <option value="completed">{{t 'completed_tasks'}}</option>
+      </select>
+      
+      <select id="table-due-filter" class="table-filter-dropdown">
+        <option value="all">{{t 'all_dates'}}</option>
+        <option value="overdue">{{t 'overdue'}}</option>
+        <option value="today">{{t 'due_today'}}</option>
+        <option value="thisweek">{{t 'due_this_week'}}</option>
+        <option value="future">{{t 'future_tasks'}}</option>
+        <option value="nodate">{{t 'no_date'}}</option>
+      </select>
+      
+      <select id="table-priority-filter" class="table-filter-dropdown">
+        <option value="all">{{t 'all_priorities'}}</option>
+        <option value="high">{{t 'high_priority'}}</option>
+        <option value="medium">{{t 'medium_priority'}}</option>
+        <option value="low">{{t 'low_priority'}}</option>
+        <option value="none">{{t 'no_priority'}}</option>
+      </select>
+    </div>
+  </div>
+  
+  <div class="table-container">
+    <table class="tasks-table">
+      <thead>
+        <tr>
+          <th class="table-col-priority sortable" data-sort="priority">
+            <span class="sort-indicator">{{t 'priority'}}</span>
+          </th>
+          <th class="table-col-status sortable" data-sort="status">
+            <span class="sort-indicator">{{t 'status'}}</span>
+          </th>          
+          <th class="table-col-task sortable" data-sort="description">
+            <span class="sort-indicator">{{t 'task'}}</span>
+          </th>
+          <th class="table-col-file sortable" data-sort="file">
+            <span class="sort-indicator">{{t 'file'}}</span>
+          </th>
+          <th class="table-col-due sortable" data-sort="due">
+            <span class="sort-indicator">{{t 'due_date'}}</span>
+          </th>
+          <th class="table-col-tags sortable" data-sort="tags">
+            <span class="sort-indicator">{{t 'tags'}}</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each tasks}}
+        <tr class="task-row {{#if completed}}task-completed{{/if}} {{priorityClass}}" data-path="{{filePath}}" data-line="{{lineNumber}}">
+          <td class="table-col-priority">
+              {{#if priority}}
+              <div class="task-priority priority-{{priority}}" title="{{t priority}}">
+                {{priorityIcon priority}}
+              </div>
+              {{else}}
+              <div class="task-priority priority-none" title="{{t 'none'}}">
+                {{priorityIcon "none"}}
+              </div>
+              {{/if}}
+          </td>
+          <td class="table-col-status">
+            <div class="task-status-icon" title="{{t statusText}}" data-task-id="{{id}}">
+              <span class="status-icon">{{statusIcon}}</span>
+            </div>
+          </td>
+          <td class="table-col-task">
+            <div class="task-description">{{description}}</div>
+            {{#if subtasks}}
+            <div class="task-subtasks-indicator">
+              <span class="subtasks-count">{{subtasksCompletedCount}}/{{subtasksCount}}</span>
+              <div class="subtasks-progress-bar">
+                <div class="progress-fill" style="width: {{subtasksCompletionPercentage}}%"></div>
+              </div>
+            </div>
+            {{/if}}
+          </td>
+          <td class="table-col-file">
+            <div class="task-file">
+              <span class="file-icon">📄</span>
+              <span class="file-name">{{fileBasename}}</span>
+            </div>
+          </td>
+          <td class="table-col-due {{#if isOverdue}}overdue{{/if}} {{#if isDueToday}}due-today{{/if}}">
+            {{#if dueDate}}
+            <div class="task-due-date" title="{{dueDateFull}}">
+              <span class="due-icon">📅</span>
+              <span class="due-text">{{dueDateRelative}}</span>
+            </div>
+            {{/if}}
+          </td>
+          
+          <td class="table-col-tags">
+            <div class="task-tags">
+              {{#each tags}}
+              <span class="task-tag">#{{this}}</span>
+              {{/each}}
+            </div>
+          </td>          
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+  
+  {{#unless tasks.length}}
+  <div class="empty-table-message">
+    <p>{{t 'no_tasks_match_filters'}}</p>
+  </div>
+  {{/unless}}
+  
+  <div class="table-pagination">
+    <div class="pagination-info">
+      {{t 'showing'}} {{paginationStart}}-{{paginationEnd}} {{t 'of'}} {{totalTasks}} {{t 'tasks'}}
+    </div>
+    <div class="pagination-controls">
+      <button class="pagination-prev" {{#unless hasPreviousPage}}disabled{{/unless}}>
+        ← {{t 'previous'}}
+      </button>
+      <div class="pagination-pages">
+        {{#each paginationPages}}
+        <button class="pagination-page {{#if isActive}}active{{/if}}">{{pageNumber}}</button>
+        {{/each}}
+      </div>
+      <button class="pagination-next" {{#unless hasNextPage}}disabled{{/unless}}>
+        {{t 'next'}} →
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,13 +1,48 @@
-
+@use "sass:color";
+@use "sass:map";
 
 // Variables de colores y estilos base
-$primary-bg-color: #111111;
+$primary-bg-color: #111111; // Color de fondo principal
 $text-color: #989898;
 $hover-bg-color: #444;
 $active-border-color: #555;
 $active-line-color: #fff;
+$heather-bg-color: #1e1e1e;
 $today-border-color: rgb(138, 92, 244); 
 $transition: all 0.3s ease;
+
+// Priority Colors
+$high-priority-color: #e06c75;    // Strong red for high priority
+$medium-priority-color: #e5c07b;  // Amber/gold for medium priority
+$low-priority-color: #61afef;     // Soft blue for low priority
+
+// Optional darker/lighter variants if needed
+$high-priority-color-light: color.adjust($high-priority-color, $lightness: 15%);
+$high-priority-color-dark: color.adjust($high-priority-color, $lightness: -15%);
+
+$medium-priority-color-light: color.adjust($medium-priority-color, $lightness: 15%);
+$medium-priority-color-dark: color.adjust($medium-priority-color, $lightness: -15%);
+
+$low-priority-color-light: color.adjust($low-priority-color, $lightness: 15%);
+$low-priority-color-dark: color.adjust($low-priority-color, $lightness: -15%);
+
+// Status colors for due dates
+$overdue-color: #e06c75;          // Red for overdue tasks
+$today-color: #98c379;            // Green for today's tasks
+$future-color: #56b6c2;           // Teal for future tasks
+
+$breakpoints: (
+  "xs": 400px,
+  "sm": 480px,
+  "md-sm": 600px,
+  "md": 700px,
+  "md-lg": 768px,
+  "lg": 800px,
+  "lg-xl": 900px,
+  "xl": 1000px,
+  "xxl": 1200px
+);
+
 
 // Estilo base para contenedores flexibles
 %flex-center {
@@ -29,3 +64,196 @@ $transition: all 0.3s ease;
   font-size: 14px !important; // Tamaño de fuente
 }
 
+// Mixin para media queries
+@mixin respond-to($breakpoint) {
+  @if map.has-key($breakpoints, $breakpoint) {
+    @media screen and (max-width: map.has-key($breakpoints, $breakpoint)) {
+      @content;
+    }
+  } @else {
+    @warn "Breakpoint '#{$breakpoint}' no encontrado en $breakpoints.";
+  }
+}
+
+@mixin custom-scrollbar($width: 8px, $thumb-color: $active-border-color, $track-color: transparent, $visible: true) {
+  // Estilos para Firefox
+  @if $visible {
+    scrollbar-width: thin;
+    scrollbar-color: $thumb-color $track-color;
+  } @else {
+    scrollbar-width: none; /* Firefox */
+  }
+  
+  // Estilos para WebKit (Chrome, Safari, Edge)
+  &::-webkit-scrollbar {
+    @if $visible {
+      width: $width;
+    } @else {
+      width: 0;
+      display: none;
+    }
+  }
+  
+  @if $visible {
+    &::-webkit-scrollbar-thumb {
+      background-color: $thumb-color;
+      border-radius: 4px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background-color: $track-color;
+    }
+  }
+}
+
+// Mixin para estilos de día de calendario
+@mixin calendar-day-styles(
+  $view-type: "common", 
+  $border-color: var(--background-modifier-border),
+  $bg-color: $primary-bg-color
+) {
+  position: relative;
+  border: 1px solid $border-color;
+  min-height: 150px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+  transition: all 0.3s ease;
+  background-color: $bg-color;
+  
+  @if $view-type == "month" {
+    aspect-ratio: 1.1;
+    
+    .calendar-month-day-number {
+      position: absolute;
+      bottom: 2px;
+      right: 5px;
+      font-weight: bold;
+      font-size: 1em;
+      color: $text-color;
+      background-color: transparent;
+      padding: 2px 4px;
+      border-radius: 3px;
+      opacity: 0.8;
+    }
+    
+    .calendar-month-day-content {
+      overflow-y: auto;
+      flex-grow: 1;
+      height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-content: flex-start;
+      @include custom-scrollbar($visible: false);
+    }
+  } @else if $view-type == "week" or $view-type == "workweek" {
+    border-radius: 4px;
+    
+    .calendar-day-header, .calendar-week-day-header {
+      padding: 6px;
+      text-align: center;
+      border-bottom: 1px solid $border-color;
+      font-weight: bold;
+      background-color: $heather-bg-color !important; // Añadido background-color
+    }
+    
+    .calendar-day-content, .calendar-week-day-content {
+      overflow-y: auto;
+      flex-grow: 1;
+      @include custom-scrollbar();
+    }
+  }
+  
+  // Estilo común para día actual
+  &.calendar-today {
+    background-color: rgba($today-border-color, 0.05);
+    border: 2px solid $today-border-color;
+    
+    @if $view-type == "month" {
+      .calendar-month-day-number {
+        color: $today-border-color;
+        font-weight: bold;
+        opacity: 1;
+        background-color: rgba($today-border-color, 0.1);
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+      }
+    } @else {
+      .calendar-day-header, .calendar-week-day-header {
+        color: $today-border-color;
+      }
+    }
+  }
+}
+
+// Mixin para estilos de tareas en el calendario
+@mixin calendar-task-styles {
+  display: flex;
+  flex-wrap: wrap;
+  background-color: var(--background-primary);
+  border-left: 3px solid var(--interactive-accent);
+  border-radius: 4px;
+  padding: 4px 6px;
+  margin-bottom: 5px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.15);
+  }
+  
+  .task-title {
+    font-size: clamp(0.85em, 0.7em + 0.5vw, 1.1em);
+    flex: 1 0 100%;
+    @include text-truncate();
+    line-height: 1.4;
+    color: var(--text-normal);
+  }
+}
+
+@mixin interactive-states(
+  $bg-color: $hover-bg-color,
+  $text-color: #fff,
+  $border-color: transparent,
+  $transition-speed: 0.2s,
+  $important: false
+) {
+  &:hover, &:focus {
+    @if $important {
+      background-color: $bg-color !important;
+      color: $text-color !important;
+      border-color: $border-color !important;
+    } @else {
+      background-color: $bg-color;
+      color: $text-color;
+      border-color: $border-color;
+    }
+    transition: all $transition-speed ease;
+  }
+}
+
+@mixin text-truncate($lines: 1, $line-height: 1.4) {
+  @if $lines == 1 {
+    // Truncamiento clásico de una sola línea con elipsis
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  } @else {
+    // Truncamiento multilinea con soporte para navegadores modernos
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: normal;
+    line-height: $line-height;
+  }
+}

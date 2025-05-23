@@ -32,14 +32,13 @@
   {{#equals calendar.viewType "month"}}
   <div class="calendar-month-view">
     <div class="calendar-month-header-row">
-      <div class="calendar-month-week-number-header">{{t 'week'}}</div>
+      <div class="calendar-month-week-number-header"> </div>
       <div class="calendar-month-weekdays">
         {{#each calendar.dayNames}}
           <div class="calendar-weekday">{{this}}</div>
         {{/each}}
       </div>
     </div>
-
     <div class="calendar-month-grid">
       {{#each calendar.weeks}}
         <div class="calendar-month-week">

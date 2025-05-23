@@ -11,11 +11,8 @@
   display: grid;
   width: 40px;
   text-align: center;
-  //font-size: 0.8em;
   font-weight: bold;
-  //margin-right: 5px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--background-modifier-border); 
   color: $text-color;
   margin-bottom: 8px;
 }
@@ -75,22 +72,11 @@
 
 .calendar-other-month {
   opacity: 0.5;
-  background-color: var(--background-secondary);
+  background-color: $heather-bg-color !important;
 }
 
 .calendar-month-day {
-  border: 1px solid var(--background-modifier-border);
-  min-height: 150px; // Aumentar para mejor proporción
-  padding: 8px; // Aumentar el padding interno
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  width: 100%;
-  aspect-ratio: 1.1; // Añadir proporción de aspecto (opcional)
-  transition: all 0.3s ease; // Añadir transición suave
-  position: relative;
-  
-
+  @include calendar-day-styles("month");
 }
 
 .calendar-month-day-number {
@@ -112,17 +98,23 @@
   height: 100%;
 
   // Ocultar la barra de scroll pero mantener la funcionalidad
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE y Edge */
-  &::-webkit-scrollbar {
-    display: none; /* Chrome, Safari y Opera */
-  }
+  @include custom-scrollbar($visible: false);
 
   // Configurar un layout flexible para las tareas
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   align-content: flex-start;
+}
+
+// Estilo mejorado para las tareas del calendario
+.calendar-month-day-content .calendar-task {
+  @include calendar-task-styles;
+  
+  // Estilos específicos adicionales solo para vista mensual
+  &:nth-child(n+2) {
+    flex: 0 0 calc(50% - 2px);
+  }
 }
 
 .calendar-month-day.calendar-today {
@@ -142,44 +134,5 @@
     justify-content: center;
     padding: 0;
   }
-}
-
-// Estilo mejorado para las tareas del calendario
-.calendar-month-day-content .calendar-task {
-  display: flex;
-  flex-wrap: wrap;
-  background-color: var(--background-primary);
-  border-left: 3px solid var(--interactive-accent);
-  border-radius: 4px;
-  padding: 4px 6px;
-  margin-bottom: 5px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
-  
-  &:hover {
-    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.15);
-  }
-  
-  // Tarea completada
-  &[title*="[x]"], &.completed {
-    border-left-color: var(--interactive-success);
-    opacity: 0.8;
-  }
-  
-  // Segunda fila - descripción de la tarea
-  .task-title {
-    font-size: clamp(0.85em, 0.7em + 0.5vw, 1.1em);
-    flex: 1 0 100%; // Forzar a nueva línea
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.4;
-    color: var(--text-normal);
-  }
-}
-
-// Ajuste para dos columnas - a partir de la 2ª tarea
-.calendar-month-day-content .calendar-task:nth-child(n+2) {
-  flex: 0 0 calc(50% - 2px);
 }
 

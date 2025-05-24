@@ -107,12 +107,12 @@
         }
         
         &.sort-asc::after {
-          content: "↑";
+          content: "▲";
           opacity: 1;
         }
         
         &.sort-desc::after {
-          content: "↓";
+          content: "▼";
           opacity: 1;
         }
       }
@@ -151,7 +151,8 @@
 
 // Specific column styling
 .table-col-priority {
-  width: 60px;
+  min-width: 25px;
+  width: auto;
   text-align: center;
 }
 
@@ -163,7 +164,8 @@
 }
 
 .table-col-status {
-  width: 60px;
+  min-width: 25px;
+  width: auto;
   text-align: center;
 }
 
@@ -172,22 +174,59 @@
 }
 
 .table-col-due {
-  width: 140px;
+  min-width: 150px;
+  width: auto;
   
   &.overdue {
-    color: $overdue-color;
-    font-weight: bold;
+    .due-date {
+      color: $overdue-color;
+      font-weight: bold;
+    }
   }
   
   &.due-today {
-    color: $today-color;
-    font-weight: bold;
+    .due-date {
+      color: $today-color;
+      font-weight: bold;
+    }
+  }
+
+  .task-dates {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    
+    .task-date {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.9em;
+      white-space: nowrap;
+      
+      .date-icon {
+        opacity: 0.9;
+      }
+    }
+  }
+}
+
+.table-col-folder {
+  min-width: 100px;
+
+  .task-folder {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    .folder-icon {
+      opacity: 0.7;
+    }
   }
 }
 
 .table-col-file {
-  width: 150px;
-  
+  min-width: 200px;
+
   .task-file {
     display: flex;
     align-items: center;
@@ -291,6 +330,24 @@
     transform: scale(1.1);
     transition: transform 0.2s ease;
   }
+}
+
+.table-col-row-number {
+  width: 30px;
+  min-width: 30px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.row-number {
+  font-size: 0.9em;
+}
+
+#total-row-count {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  font-weight: normal;
+  margin-left: 2px;
 }
 
 // Responsive adjustments

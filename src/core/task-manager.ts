@@ -1086,6 +1086,4 @@ export class TaskManager {
     });
     return result;
   }
-
-
 }

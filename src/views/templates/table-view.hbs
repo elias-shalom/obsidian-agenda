@@ -31,6 +31,7 @@
 
       <select id="table-due-filter" class="table-filter-dropdown">
         <option value="all">{{t 'all_dates'}}</option>
+        <option value="hasdate">{{t 'has_any_date'}}</option>
         <option value="overdue">{{t 'overdue'}}</option>
         <option value="today">{{t 'due_today'}}</option>
         <option value="thisweek">{{t 'due_this_week'}}</option>
@@ -50,6 +51,9 @@
     <table class="tasks-table">
       <thead>
         <tr>
+          <th class="table-col-row-number">
+            <span id="total-row-count"></span>
+          </th>
           <th class="table-col-priority sortable" data-sort="priority">
             <span class="sort-indicator">{{t 'priority'}}</span>
           </th>
@@ -66,7 +70,7 @@
             <span class="sort-indicator">{{t 'file'}}</span>
           </th>
           <th class="table-col-due sortable" data-sort="due">
-            <span class="sort-indicator">{{t 'due_date'}}</span>
+            <span class="sort-indicator">{{t 'dates'}}</span>
           </th>
           <th class="table-col-tags sortable" data-sort="tags">
             <span class="sort-indicator">{{t 'tags'}}</span>
@@ -76,6 +80,9 @@
       <tbody>
         {{#each tasks}}
         <tr class="task-row {{#if completed}}task-completed{{/if}} {{priorityClass}}" data-file-path="{{this.filePath}}" data-line-number="{{lineNumber}}">
+          <td class="table-col-row-number">
+            <span class="row-number"></span>
+          </td>
           <td class="table-col-priority">
               {{#if priority}}
               <div class="task-priority priority-{{priority}}" title="{{t priority}}">
@@ -116,20 +123,57 @@
             </div>
           </td>
           <td class="table-col-due {{#if isOverdue}}overdue{{/if}} {{#if isDueToday}}due-today{{/if}}">
-            {{#if dueDate}}
-            <div class="task-due-date" title="{{dueDateFull}}">
-              <span class="due-icon">📅</span>
-              <span class="due-text">{{dueDateRelative}}</span>
+            <div class="task-dates">
+              {{#if dueDate}}
+              <div class="task-date due-date" title="{{t 'due_date'}}">
+                <span class="date-icon">{{dateTypeIcon 'Due'}}</span>
+                <span class="date-text">{{formatDate dueDate}}</span>
+              </div>
+              {{/if}}
+
+              {{#if scheduledDate}}
+              <div class="task-date scheduled-date" title="{{t 'scheduled_date'}}">
+                <span class="date-icon">{{dateTypeIcon 'Scheduled'}}</span>
+                <span class="date-text">{{formatDate scheduledDate}}</span>
+              </div>
+              {{/if}}
+              
+              {{#if createdDate}}
+              <div class="task-date created-date" title="{{t 'created_date'}}">
+                <span class="date-icon">{{dateTypeIcon 'Created'}}</span>
+                <span class="date-text">{{formatDate createdDate}}</span>
+              </div>
+              {{/if}}
+              
+              {{#if startDate}}
+              <div class="task-date start-date" title="{{t 'start_date'}}">
+                <span class="date-icon">{{dateTypeIcon 'Start'}}</span>
+                <span class="date-text">{{formatDate startDate}}</span>
+              </div>
+              {{/if}}
+              
+              {{#if completedDate}}
+              <div class="task-date completed-date" title="{{t 'completed_date'}}">
+                <span class="date-icon">{{dateTypeIcon 'Done'}}</span>
+                <span class="date-text">{{formatDate completedDate}}</span>
+              </div>
+              {{/if}}
+              
+              {{#if cancelledDate}}
+              <div class="task-date cancelled-date" title="{{t 'cancelled_date'}}">
+                <span class="date-icon">{{dateTypeIcon 'Cancelled'}}</span>
+                <span class="date-text">{{formatDate cancelledDate}}</span>
+              </div>
+              {{/if}}
             </div>
-            {{/if}}
           </td>
           <td class="table-col-tags">
             <div class="task-tags">
               {{#each tags}}
-              <span class="task-tag">#{{this}}</span>
+              <span class="task-tag">{{this}}</span>
               {{/each}}
             </div>
-          </td>          
+          </td>
         </tr>
         {{/each}}
       </tbody>
@@ -141,23 +185,4 @@
     <p>{{t 'no_tasks_match_filters'}}</p>
   </div>
   {{/unless}}
-
-  <div class="table-pagination">
-    <div class="pagination-info">
-      {{t 'showing'}} {{paginationStart}}-{{paginationEnd}} {{t 'of'}} {{totalTasks}} {{t 'tasks'}}
-    </div>
-    <div class="pagination-controls">
-      <button class="pagination-prev" {{#unless hasPreviousPage}}disabled{{/unless}}>
-        ← {{t 'previous'}}
-      </button>
-      <div class="pagination-pages">
-        {{#each paginationPages}}
-        <button class="pagination-page {{#if isActive}}active{{/if}}">{{pageNumber}}</button>
-        {{/each}}
-      </div>
-      <button class="pagination-next" {{#unless hasNextPage}}disabled{{/unless}}>
-        {{t 'next'}} →
-      </button>
-    </div>
-  </div>
 </div>

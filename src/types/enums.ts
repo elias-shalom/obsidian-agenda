@@ -45,6 +45,15 @@ export enum OnCompletion {
 }
 
 export enum TaskPriority {
+  Lowest = "lowest",
+  Low = "low",
+  Normal = "normal",
+  Medium = "medium",
+  High = "high",
+  Highest = "highest"
+}
+
+export enum TaskPriorityIcon {
   Lowest = "⏬",
   Low = "🔽", 
   Normal = "▶️", // Sin ícono específico

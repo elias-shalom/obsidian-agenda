@@ -1,4 +1,4 @@
-import { OnCompletion, TaskPriority } from "../types/enums.ts";
+import { OnCompletion, TaskPriorityIcon } from "../types/enums.ts";
 import { I18n } from "../core/i18n";
 import { RRule, rrulestr } from 'rrule';
 
@@ -83,12 +83,12 @@ export class TaskSection {
     "➕": { type: "date", property: "createdDate", format: "YYYY-MM-DD" },
     
     // Iconos de prioridad con nombre legible
-    "⏬": { type: "priority", property: "priority", value: TaskPriority.Lowest, name: "lowest" },
-    "🔽": { type: "priority", property: "priority", value: TaskPriority.Low, name: "low" },
-    "🔼": { type: "priority", property: "priority", value: TaskPriority.Medium, name: "medium" },
-    "⏫": { type: "priority", property: "priority", value: TaskPriority.High, name: "high" },
-    "🔺": { type: "priority", property: "priority", value: TaskPriority.Highest, name: "highest" },
-    
+    "⏬": { type: "priority", property: "priority", value: TaskPriorityIcon.Lowest, name: "lowest" },
+    "🔽": { type: "priority", property: "priority", value: TaskPriorityIcon.Low, name: "low" },
+    "🔼": { type: "priority", property: "priority", value: TaskPriorityIcon.Medium, name: "medium" },
+    "⏫": { type: "priority", property: "priority", value: TaskPriorityIcon.High, name: "high" },
+    "🔺": { type: "priority", property: "priority", value: TaskPriorityIcon.Highest, name: "highest" },
+
     // Otros iconos
     "🔁": { type: "recurrence", property: "recurrence" },
     "🆔": { type: "id", property: "id" },

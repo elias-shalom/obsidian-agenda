@@ -3,12 +3,15 @@ import { BaseView } from '../views/base-view';
 import { TaskManager } from '../core/task-manager';
 import { ITask } from '../types/interfaces';
 import { I18n } from '../core/i18n';
-import Handlebars from 'handlebars';  // Asegúrate de importar Handlebars
+import Handlebars from 'handlebars';
+import { TaskDateType } from '../types/enums';
 
 export const TABLE_VIEW_TYPE = 'table-view';
 
 export class TableView extends BaseView {
   private tasks: ITask[] = []; // Lista de tareas
+  private currentSortColumn: string = ''; // Columna actualmente ordenada
+  private currentSortDirection: 'asc' | 'desc' = 'asc'; // Dirección de la ordenación
 
   constructor(leaf: WorkspaceLeaf, private plugin: any, private i18n: I18n, private taskManager: TaskManager) {
     super(leaf);
@@ -50,15 +53,15 @@ export class TableView extends BaseView {
     Handlebars.registerHelper('contains', function(arr, value) {
       return Array.isArray(arr) && arr.includes(value);
     });
-    
-    Handlebars.registerHelper('formatDate', function(date) {
-      if (!date) return '';
-      return new Date(date).toLocaleDateString();
-    });
-    
+
     // Helper para determinar si un valor está en un rango
     Handlebars.registerHelper('inRange', function(value, min, max) {
       return value >= min && value <= max;
+    });
+
+    // Helper para obtener iconos de fecha del enum
+    Handlebars.registerHelper('dateTypeIcon', function(dateType: string) {
+      return TaskDateType[dateType as keyof typeof TaskDateType] || '';
     });
   }
 
@@ -73,6 +76,15 @@ export class TableView extends BaseView {
         this.handleColumnSort(header as HTMLElement);
       });
     });
+  
+    // Establecer ordenación inicial (opcional)
+    // Por ejemplo, ordenar por prioridad de forma descendente por defecto
+    const initialSortHeader = container.querySelector('th[data-sort="priority"]');
+    if (initialSortHeader) {
+      this.handleColumnSort(initialSortHeader as HTMLElement);
+      // Llamar una segunda vez para ordenar descendente (tareas más importantes primero)
+      this.handleColumnSort(initialSortHeader as HTMLElement);
+    }
     
     // Listener para el filtro de búsqueda
     const searchInput = container.querySelector('#table-search-input') as HTMLInputElement;
@@ -89,14 +101,28 @@ export class TableView extends BaseView {
         this.filterTasks(container);
       });
     });
-    
-    // Listener para checkboxes de completado
-    const checkboxes = container.querySelectorAll('.task-checkbox');
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('click', (e) => {
-        this.toggleTaskCompletion(e.currentTarget as HTMLElement);
+
+    // Configurar el botón de limpiar búsqueda
+    const searchClearButton = container.querySelector('#table-search-clear') as HTMLButtonElement;
+
+    if (searchInput && searchClearButton) {
+      // Mostrar/ocultar botón según el contenido
+      searchInput.addEventListener('input', () => {
+        searchClearButton.style.display = searchInput.value ? 'block' : 'none';
+        this.filterTasks(container);
       });
-    });
+      
+      // Limpiar el campo de búsqueda al hacer clic en el botón
+      searchClearButton.addEventListener('click', () => {
+        searchInput.value = '';
+        searchClearButton.style.display = 'none';
+        searchInput.focus(); // Opcional: mantiene el foco en el campo
+        this.filterTasks(container); // Volver a aplicar filtros sin el texto
+      });
+      
+      // Inicialmente ocultar el botón si no hay texto
+      searchClearButton.style.display = searchInput.value ? 'block' : 'none';
+    }
 
     const tableRows = container.querySelectorAll('tr.task-row');
   
@@ -114,15 +140,11 @@ export class TableView extends BaseView {
         }
       });
     });
+
+    // Inicializar la numeración de filas al cargar la vista
+    this.filterTasks(container);
   }
-  
-  // Métodos adicionales para la funcionalidad de la tabla
-  private handleColumnSort(header: HTMLElement): void {
-    // Implementar lógica de ordenación
-    const sortBy = header.dataset.sort;
-    // Aquí irá el código para ordenar las tareas según la columna
-  }
-  
+
   /**
    * Normaliza un texto removiendo acentos y diacríticos
    * Convierte: "ñáéíóúü" → "naeiouu"
@@ -211,7 +233,7 @@ export class TableView extends BaseView {
           shouldShow = false;
         }
       }
-      
+
       // 4. Filtro por carpeta
       if (shouldShow && folderValue !== 'all') {
         const folderName = row.querySelector('.folder-name')?.textContent || '';
@@ -220,59 +242,82 @@ export class TableView extends BaseView {
           shouldShow = false;
         }
       }
-      
+
       // 5. Filtro por fecha de vencimiento
       if (shouldShow && dueValue !== 'all') {
-        const dueDateElement = row.querySelector('.task-due-date');
-        const dueDateText = dueDateElement?.getAttribute('title') || '';
+        // Verificar presencia de cualquier fecha con contenido
+        const dateElements = row.querySelectorAll('.task-date');
+        const hasDateWithContent = Array.from(dateElements).some(el => {
+          const dateText = el.querySelector('.date-text')?.textContent || '';
+          return dateText.trim().length > 0;
+        });
         
-        // Si no hay fecha y se busca algo diferente a 'nodate'
-        if (!dueDateElement && dueValue !== 'nodate') {
-          shouldShow = false;
-        } 
-        // Si se busca específicamente tareas sin fecha
-        else if (dueValue === 'nodate' && dueDateElement) {
-          shouldShow = false;
-        }
-        // Si hay fecha, procesar según el filtro
-        else if (dueDateElement && dueValue !== 'nodate') {
-          const dueDate = new Date(dueDateText);
+        // Verificar los casos especiales primero
+        if (dueValue === 'hasdate') {
+          // Mostrar solo si tiene al menos una fecha con contenido
+          if (!hasDateWithContent) {
+            shouldShow = false;
+          }
+        } else if (dueValue === 'nodate') {
+          // Mostrar solo si no tiene ninguna fecha con contenido
+          if (hasDateWithContent) {
+            shouldShow = false;
+          }
+        } else {
+          // Para los demás filtros, buscar específicamente la fecha de vencimiento
+          const dueDateElement = row.querySelector('.task-date.due-date');
           
-          switch (dueValue) {
-            case 'overdue':
-              // Tareas vencidas (antes de hoy)
-              if (dueDate >= today) {
-                shouldShow = false;
+          // Si no hay fecha de vencimiento, no mostrar para filtros que la requieren
+          if (!dueDateElement) {
+            shouldShow = false;
+          } else {
+            // Obtener el texto de la fecha del span con la clase 'date-text'
+            const dateText = dueDateElement.querySelector('.date-text')?.textContent || '';
+            // Convertir a objeto Date
+            const dueDate = new Date(dateText);
+            
+            // Verificar que es una fecha válida
+            if (!isNaN(dueDate.getTime())) {
+              switch (dueValue) {
+                case 'overdue':
+                  // Tareas vencidas (antes de hoy)
+                  if (dueDate >= today) {
+                    shouldShow = false;
+                  }
+                  break;
+                  
+                case 'today':
+                  // Tareas para hoy
+                  const isToday = dueDate.getDate() === today.getDate() && 
+                                dueDate.getMonth() === today.getMonth() && 
+                                dueDate.getFullYear() === today.getFullYear();
+                  if (!isToday) {
+                    shouldShow = false;
+                  }
+                  break;
+                  
+                case 'thisweek':
+                  // Tareas para esta semana (próximos 7 días)
+                  if (dueDate < today || dueDate > endOfWeek) {
+                    shouldShow = false;
+                  }
+                  break;
+                  
+                case 'future':
+                  // Tareas futuras (después de esta semana)
+                  if (dueDate <= endOfWeek) {
+                    shouldShow = false;
+                  }
+                  break;
               }
-              break;
-              
-            case 'today':
-              // Tareas para hoy
-              const isToday = dueDate.getDate() === today.getDate() && 
-                              dueDate.getMonth() === today.getMonth() && 
-                              dueDate.getFullYear() === today.getFullYear();
-              if (!isToday) {
-                shouldShow = false;
-              }
-              break;
-              
-            case 'thisweek':
-              // Tareas para esta semana (próximos 7 días)
-              if (dueDate < today || dueDate > endOfWeek) {
-                shouldShow = false;
-              }
-              break;
-              
-            case 'future':
-              // Tareas futuras (después de esta semana)
-              if (dueDate <= endOfWeek) {
-                shouldShow = false;
-              }
-              break;
+            } else {
+              // Si no se puede parsear la fecha, no mostrar en filtros específicos
+              shouldShow = false;
+            }
           }
         }
       }
-      
+
       // Aplicar visibilidad según resultado de filtros
       if (shouldShow) {
         (row as HTMLElement).style.display = '';
@@ -281,31 +326,185 @@ export class TableView extends BaseView {
         (row as HTMLElement).style.display = 'none';
       }
     });
-    
+
+    // Luego actualizar los números solo para las filas visibles
+    let rowNumber = 1;
+    tableRows.forEach(row => {
+      if ((row as HTMLElement).style.display !== 'none') {
+        const rowNumberElement = row.querySelector('.row-number');
+        if (rowNumberElement) {
+          rowNumberElement.textContent = rowNumber.toString();
+          rowNumber++;
+        }
+      }
+    });
+
+    // Actualizar el contador total en el encabezado
+    const totalRowCountElement = container.querySelector('#total-row-count');
+    if (totalRowCountElement) {
+      totalRowCountElement.textContent = `(${visibleCount})`;
+    }
+
     // Mostrar mensaje si no hay resultados
     const emptyMessage = container.querySelector('.empty-table-message') as HTMLElement;
     if (emptyMessage) {
       emptyMessage.style.display = visibleCount === 0 ? 'block' : 'none';
     }
-    
-    // Actualizar información de paginación si es necesario
-    this.updatePaginationInfo(container, visibleCount);
   }
-  
-  // Método auxiliar para actualizar información de paginación
-  private updatePaginationInfo(container: HTMLElement, visibleCount: number): void {
-    const paginationInfo = container.querySelector('.pagination-info');
-    if (paginationInfo) {
-      // Si tienes implementada la paginación, actualiza la información aquí
-      // Por ejemplo: 
-      // paginationInfo.textContent = `Mostrando 1-${visibleCount} de ${visibleCount} tareas`;
+
+  private handleColumnSort(header: HTMLElement): void {
+    const sortBy = header.dataset.sort;
+    
+    if (!sortBy) return;
+    
+    // Si hacemos clic en la misma columna, cambiamos la dirección
+    if (this.currentSortColumn === sortBy) {
+      this.currentSortDirection = this.currentSortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // Si es una nueva columna, establecemos dirección ascendente por defecto
+      this.currentSortColumn = sortBy;
+      this.currentSortDirection = 'asc';
+    }
+    
+    const container = header.closest('.table-view-container');
+    if (!container) return;
+    
+    // Actualizar indicadores visuales de ordenación
+    this.updateSortIndicators(container);
+    
+    // Obtener todas las filas
+    const tableBody = container.querySelector('tbody');
+    if (!tableBody) return;
+    
+    const rows = Array.from(tableBody.querySelectorAll('tr.task-row'));
+    
+    // Ordenar las filas
+    const sortedRows = this.sortRows(rows, sortBy, this.currentSortDirection);
+    
+    // Eliminar las filas actuales
+    rows.forEach(row => row.remove());
+    
+    // Añadir las filas ordenadas
+    sortedRows.forEach(row => tableBody.appendChild(row));
+    
+    // Actualizar la numeración de filas
+    this.filterTasks(container as HTMLElement);
+  }
+
+  private updateSortIndicators(container: Element): void {
+    // Eliminar indicadores existentes
+    const allSortIndicators = container.querySelectorAll('.sort-indicator');
+    allSortIndicators.forEach(indicator => {
+      indicator.classList.remove('sort-asc', 'sort-desc');
+    });
+    
+    // Añadir indicador a la columna activa
+    const activeHeader = container.querySelector(`[data-sort="${this.currentSortColumn}"]`);
+    if (activeHeader) {
+      const indicator = activeHeader.querySelector('.sort-indicator');
+      if (indicator) {
+        indicator.classList.add(this.currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+      }
     }
   }
 
-  private toggleTaskCompletion(checkbox: HTMLElement): void {
-    // Implementar lógica para marcar/desmarcar tareas como completadas
-    const taskId = checkbox.dataset.taskId;
-    // Actualizar el estado de la tarea en los datos y en la UI
+  private sortRows(rows: Element[], sortBy: string, direction: 'asc' | 'desc'): Element[] {
+    return [...rows].sort((a, b) => {
+      let valueA: any;
+      let valueB: any;
+      
+      // Extraer valores según el tipo de columna
+      switch(sortBy) {
+        case 'priority':
+          // Mapa de prioridades para ordenación
+          const priorityMap: Record<string, number> = {
+            'highest': 6, 'high': 5, 'medium': 4, 'normal': 3, 'low': 2, 'lowest': 1, 'none': 0
+          };
+          
+          // Obtener clases de prioridad
+          const priorityClassA = a.querySelector('.task-priority')?.classList.toString() || '';
+          const priorityClassB = b.querySelector('.task-priority')?.classList.toString() || '';
+          
+          // Extraer el nivel de prioridad de la clase
+          const priorityA = Object.keys(priorityMap).find(p => priorityClassA.includes(`priority-${p}`)) || 'none';
+          const priorityB = Object.keys(priorityMap).find(p => priorityClassB.includes(`priority-${p}`)) || 'none';
+          
+          valueA = priorityMap[priorityA];
+          valueB = priorityMap[priorityB];
+          break;
+          
+        case 'status':
+          // Mapa de estados para ordenación
+          const statusMap: Record<string, number> = {
+            'Todo': 4, 'InProgress': 3, 'Done': 2, 'Cancelled': 1, 'nonTask': 0
+          };
+          
+          const statusA = a.querySelector('.status-icon')?.getAttribute('data-status') || '';
+          const statusB = b.querySelector('.status-icon')?.getAttribute('data-status') || '';
+          
+          valueA = statusMap[statusA] || 0;
+          valueB = statusMap[statusB] || 0;
+          break;
+          
+        case 'description':
+          valueA = a.querySelector('.task-description')?.textContent || '';
+          valueB = b.querySelector('.task-description')?.textContent || '';
+          break;
+          
+        case 'folder':
+          valueA = a.querySelector('.folder-name')?.textContent || '';
+          valueB = b.querySelector('.folder-name')?.textContent || '';
+          break;
+          
+        case 'file':
+          valueA = a.querySelector('.file-name')?.textContent || '';
+          valueB = b.querySelector('.file-name')?.textContent || '';
+          break;
+          
+        case 'due':
+          // Para fechas, buscamos primero la fecha de vencimiento
+          const dueDateElementA = a.querySelector('.task-date.due-date .date-text');
+          const dueDateElementB = b.querySelector('.task-date.due-date .date-text');
+          
+          // Si hay fecha de vencimiento, la usamos; si no, usamos un valor extremo
+          if (dueDateElementA) {
+            valueA = new Date(dueDateElementA.textContent || '').getTime();
+          } else {
+            valueA = direction === 'asc' ? Number.MAX_SAFE_INTEGER : 0;
+          }
+          
+          if (dueDateElementB) {
+            valueB = new Date(dueDateElementB.textContent || '').getTime();
+          } else {
+            valueB = direction === 'asc' ? Number.MAX_SAFE_INTEGER : 0;
+          }
+          break;
+          
+        case 'tags':
+          valueA = Array.from(a.querySelectorAll('.task-tag'))
+            .map(tag => tag.textContent)
+            .join(',') || '';
+          valueB = Array.from(b.querySelectorAll('.task-tag'))
+            .map(tag => tag.textContent)
+            .join(',') || '';
+          break;
+          
+        default:
+          valueA = '';
+          valueB = '';
+      }
+      
+      // Comparar valores
+      if (typeof valueA === 'string' && typeof valueB === 'string') {
+        return direction === 'asc' 
+          ? valueA.localeCompare(valueB) 
+          : valueB.localeCompare(valueA);
+      } else {
+        return direction === 'asc' 
+          ? (valueA - valueB) 
+          : (valueB - valueA);
+      }
+    });
   }
 
   async onClose(): Promise<void> {

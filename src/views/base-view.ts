@@ -3,7 +3,7 @@ import Handlebars from 'handlebars';
 import { ITask, FolderNode } from '../types/interfaces';
 import { TaskManager } from '../core/task-manager';
 import { DateTime } from 'luxon';
-import { TaskPriority } from '../types/enums';
+import { TaskPriorityIcon } from '../types/enums';
 
 export abstract class BaseView extends ItemView {
   private pathHbs: string = '.obsidian/plugins/obsidian-agenda/templates/'; 
@@ -91,6 +91,40 @@ export abstract class BaseView extends ItemView {
     return rootFolders;
   }
 
+  /**
+   * Convierte una fecha a objeto Date de JavaScript manteniendo el día correcto en la zona horaria local
+   */
+  protected toLocalMidnight(dateInput: any): Date | null {
+    if (!dateInput) return null;
+    
+    try {
+      let date: Date;
+      
+      // Si es un string, convertir directamente
+      if (typeof dateInput === 'string') {
+        // Crear DateTime en zona horaria local, usando startOf('day') para garantizar medianoche
+        return DateTime.fromISO(dateInput).startOf('day').toJSDate();
+      }
+      
+      // Si es un objeto Date, asegurar que sea medianoche en zona horaria local
+      if (dateInput instanceof Date) {
+        return DateTime.fromJSDate(dateInput).startOf('day').toJSDate();
+      }
+      
+      // Si tiene método toJSDate(), usarlo y luego asegurar que sea medianoche local
+      if (dateInput && typeof dateInput.toJSDate === 'function') {
+        return DateTime.fromJSDate(dateInput.toJSDate()).startOf('day').toJSDate();
+      }
+      
+      // Último recurso: intentar crear una fecha
+      date = new Date(dateInput);
+      return DateTime.fromJSDate(date).startOf('day').toJSDate();
+    } catch (error) {
+      console.error("Error al convertir fecha:", error, dateInput);
+      return null;
+    }
+  }
+
   protected registerHandlebarsHelpers(i18n: any): void {
     // Si ya están registrados, no hacer nada
     if (this.helpersRegistered) return;
@@ -141,15 +175,15 @@ export abstract class BaseView extends ItemView {
       if (!priority) return "";
       
       // Devolver directamente el valor del enum si existe
-      if (Object.values(TaskPriority).includes(priority)) {
+      if (Object.values(TaskPriorityIcon).includes(priority)) {
         return priority;
       }
       
       // Si es un string que coincide con una clave del enum (case insensitive)
       const uppercasePriority = priority.toUpperCase?.() || priority;
-      for (const key in TaskPriority) {
+      for (const key in TaskPriorityIcon) {
         if (key.toUpperCase() === uppercasePriority) {
-          return TaskPriority[key];
+          return TaskPriorityIcon[key];
         }
       }
       

@@ -117,6 +117,7 @@
   "upcoming_tasks": "Upcoming tasks",
   "apply": "Apply",
   "reset": "Reset",
+  "days_old": "days old",
 
   "today_tasks_tooltip": "List of tasks scheduled for today",
   "overdue_tasks_tooltip": "List of tasks that are overdue",
@@ -135,6 +136,17 @@
   "completion_ratio_tooltip": "Ratio of tasks completed per day in the last week",
   "consistency_tooltip": "Percentage of active days in the last week",
   "system_health_tooltip": "Percentage of properly configured tasks",
+
+  "general_settings": "General Settings",
+  "language": "Language",
+  "language_description": "Select the language for the agenda.",
+
+  "english": "English",
+  "spanish": "Spanish",
+  "german": "German",
+  "portuguese": "Portuguese",
+  "french": "French",
+  "italian": "Italian",
   "errors": {
     "invalidDate": "Icon {icon} is not followed by a valid date or contains extra text.",
     "invalidPriority": "Icon {icon} should not have extra text.",

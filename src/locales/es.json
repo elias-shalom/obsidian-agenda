@@ -117,6 +117,7 @@
   "upcoming_tasks": "Próximas tareas",
   "apply": "Aplicar",
   "reset": "Restablecer",
+  "days_old": "días",
 
   "today_tasks_tooltip": "Lista de tareas programadas para el día de hoy",
   "overdue_tasks_tooltip": "Lista de tareas que han vencido",
@@ -142,6 +143,17 @@
   "invalid_tasks_tooltip": "Lista de tareas que no cumplen con los criterios de validación",
   "oldest_tasks_tooltip": "Lista de tareas más antiguas",
   "project_tasks_tooltip": "Lista de tareas agrupadas por proyecto",
+
+  "general_settings": "Configuración general",
+  "language": "Idioma",
+  "language_description": "Selecciona el idioma de la agenda.",
+
+  "english": "Inglés",
+  "spanish": "Español",
+  "german": "Alemán",
+  "portuguese": "Portugués",
+  "french": "Francés",
+  "italian": "Italiano",
   "errors": {
     "invalidDate": "El ícono {icon} no está seguido por una fecha válida o contiene texto adicional.",
     "invalidPriority": "El ícono {icon} no debe tener texto adicional.",

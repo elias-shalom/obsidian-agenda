@@ -16,6 +16,7 @@
   background-color: $primary-bg-color; // Usar la variable existente
   //border-bottom: 1px solid #333; // Usar mismo estilo que el header existente
   padding-bottom: 8px;
+  overflow-x: hidden;
 }
 
 .agenda-content-container {

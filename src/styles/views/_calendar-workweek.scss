@@ -3,6 +3,7 @@
 
 /* Estilos específicos para la vista de semana laboral */
 .calendar-workweek-view {
+  overflow-x: hidden;
   /* Heredar estilos base de la vista semanal */
   .calendar-week-header {
     /* Sólo mostrar 5 días laborables */

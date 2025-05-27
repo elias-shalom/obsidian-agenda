@@ -3,8 +3,14 @@ import { ViewManager } from "./core/view-manager";
 import { I18n } from "./core/i18n";
 import logger from './core/logger';
 import { TaskManager } from "./core/task-manager";
+import { SettingTab } from "./settings/setting-tab";
+import {
+	DEFAULT_SETTINGS,
+	AgendaPluginSettings,
+} from "./settings/settings";
 
 export default class ObsidianAgenda extends Plugin {
+  settings: AgendaPluginSettings;
   private viewManager: ViewManager ;
   private i18n: I18n;
   private taskManager: TaskManager; 
@@ -23,11 +29,15 @@ export default class ObsidianAgenda extends Plugin {
     const OVERVIEW_VIEW_TYPE = 'overview-view';
 
     try {
-      // Cargar estilos CSS
-      await this.loadStyles();
+      await this.loadSettings();
 
       // Cargar idioma (puedes usar una configuración o detectar el idioma del sistema)
-      await this.i18n.loadLanguage("es");
+      await this.i18n.loadLanguage(this.settings.language);
+
+      this.addSettingTab(new SettingTab(this.app, this, this.i18n));
+
+      // Cargar estilos CSS
+      await this.loadStyles();
 
       this.addRibbonIcon("calendar-check", this.i18n.t("agenda_title"), async () => {
         await this.viewManager.activateView(OVERVIEW_VIEW_TYPE);
@@ -41,6 +51,14 @@ export default class ObsidianAgenda extends Plugin {
     } catch (error) {
       logger.error(`Error durante la carga del plugin: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  async loadSettings(): Promise<void> {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+
+  async saveSettings(): Promise<void> {
+    await this.saveData(this.settings);
   }
 
   /**

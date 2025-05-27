@@ -12,7 +12,7 @@
     "test:coverage": "jest --coverage"	
   },
 	"keywords": [],
-	"author": "",
+	"author": "elias-shalom",
 	"license": "MIT",
 	"devDependencies": {
 		"@types/jest": "^29.5.14",

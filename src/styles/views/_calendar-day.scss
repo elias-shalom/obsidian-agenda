@@ -7,7 +7,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-right: 1px solid var(--background-modifier-border);
+  //border-right: 1px solid var(--background-modifier-border);
   
   .calendar-hour-label {
     font-size: 0.85em;
@@ -15,46 +15,277 @@
   }
 }
 
+// Mejorar el encabezado de la columna del día
 .calendar-day-column-header {
   flex: 1;
   text-align: center;
-  padding: 8px 0;
-  border-left: 1px solid var(--background-modifier-border);
+  padding: 12px 0;
+  //border-left: 1px solid var(--background-modifier-border);
   min-width: 80px;
+  background-color: rgba($primary-bg-color, 0.3); // Color más claro para el encabezado
+  border-top: 1px solid var(--background-modifier-border);
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
 
   .calendar-day-name {
     font-weight: bold;
     margin-bottom: 4px;
+    color: var(--text-normal);
   }
 
   .calendar-date {
-    font-size: 1.1em;
+    font-size: 1.2em;
+    color: var(--text-accent);
   }
 
   &.calendar-today {
-    background-color: var(--background-modifier-hover);
+    background-color: rgba($today-border-color, 0.1);
     border: 1px solid var(--interactive-accent);
   }
 }
 
-.calendar-day-column {
-  flex: 1;
-  border-left: 1px solid rgba(var(--background-modifier-border-rgb), 0.5);
-  min-width: 80px;
-  
-  &.calendar-today {
-    background-color: rgba(var(--background-modifier-hover-rgb), 0.2);
+.calendar-day-full-row {
+  display: flex;
+  min-height: 300px; // Altura para mostrar varias tareas
+  //padding: 15px;
+
+  .calendar-day-column {
+    flex: 1;
+    border: 1px solid var(--background-modifier-border); // Marco completo
+    border-top: none; // Eliminar borde superior para conectarlo con el encabezado
+    min-width: 80px;
+    position: relative;
+    background-color: rgba($primary-bg-color, 0.1);
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    
+    &.calendar-today {
+      background-color: rgba($today-border-color, 0.05);
+      border-color: var(--interactive-accent);
+    }
+
+    .calendar-task {
+      @include calendar-task-styles();
+
+      height: 50px; // Aumentar altura (ajusta según necesites)
+      display: flex;
+      align-items: center; // Centrar verticalmente
+      
+      // Si necesitas centrar horizontalmente también
+      justify-content: flex-start;
+    }
   }
 }
 
-.calendar-hour-row {
-  display: flex;
-  min-height: 50px;
-  border-bottom: 1px solid rgba(var(--background-modifier-border-rgb), 0.5);
+.calendar-day-view {
+  // Contenedor con ancho completo
+  width: 100%;
+  
+  .calendar-day-body {
+    display: flex;
+    flex-direction: column;
+    
+  }
+  
+  // Ajustar también el encabezado para mantener alineación
+  .calendar-day-header {
+    display: flex;
+    width: 100%;
+    margin-bottom: 0; // Eliminar espacio para conectar con el cuerpo
+    
+    .calendar-time-column {
+      min-width: 60px;
+      background-color: rgba($primary-bg-color, 0.3);
+      border: 1px solid var(--background-modifier-border);
+      border-top-left-radius: 6px;
+      border-bottom: none;
+    }
+    
+    .calendar-day-column-header {
+      width: 50%;
+    }
+  }
 }
 
-.calendar-hour-cell {
-  height: 100%;
-  padding: 2px 4px;
+// Mini calendario
+.calendar-day-container {
+  display: flex;
+  width: 100%;
+}
+
+.calendar-mini-sidebar {
+  width: 250px;
+  padding: 10px;
+  //border-right: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+.calendar-day-main-view {
+  flex-grow: 1;
+  width: calc(100% - 250px);
+  margin-left: 15px; // Añadir espacio entre el mini calendario y la vista principal
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // Sombra más pronunciada
+  overflow: hidden; // Para que los bordes redondeados funcionen correctamente
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  overflow-x: hidden; // Para la vista de día
+
+  .calendar-day-header {
+    background-color: rgba($primary-bg-color, 0.25); // Color más claro para el encabezado
+    border-bottom: 1px solid var(--background-modifier-border);
+    
+    .calendar-day-column-header {
+      padding: 15px 0; // Más espacio para el encabezado
+      
+      .calendar-day-name {
+        font-size: 1.1em;
+        letter-spacing: 0.5px;
+      }
+      
+      .calendar-date {
+        font-size: 1.4em;
+        margin-top: 5px;
+      }
+    }
+  }
+  
+  .calendar-day-body {
+    max-height: calc(100vh - 250px); // Altura máxima adaptativa
+    overflow-y: auto;
+    
+  }
+}
+
+.calendar-mini-month {
+  background-color: var(--background-primary);
+  border-radius: 6px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
+
+.calendar-mini-month-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background-color: var(--background-secondary);
+  
+  .mini-month-nav {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .mini-month-name {
+    font-weight: bold;
+    text-align: center;
+    flex-grow: 1;
+  }
+  
+  .mini-calendar-prev,
+  .mini-calendar-next {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    color: var(--text-muted);
+    
+    &:hover {
+      color: var(--text-normal);
+      background-color: var(--background-modifier-hover);
+      border-radius: 4px;
+    }
+    
+    .icon {
+      font-size: 0.8em;
+    }
+  }
+}
+
+.calendar-mini-month-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+  text-align: center;
+  font-size: 0.8em;
+  color: var(--text-muted);
+}
+
+.calendar-mini-month-grid {
+  padding: 5px;
+}
+
+.calendar-mini-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar-mini-day {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin: 2px;
+  font-size: 0.9em;
+  
+  .mini-day-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    
+    // Indicador de tareas
+    &.has-tasks::after {
+      content: "";
+      display: block;
+      width: 4px;
+      height: 4px;
+      background-color: var(--interactive-accent);
+      border-radius: 50%;
+      margin-top: 2px;
+    }
+  }
+  
+  &:hover {
+    background-color: var(--background-modifier-hover);
+  }
+  
+  &.other-month {
+    opacity: 0.5;
+  }
+  
+  &.mini-today .mini-day-content {
+    border: 1px solid var(--interactive-accent);
+    font-weight: bold;
+  }
+  
+  &.mini-selected .mini-day-content {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+  }
+}
+
+// Ajustar el header y body para que no tomen el 50% 
+.calendar-day-view {
+  .calendar-day-header {
+    width: 100%;
+  }
+}
+
+
+// Para cualquier contenedor que necesite este comportamiento
+.no-horizontal-scroll {
+  overflow-x: hidden;
+}
+

@@ -16,13 +16,13 @@
       
       <div class="calendar-navigation">
         <button class="calendar-prev" aria-label="{{t 'previous'}}">
-          <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-big-left-icon lucide-arrow-big-left"><path d="M18 15h-6v4l-7-7 7-7v4h6v6z"/></svg></span>
+          <span class="icon">◀</span>
         </button>
         <button class="calendar-today" aria-label="{{t 'today'}}">
           {{t 'today'}}
         </button>
         <button class="calendar-next" aria-label="{{t 'next'}}">
-          <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-big-right-icon lucide-arrow-big-right"><path d="M6 9h6V5l7 7-7 7v-4H6V9z"/></svg></span>
+          <span class="icon">▶</span>
         </button>
       </div>
     </div>
@@ -30,34 +30,64 @@
   {{!-- Vista diaria --}}
   {{#equals calendar.viewType "day"}}
   <div class="calendar-day-view">
-    <div class="calendar-day-header">
-      <div class="calendar-time-column calendar-day-hour-header"></div>
-      <div class="calendar-day-column-header {{#if calendar.isToday}}calendar-today{{/if}}">
-        <div class="calendar-day-name">{{calendar.dayName}}</div>
-        <div class="calendar-date">{{getDayOfMonth calendar.date}}</div>
-      </div>
-    </div>
-    <div class="calendar-day-body">
-      {{#each calendar.hourSlots}}
-        <div class="calendar-hour-row">
-          <div class="calendar-time-column">
-            <div class="calendar-hour-label">{{formattedHour}}</div>
+    <div class="calendar-day-container">
+      <div class="calendar-day-main-view">
+        <div class="calendar-day-header">
+          <div class="calendar-day-column-header {{#if calendar.isToday}}calendar-today{{/if}}">
+            <div class="calendar-day-name">{{calendar.dayName}}</div>
+            <div class="calendar-date">{{getDayOfMonth calendar.date}}</div>
           </div>
-          
-          <div class="calendar-day-column {{#if ../calendar.isToday}}calendar-today{{/if}}" data-date="{{toISODate ../calendar.date}}" data-hour="{{hour}}">
-            <div class="calendar-hour-cell">
-              {{#each tasks}}
+        </div>
+        <div class="calendar-day-body">
+          <div class="calendar-day-full-row">
+            <div class="calendar-day-column {{#if calendar.isToday}}calendar-today{{/if}}" data-date="{{toISODate calendar.date}}">
+              {{#each calendar.tasksForDay}}
                 <div class="calendar-task" 
-                     data-file-path="{{filePath}}" 
-                     data-line-number="{{lineNumber}}"
-                     data-tooltip="{{description}}">
+                    data-file-path="{{filePath}}" 
+                    data-line-number="{{lineNumber}}"
+                    data-tooltip="{{description}}">
                   <span class="task-title">{{description}}</span>
                 </div>
               {{/each}}
             </div>
           </div>
         </div>
-      {{/each}}
+      </div>
+
+      <div class="calendar-mini-sidebar">
+        <div class="calendar-mini-month">
+          <div class="calendar-mini-month-header">
+            <div class="mini-month-nav">
+              <button class="mini-calendar-prev" aria-label="{{t 'previous_month'}}">
+                <span class="icon">◀</span>
+              </button>
+              <div class="mini-month-name">{{calendar.miniCalendar.monthName}}</div>
+              <button class="mini-calendar-next" aria-label="{{t 'next_month'}}">
+                <span class="icon">▶</span>
+              </button>
+            </div>
+          </div>
+          <div class="calendar-mini-month-weekdays">
+            {{#each calendar.miniCalendar.weekdays}}
+              <div class="calendar-mini-weekday">{{this}}</div>
+            {{/each}}
+          </div>
+          <div class="calendar-mini-month-grid">
+            {{#each calendar.miniCalendar.weeks}}
+              <div class="calendar-mini-week">
+                {{#each this}}
+                  <div class="calendar-mini-day {{#if isCurrentMonth}}current-month{{else}}other-month{{/if}} {{#if isToday}}mini-today{{/if}} {{#if isSelected}}mini-selected{{/if}}" 
+                       data-date="{{date}}">
+                    <div class="mini-day-content {{#if hasTasks}}has-tasks{{/if}}">
+                      {{day}}
+                    </div>
+                  </div>
+                {{/each}}
+              </div>
+            {{/each}}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   {{/equals}}

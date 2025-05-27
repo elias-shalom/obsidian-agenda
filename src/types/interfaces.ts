@@ -178,3 +178,12 @@ export interface HourSlot {
   formattedHour: string;
   tasks: ITask[];
 }
+
+export interface MiniCalendarDay {
+  day: number;
+  date: string; // Formato ISO
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  isSelected: boolean;
+  hasTasks?: boolean;
+}

@@ -14,6 +14,7 @@
   display: flex;
   justify-content: center;
   padding: 0;
+  overflow-x: hidden;
 }
 
 /* ==========================================================================
@@ -35,7 +36,7 @@
   border-radius: 5px !important; // Bordes redondeados
   box-shadow: none !important; // Sin sombra
   flex-wrap: nowrap; // Evita que los elementos salten a la siguiente línea
-  overflow-x: auto; // Permite scroll horizontal si es necesario
+  overflow-x: hidden; // Permite scroll horizontal si es necesario
   scrollbar-width: thin; // Barra de desplazamiento delgada (Firefox)
   
   // Estilizar scrollbar para navegadores webkit (Chrome, Safari)

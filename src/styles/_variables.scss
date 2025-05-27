@@ -5,6 +5,7 @@
 $primary-bg-color: #111111; // Color de fondo principal
 $text-color: #989898;
 $hover-bg-color: #444;
+$hover-bg-color-light: #999;
 $active-border-color: #555;
 $active-line-color: #fff;
 $heather-bg-color: #1e1e1e;
@@ -166,6 +167,12 @@ $breakpoints: (
       @include custom-scrollbar();
     }
   }
+
+  &:hover {
+    background-color: rgba($hover-bg-color, 0.08) !important;
+    border: 1px solid rgba($hover-bg-color-light, 0.5) !important;
+    box-shadow: 0 0 5px rgba($text-color, 0.2);
+  }
   
   // Estilo común para día actual
   &.calendar-today {
@@ -196,22 +203,31 @@ $breakpoints: (
 
 // Mixin para estilos de tareas en el calendario
 @mixin calendar-task-styles {
-  display: flex;
-  flex-wrap: wrap;
   background-color: var(--background-primary);
-  border-left: 3px solid var(--interactive-accent);
+  color: var(--text-on-accent);
   border-radius: 4px;
   padding: 4px 6px;
   margin-bottom: 5px;
+  display: flex;
+  flex-wrap: wrap;  
+  border-left: 3px solid var(--interactive-accent);  
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
 
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%; /* Asegura que no exceda el ancho de la celda */
+  box-sizing: border-box;
+  max-height: 50px;
+
   &:hover {
-    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.15);
+    opacity: 0.8; //box-shadow: 0 2px 3px rgba(0, 0, 0, 0.15);
   }
   
   .task-title {
-    font-size: clamp(0.85em, 0.7em + 0.5vw, 1.1em);
+    font-size: clamp(0.7em, 0.5em + 0.5vw, 1.1em);
     flex: 1 0 100%;
     @include text-truncate();
     line-height: 1.4;

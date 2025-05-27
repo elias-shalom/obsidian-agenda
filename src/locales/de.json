@@ -141,6 +141,13 @@
   "language": "Sprache",
   "language_description": "Wählen Sie die Sprache für die Agenda aus.",
 
+  "invalid_tasks": "Ungültige Aufgaben",
+  "oldest_tasks": "Älteste Aufgaben",
+  "project_tasks": "Aufgaben nach Projekt",
+  "invalid_tasks_tooltip": "Liste der Aufgaben, die die Validierungskriterien nicht erfüllen",
+  "oldest_tasks_tooltip": "Liste der ältesten Aufgaben",
+  "project_tasks_tooltip": "Liste der Aufgaben, gruppiert nach Projekt",
+
   "english": "Englisch",
   "spanish": "Spanisch",
   "german": "Deutsch",

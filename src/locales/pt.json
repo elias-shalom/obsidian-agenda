@@ -137,6 +137,13 @@
   "consistency_tooltip": "Porcentagem de dias ativos na última semana",
   "system_health_tooltip": "Porcentagem de tarefas configuradas corretamente",
 
+  "invalid_tasks": "Tarefas inválidas",
+  "oldest_tasks": "Tarefas mais antigas",
+  "project_tasks": "Tarefas por projeto",
+  "invalid_tasks_tooltip": "Lista de tarefas que não atendem aos critérios de validação",
+  "oldest_tasks_tooltip": "Lista de tarefas mais antigas",
+  "project_tasks_tooltip": "Lista de tarefas agrupadas por projeto",
+
   "general_settings": "Configurações Gerais",
   "language": "Idioma",
   "language_description": "Selecione o idioma para a agenda.",

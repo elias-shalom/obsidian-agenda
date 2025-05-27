@@ -242,18 +242,27 @@ export abstract class BaseView extends ItemView {
 
     tabs.forEach((tab) => {
       const tabId = tab.getAttribute("id");
-      if (tabId === `${activeViewType}-tab`) {
+      
+      // Verificar coincidencia exacta o si es una vista de calendario
+      const isCalendarView = activeViewType.startsWith("calendar-") && tabId === "calendar-view-tab";
+      const isExactMatch = tabId === `${activeViewType}-tab`;
+      
+      if (isExactMatch || isCalendarView) {
         tab.classList.add("active");
       } else {
         tab.classList.remove("active");
       }
     });
 
+    // Lo mismo para los contenedores de pestañas
     const tabContainers = container.querySelectorAll(".c-tab-container");
-
     tabContainers.forEach((buttonContainer) => {
       const divId = buttonContainer.getAttribute("id");
-      if (divId === `${activeViewType}-container`) {
+      
+      const isCalendarContainer = activeViewType.startsWith("calendar-") && divId === "calendar-view-container";
+      const isExactMatch = divId === `${activeViewType}-container`;
+      
+      if (isExactMatch || isCalendarContainer) {
         buttonContainer.classList.add("active");
       } else {
         buttonContainer.classList.remove("active");

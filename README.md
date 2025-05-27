@@ -1,41 +1,123 @@
 # Obsidian Agenda Plugin
 
-This is a agenda plugin for Obsidian (https://obsidian.md).
+A comprehensive task management and calendar plugin for Obsidian (https://obsidian.md).
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+Obsidian Agenda transforms your vault into a powerful productivity system by providing intuitive task management interfaces and calendar views. Seamlessly integrate with your existing Obsidian notes while organizing tasks across multiple views.
 
-This agenda plugin some of the basic functionality the an agenda.
-- todo. list of features
+## Features
 
-## Manually installing the plugin
+### General Features
+- ✅ Parse and track tasks from your entire vault
+- ✅ Compatible with [Obsidian Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) syntax and metadata
+- ✅ Multiple view types to manage tasks according to your workflow
+- ✅ Real-time task updates
+- ✅ Customizable interface with themes support
+- ✅ Keyboard shortcuts for common actions
+- ✅ Localization support
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+### Overview View
+- ✅ Dashboard-style task summary
+- ✅ Statistics and progress tracking
+- ✅ Quick access to upcoming deadlines
+- ✅ Task distribution by project/folder
+- ✅ Overdue task highlighting
+- ✅ Customizable widgets
 
-## Funding URL
+### List View
+- ✅ Customizable task listing with multiple columns
+- ✅ Advanced filtering by date, project, priority, and tags
+- ✅ Group tasks by date, folder, status, or custom attributes
+- ✅ Inline task editing
+- ✅ Collapsible task groups
+- ✅ Bulk actions for multiple tasks
 
-You can include funding URLs where people who use your plugin can financially support it.
+### Table View
+- ✅ Spreadsheet-style task management
+- ✅ Customizable columns and layouts
+- ✅ Sortable and resizable columns
+- ✅ Quick entry and editing of task attributes
+- ✅ CSV export capabilities
+- ✅ Conditional formatting
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+### Calendar View
+- ✅ Multiple calendar layouts (day, week, work week, and month)
+- ✅ Task visualization on calendar grid
+- ✅ Mini-calendar for quick date navigation
+- ✅ Task indicators showing busy days
+- ✅ Quick task creation at specific times
+- ✅ Syncs with native Obsidian daily notes
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
-```
+## Demo Videos
 
-If you have multiple URLs, you can also do:
+### Overview View Demo
+[Coming soon]
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
+### List View Demo
+[Coming soon]
 
-## API Documentation
+### Table View Demo
+[Coming soon]
 
-See https://github.com/elias-shalom/obsidian-agenda
+### Calendar View Demo
+[Coming soon]
+
+## Installation
+
+### From Obsidian Community Plugins
+1. Open Obsidian Settings
+2. Go to Community Plugins and disable Safe Mode
+3. Click Browse and search for "Agenda"
+4. Install the plugin and enable it
+
+### Manual Installation
+1. Download the latest release from the releases page
+2. Extract the zip file to your vault's `.obsidian/plugins/` folder
+3. Ensure you have the following files in `.obsidian/plugins/obsidian-agenda/`:
+   - `main.js`
+   - `styles.css`
+   - `manifest.json`
+4. Enable the plugin in Obsidian settings
+
+## Usage
+
+1. Create a new Agenda view by clicking the Agenda icon in the left sidebar
+2. Choose your preferred view type (Overview, List, Table, or Calendar)
+3. Tasks from your vault will automatically appear in the selected view
+4. Use the toolbar options to filter, sort, and customize your view
+
+For detailed usage instructions, please refer to the [Wiki](https://github.com/yourusername/obsidian-agenda/wiki).
+
+## Task Format and Compatibility
+
+Obsidian Agenda works with tasks created using the standard Obsidian checkbox format `- [ ]` and is fully compatible with the popular [Obsidian Tasks plugin](https://github.com/obsidian-tasks-group/obsidian-tasks). It recognizes and properly handles:
+
+- Due dates (📅)
+- Scheduled dates (⏳)
+- Start dates (🛫)
+- Priority markers (⏫⏬)
+- Recurring tasks (🔁)
+- Custom statuses
+- Task tags
+
+All metadata created with Obsidian Tasks will be properly recognized and displayed in Agenda views.
+
+## Configuration
+
+Obsidian Agenda offers numerous configuration options through the settings tab:
+- Task parsing rules
+- Default view settings
+- Display preferences
+- Theme customization
+- Integration with other plugins
+
+## Support and Feedback
+
+If you encounter any issues or have suggestions for improvements, please file an issue on the [GitHub repository](https://github.com/yourusername/obsidian-agenda/issues).
+
+## Funding
+
+If you find this plugin useful, please consider supporting its development:
+
+[Your funding URL here]
+
+

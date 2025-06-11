@@ -47,7 +47,18 @@ Obsidian Agenda transforms your vault into a powerful productivity system by pro
 - ✅ Quick task creation at specific times
 - ✅ Syncs with native Obsidian daily notes
 
+
+## Screenshots
+
+[Overview]
+screenshots\Overview.png
+
+screenshots\ListView.png
+
+screenshots\TableView.png
+
 ## Demo Videos
+
 
 ### Overview View Demo
 [Coming soon]
@@ -85,7 +96,7 @@ Obsidian Agenda transforms your vault into a powerful productivity system by pro
 3. Tasks from your vault will automatically appear in the selected view
 4. Use the toolbar options to filter, sort, and customize your view
 
-For detailed usage instructions, please refer to the [Wiki](https://github.com/yourusername/obsidian-agenda/wiki).
+For detailed usage instructions, please refer to the [Wiki](https://github.com/elias-shalom/obsidian-agenda/wiki).
 
 ## Task Format and Compatibility
 
@@ -95,8 +106,8 @@ Obsidian Agenda works with tasks created using the standard Obsidian checkbox fo
 - Scheduled dates (⏳)
 - Start dates (🛫)
 - Priority markers (⏫⏬)
-- Recurring tasks (🔁)
-- Custom statuses
+- Recurring tasks (🔁) (comming soon)
+- Custom statuses (comming soon)
 - Task tags
 
 All metadata created with Obsidian Tasks will be properly recognized and displayed in Agenda views.
@@ -110,11 +121,38 @@ Obsidian Agenda offers numerous configuration options through the settings tab:
 - Theme customization
 - Integration with other plugins
 
+## Scope this version 1.0.0
+
+Version 1.0.0 of Obsidian Agenda focuses on providing robust viewing and organization capabilities for your tasks while maintaining compatibility with existing Obsidian workflows:
+
+Included in Version 1.0.0:
+
+1. Multiple task visualization views (Overview, List, Table, Calendar)
+2. Full compatibility with standard Obsidian task format (- [ ])
+3. Integration with Obsidian Tasks plugin metadata (due dates, start dates, priorities, tags)
+4. Advanced filtering, sorting, and grouping capabilities
+5. Customizable display options and themes
+
+Current Limitations:
+
+1. Task creation and editing requires using Markdown files or the Obsidian Tasks plugin
+2. Calendar view does not support time-of-day scheduling (hours) as the Tasks plugin doesn't recognize this format
+3. View-only functionality for most task operations
+
+Planned for Future Versions:
+
+1. Native task creation and editing within Agenda views
+2. Support for time-of-day task scheduling
+3. Recursive/repeating tasks support (🔁)
+4. Custom status implementation
+5. Enhanced compatibility with Tasks plugin dataview format
+6. Advanced calendar features with time blocks
+
 ## Support and Feedback
 
-If you encounter any issues or have suggestions for improvements, please file an issue on the [GitHub repository](https://github.com/yourusername/obsidian-agenda/issues).
+If you encounter any issues or have suggestions for improvements, please file an issue on the [GitHub repository](https://github.com/elias-shalom/obsidian-agenda/issues).
 
-## Funding
+## Funding (comming soon)
 
 If you find this plugin useful, please consider supporting its development:
 

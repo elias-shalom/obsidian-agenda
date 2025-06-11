@@ -63,10 +63,6 @@ const context = await esbuild.context({
 					to: "dist/locales", // Ruta de destino
 				},
 				{
-						from: "src/styles/**/*", // Ruta de origen
-						to: "dist", // Ruta de destino
-				},
-				{
 						from: "manifest.json", // Ruta de origen
 						to: "dist/manifest.json", // Ruta de destino
 				},

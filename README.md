@@ -50,12 +50,11 @@ Obsidian Agenda transforms your vault into a powerful productivity system by pro
 
 ## Screenshots
 
-[Overview]
-screenshots\Overview.png
+![Overview](screenshots/Overview.png)
 
-screenshots\ListView.png
+![List View](screenshots/ListView.png)
 
-screenshots\TableView.png
+![Table View](screenshots/TableView.png)
 
 ## Demo Videos
 

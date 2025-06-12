@@ -33,7 +33,7 @@
   margin: 0 10px;
   
   select.calendar-view-type {
-    background-color: rgba($primary-bg-color, 0.8);
+    background-color: color-mix(in srgb,$primary-bg-color 80%, transparent);
     color: $text-color;
     border: 1px solid var(--background-modifier-border);
     border-radius: 4px;
@@ -59,11 +59,11 @@
   gap: 8px;
 
   button {
-    background-color: rgba($primary-bg-color, 0.8);
+    background-color: color-mix(in srgb,$primary-bg-color 80%, transparent);
     border: 1px solid var(--background-modifier-border);
     transition: all 0.2s ease;
     
-    @include interactive-states($hover-bg-color, #fff);
+    @include interactive-states($hover-bg-color, var(--color-base-100));
 
     svg {
       // Elimina cualquier margen o posición que pueda estar afectando
@@ -143,6 +143,17 @@
   .calendar-view-dropdown,
   .calendar-grid-style-dropdown {
     @include interactive-control;
+
+    // Estilos para las opciones desplegables
+    option {
+      background-color: var(--background-primary);
+      color: var(--text-normal);
+      
+      &:hover, &:focus {
+        background-color: var(--interactive-accent) !important;
+        color: var(--text-on-accent) !important;
+      }
+    }
   }
 
   // Navegación y botones

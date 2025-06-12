@@ -2,35 +2,20 @@
 @use "sass:map";
 
 // Variables de colores y estilos base
-$primary-bg-color: #111111; // Color de fondo principal
-$text-color: #989898;
-$hover-bg-color: #444;
-$hover-bg-color-light: #999;
-$active-border-color: #555;
-$active-line-color: #fff;
-$heather-bg-color: #1e1e1e;
-$today-border-color: rgb(138, 92, 244); 
+$primary-bg-color: var(--background-primary);//#111111; // Color de fondo principal
+$text-color: var(--color-base-70);
+$hover-bg-color: var(--background-secondary); //#444;
+$hover-bg-color-light: var(--color-base-60);
+$active-border-color: var(--color-base-40); //#555;
+$active-line-color: var(--text-normal); //#fff;
+$heather-bg-color: var(--color-base-00);
+$today-border-color: var(--interactive-accent); //rgb(138, 92, 244); 
 $transition: all 0.3s ease;
 
-// Priority Colors
-$high-priority-color: #e06c75;    // Strong red for high priority
-$medium-priority-color: #e5c07b;  // Amber/gold for medium priority
-$low-priority-color: #61afef;     // Soft blue for low priority
-
-// Optional darker/lighter variants if needed
-$high-priority-color-light: color.adjust($high-priority-color, $lightness: 15%);
-$high-priority-color-dark: color.adjust($high-priority-color, $lightness: -15%);
-
-$medium-priority-color-light: color.adjust($medium-priority-color, $lightness: 15%);
-$medium-priority-color-dark: color.adjust($medium-priority-color, $lightness: -15%);
-
-$low-priority-color-light: color.adjust($low-priority-color, $lightness: 15%);
-$low-priority-color-dark: color.adjust($low-priority-color, $lightness: -15%);
-
 // Status colors for due dates
-$overdue-color: #e06c75;          // Red for overdue tasks
-$today-color: #98c379;            // Green for today's tasks
-$future-color: #56b6c2;           // Teal for future tasks
+$overdue-color: var(--color-error);          // Red for overdue tasks
+$today-color: var(--color-success);            // Green for today's tasks
+$future-color: var(--color-info);           // Teal for future tasks
 
 $breakpoints: (
   "xs": 400px,
@@ -158,7 +143,7 @@ $breakpoints: (
       text-align: center;
       border-bottom: 1px solid $border-color;
       font-weight: bold;
-      background-color: $heather-bg-color !important; // Añadido background-color
+      background-color: var(--background-secondary) !important; // Añadido background-color
     }
     
     .calendar-day-content, .calendar-week-day-content {
@@ -169,14 +154,14 @@ $breakpoints: (
   }
 
   &:hover {
-    background-color: rgba($hover-bg-color, 0.08) !important;
-    border: 1px solid rgba($hover-bg-color-light, 0.5) !important;
-    box-shadow: 0 0 5px rgba($text-color, 0.2);
+    background-color: color-mix(in srgb,$hover-bg-color 8%, transparent) !important;
+    border: 1px solid color-mix(in srgb,$hover-bg-color-light 50%, transparent) !important;
+    box-shadow: 0 0 5px color-mix(in srgb,$text-color 20%, transparent);
   }
   
   // Estilo común para día actual
   &.calendar-today {
-    background-color: rgba($today-border-color, 0.05);
+    background-color: color-mix(in srgb,$today-border-color 5%, transparent);
     border: 2px solid $today-border-color;
     
     @if $view-type == "month" {
@@ -184,7 +169,7 @@ $breakpoints: (
         color: $today-border-color;
         font-weight: bold;
         opacity: 1;
-        background-color: rgba($today-border-color, 0.1);
+        background-color: color-mix(in srgb,$today-border-color 10%, transparent);
         border-radius: 50%;
         width: 24px;
         height: 24px;
@@ -203,14 +188,17 @@ $breakpoints: (
 
 // Mixin para estilos de tareas en el calendario
 @mixin calendar-task-styles {
-  background-color: var(--background-primary);
+  background-color: color-mix(in srgb,$today-border-color 10%, transparent);
   color: var(--text-on-accent);
   border-radius: 4px;
   padding: 4px 6px;
   margin-bottom: 5px;
   display: flex;
   flex-wrap: wrap;  
-  border-left: 3px solid var(--interactive-accent);  
+  border-left: 5px solid var(--interactive-accent); 
+  border-right: 1px solid var(--interactive-accent);
+  border-bottom: 1px solid var(--interactive-accent);
+  border-top: 1px solid var(--interactive-accent);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
 
@@ -223,7 +211,7 @@ $breakpoints: (
   max-height: 50px;
 
   &:hover {
-    opacity: 0.8; //box-shadow: 0 2px 3px rgba(0, 0, 0, 0.15);
+    opacity: 0.8;
   }
   
   .task-title {
@@ -237,7 +225,7 @@ $breakpoints: (
 
 @mixin interactive-states(
   $bg-color: $hover-bg-color,
-  $text-color: #fff,
+  $text-color: var(--color-base-100),
   $border-color: transparent,
   $transition-speed: 0.2s,
   $important: false
@@ -287,12 +275,12 @@ $breakpoints: (
   
   &:hover, &:focus {
     background-color: $hover-bg-color !important;
-    color: #fff;
+    color: var(--color-base-100);
     border-color: $active-border-color;
     outline: none;
   }
   
   &:focus-visible {
-    box-shadow: 0 0 0 2px rgba($active-border-color, 0.5);
+    box-shadow: 0 0 0 2px color-mix(in srgb,$active-border-color 50%, transparent);
   }
 }

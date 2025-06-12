@@ -32,16 +32,16 @@
     }
 
     &.calendar-today {
-      background-color: rgba($today-border-color, 0.05);
+      background-color: color-mix(in srgb,$today-border-color 5%, transparent);
       border: 2px solid $today-border-color;
       
       .calendar-week-day-header {
-        background-color: rgba($today-border-color, 0.1);
-        
+        background-color: color-mix(in srgb,$today-border-color 10%, transparent);
+
         .calendar-date {
           color: $today-border-color;
           font-weight: bold;
-          background-color: rgba($today-border-color, 0.1);
+          background-color: color-mix(in srgb,$today-border-color 10%, transparent);
           border-radius: 50%;
           width: 32px;
           height: 32px;

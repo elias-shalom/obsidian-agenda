@@ -50,11 +50,23 @@ Obsidian Agenda transforms your vault into a powerful productivity system by pro
 
 ## Screenshots
 
+Overview view
 ![Overview](screenshots/Overview.png)
 
+List View
 ![List View](screenshots/ListView.png)
 
+Table View
 ![Table View](screenshots/TableView.png)
+
+Month View
+![Month View](screenshots/MonthView.png)
+
+Week View
+![Week View](screenshots/WeekView.png)
+
+Day View
+![Day View](screenshots/DayView.png)
 
 ## Demo Videos
 
@@ -146,6 +158,7 @@ Planned for Future Versions:
 4. Custom status implementation
 5. Enhanced compatibility with Tasks plugin dataview format
 6. Advanced calendar features with time blocks
+7. Support for mobile devices
 
 ## Support and Feedback
 

@@ -1,9 +1,9 @@
 {
-	"id": "agenda-obsidian",
-	"name": "Agenda Obsidian",
+	"id": "agenda-tasks",
+	"name": "Agenda Tasks",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Agenda provide intuitive task management interfaces and calendar views. Seamlessly integrate with your existing Obsidian notes while organizing tasks across multiple views.",
+	"description": "Agenda provide intuitive task management interfaces and calendar views. Seamlessly integrate with your existing notes while organizing tasks across multiple views.",
 	"author": "elias-shalom",
 	"authorUrl": "https://github.com/elias-shalom/",
 	"fundingUrl": "",

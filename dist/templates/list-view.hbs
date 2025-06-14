@@ -1,0 +1,86 @@
+<div class="view-controls">
+  <button class="view-toggle-button clickable">
+    {{#if isHierarchicalView}}
+      {{t "show_flat_view"}}
+    {{else}}
+      {{t "show_hierarchical_view"}}
+    {{/if}}
+  </button>
+</div>
+
+{{#if tasks.length}}
+  {{#if isHierarchicalView}}
+    {{!-- Vista jerárquica (existente) --}}
+    {{#each groupedTasks as |folder folderName|}}
+      <div class="folder-structure">
+        {{> folderTemplate folder level=0}}
+      </div>
+    {{/each}}
+  {{else}}
+    {{!-- Vista plana (nueva) --}}
+    {{#each flattenedTasks as |folder folderName|}}
+      <div class="folder-structure">
+        <div class="folder-group" data-folder="{{folderName}}" data-folder-path="{{folderName}}">
+          <h3 class="folder-name">
+            <span class="folder-toggle">⯆</span>
+            <span class="folder-title">{{folderName}}</span>
+            <span class="task-count">({{folder.tasks.length}})</span>
+          </h3>
+          <ul class="folder-tasks">
+            {{#each folder.tasks}}
+              <li class="task-item" data-file-path="{{this.filePath}}" data-line-number="{{this.lineNumber}}">
+                <div class="task-priority">{{priorityIcon this.priority}}</div>
+                <div class="task-content">
+                  <div class="task-description">{{this.description}}</div>
+                  <div class="task-metadata">
+                    {{#if this.dueDate}}
+                      <span class="task-due-date">📅 {{formatDate this.dueDate}}</span>
+                    {{/if}}
+                    <span class="task-path">📄 {{this.filePath}}</span>
+                  </div>
+                </div>
+              </li>
+            {{/each}}
+          </ul>
+        </div>
+      </div>
+    {{/each}}
+  {{/if}}
+{{else}}
+  <p>{{t "no_tasks"}}</p>
+{{/if}}
+
+{{!-- Mantener el helper inline para la vista jerárquica --}}
+{{#*inline "folderTemplate"}}
+  <div class="folder-group" data-folder="{{name}}" data-folder-path="{{fullPath}}">
+    <h3 class="folder-name" style="padding-left: {{multiply level 15}}px;">
+      <span class="folder-toggle">⯆</span>
+      <span class="folder-title">{{name}}</span>
+      <span class="task-count">({{totalTaskCount this}})</span>
+    </h3>
+    <ul class="folder-tasks">
+      {{#each tasks}}
+        <li class="task-item" data-file-path="{{this.filePath}}" data-line-number="{{this.lineNumber}}">
+          <div class="task-priority">{{priorityIcon this.priority}}</div>
+          <div class="task-content">
+            <div class="task-description">{{this.description}}</div>
+            <div class="task-metadata">
+              {{#if this.dueDate}}
+                <span class="task-due-date">📅 {{formatDate this.dueDate}}</span>
+              {{/if}}
+              <span class="task-path">📄 {{this.filePath}}</span>
+            </div>
+          </div>
+        </li>
+      {{/each}}
+    </ul>
+    
+    {{#if subfolders}}
+      <div class="subfolders-container">
+        {{#each subfolders as |subfolder subfolderName|}}
+          {{> folderTemplate subfolder level=(add level 1)}}
+        {{/each}}
+      </div>
+    {{/if}}
+  </div>
+{{/inline}}

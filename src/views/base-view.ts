@@ -6,7 +6,7 @@ import { DateTime } from 'luxon';
 import { TaskPriorityIcon } from '../types/enums';
 
 export abstract class BaseView extends ItemView {
-  private pathHbs: string = '.obsidian/plugins/obsidian-agenda/templates/'; 
+  private pathHbs: string = `${this.app.vault.configDir}/plugins/obsidian-agenda/templates/`; 
   private hbs: string = '.hbs'; // Extensión de los archivos de plantilla
   // Añadir esta propiedad para el caché:
   private templateCache: Record<string, HandlebarsTemplateDelegate> = {};

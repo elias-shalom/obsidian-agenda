@@ -10,8 +10,8 @@ export class I18n {
   async loadLanguage(language: string): Promise<void> {
     try {
 
-      const templatePath = this.app.vault.adapter.getResourcePath(`.obsidian/plugins/obsidian-agenda/locales/${language}.json`);
-      console.log("Ruta generada con getResourcePath:", templatePath);
+      const templatePath = this.app.vault.adapter.getResourcePath(`${this.app.vault.configDir}/plugins/obsidian-agenda/locales/${language}.json`);
+
       const response = await fetch(templatePath);
       if (!response.ok) {
         throw new Error(`Error loading language file: ${response.statusText}`);

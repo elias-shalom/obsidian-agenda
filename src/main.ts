@@ -48,6 +48,7 @@ export default class ObsidianAgenda extends Plugin {
 
       this.viewManager.registerViews();
       logger.info("Vistas registradas correctamente.");
+
     } catch (error) {
       logger.error(`Error durante la carga del plugin: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -68,8 +69,9 @@ export default class ObsidianAgenda extends Plugin {
   private async loadStyles(): Promise<void> {
     try {
       const cssPath = this.app.vault.adapter.getResourcePath(
-        '.obsidian/plugins/obsidian-agenda/styles/styles.css'
+        `${this.app.vault.configDir}/plugins/obsidian-agenda/styles/styles.css`
       );
+      logger.info(`Cargando estilos CSS desde: ${cssPath}`);
       const response = await fetch(cssPath);
 
       if (response.ok) {

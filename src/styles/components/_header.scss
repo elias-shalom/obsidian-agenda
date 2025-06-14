@@ -9,7 +9,7 @@
 /* Header - Main container */
 .c-header {
   background-color: $primary-bg-color !important;
-  border-bottom: 1px solid #333 !important;
+  border-bottom: 1px solid var(--color-base-30) !important;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -85,27 +85,27 @@
 
     &:hover {  
       svg {
-        color: #fff !important; // Cambia el color del ícono
+        color: var(--text-normal) !important; // Cambia el color del ícono
       }
       .tab-text {
-        color: #fff !important; // Cambia el color del texto
+        color: var(--text-normal) !important; // Cambia el color del texto
       }
     }
 
     &.active {
       background-color: $hover-bg-color !important; // Fondo más claro
-      color: #fff !important; // Texto blanco
+      color: var(--text-normal) !important; // Texto blanco
       svg {
-        color: #fff !important; // Cambia el color del ícono
+        color: var(--text-normal) !important; // Cambia el color del ícono
       }
       .tab-text {
-        color: #fff !important; // Cambia el color del texto
+        color: var(--text-normal) !important; // Cambia el color del texto
       }
       font-weight: bold !important;
       border: 1px solid $active-border-color !important; // Borde visible
     }
 
-    @include interactive-states($hover-bg-color, #fff, transparent, 0.3s, true);
+    @include interactive-states($hover-bg-color, var(--text-normal), transparent, 0.3s, true);
   }
 }
 

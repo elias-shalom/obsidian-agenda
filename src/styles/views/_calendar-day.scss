@@ -20,9 +20,8 @@
   flex: 1;
   text-align: center;
   padding: 12px 0;
-  //border-left: 1px solid var(--background-modifier-border);
   min-width: 80px;
-  background-color: rgba($primary-bg-color, 0.3); // Color más claro para el encabezado
+  background-color: color-mix(in srgb,$primary-bg-color 30%, transparent); // Color más claro para el encabezado
   border-top: 1px solid var(--background-modifier-border);
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
@@ -39,7 +38,7 @@
   }
 
   &.calendar-today {
-    background-color: rgba($today-border-color, 0.1);
+    background-color: color-mix(in srgb, $today-border-color, 0.1);
     border: 1px solid var(--interactive-accent);
   }
 }
@@ -47,7 +46,6 @@
 .calendar-day-full-row {
   display: flex;
   min-height: 300px; // Altura para mostrar varias tareas
-  //padding: 15px;
 
   .calendar-day-column {
     flex: 1;
@@ -55,13 +53,13 @@
     border-top: none; // Eliminar borde superior para conectarlo con el encabezado
     min-width: 80px;
     position: relative;
-    background-color: rgba($primary-bg-color, 0.1);
+    background-color: color-mix(in srgb,$primary-bg-color 10%, transparent);
     border-bottom-left-radius: 6px;
     border-bottom-right-radius: 6px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     
     &.calendar-today {
-      background-color: rgba($today-border-color, 0.05);
+      background-color: color-mix(in srgb, $today-border-color 5%, transparent);
       border-color: var(--interactive-accent);
     }
 
@@ -96,7 +94,7 @@
     
     .calendar-time-column {
       min-width: 60px;
-      background-color: rgba($primary-bg-color, 0.3);
+      background-color: color-mix(in srgb,$primary-bg-color 30%, transparent); // Color más claro para el encabezado
       border: 1px solid var(--background-modifier-border);
       border-top-left-radius: 6px;
       border-bottom: none;
@@ -133,7 +131,7 @@
   overflow-x: hidden; // Para la vista de día
 
   .calendar-day-header {
-    background-color: rgba($primary-bg-color, 0.25); // Color más claro para el encabezado
+    background-color: color-mix(in srgb,$primary-bg-color 25%, transparent); // Color más claro para el encabezado
     border-bottom: 1px solid var(--background-modifier-border);
     
     .calendar-day-column-header {

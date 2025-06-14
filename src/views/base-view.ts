@@ -234,7 +234,12 @@ export abstract class BaseView extends ItemView {
 
     // Dibujar el encabezado
     const headerHtml = headerTemplate({});
-    container.innerHTML = headerHtml;
+    
+    const tempDivHeader = createEl('div');
+    tempDivHeader.innerHTML = headerHtml;
+    while (tempDivHeader.firstChild) {
+        container.appendChild(tempDivHeader.firstChild);
+    }
 
     // Identificar la vista activa y aplicar la clase "active"
     const activeViewType = this.getViewType(); // Obtiene el tipo de vista actual
@@ -295,12 +300,18 @@ export abstract class BaseView extends ItemView {
       // Dibujar la plantilla con los datos proporcionados
       const html = template(data);
 
-      // Insertar el contenido HTML en el contenedor
-      container.innerHTML += html;
+      // En lugar de usar innerHTML, creamos un contenedor temporal
+      const tempDiv = createEl('div');
+      tempDiv.innerHTML = html;
+      
+      // Transferir todos los nodos hijos al contenedor principal
+      while (tempDiv.firstChild) {
+        container.appendChild(tempDiv.firstChild);
+      }
       //console.log("Plantilla:", html); // Debugging line
     } catch (error) {
       console.error(`Error renderizando template ${templatePath}:`, error);
-      container.innerHTML += `<div class="error">Error al cargar la plantilla: ${error.message}</div>`;
+      //container.innerHTML += `<div class="error">Error al cargar la plantilla: ${error.message}</div>`;
     }
   }
 
@@ -412,7 +423,7 @@ export abstract class BaseView extends ItemView {
   }
 
   protected async render(viewType: string, data: any, i18n: any, plugin: any, leaf: any): Promise<void> {
-    console.log(`Dibuja vista: ${viewType}`); // Debugging line
+    //console.log(`Dibuja vista: ${viewType}`); // Debugging line
     const container = this.containerEl.children[1] as HTMLElement;
     container.empty(); // Limpia el contenido previo
 
@@ -442,7 +453,7 @@ export abstract class BaseView extends ItemView {
       this.setupViewSpecificEventListeners(contentContainer, data);
     } catch (error) {
       console.error(`Error renderizando vista ${viewType}:`, error);
-      contentContainer.innerHTML = `<div class="error-message">Error al cargar: ${error.message}</div>`;
+      //contentContainer.innerHTML = `<div class="error-message">Error al cargar: ${error.message}</div>`;
     }
   }
 

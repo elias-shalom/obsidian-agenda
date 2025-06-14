@@ -47,7 +47,7 @@ export default class ObsidianAgenda extends Plugin {
       this.taskManager.registerEvents(this);
 
       this.viewManager.registerViews();
-      logger.info("Vistas registradas correctamente.");
+      //logger.info("Vistas registradas correctamente.");
 
     } catch (error) {
       logger.error(`Error durante la carga del plugin: ${error instanceof Error ? error.message : String(error)}`);
@@ -71,7 +71,7 @@ export default class ObsidianAgenda extends Plugin {
       const cssPath = this.app.vault.adapter.getResourcePath(
         `${this.app.vault.configDir}/plugins/obsidian-agenda/styles/styles.css`
       );
-      logger.info(`Cargando estilos CSS desde: ${cssPath}`);
+      //logger.info(`Cargando estilos CSS desde: ${cssPath}`);
       const response = await fetch(cssPath);
 
       if (response.ok) {
@@ -79,7 +79,7 @@ export default class ObsidianAgenda extends Plugin {
         const style = document.createElement("style");
         style.textContent = cssContent;
         document.head.appendChild(style);
-        logger.info("Archivo CSS cargado correctamente.");
+        //logger.info("Archivo CSS cargado correctamente.");
       } else {
         logger.error("Error al cargar el archivo CSS:", response.statusText);
       }
@@ -95,13 +95,13 @@ export default class ObsidianAgenda extends Plugin {
       // Desregistrar vistas
       if (this.viewManager) {
         this.viewManager.unregisterViews();
-        logger.info('Vistas desregistradas correctamente');
+        //logger.info('Vistas desregistradas correctamente');
       }
       
       // Desregistrar eventos
       if (this.taskManager) {
         this.taskManager.unregisterEvents();
-        logger.info('Eventos desregistrados correctamente');
+        //logger.info('Eventos desregistrados correctamente');
       }
       
       // Eliminar estilos aplicados

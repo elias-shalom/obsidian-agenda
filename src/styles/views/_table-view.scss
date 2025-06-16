@@ -41,9 +41,13 @@
       width: 20px;
       height: 20px;
       border-radius: 50%;
-      display: flex;
+      display: none; // Ocultar por defecto
       align-items: center;
       justify-content: center;
+
+      &.visible {
+        display: flex; // Mostrar como flex cuando tiene la clase visible
+      }
       
       &:hover {
         background-color: var(--background-modifier-hover);
@@ -144,6 +148,10 @@
           text-decoration: line-through;
           color: var(--text-muted);
         }
+      }
+
+      &.hidden {
+        display: none;
       }
     }
   }
@@ -262,6 +270,11 @@
   border-radius: 4px;
   border: 1px solid var(--background-modifier-border);
   margin: 20px 0;
+  display: none; // Oculto por defecto
+  
+  &.visible {
+    display: block; // Se muestra cuando tiene la clase visible
+  }
 }
 
 .table-pagination {

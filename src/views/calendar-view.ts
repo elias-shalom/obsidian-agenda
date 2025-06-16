@@ -215,7 +215,7 @@ export abstract class CalendarView extends BaseView {
 
   private getCalendarViewTypeFromString(viewTypeString: string): CalendarViewType {
 
-    console.log(`Convirtiendo ${viewTypeString} a CalendarViewType`);
+    //console.log(`Convirtiendo ${viewTypeString} a CalendarViewType`);
     switch (viewTypeString) {
       case 'month':
         return CalendarViewType.Month;

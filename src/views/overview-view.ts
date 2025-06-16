@@ -35,7 +35,7 @@ export class OverviewView extends BaseView {
     // Cargar tareas de la semana pasada (simulado para este ejemplo)
     //await this.loadHistoricalData();
 
-    console.log("Tareas obtenidas overview:", this.tasks); // Debugging line
+    //console.log("Tareas obtenidas overview:", this.tasks); // Debugging line
 
     // Preparar los datos para la plantilla usando las funciones específicas
     const templateData = {
@@ -344,7 +344,7 @@ export class OverviewView extends BaseView {
       
         // Aplicar visibilidad a todos los widgets encontrados
         widgets.forEach(widget => {
-          console.log(`Aplicando ${cb.checked ? 'mostrar' : 'ocultar'} a widget: ${widgetType}`);
+          //console.log(`Aplicando ${cb.checked ? 'mostrar' : 'ocultar'} a widget: ${widgetType}`);
           if (cb.checked) {
             widget.classList.remove('hidden');
           } else {

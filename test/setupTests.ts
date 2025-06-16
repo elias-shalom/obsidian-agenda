@@ -8,7 +8,7 @@ import { App, TFile, Vault, MetadataCache } from 'obsidian';
 // 5. Coverage: reporta qué código está cubierto por pruebas
 
 // Mock Obsidian APIs
-jest.mock('obsidian', () => {
+/*jest.mock('obsidian', () => {
   // Create mock implementations for Obsidian classes and interfaces
   const mockApp = {
     vault: {
@@ -64,7 +64,7 @@ jest.mock('obsidian', () => {
       })
     })
   };
-});
+});*/
 
 // Mock console methods to avoid cluttering test output
 global.console = {
@@ -77,7 +77,7 @@ global.console = {
 };
 
 // Create helper functions for testing
-export const createMockFile = (path: string, content: string = ''): TFile => {
+/*export const createMockFile = (path: string, content: string = ''): TFile => {
   const file = new (TFile as any)(path);
   (App as any).mockImplementation(() => ({
     vault: {
@@ -91,7 +91,7 @@ export const createMockFile = (path: string, content: string = ''): TFile => {
     }
   }));
   return file;
-};
+};*/
 
 // Ejemplos de métodos comunes de Jest:
 // 

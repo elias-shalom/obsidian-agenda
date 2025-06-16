@@ -108,20 +108,28 @@ export class TableView extends BaseView {
     if (searchInput && searchClearButton) {
       // Mostrar/ocultar botón según el contenido
       searchInput.addEventListener('input', () => {
-        searchClearButton.style.display = searchInput.value ? 'block' : 'none';
+        if (searchInput.value) {
+          searchClearButton.classList.add('visible');
+        } else {
+          searchClearButton.classList.remove('visible');
+        }
         this.filterTasks(container);
       });
       
       // Limpiar el campo de búsqueda al hacer clic en el botón
       searchClearButton.addEventListener('click', () => {
         searchInput.value = '';
-        searchClearButton.style.display = 'none';
+        searchClearButton.classList.remove('visible');
         searchInput.focus(); // Opcional: mantiene el foco en el campo
         this.filterTasks(container); // Volver a aplicar filtros sin el texto
       });
       
       // Inicialmente ocultar el botón si no hay texto
-      searchClearButton.style.display = searchInput.value ? 'block' : 'none';
+      if (searchInput.value) {
+        searchClearButton.classList.add('visible');
+      } else {
+        searchClearButton.classList.remove('visible');
+      }
     }
 
     const tableRows = container.querySelectorAll('tr.task-row');
@@ -320,17 +328,17 @@ export class TableView extends BaseView {
 
       // Aplicar visibilidad según resultado de filtros
       if (shouldShow) {
-        (row as HTMLElement).style.display = '';
+        row.classList.remove('hidden');
         visibleCount++;
       } else {
-        (row as HTMLElement).style.display = 'none';
+        row.classList.add('hidden');
       }
     });
 
     // Luego actualizar los números solo para las filas visibles
     let rowNumber = 1;
     tableRows.forEach(row => {
-      if ((row as HTMLElement).style.display !== 'none') {
+      if (!row.classList.contains('hidden')) {
         const rowNumberElement = row.querySelector('.row-number');
         if (rowNumberElement) {
           rowNumberElement.textContent = rowNumber.toString();
@@ -348,7 +356,11 @@ export class TableView extends BaseView {
     // Mostrar mensaje si no hay resultados
     const emptyMessage = container.querySelector('.empty-table-message') as HTMLElement;
     if (emptyMessage) {
-      emptyMessage.style.display = visibleCount === 0 ? 'block' : 'none';
+      if (visibleCount === 0) {
+        emptyMessage.classList.add('visible');
+      } else {
+        emptyMessage.classList.remove('visible');
+      }
     }
   }
 

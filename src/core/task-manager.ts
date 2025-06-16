@@ -27,7 +27,7 @@ export class TaskManager {
   */
   public registerEvents(plugin: Plugin): void {
     // Escuchar modificaciones de archivos Markdown
-    console.log("Escuchando eventos de modificación de archivos Markdown");
+    //console.log("Escuchando eventos de modificación de archivos Markdown");
     const event = this.plugin.registerEvent(
       this.app.vault.on('modify', (file: any) => {
         if (file instanceof TFile && file.extension === 'md') {          
@@ -109,7 +109,7 @@ export class TaskManager {
    */
   public cleanup(): void {
     // Limpiar caches
-    console.log("Limpiando Task Manager...");
+    //console.log("Limpiando Task Manager...");
     this.invalidateCache();
     logger.debug("Task Manager limpiado correctamente");
   }

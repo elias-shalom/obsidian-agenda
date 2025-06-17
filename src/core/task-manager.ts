@@ -88,7 +88,7 @@ export class TaskManager {
     this.tasksCache.delete(filePath);
     this.allTasksCache = null; // Invalidar cache global
     this.eventBus.emit(EVENTS.TASKS_UPDATED, filePath);
-    logger.debug(`Cache invalidado para: ${filePath}`);
+    //logger.debug(`Cache invalidado para: ${filePath}`);
   }
 
   /**
@@ -99,7 +99,7 @@ export class TaskManager {
     this.allTasksCache = null;
     this.lastRefreshTime = 0;
     this.eventBus.emit(EVENTS.TASKS_UPDATED);
-    logger.debug("Cache de tareas completamente invalidado");
+    //logger.debug("Cache de tareas completamente invalidado");
   }
 
   /**
@@ -111,7 +111,7 @@ export class TaskManager {
     // Limpiar caches
     //console.log("Limpiando Task Manager...");
     this.invalidateCache();
-    logger.debug("Task Manager limpiado correctamente");
+    //logger.debug("Task Manager limpiado correctamente");
   }
 
   /**
@@ -183,12 +183,12 @@ export class TaskManager {
       return this.refreshPromise;
     }
 
-    console.log(this.allTasksCache, this.lastRefreshTime, this.CACHE_TTL);
+    //console.log(this.allTasksCache, this.lastRefreshTime, this.CACHE_TTL);
 
     const now = Date.now();
     // Si el cache global es válido y reciente, usarlo
     if (this.allTasksCache && (now - this.lastRefreshTime < this.CACHE_TTL)) {
-      logger.debug("Usando cache global de tareas");
+      //logger.debug("Usando cache global de tareas");
       return this.allTasksCache;
     }
 
@@ -252,7 +252,7 @@ export class TaskManager {
       return this.groupTasks(filteredTasks, criteria.groupBy);
     }
 
-    logger.debug(`Filtrado: ${filteredTasks.length} de ${allTasks.length} tareas coinciden con los criterios`);
+    //logger.debug(`Filtrado: ${filteredTasks.length} de ${allTasks.length} tareas coinciden con los criterios`);
     return filteredTasks;
   }
 

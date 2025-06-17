@@ -212,72 +212,93 @@ export abstract class BaseView extends ItemView {
     // Las clases hijas sobrescribirán este método según sea necesario
   }
 
-  protected async renderHeader(container: HTMLElement, i18n: any): Promise<void> {
+  protected async renderHeader(container: HTMLElement, templatePath: string, data: any): Promise<void> {
     //console.log("Dibuja encabezado"); // Debugging line
-    
-    // Buscar la plantilla en el caché primero
-    let headerTemplate = this.templateCache['header'];
-    
-    if (!headerTemplate) {
-      const headerPath = this.app.vault.adapter.getResourcePath(this.pathHbs + 'header.hbs');
-      const headerResponse = await fetch(headerPath);
+    try {
+      // Buscar la plantilla en el caché primero
+      let headerTemplate = this.templateCache[templatePath];
       
-      if (!headerResponse.ok) {
-        console.error("Error al cargar la plantilla del encabezado:", headerResponse.statusText);
-        return;
+      if (!headerTemplate) {
+        const headerPath = this.app.vault.adapter.getResourcePath(this.pathHbs + templatePath + this.hbs);
+        const headerResponse = await fetch(headerPath);
+        
+        if (!headerResponse.ok) {
+          console.error("Error al cargar la plantilla del encabezado:", headerResponse.statusText);
+          return;
+        }
+        
+        const headerSource = await headerResponse.text();
+        headerTemplate = Handlebars.compile(headerSource);
+        this.templateCache[templatePath] = headerTemplate;
       }
+
+      // Dibujar el encabezado
+      const headerHtml = headerTemplate({});
       
-      const headerSource = await headerResponse.text();
-      headerTemplate = Handlebars.compile(headerSource);
-      this.templateCache['header'] = headerTemplate;
+      // Crear un elemento temporal usando createEl de Obsidian
+      const tempDiv = createEl('div');
+      
+      // Usar DOMParser para convertir HTML a nodos DOM
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(headerHtml, 'text/html');
+
+      // Transferir cada elemento del body al contenedor usando Fragment
+      // para mejorar el rendimiento
+      const fragment = document.createDocumentFragment();
+      Array.from(doc.body.children).forEach(element => {
+        fragment.appendChild(document.importNode(element, true));
+      });
+    
+      // Añadir todos los elementos al contenedor de una vez
+      container.appendChild(fragment);
+
+      // Identificar la vista activa y aplicar la clase "active"
+      const activeViewType = this.getViewType(); // Obtiene el tipo de vista actual
+      const tabs = container.querySelectorAll(".c-tab");
+
+      tabs.forEach((tab) => {
+        const tabId = tab.getAttribute("id");
+        
+        // Verificar coincidencia exacta o si es una vista de calendario
+        const isCalendarView = activeViewType.startsWith("calendar-") && tabId === "calendar-view-tab";
+        const isExactMatch = tabId === `${activeViewType}-tab`;
+        
+        if (isExactMatch || isCalendarView) {
+          tab.classList.add("active");
+        } else {
+          tab.classList.remove("active");
+        }
+      });
+
+      // Lo mismo para los contenedores de pestañas
+      const tabContainers = container.querySelectorAll(".c-tab-container");
+      tabContainers.forEach((buttonContainer) => {
+        const divId = buttonContainer.getAttribute("id");
+        
+        const isCalendarContainer = activeViewType.startsWith("calendar-") && divId === "calendar-view-container";
+        const isExactMatch = divId === `${activeViewType}-container`;
+        
+        if (isExactMatch || isCalendarContainer) {
+          buttonContainer.classList.add("active");
+        } else {
+          buttonContainer.classList.remove("active");
+        }
+      });
+
+    } catch (error) {
+      console.error(`Error renderizando cabecera header:`, error);
+      
+      // Crear elemento de error usando createEl de Obsidian
+      const errorDiv = createEl('div', {
+        cls: 'error',
+        text: `Error al cargar la plantilla de cabecera: ${error.message}`
+      });
+      container.appendChild(errorDiv);
     }
-
-    // Dibujar el encabezado
-    const headerHtml = headerTemplate({});
-    
-    const tempDivHeader = createEl('div');
-    tempDivHeader.innerHTML = headerHtml;
-    while (tempDivHeader.firstChild) {
-        container.appendChild(tempDivHeader.firstChild);
-    }
-
-    // Identificar la vista activa y aplicar la clase "active"
-    const activeViewType = this.getViewType(); // Obtiene el tipo de vista actual
-    const tabs = container.querySelectorAll(".c-tab");
-
-    tabs.forEach((tab) => {
-      const tabId = tab.getAttribute("id");
-      
-      // Verificar coincidencia exacta o si es una vista de calendario
-      const isCalendarView = activeViewType.startsWith("calendar-") && tabId === "calendar-view-tab";
-      const isExactMatch = tabId === `${activeViewType}-tab`;
-      
-      if (isExactMatch || isCalendarView) {
-        tab.classList.add("active");
-      } else {
-        tab.classList.remove("active");
-      }
-    });
-
-    // Lo mismo para los contenedores de pestañas
-    const tabContainers = container.querySelectorAll(".c-tab-container");
-    tabContainers.forEach((buttonContainer) => {
-      const divId = buttonContainer.getAttribute("id");
-      
-      const isCalendarContainer = activeViewType.startsWith("calendar-") && divId === "calendar-view-container";
-      const isExactMatch = divId === `${activeViewType}-container`;
-      
-      if (isExactMatch || isCalendarContainer) {
-        buttonContainer.classList.add("active");
-      } else {
-        buttonContainer.classList.remove("active");
-      }
-    });
   }
 
   protected async renderTemplate(container: HTMLElement, templatePath: string, data: any): Promise<void> {
     try {
-      
       // Buscar la plantilla en el caché primero
       let template = this.templateCache[templatePath];
       
@@ -300,18 +321,25 @@ export abstract class BaseView extends ItemView {
       // Dibujar la plantilla con los datos proporcionados
       const html = template(data);
 
-      // En lugar de usar innerHTML, creamos un contenedor temporal
-      const tempDiv = createEl('div');
-      tempDiv.innerHTML = html;
+      // Usar DOMParser en lugar de innerHTML para crear elementos de forma segura
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
       
-      // Transferir todos los nodos hijos al contenedor principal
-      while (tempDiv.firstChild) {
-        container.appendChild(tempDiv.firstChild);
-      }
-      //console.log("Plantilla:", html); // Debugging line
+      // Transferir todos los elementos del body del documento parseado al contenedor
+      const bodyElements = Array.from(doc.body.children);
+      bodyElements.forEach(element => {
+        container.appendChild(document.importNode(element, true));
+      });
+      
     } catch (error) {
       console.error(`Error renderizando template ${templatePath}:`, error);
-      //container.innerHTML += `<div class="error">Error al cargar la plantilla: ${error.message}</div>`;
+      
+      // Crear elemento de error usando createEl de Obsidian
+      const errorDiv = createEl('div', {
+        cls: 'error',
+        text: `Error al cargar la plantilla: ${error.message}`
+      });
+      container.appendChild(errorDiv);
     }
   }
 
@@ -442,7 +470,7 @@ export abstract class BaseView extends ItemView {
     try {
       // Paralelizar operaciones de renderizado
       await Promise.all([
-        this.renderHeader(headerContainer, i18n),
+        this.renderHeader(headerContainer, 'header', { i18n }),
         this.renderTemplate(contentContainer, viewType, data)
       ]);
       

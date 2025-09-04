@@ -1,4 +1,4 @@
-# Obsidian Agenda Plugin
+# OBS Agenda Plugin
 
 A comprehensive task management and calendar plugin for Obsidian (https://obsidian.md).
 
@@ -94,7 +94,7 @@ Day View
 ### Manual Installation
 1. Download the latest release from the releases page
 2. Extract the zip file to your vault's `.obsidian/plugins/` folder
-3. Ensure you have the following files in `.obsidian/plugins/obsidian-agenda/`:
+3. Ensure you have the following files in `.obsidian/plugins/obs-agenda/`:
    - `main.js`
    - `styles.css`
    - `manifest.json`
@@ -125,16 +125,15 @@ All metadata created with Obsidian Tasks will be properly recognized and display
 
 ## Configuration
 
-Obsidian Agenda offers numerous configuration options through the settings tab:
+Obs Agenda offers numerous configuration options through the settings tab:
 - Task parsing rules
 - Default view settings
 - Display preferences
-- Theme customization
 - Integration with other plugins
 
 ## Scope this version 1.0.0
 
-Version 1.0.0 of Obsidian Agenda focuses on providing robust viewing and organization capabilities for your tasks while maintaining compatibility with existing Obsidian workflows:
+Version 1.0.0 of OBS Agenda focuses on providing robust viewing and organization capabilities for your tasks while maintaining compatibility with existing Obsidian workflows:
 
 Included in Version 1.0.0:
 

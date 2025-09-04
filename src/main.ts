@@ -36,9 +36,6 @@ export default class ObsidianAgenda extends Plugin {
 
       this.addSettingTab(new SettingTab(this.app, this, this.i18n));
 
-      // Cargar estilos CSS
-      await this.loadStyles();
-
       this.addRibbonIcon("calendar-check", this.i18n.t("agenda_title"), async () => {
         await this.viewManager.activateView(OVERVIEW_VIEW_TYPE);
       });
@@ -62,31 +59,6 @@ export default class ObsidianAgenda extends Plugin {
     await this.saveData(this.settings);
   }
 
-  /**
-  * Carga los estilos CSS del plugin
-  * @returns Promesa que se resuelve cuando los estilos se han cargado
-  */
-  private async loadStyles(): Promise<void> {
-    try {
-      const cssPath = this.app.vault.adapter.getResourcePath(
-        `${this.app.vault.configDir}/plugins/obsidian-agenda/styles/styles.css`
-      );
-      //logger.info(`Cargando estilos CSS desde: ${cssPath}`);
-      const response = await fetch(cssPath);
-
-      if (response.ok) {
-        const cssContent = await response.text();
-        const style = document.createElement("style");
-        style.textContent = cssContent;
-        document.head.appendChild(style);
-        //logger.info("Archivo CSS cargado correctamente.");
-      } else {
-        logger.error("Error al cargar el archivo CSS:", response.statusText);
-      }
-    } catch (error) {
-      logger.error(`Error al cargar estilos CSS: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
 
   onunload() {
     console.log('Descargando plugin Obsidian Agenda');

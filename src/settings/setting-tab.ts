@@ -35,7 +35,7 @@ export class SettingTab extends PluginSettingTab {
           })
       );
 
-    new Setting(containerEl)
+    /*new Setting(containerEl)
       .setName(this.i18n.t('colorScheme'))
       .setDesc(this.i18n.t('colorScheme_description'))
       .addDropdown((dropdown) =>
@@ -47,6 +47,6 @@ export class SettingTab extends PluginSettingTab {
             this.plugin.settings.colorScheme = value;
             await this.plugin.saveSettings();
           })
-      );
+      );*/
   }
 }

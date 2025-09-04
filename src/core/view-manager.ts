@@ -24,19 +24,17 @@ export class ViewManager {
     this.registeredViewTypes.push(CALENDAR_DAY_VIEW_TYPE);
     this.plugin.registerView(LIST_VIEW_TYPE, (leaf: WorkspaceLeaf) => new ListView(leaf, this.plugin, this.i18n, this.taskManager));
     this.registeredViewTypes.push(LIST_VIEW_TYPE);
-    //this.plugin.registerView(GANTT_VIEW_TYPE, (leaf: WorkspaceLeaf) => new GanttView(leaf, this.plugin, this.i18n));
-    //this.registeredViewTypes.push(GANTT_VIEW_TYPE);
-    //this.plugin.registerView(CALENDAR_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarView(leaf, this.plugin, this.i18n, this.taskManager));
-    //this.registeredViewTypes.push(CALENDAR_VIEW_TYPE);
     this.plugin.registerView(TABLE_VIEW_TYPE, (leaf: WorkspaceLeaf) => new TableView(leaf, this.plugin, this.i18n, this.taskManager));
     this.registeredViewTypes.push(TABLE_VIEW_TYPE);
     //this.plugin.registerView(TIMELINE_VIEW_TYPE, (leaf: WorkspaceLeaf) => new TimelineView(leaf, this.plugin, this.i18n));
     //this.registeredViewTypes.push(TIMELINE_VIEW_TYPE);
+   //this.plugin.registerView(GANTT_VIEW_TYPE, (leaf: WorkspaceLeaf) => new GanttView(leaf, this.plugin, this.i18n));
+    //this.registeredViewTypes.push(GANTT_VIEW_TYPE);
   }
 
   // Método para activar una vista específica
   public async activateView(viewType: string, leaf?: WorkspaceLeaf): Promise<void> {
-    this.plugin.app.workspace.detachLeavesOfType(viewType);
+    //this.plugin.app.workspace.detachLeavesOfType(viewType);
     
     if (!leaf) {
       leaf = this.plugin.app.workspace.getLeaf(true);
@@ -53,7 +51,7 @@ export class ViewManager {
     // Código para eliminar las vistas registradas
     // Por ejemplo:
     this.registeredViewTypes.forEach(viewType => {
-      this.plugin.app.workspace.detachLeavesOfType(viewType);
+      //this.plugin.app.workspace.detachLeavesOfType(viewType);
     });
   }
 }

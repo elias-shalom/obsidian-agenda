@@ -42,6 +42,7 @@ const context = await esbuild.context({
 	sourcemap: prod ? false : "inline",
 	treeShaking: true,
 	outdir: outputDir,
+  entryNames: "[name]",
 	minify: prod,
 	loader: {
 		'.svg': 'file', // Si usas SVG en tu proyecto

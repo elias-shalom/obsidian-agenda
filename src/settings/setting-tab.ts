@@ -18,7 +18,7 @@ export class SettingTab extends PluginSettingTab {
 
     new Setting(containerEl).setName(this.i18n.t("general_settings")).setHeading();
 
-    new Setting(containerEl)
+    /*new Setting(containerEl)
       .setName(this.i18n.t('language'))
       .setDesc(this.i18n.t('language_description'))
       .addDropdown((dropdown) =>
@@ -35,7 +35,7 @@ export class SettingTab extends PluginSettingTab {
           })
       );
 
-    /*new Setting(containerEl)
+    new Setting(containerEl)
       .setName(this.i18n.t('colorScheme'))
       .setDesc(this.i18n.t('colorScheme_description'))
       .addDropdown((dropdown) =>

@@ -1,10 +1,10 @@
 export interface AgendaPluginSettings {
   // Define your plugin settings here
-  language: string;
+  //language: string;
   //colorScheme: string;
 }
 
 export const DEFAULT_SETTINGS: AgendaPluginSettings = {
-  language: "en",
+  //language: "en",
   //colorScheme: "dark",
 };

@@ -42,6 +42,7 @@ const context = await esbuild.context({
 	sourcemap: prod ? false : "inline",
 	treeShaking: true,
 	outdir: outputDir,
+  entryNames: "[name]",
 	minify: prod,
 	loader: {
 		'.svg': 'file', // Si usas SVG en tu proyecto
@@ -68,7 +69,7 @@ const context = await esbuild.context({
 				},
 				{
 					from: "dist/**/*",
-					to: "C:/Users/elias/OneDrive/Documents/OneDrive/Obsidian/develop/.obsidian/plugins/obsidian-agenda",
+					to: "C:/Users/elias/OneDrive/Obsidian/develop/.obsidian/plugins/obsidian-agenda",
 				},
 			],
 		}),

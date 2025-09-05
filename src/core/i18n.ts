@@ -1,3 +1,5 @@
+import { getLanguage } from "obsidian";
+
 export class I18n {
   private translations: Record<string, string> = {};
   private currentLanguage: string = "en";
@@ -7,8 +9,9 @@ export class I18n {
     this.app = app; // Initialize app in the constructor
   }
 
-  async loadLanguage(language: string): Promise<void> {
+  async loadLanguage(): Promise<void> {
     try {
+      const language =  getLanguage();
 
       const templatePath = this.app.vault.adapter.getResourcePath(`${this.app.vault.configDir}/plugins/obsidian-agenda/locales/${language}.json`);
 
@@ -25,33 +28,33 @@ export class I18n {
 
   t(key: string, params?: Record<string, any>): string {
     // Dividir la clave por puntos para navegar en la estructura jerárquica
-  const keys = key.split('.');
-  let result: any = this.translations;
-  
-  // Navegar a través del objeto de traducciones
-  for (const k of keys) {
-    if (result && result[k] !== undefined) {
-      result = result[k];
-    } else {
-      console.warn(`Translation key not found: ${key}`);
-      return key; // Devolver la clave si no se encuentra la traducción
+    const keys = key.split('.');
+    let result: any = this.translations;
+
+    // Navegar a través del objeto de traducciones
+    for (const k of keys) {
+      if (result && result[k] !== undefined) {
+        result = result[k];
+      } else {
+        console.warn(`Translation key not found: ${key}`);
+        return key; // Devolver la clave si no se encuentra la traducción
+      }
     }
-  }
-  
-  // Si el resultado no es un string, devolver la clave
-  if (typeof result !== 'string') {
-    console.warn(`Translation key does not resolve to a string: ${key}`);
-    return key;
-  }
-  
-  // Reemplazar los placeholders
-  let translation = result;
-  if (params) {
-    for (const [paramKey, paramValue] of Object.entries(params)) {
-      translation = translation.replace(new RegExp(`{${paramKey}}`, 'g'), String(paramValue));
+
+    // Si el resultado no es un string, devolver la clave
+    if (typeof result !== 'string') {
+      console.warn(`Translation key does not resolve to a string: ${key}`);
+      return key;
     }
-  }
-  
-  return translation;
+
+    // Reemplazar los placeholders
+    let translation = result;
+    if (params) {
+      for (const [paramKey, paramValue] of Object.entries(params)) {
+        translation = translation.replace(new RegExp(`{${paramKey}}`, 'g'), String(paramValue));
+      }
+    }
+
+    return translation;
   }
 }

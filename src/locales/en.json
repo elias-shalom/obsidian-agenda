@@ -115,6 +115,8 @@
   "today_tasks": "Today's tasks",
   "overdue_tasks": "Overdue tasks",
   "upcoming_tasks": "Upcoming tasks",
+  "no_today_tasks": "No tasks for today",
+  "no_upcoming_tasks": "No upcoming tasks",
   "apply": "Apply",
   "reset": "Reset",
   "days_old": "days old",

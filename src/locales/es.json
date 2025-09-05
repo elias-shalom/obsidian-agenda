@@ -115,6 +115,8 @@
   "today_tasks": "Tareas de hoy",
   "overdue_tasks": "Tareas vencidas",
   "upcoming_tasks": "Próximas tareas",
+  "no_today_tasks": "No hay tareas para hoy",
+  "no_upcoming_tasks": "No hay tareas próximas",
   "apply": "Aplicar",
   "reset": "Restablecer",
   "days_old": "días",

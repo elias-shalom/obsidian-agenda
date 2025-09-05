@@ -115,6 +115,8 @@
   "today_tasks": "Attività di oggi",
   "overdue_tasks": "Attività scadute",
   "upcoming_tasks": "Attività in arrivo",
+  "no_today_tasks": "Nessuna attività per oggi",
+  "no_upcoming_tasks": "Nessuna attività in arrivo",
   "apply": "Applica",
   "reset": "Ripristina",
   "days_old": "giorni fa",

@@ -72,10 +72,6 @@ const context = await esbuild.context({
 			// Configuración del plugin
 			resolveFrom: "cwd", // Usa la ruta relativa al directorio actual
 			assets: [
-				//{
-				//		from: "src/views/templates/**/*", // Ruta de origen
-				//		to: "dist/templates", // Ruta de destino
-				//},
 				{
 					from: "src/locales/**/*", // Ruta de origen
 					to: "dist/locales", // Ruta de destino

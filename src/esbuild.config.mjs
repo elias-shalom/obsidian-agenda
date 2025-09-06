@@ -73,10 +73,6 @@ const context = await esbuild.context({
 			resolveFrom: "cwd", // Usa la ruta relativa al directorio actual
 			assets: [
 				{
-					from: "src/locales/**/*", // Ruta de origen
-					to: "dist/locales", // Ruta de destino
-				},
-				{
 						from: "manifest.json", // Ruta de origen
 						to: "dist/manifest.json", // Ruta de destino
 				},

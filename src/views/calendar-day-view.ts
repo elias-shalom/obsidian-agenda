@@ -5,7 +5,6 @@ import { HourSlot, MiniCalendarDay } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import { CalendarViewType } from "../types/enums";
-import Handlebars from 'handlebars';
 
 export const CALENDAR_DAY_VIEW_TYPE = "calendar-day-view";
 
@@ -99,18 +98,41 @@ export class CalendarDayView extends CalendarView {
     // Solo procesar una vez las tareas
     this.tasks.forEach(task => {
       if (task.dueDate) {
-        const dateString = typeof task.dueDate === 'string' 
-          ? task.dueDate.split('T')[0] // Extraer solo la parte de la fecha
-          : DateTime.fromJSDate(task.dueDate).toISODate();
+        let dateString: string | undefined;
+        if (typeof task.dueDate === 'string') {
+          // Type guard ensures split is called only on string
+          dateString = (task.dueDate as string).split('T')[0]; // Extraer solo la parte de la fecha
+        } else if (task.dueDate instanceof Date) {
+          const isoDate = DateTime.fromJSDate(task.dueDate).toISODate();
+          if (isoDate !== null) {
+            dateString = isoDate;
+          }
+        } else if (task.dueDate && typeof task.dueDate === 'object' && 'toISODate' in task.dueDate) {
+          const isoDate = (task.dueDate as DateTime).toISODate();
+          if (isoDate !== null) {
+            dateString = isoDate;
+          }
+        }
         
         if (dateString) datesWithTasks.add(dateString);
       }
       
       // También considerar fechas programadas si existen
       if (task.scheduledDate) {
-        const dateString = typeof task.scheduledDate === 'string'
-          ? task.scheduledDate.split('T')[0]
-          : DateTime.fromJSDate(task.scheduledDate).toISODate();
+        let dateString: string | undefined;
+        if (typeof task.scheduledDate === 'string') {
+          dateString = (task.scheduledDate as string).split('T')[0];
+        } else if (task.scheduledDate instanceof Date) {
+          const isoDate = DateTime.fromJSDate(task.scheduledDate).toISODate();
+          if (isoDate !== null) {
+            dateString = isoDate;
+          }
+        } else if (task.scheduledDate && typeof task.scheduledDate === 'object' && 'toISODate' in task.scheduledDate) {
+          const isoDate = (task.scheduledDate as DateTime).toISODate();
+          if (isoDate !== null) {
+            dateString = isoDate;
+          }
+        }
           
         if (dateString) datesWithTasks.add(dateString);
       }

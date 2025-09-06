@@ -1,4 +1,4 @@
-import { App, ItemView, WorkspaceLeaf } from 'obsidian';
+import { WorkspaceLeaf } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
 import { ITask } from '../types/interfaces';
@@ -13,7 +13,7 @@ export class ListView extends BaseView {
 
   constructor(leaf: WorkspaceLeaf, private plugin: any, private i18n: I18n, private taskManager: TaskManager) {
     // Constructor de la clase ListView
-    super(leaf);    
+    super(leaf);
     this.i18n = i18n;
   }
 
@@ -60,8 +60,8 @@ export class ListView extends BaseView {
     Handlebars.registerHelper("totalTaskCount", function(folder) {
       if (!folder) return 0;
       
-      // Función recursiva para contar tareas
-      function countAllTasks(folderNode) {
+  // Función recursiva para contar tareas
+  function countAllTasks(folderNode: import("../types/interfaces").FolderNode) {
         // Contar tareas directas
         let count = folderNode.tasks ? folderNode.tasks.length : 0;
         

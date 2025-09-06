@@ -35,7 +35,7 @@ export class CalendarDayView extends CalendarView {
    */
   protected generateViewData(): any {
     const dayTasks = this.getTasksForDate(this.currentDate);
-        
+
     // Organizar tareas por hora (24 horas)
     const hourSlots: HourSlot[] = [];
     for (let hour = 0; hour < 24; hour++) {

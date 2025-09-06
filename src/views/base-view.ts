@@ -4,6 +4,7 @@ import { ITask, FolderNode } from '../types/interfaces';
 import { TaskManager } from '../core/task-manager';
 import { DateTime } from 'luxon';
 import { TaskPriorityIcon } from '../types/enums';
+import headerTemplate from './templates/header.hbs';
 
 export abstract class BaseView extends ItemView {
   private pathHbs: string = `${this.app.vault.configDir}/plugins/obsidian-agenda/templates/`; 
@@ -183,7 +184,7 @@ export abstract class BaseView extends ItemView {
       const uppercasePriority = priority.toUpperCase?.() || priority;
       for (const key in TaskPriorityIcon) {
         if (key.toUpperCase() === uppercasePriority) {
-          return TaskPriorityIcon[key];
+          return TaskPriorityIcon[key as keyof typeof TaskPriorityIcon];
         }
       }
       
@@ -213,30 +214,10 @@ export abstract class BaseView extends ItemView {
   }
 
   protected async renderHeader(container: HTMLElement, templatePath: string, data: any): Promise<void> {
-    //console.log("Dibuja encabezado"); // Debugging line
+    console.log("Dibuja encabezado"); 
     try {
-      // Buscar la plantilla en el caché primero
-      let headerTemplate = this.templateCache[templatePath];
-      
-      if (!headerTemplate) {
-        const headerPath = this.app.vault.adapter.getResourcePath(this.pathHbs + templatePath + this.hbs);
-        const headerResponse = await fetch(headerPath);
-        
-        if (!headerResponse.ok) {
-          console.error("Error al cargar la plantilla del encabezado:", headerResponse.statusText);
-          return;
-        }
-        
-        const headerSource = await headerResponse.text();
-        headerTemplate = Handlebars.compile(headerSource);
-        this.templateCache[templatePath] = headerTemplate;
-      }
-
-      // Dibujar el encabezado
-      const headerHtml = headerTemplate({});
-      
-      // Crear un elemento temporal usando createEl de Obsidian
-      const tempDiv = createEl('div');
+      // Usar directamente la plantilla importada (ya compilada por el plugin)
+      const headerHtml = headerTemplate({ data });
       
       // Usar DOMParser para convertir HTML a nodos DOM
       const parser = new DOMParser();
@@ -289,9 +270,10 @@ export abstract class BaseView extends ItemView {
       console.error(`Error renderizando cabecera header:`, error);
       
       // Crear elemento de error usando createEl de Obsidian
+      const errorMessage = error instanceof Error ? error.message : String(error);
       const errorDiv = createEl('div', {
         cls: 'error',
-        text: `Error al cargar la plantilla de cabecera: ${error.message}`
+        text: `Error al cargar la plantilla de cabecera: ${errorMessage}`
       });
       container.appendChild(errorDiv);
     }
@@ -334,10 +316,11 @@ export abstract class BaseView extends ItemView {
     } catch (error) {
       console.error(`Error renderizando template ${templatePath}:`, error);
       
+      const errorMessage = error instanceof Error ? error.message : String(error);
       // Crear elemento de error usando createEl de Obsidian
       const errorDiv = createEl('div', {
         cls: 'error',
-        text: `Error al cargar la plantilla: ${error.message}`
+        text: `Error al cargar la plantilla: ${errorMessage}`
       });
       container.appendChild(errorDiv);
     }
@@ -451,7 +434,7 @@ export abstract class BaseView extends ItemView {
   }
 
   protected async render(viewType: string, data: any, i18n: any, plugin: any, leaf: any): Promise<void> {
-    //console.log(`Dibuja vista: ${viewType}`); // Debugging line
+    console.log(`Dibuja vista: ${viewType}`); // Debugging line
     const container = this.containerEl.children[1] as HTMLElement;
     container.empty(); // Limpia el contenido previo
 

@@ -3,6 +3,23 @@ import process from "process";
 import builtins from "builtin-modules";
 import copy from "esbuild-plugin-copy";
 import { sassPlugin } from 'esbuild-sass-plugin';
+import handlebars from 'handlebars';
+import fs from 'fs/promises';
+import path from 'path';
+import { readFileSync } from "fs";
+
+const handlebarsPlugin = {
+  name: 'handlebars',
+  setup(build) {
+    build.onLoad({ filter: /\.hbs$/ }, async (args) => {
+      const templateContent = readFileSync(args.path, 'utf8');
+      return {
+        contents: `import Handlebars from 'handlebars'; export default Handlebars.compile(${JSON.stringify(templateContent)});`,
+        loader: 'js',
+      };
+    });
+  },
+};
 
 const banner =
 `/*
@@ -47,7 +64,7 @@ const context = await esbuild.context({
 	loader: {
 		'.svg': 'file', // Si usas SVG en tu proyecto
 	},
-	plugins: [
+	plugins: [handlebarsPlugin,
 		sassPlugin({
 			type: 'css', // Genera un archivo CSS
 		}),
@@ -55,10 +72,10 @@ const context = await esbuild.context({
 			// Configuración del plugin
 			resolveFrom: "cwd", // Usa la ruta relativa al directorio actual
 			assets: [
-				{
-						from: "src/views/templates/**/*", // Ruta de origen
-						to: "dist/templates", // Ruta de destino
-				},
+				//{
+				//		from: "src/views/templates/**/*", // Ruta de origen
+				//		to: "dist/templates", // Ruta de destino
+				//},
 				{
 					from: "src/locales/**/*", // Ruta de origen
 					to: "dist/locales", // Ruta de destino

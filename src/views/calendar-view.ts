@@ -9,8 +9,6 @@ import { CalendarViewType } from '../types/enums';
 
 export const CALENDAR_VIEW_TYPE = 'calendar-view';
 
-
-
 export abstract class CalendarView extends BaseView {
   protected tasks: ITask[] = []; 
   protected currentDate: DateTime = DateTime.now();
@@ -136,7 +134,7 @@ export abstract class CalendarView extends BaseView {
     });
     
     // Helper para comparar valores (útil para condiciones en plantillas)
-    Handlebars.registerHelper('equals', function(arg1, arg2, options) {
+    Handlebars.registerHelper('equals', function(this: any, arg1: any, arg2: any, options: any) {
       return (arg1 === arg2) ? options.fn(this) : options.inverse(this);
     });
 

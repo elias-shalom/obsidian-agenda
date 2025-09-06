@@ -5,7 +5,6 @@ import { ITask } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import { CalendarViewType } from "../types/enums";
-import Handlebars from 'handlebars';
 
 export const CALENDAR_WEEK_VIEW_TYPE = "calendar-week-view";
 

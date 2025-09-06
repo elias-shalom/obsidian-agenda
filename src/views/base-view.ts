@@ -4,12 +4,10 @@ import { ITask, FolderNode } from '../types/interfaces';
 import { TaskManager } from '../core/task-manager';
 import { DateTime } from 'luxon';
 import { TaskPriorityIcon } from '../types/enums';
+// @ts-ignore: Plugin de esbuild maneja los archivos .hbs
+import headerTemplate from './templates/header.hbs';
 
 export abstract class BaseView extends ItemView {
-  private pathHbs: string = `${this.app.vault.configDir}/plugins/obsidian-agenda/templates/`; 
-  private hbs: string = '.hbs'; // Extensión de los archivos de plantilla
-  // Añadir esta propiedad para el caché:
-  private templateCache: Record<string, HandlebarsTemplateDelegate> = {};
   private helpersRegistered = false; // Flag para verificar si los helpers ya están registrados
 
   protected async getAllTasks(taskManager: TaskManager): Promise<ITask[]> {
@@ -183,7 +181,7 @@ export abstract class BaseView extends ItemView {
       const uppercasePriority = priority.toUpperCase?.() || priority;
       for (const key in TaskPriorityIcon) {
         if (key.toUpperCase() === uppercasePriority) {
-          return TaskPriorityIcon[key];
+          return TaskPriorityIcon[key as keyof typeof TaskPriorityIcon];
         }
       }
       
@@ -212,31 +210,11 @@ export abstract class BaseView extends ItemView {
     // Las clases hijas sobrescribirán este método según sea necesario
   }
 
-  protected async renderHeader(container: HTMLElement, templatePath: string, data: any): Promise<void> {
-    //console.log("Dibuja encabezado"); // Debugging line
+  protected async renderHeader(container: HTMLElement, data: any): Promise<void> {
+    console.log("Dibuja encabezado"); 
     try {
-      // Buscar la plantilla en el caché primero
-      let headerTemplate = this.templateCache[templatePath];
-      
-      if (!headerTemplate) {
-        const headerPath = this.app.vault.adapter.getResourcePath(this.pathHbs + templatePath + this.hbs);
-        const headerResponse = await fetch(headerPath);
-        
-        if (!headerResponse.ok) {
-          console.error("Error al cargar la plantilla del encabezado:", headerResponse.statusText);
-          return;
-        }
-        
-        const headerSource = await headerResponse.text();
-        headerTemplate = Handlebars.compile(headerSource);
-        this.templateCache[templatePath] = headerTemplate;
-      }
-
-      // Dibujar el encabezado
-      const headerHtml = headerTemplate({});
-      
-      // Crear un elemento temporal usando createEl de Obsidian
-      const tempDiv = createEl('div');
+      // Usar directamente la plantilla importada (ya compilada por el plugin)
+      const headerHtml = headerTemplate({ data });
       
       // Usar DOMParser para convertir HTML a nodos DOM
       const parser = new DOMParser();
@@ -289,9 +267,10 @@ export abstract class BaseView extends ItemView {
       console.error(`Error renderizando cabecera header:`, error);
       
       // Crear elemento de error usando createEl de Obsidian
+      const errorMessage = error instanceof Error ? error.message : String(error);
       const errorDiv = createEl('div', {
         cls: 'error',
-        text: `Error al cargar la plantilla de cabecera: ${error.message}`
+        text: `Error al cargar la plantilla de cabecera: ${errorMessage}`
       });
       container.appendChild(errorDiv);
     }
@@ -299,45 +278,30 @@ export abstract class BaseView extends ItemView {
 
   protected async renderTemplate(container: HTMLElement, templatePath: string, data: any): Promise<void> {
     try {
-      // Buscar la plantilla en el caché primero
-      let template = this.templateCache[templatePath];
-      
-      // Si no está en caché, cargarla
-      if (!template) {
-        const fullPath = this.app.vault.adapter.getResourcePath(this.pathHbs + templatePath + this.hbs);
-        const response = await fetch(fullPath);
-        
-        if (!response.ok) {
-          throw new Error(`Error al cargar la plantilla: ${response.statusText}`);
-        }
-        
-        const templateSource = await response.text();
-        template = Handlebars.compile(templateSource);
-        
-        // Guardar en caché para futuros usos
-        this.templateCache[templatePath] = template;
-      }
+      // Importar dinámicamente la plantilla Handlebars según la vista
+      // @ts-ignore: Plugin de esbuild maneja los archivos .hbs
+      const templateModule = await import(`./templates/${templatePath}.hbs`);
+      const viewTemplate = templateModule.default;
 
-      // Dibujar la plantilla con los datos proporcionados
-      const html = template(data);
+      // Renderizar el HTML usando la plantilla importada
+      const html = viewTemplate(data);
 
-      // Usar DOMParser en lugar de innerHTML para crear elementos de forma segura
+      // Usar DOMParser para convertir HTML a nodos DOM
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
-      
-      // Transferir todos los elementos del body del documento parseado al contenedor
+
+      // Transferir todos los elementos del body al contenedor
       const bodyElements = Array.from(doc.body.children);
       bodyElements.forEach(element => {
         container.appendChild(document.importNode(element, true));
       });
-      
     } catch (error) {
       console.error(`Error renderizando template ${templatePath}:`, error);
-      
+      const errorMessage = error instanceof Error ? error.message : String(error);
       // Crear elemento de error usando createEl de Obsidian
       const errorDiv = createEl('div', {
         cls: 'error',
-        text: `Error al cargar la plantilla: ${error.message}`
+        text: `Error al cargar la plantilla: ${errorMessage}`
       });
       container.appendChild(errorDiv);
     }
@@ -451,7 +415,7 @@ export abstract class BaseView extends ItemView {
   }
 
   protected async render(viewType: string, data: any, i18n: any, plugin: any, leaf: any): Promise<void> {
-    //console.log(`Dibuja vista: ${viewType}`); // Debugging line
+    console.log(`Dibuja vista: ${viewType}`); // Debugging line
     const container = this.containerEl.children[1] as HTMLElement;
     container.empty(); // Limpia el contenido previo
 
@@ -470,7 +434,7 @@ export abstract class BaseView extends ItemView {
     try {
       // Paralelizar operaciones de renderizado
       await Promise.all([
-        this.renderHeader(headerContainer, 'header', { i18n }),
+        this.renderHeader(headerContainer, { i18n }),
         this.renderTemplate(contentContainer, viewType, data)
       ]);
       
@@ -481,7 +445,6 @@ export abstract class BaseView extends ItemView {
       this.setupViewSpecificEventListeners(contentContainer, data);
     } catch (error) {
       console.error(`Error renderizando vista ${viewType}:`, error);
-      //contentContainer.innerHTML = `<div class="error-message">Error al cargar: ${error.message}</div>`;
     }
   }
 

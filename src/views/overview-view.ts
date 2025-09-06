@@ -30,12 +30,7 @@ export class OverviewView extends BaseView {
   }
 
   async onOpen(): Promise<void> {
-    this.tasks = await this.getAllTasks(this.taskManager);
-    
-    // Cargar tareas de la semana pasada (simulado para este ejemplo)
-    //await this.loadHistoricalData();
-
-    //console.log("Tareas obtenidas overview:", this.tasks); // Debugging line
+    this.tasks = await this.getAllTasks(this.taskManager); 
 
     // Preparar los datos para la plantilla usando las funciones específicas
     const templateData = {
@@ -125,9 +120,9 @@ export class OverviewView extends BaseView {
   private calculateTotalEstimatedTime(): string {
   // todo: Implementar la lógica para calcular el tiempo estimado total de las tareas
     const totalEstimatedMinutes = this.tasks
-      .filter(task => task.statusText !== 'Done' && task.dueDate - task.startDate > 0) // Filtrar tareas no completadas y con fechas válidas
-      .reduce((total, task) => total + (task.dueDate - task.startDate || 0), 0);
-    
+      .filter(task => task.statusText !== 'Done' && (Number(task.dueDate ?? 0) - Number(task.startDate ?? 0) > 0)) // Filtrar tareas no completadas y con fechas válidas
+      .reduce((total, task) => total + ((Number(task.dueDate ?? 0) - Number(task.startDate ?? 0)) || 0), 0);
+
     // Convertir minutos a formato legible (Xh Ym)
     const hours = Math.floor(totalEstimatedMinutes / 60);
     const minutes = totalEstimatedMinutes % 60;
@@ -432,8 +427,8 @@ export class OverviewView extends BaseView {
         }
         
         // Si misma prioridad, ordenar por fecha de vencimiento
-        const aDate = a.dueDate ? new Date(a.dueDate) : null;
-        const bDate = b.dueDate ? new Date(b.dueDate) : null;
+        const aDate = a.dueDate ? this.toLocalMidnight(a.dueDate) : null;
+        const bDate = b.dueDate ? this.toLocalMidnight(b.dueDate) : null;
         
         if (aDate && bDate) return aDate.getTime() - bDate.getTime();
         if (aDate) return -1;
@@ -467,8 +462,8 @@ export class OverviewView extends BaseView {
       })
       .sort((a, b) => {
         // Ordenar por fecha de vencimiento (más antigua primero)
-        const aDate = a.dueDate ? new Date(a.dueDate) : null;
-        const bDate = b.dueDate ? new Date(b.dueDate) : null;
+        const aDate = a.dueDate ? this.toLocalMidnight(a.dueDate) : null;
+        const bDate = b.dueDate ? this.toLocalMidnight(b.dueDate) : null;
         
         if (aDate && bDate) return aDate.getTime() - bDate.getTime();
         if (aDate) return -1;
@@ -503,8 +498,8 @@ export class OverviewView extends BaseView {
       })
       .sort((a, b) => {
         // Ordenar por fecha de vencimiento (más cercana primero)
-        const aDate = a.dueDate ? new Date(a.dueDate) : null;
-        const bDate = b.dueDate ? new Date(b.dueDate) : null;
+        const aDate = a.dueDate ? this.toLocalMidnight(a.dueDate) : null;
+        const bDate = b.dueDate ? this.toLocalMidnight(b.dueDate) : null;
         
         if (aDate && bDate) return aDate.getTime() - bDate.getTime();
         if (aDate) return -1;
@@ -540,19 +535,19 @@ export class OverviewView extends BaseView {
         }
         
         // Añadir los mensajes de error como propiedad temporal
-        task['errorMessages'] = errorMessages.length > 0 
-          ? errorMessages 
-          : ['Error desconocido'];
+        //task['errorMessages'] = errorMessages.length > 0 
+        //  ? errorMessages 
+        //  : ['Error desconocido'];
       } else {
-        task['errorMessages'] = ['Campo inválido'];
+        //task['errorMessages'] = ['Campo inválido'];
       }
       
       return task;
     })
     .sort((a, b) => {
       // Ordenar por más reciente primero
-      const aDate = a.createdDate ? new Date(a.createdDate) : null;
-      const bDate = b.createdDate ? new Date(b.createdDate) : null;
+      const aDate = a.createdDate ? this.toLocalMidnight(a.createdDate) : null;
+      const bDate = b.createdDate ? this.toLocalMidnight(b.createdDate) : null;
       
       if (aDate && bDate) return bDate.getTime() - aDate.getTime();
       if (aDate) return 1;
@@ -577,8 +572,8 @@ export class OverviewView extends BaseView {
       })
       .sort((a, b) => {
         // Ordenar por fecha de creación (más antigua primero)
-        const aDate = a.createdDate ? new Date(a.createdDate) : null;
-        const bDate = b.createdDate ? new Date(b.createdDate) : null;
+        const aDate = a.createdDate ? this.toLocalMidnight(a.createdDate) : null;
+        const bDate = b.createdDate ? this.toLocalMidnight(b.createdDate) : null;
         
         if (aDate && bDate) return aDate.getTime() - bDate.getTime();
         if (aDate) return -1;
@@ -593,7 +588,7 @@ export class OverviewView extends BaseView {
           if (createdDate) {
             const createdLuxon = DateTime.fromJSDate(createdDate);
             const daysOld = Math.floor(now.diff(createdLuxon, 'days').days);
-            task['daysOld'] = daysOld; // Añadir propiedad temporal
+            //task['daysOld'] = daysOld; // Añadir propiedad temporal
           }
         }
         return task;

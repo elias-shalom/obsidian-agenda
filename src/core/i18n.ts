@@ -11,15 +11,11 @@ export class I18n {
 
   async loadLanguage(): Promise<void> {
     try {
-      const language =  getLanguage();
-
-      const templatePath = this.app.vault.adapter.getResourcePath(`${this.app.vault.configDir}/plugins/obsidian-agenda/locales/${language}.json`);
-
-      const response = await fetch(templatePath);
-      if (!response.ok) {
-        throw new Error(`Error loading language file: ${response.statusText}`);
-      }
-      this.translations = await response.json();
+      const language = getLanguage();
+      // Importar dinámicamente el archivo de idioma como módulo
+      // @ts-ignore: esbuild maneja los archivos .json como módulos
+      const localeModule = await import(`../locales/${language}.json`);
+      this.translations = localeModule.default || localeModule;
       this.currentLanguage = language;
     } catch (error) {
       console.error("Error loading translations:", error);

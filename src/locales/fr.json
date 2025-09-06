@@ -1,4 +1,6 @@
 {
+  "no_today_tasks": "Aucune tâche pour aujourd'hui",
+  "no_upcoming_tasks": "Aucune tâche à venir",
   "agenda_title": "Agenda",
   "calendar_view_tab": "Calendario",
   "calendar_view_title": "Calendario",
@@ -115,8 +117,6 @@
   "today_tasks": "Tâches d'aujourd'hui",
   "overdue_tasks": "Tâches échues",
   "upcoming_tasks": "Tâches à venir",
-  "no_today_tasks": "Aucune tâche pour aujourd'hui",
-  "no_upcoming_tasks": "Aucune tâche à venir",
   "apply": "Appliquer",
   "reset": "Réinitialiser",
   "days_old": "jours",

@@ -94,7 +94,7 @@ Day View
 ### Manual Installation
 1. Download the latest release from the releases page
 2. Extract the zip file to your vault's `.obsidian/plugins/` folder
-3. Ensure you have the following files in `.obsidian/plugins/obs-agenda/`:
+3. Ensure you have the following files in `.obsidian/plugins/obsidian-agenda/`:
    - `main.js`
    - `styles.css`
    - `manifest.json`
@@ -158,6 +158,7 @@ Planned for Future Versions:
 5. Enhanced compatibility with Tasks plugin dataview format
 6. Advanced calendar features with time blocks
 7. Support for mobile devices
+8. More widgets on dashboard view
 
 ## Support and Feedback
 

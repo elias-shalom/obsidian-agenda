@@ -1,4 +1,4 @@
-import { ItemView, TFolder } from 'obsidian';
+import { ItemView, TFile, TFolder } from 'obsidian';
 import Handlebars from 'handlebars';
 import { ITask, FolderNode } from '../types/interfaces';
 import { TaskManager } from '../core/task-manager';
@@ -397,7 +397,12 @@ export abstract class BaseView extends ItemView {
       
       // Abrir el archivo en una nueva hoja
       const leaf = this.app.workspace.getLeaf('tab');
-      await leaf.openFile(file as any);
+      if (file instanceof TFile) {
+        await leaf.openFile(file);
+      } else {
+        console.error(`El archivo no es una instancia de TFile: ${filePath}`);
+        return;
+      }
       
       // Si hay un número de línea, desplazarse a esa línea
       if (lineNumber !== undefined) {

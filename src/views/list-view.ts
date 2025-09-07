@@ -3,6 +3,7 @@ import { BaseView } from '../views/base-view';
 import { TaskManager } from '../core/task-manager';
 import { ITask } from '../types/interfaces';
 import { I18n } from '../core/i18n';
+import { FolderNode } from '../types/interfaces';
 import Handlebars from 'handlebars';
 
 export const LIST_VIEW_TYPE = 'list-view';
@@ -153,40 +154,41 @@ export class ListView extends BaseView {
    * @param groupedTasks Estructura jerárquica de tareas
    * @returns Estructura plana con tareas agrupadas solo por carpeta principal
    */
-  private flattenTaskHierarchy(groupedTasks: any): any {
-    const flattenedStructure: any = {};
-    
+  private flattenTaskHierarchy(groupedTasks: Record<string, FolderNode>): Record<string, FolderNode> {
+    const flattenedStructure: Record<string, FolderNode> = {};
+
     // Función recursiva para recorrer la estructura jerárquica
-    const processFolderRecursive = (folder: any, parentFolder?: string) => {
+    const processFolderRecursive = (folder: FolderNode, parentFolder?: string) => {
       const rootFolder = parentFolder || folder.name || 'Sin carpeta';
-      
+
       // Inicializar la carpeta raíz si no existe
       if (!flattenedStructure[rootFolder]) {
         flattenedStructure[rootFolder] = {
           tasks: [],
           name: rootFolder,
-          fullPath: rootFolder
+          fullPath: rootFolder,
+          subfolders: {}
         };
       }
-      
+
       // Añadir tareas directas de esta carpeta a la carpeta raíz
       if (folder.tasks && folder.tasks.length > 0) {
         flattenedStructure[rootFolder].tasks.push(...folder.tasks);
       }
-      
+
       // Procesar subcarpetas recursivamente
       if (folder.subfolders) {
-        Object.values(folder.subfolders).forEach((subfolder: any) => {
+        Object.values(folder.subfolders).forEach((subfolder: FolderNode) => {
           processFolderRecursive(subfolder, rootFolder);
         });
       }
     };
-    
+
     // Iniciar el proceso para cada carpeta de nivel superior
-    Object.values(groupedTasks).forEach(folder => {
-      processFolderRecursive(folder as any);
+    Object.values(groupedTasks).forEach((folder: FolderNode) => {
+      processFolderRecursive(folder);
     });
-    
+
     return flattenedStructure;
   }
 

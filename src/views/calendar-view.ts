@@ -1,7 +1,7 @@
 import { WorkspaceLeaf } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask, HourSlot } from '../types/interfaces';
+import { ITask } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import Handlebars from 'handlebars';
@@ -145,7 +145,8 @@ export abstract class CalendarView extends BaseView {
       }
       try {
         return typeof date.toISODate === 'function' ? date.toISODate() : '';
-      } catch (e) {
+      } catch (error) {
+        console.error(error);
         return '';
       }
     });

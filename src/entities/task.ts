@@ -1,8 +1,6 @@
-import { TFile } from "obsidian";
 import { ITask } from "../types/interfaces";
-import { TaskSection } from "./task-section";
 import { DateTime } from 'luxon';
-import { CustomStatus, CoreTaskStatus, CoreTaskStatusIcon } from "../types/enums";
+import { CoreTaskStatus } from "../types/enums";
 
 export class Task implements ITask {
   id: string;

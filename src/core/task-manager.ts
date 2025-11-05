@@ -184,7 +184,7 @@ export class TaskManager {
       return this.refreshPromise;
     }
 
-    //console.log(this.allTasksCache, this.lastRefreshTime, this.CACHE_TTL);
+    console.log(this.allTasksCache, this.lastRefreshTime, this.CACHE_TTL);
 
     const now = Date.now();
     // Si el cache global es válido y reciente, usarlo

@@ -66,7 +66,7 @@ export class OverviewView extends BaseView {
    * Carga datos históricos para cálculos comparativos
    * En una implementación real, esto cargaría desde un almacén persistente
    */
-  private async loadHistoricalData(): Promise<void> {
+  private loadHistoricalData(): void {
     // Simulación simple - en producción, esto vendría de almacenamiento persistente
     this.tasksLastWeek = [...this.tasks]; // Copia para simular datos históricos
     // Ajustar algunos valores para simular diferencias entre periodos

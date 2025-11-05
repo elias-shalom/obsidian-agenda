@@ -210,8 +210,8 @@ export abstract class BaseView extends ItemView {
     // Las clases hijas sobrescribirán este método según sea necesario
   }
 
-  protected async renderHeader(container: HTMLElement, data: any): Promise<void> {
-    console.log("Dibuja encabezado"); 
+  protected renderHeader(container: HTMLElement, data: any): void {
+    console.info("Dibuja encabezado");
     try {
       // Usar directamente la plantilla importada (ya compilada por el plugin)
       const headerHtml = headerTemplate({ data });

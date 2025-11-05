@@ -1,13 +1,12 @@
-import { EventEmitter } from 'events';
+import mitt from 'mitt';
+
+export type Events = {
+  [key: string]: any;
+};
 
 export class EventBus {
   private static instance: EventBus;
-  private emitter: EventEmitter;
-
-  constructor() {
-    this.emitter = new EventEmitter();
-    this.emitter.setMaxListeners(30); // Evitar warnings de Node.js
-  }
+  private emitter = mitt<Events>();
 
   public static getInstance(): EventBus {
     if (!EventBus.instance) {
@@ -24,12 +23,11 @@ export class EventBus {
     this.emitter.off(event, listener);
   }
 
-  public emit(event: string, ...args: any[]): boolean {
-    return this.emitter.emit(event, ...args);
+  public emit(event: string, payload?: any): void {
+    this.emitter.emit(event, payload);
   }
 }
 
-// Constantes para eventos
 export const EVENTS = {
   TASKS_UPDATED: 'tasks:updated',
   TASK_ADDED: 'task:added',

@@ -6,6 +6,7 @@ import { Task } from "../entities/task";
 import { I18n } from "./i18n";
 import { EventBus, EVENTS } from "./event-bus";
 import { CoreTaskStatus, CoreTaskStatusIcon } from "../types/enums";
+import { DateTime } from "luxon";
 
 export class TaskManager {
   private tasksCache: Map<string, ITask[]> = new Map(); // Cache por archivo
@@ -756,13 +757,19 @@ export class TaskManager {
   /**
    * Auxiliar para verificar filtros de fecha específicos
    */
-  private matchesSpecificDateFilter(taskDate: Date | string | null, filterCriteria: any): boolean {
+  private matchesSpecificDateFilter(taskDate: DateTime<boolean> | Date | string | null, filterCriteria: any): boolean {
     if (!filterCriteria) return true;
 
-    // Convertir a Date si es string
+    // Convertir a Date si es string o DateTime
     let dateObj: Date | null = null;
     if (taskDate) {
-      dateObj = typeof taskDate === 'string' ? new Date(taskDate) : taskDate;
+      if (typeof taskDate === 'string') {
+        dateObj = new Date(taskDate);
+      } else if (typeof (taskDate as any).toJSDate === 'function') {
+        dateObj = (taskDate as unknown as DateTime).toJSDate();
+      } else if (taskDate instanceof Date) {
+        dateObj = taskDate;
+      }
     }
 
     // Verificar existencia
@@ -794,10 +801,18 @@ export class TaskManager {
   /**
    * Auxiliar para verificar filtros de fecha relativos
    */
-  private matchesRelativeDateFilter(taskDate: Date | string | null, filterCriteria: any): boolean {
+  private matchesRelativeDateFilter(taskDate: DateTime<boolean> | Date | string | null, filterCriteria: any): boolean {
     if (!taskDate) return true;
 
-    const dateObj = typeof taskDate === 'string' ? new Date(taskDate) : taskDate;
+    let dateObj: Date;
+    if (typeof taskDate === 'string') {
+      dateObj = new Date(taskDate);
+    } else if (typeof (taskDate as any).toJSDate === 'function') {
+      dateObj = (taskDate as any).toJSDate();
+    } else {
+      dateObj = taskDate as Date;
+    }
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -1003,13 +1018,25 @@ export class TaskManager {
   }
 
   /**
-   * Compara dos fechas, manejando valores nulos
+   * Compara dos fechas, manejando valores nulos y DateTime
    */
-  private compareDates(dateA: Date | string | null, dateB: Date | string | null): number {
-    // Convertir a Date si es string
-    const dateObjA = dateA ? (typeof dateA === 'string' ? new Date(dateA) : dateA) : null;
-    const dateObjB = dateB ? (typeof dateB === 'string' ? new Date(dateB) : dateB) : null;
-    
+  private compareDates(dateA: DateTime<boolean> | Date | string | null, dateB: DateTime<boolean> | Date | string | null): number {
+    // Convertir a Date si es string o DateTime
+    const dateObjA = dateA
+      ? typeof dateA === 'string'
+        ? new Date(dateA)
+        : typeof (dateA as any).toJSDate === 'function'
+          ? (dateA as any).toJSDate()
+          : dateA as Date
+      : null;
+    const dateObjB = dateB
+      ? typeof dateB === 'string'
+        ? new Date(dateB)
+        : typeof (dateB as any).toJSDate === 'function'
+          ? (dateB as any).toJSDate()
+          : dateB as Date
+      : null;
+
     // Manejar casos con null (null siempre va después)
     if (dateObjA === null && dateObjB === null) return 0;
     if (dateObjA === null) return 1;
@@ -1040,8 +1067,15 @@ export class TaskManager {
           if (!task.dueDate) {
             groupKey = 'No Due Date';
           } else {
-            const dueDate = typeof task.dueDate === 'string' ? new Date(task.dueDate) : task.dueDate;
-            groupKey = dueDate.toISOString().split('T')[0]; // YYYY-MM-DD
+            let dueDate: Date | null = null;
+            if (typeof task.dueDate === 'string') {
+              dueDate = new Date(task.dueDate);
+            } else if (typeof (task.dueDate as any).toJSDate === 'function') {
+              dueDate = (task.dueDate as unknown as DateTime).toJSDate();
+            } else if (task.dueDate instanceof Date) {
+              dueDate = task.dueDate;
+            }
+            groupKey = dueDate ? dueDate.toISOString().split('T')[0] : 'Invalid Date'; // YYYY-MM-DD
           }
           break;
         case 'path':

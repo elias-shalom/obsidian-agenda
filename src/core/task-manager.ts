@@ -1,6 +1,6 @@
 import { App, TFile, Plugin } from "obsidian";
 import { ITask, TaskFilterCriteria, SortField, GroupField } from "../types/interfaces";
-import logger from "./logger";
+//import logger from "./logger";
 import { TaskSection } from "../entities/task-section";
 import { Task } from "../entities/task";
 import { I18n } from "./i18n";
@@ -150,7 +150,7 @@ export class TaskManager {
         });
       }
 
-      logger.debug(`Tareas extraídas: ${allTasks.length} de ${files.length} archivos`);
+      console.error(`Tareas extraídas: ${allTasks.length} de ${files.length} archivos`);
       
       // Actualizar el cache global y el timestamp
       this.allTasksCache = allTasks;
@@ -160,7 +160,7 @@ export class TaskManager {
       
       return allTasks;
     } catch (error) {
-      logger.error("Error al obtener tareas:", error);
+      console.error("Error al obtener tareas:", error);
       return this.allTasksCache || [];
     }
   }
@@ -434,7 +434,7 @@ export class TaskManager {
       return this.extractTasksTraditionally(file, content);
 
     } catch (error) {
-      logger.error("Error al extraer tareas del contenido:", error);
+      console.error("Error al extraer tareas del contenido:", error);
       return [];
     }
   }
@@ -544,7 +544,7 @@ export class TaskManager {
         isValid: taskSection.taskData.isValid || false,
       } as ITask;
     } catch (error) {
-      logger.error(`Error creando tarea de línea ${lineNumber + 1} en ${file.path}:`, error);
+      console.error(`Error creando tarea de línea ${lineNumber + 1} en ${file.path}:`, error);
       return null;
     }
   }
@@ -658,7 +658,7 @@ export class TaskManager {
           return false;
         }
       } catch (error) {
-        logger.error(`Error en expresión regular: ${criteria.text.regex}`, error);
+        console.error(`Error en expresión regular: ${criteria.text.regex}`, error);
         // Si hay error en la regex, ignoramos este filtro
       }
     }

@@ -415,7 +415,7 @@ export abstract class BaseView extends ItemView {
         }
       }
     } catch (error) {
-      console.error(`Error al abrir el archivo: ${error}`);
+      console.error(`Error al abrir el archivo: ${String(error)}`);
     }
   }
 

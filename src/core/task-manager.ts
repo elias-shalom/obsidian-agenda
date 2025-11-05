@@ -567,7 +567,7 @@ export class TaskManager {
     }
   }
 
-  private getCoreTaskStatusName(status: string): string {
+  private getCoreTaskStatusName(status: CoreTaskStatus): string {
     switch (status) {
       case CoreTaskStatus.Todo:
         return "Todo";

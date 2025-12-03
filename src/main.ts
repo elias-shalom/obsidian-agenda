@@ -1,7 +1,7 @@
 import { App, Plugin } from "obsidian";
 import { ViewManager } from "./core/view-manager";
 import { I18n } from "./core/i18n";
-import logger from './core/logger';
+//import logger from './core/logger';
 import { TaskManager } from "./core/task-manager";
 //import { SettingTab } from "./settings/setting-tab";
 //import { 	DEFAULT_SETTINGS, AgendaPluginSettings, } from "./settings/settings";
@@ -22,7 +22,7 @@ export default class ObsidianAgenda extends Plugin {
 
   /// Método de inicializa del plugin.
   async onload(): Promise<void> {
-    logger.info("Cargando el plugin Obsidian Agenda...");
+    console.info("Cargando el plugin Obsidian Agenda...");
     const OVERVIEW_VIEW_TYPE = 'overview-view';
 
     try {
@@ -45,7 +45,7 @@ export default class ObsidianAgenda extends Plugin {
       //logger.info("Vistas registradas correctamente.");
 
     } catch (error) {
-      logger.error(`Error durante la carga del plugin: ${error instanceof Error ? error.message : String(error)}`);
+      console.error(`Error durante la carga del plugin: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -58,7 +58,7 @@ export default class ObsidianAgenda extends Plugin {
   }*/
 
   onunload() {
-    console.log('Descargando plugin Obsidian Agenda');
+    console.debug('Descargando plugin Obsidian Agenda');
 
     try {
       // Desregistrar vistas
@@ -67,10 +67,10 @@ export default class ObsidianAgenda extends Plugin {
         //logger.info('Vistas desregistradas correctamente');
       }
       
-      // Desregistrar eventos
+      // Limpiar TaskManager (incluye eventos y cache)
       if (this.taskManager) {
-        this.taskManager.unregisterEvents();
-        //logger.info('Eventos desregistrados correctamente');
+        this.taskManager.cleanup();
+        //logger.info('TaskManager limpiado correctamente');
       }
       
       // Eliminar estilos aplicados
@@ -88,9 +88,9 @@ export default class ObsidianAgenda extends Plugin {
       // this.taskManager = null;
       // this.i18n = null;
       
-      logger.info('Limpieza completada, plugin desactivado con éxito');
+      console.info('Limpieza completada, plugin desactivado con éxito');
     } catch (error) {
-      logger.error(`Error durante la descarga del plugin: ${error instanceof Error ? error.message : String(error)}`);
+      console.error(`Error durante la descarga del plugin: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 }

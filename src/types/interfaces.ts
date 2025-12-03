@@ -1,39 +1,137 @@
 // This file exports interfaces and types used throughout the project.
 import { DateTime } from 'luxon';
 
+/**
+ * Información del archivo donde se encuentra la tarea
+ */
+export interface ITaskFile {
+  path: string;
+  name: string;
+  ext: string;
+  root: string;
+  meta: Record<string, any> | null;
+}
+
+/**
+ * Información de la línea donde se encuentra la tarea
+ */
+export interface ITaskLine {
+  number: number;
+  text: string;
+}
+
+/**
+ * Estado actual de la tarea
+ */
+export interface ITaskState {
+  status: string;
+  icon: string;
+  text: string;
+  priority: string;
+  isValid: boolean;
+}
+
+/**
+ * Fechas asociadas a la tarea
+ */
+export interface ITaskDate {
+  due: DateTime | null;
+  start: DateTime | null;
+  scheduled: DateTime | null;
+  created: DateTime | null;
+  done: DateTime | null;
+  cancelled: DateTime | null;
+}
+
+/**
+ * Información de la sección/contenido de la tarea
+ */
+export interface ITaskSection {
+  header: string;
+  desc: string;
+  tags: string[];
+  fields: string[];
+}
+
+/**
+ * Configuración de flow de la tarea
+ */
+export interface ITaskFlow {
+  recur: string;
+  blockLink: string;
+  deps: string[];
+  onCompletion: string | null;
+}
+
+/**
+ * Nueva interfaz principal para una tarea optimizada
+ */
 export interface ITask {
   id: string;
-  title: string;
-  text: string; // Texto de la tarea
-  link: { path: string }; // Enlace al archivo de la tarea  
-  lineNumber?: number; // Número de línea donde se encuentra la tarea
-  status: string; //Status;
-  statusIcon: string; //StatusIcon;
-  statusText: string; //StatusText;
-  tags: string[];
-  priority: string; //Priority; // Prioridad de la tarea (⏬|⏫|🔼|🔽|🔺 o por defecto "C")
-  createdDate: DateTime | null; // Fecha de creación (➕)
-  startDate: DateTime | null; // Fecha de inicio (🛫)
-  scheduledDate: DateTime | null; // Fecha programada (⏳)
-  dueDate: DateTime | null; // Fecha de vencimiento (📅)
-  doneDate: DateTime | null; // Fecha de finalización (✅)
-  cancelledDate: DateTime | null; // Fecha de cancelación (❌)
-  recurrence: string; //Recurrence | null; Indica si la tarea es recurrente (🔁)
-  onCompletion: string; //OnCompletion;
-  dependsOn: string[];
-  blockLink: string;
-  scheduledDateIsInferred: boolean;
-  filePath: string;
-  fileName: string;
-  fileBasename: string;
-  fileExtension: string;
-  rootFolder: string; // Carpeta raíz del archivo
-  header: string; // Representa el encabezado de la tarea
-  description: string; // Representa la descripción de la tarea
-  tasksFields: string[]; // Representa los campos específicos de la tarea como un arreglo de strings
-  taskData: Record<string, any>;
-  isValid: boolean; // Indica si la tarea es válida o no
-  groupLabel?: string; // Etiqueta de grupo para la tarea
+  file: ITaskFile;
+  line: ITaskLine;
+  state: ITaskState;
+  date: ITaskDate;
+  section: ITaskSection;
+  flow: ITaskFlow;
+
+    // Campos de compatibilidad temporal (deprecated)
+  /** @deprecated Use file.path instead */
+  //get filePath(): string;
+  /** @deprecated Use file.name + '.' + file.ext instead */
+  //get fileName(): string;
+  /** @deprecated Use file.name instead */
+  //get fileBasename(): string;
+  /** @deprecated Use file.root instead */
+  //get rootFolder(): string;
+  /** @deprecated Use line.text instead */
+  //get title(): string;
+  /** @deprecated Use line.text instead */
+  //get text(): string;
+  /** @deprecated Use line.number instead */
+  //get lineNumber(): number;
+  /** @deprecated Use state.status instead */
+  //get status(): string;
+  /** @deprecated Use state.icon instead */
+  //get statusIcon(): string;
+  /** @deprecated Use state.text instead */
+  //get statusText(): string;
+  /** @deprecated Use section.tags instead */
+  //get tags(): string[];
+  /** @deprecated Use state.priority instead */
+  //get priority(): string;
+  /** @deprecated Use date.created instead */
+  //get createdDate(): DateTime | null;
+  /** @deprecated Use date.start instead */
+  //get startDate(): DateTime | null;
+  /** @deprecated Use date.scheduled instead */
+  //get scheduledDate(): DateTime | null;
+  /** @deprecated Use date.due instead */
+  //get dueDate(): DateTime | null;
+  /** @deprecated Use date.done instead */
+  //get doneDate(): DateTime | null;
+  /** @deprecated Use date.cancelled instead */
+  //get cancelledDate(): DateTime | null;
+  /** @deprecated Use recur instead */
+  //get recurrence(): string;
+  /** @deprecated Use flow.onCompletion instead */
+  //get onCompletion(): string | null;
+  /** @deprecated Use flow.deps instead */
+  //get dependsOn(): string[];
+  /** @deprecated Use flow.blockLink instead */
+  //get blockLink(): string;
+  /** @deprecated Use section.header instead */
+  //get header(): string;
+  /** @deprecated Use section.desc instead */
+  //get description(): string;
+  /** @deprecated Use section.fields instead */
+  //get tasksFields(): string[];
+  /** @deprecated Use state.isValid instead */
+  //get isValid(): boolean;
+  /** @deprecated Legacy compatibility object */
+  //get taskData(): Record<string, any>;
+  
+  groupLabel?: string;
 }
 
 export interface DateRange {

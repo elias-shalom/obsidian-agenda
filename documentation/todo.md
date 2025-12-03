@@ -94,6 +94,10 @@ Obsidian Agenda transforma tu bóveda en un potente sistema de productividad al 
 
 21. Secciones extra en calendario ![vista agenda ](attachments/extra-section.png)
 
+22. Importar y exportar tareas de google, microsoft, etc
+
+23. Tareas seriadas
+
 # Fixes
 
 - ancho de las filas de la tabla en la vista tablas

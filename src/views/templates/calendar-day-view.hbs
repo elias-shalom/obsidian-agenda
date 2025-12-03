@@ -43,10 +43,10 @@
             <div class="calendar-day-column {{#if calendar.isToday}}calendar-today{{/if}}" data-date="{{toISODate calendar.date}}">
               {{#each calendar.tasksForDay}}
                 <div class="calendar-task" 
-                    data-file-path="{{filePath}}" 
-                    data-line-number="{{lineNumber}}"
-                    data-tooltip="{{description}}">
-                  <span class="task-title">{{description}}</span>
+                    data-file-path="{{file.path}}" 
+                    data-line-number="{{line.number}}"
+                    data-tooltip="{{section.desc}}">
+                  <span class="task-title">{{section.desc}}</span>
                 </div>
               {{/each}}
             </div>

@@ -79,14 +79,14 @@
       </thead>
       <tbody>
         {{#each tasks}}
-        <tr class="task-row {{#if completed}}task-completed{{/if}} {{priorityClass}}" data-file-path="{{this.filePath}}" data-line-number="{{lineNumber}}">
+        <tr class="task-row {{#if completed}}task-completed{{/if}} {{priorityClass}}" data-file-path="{{this.file.path}}" data-line-number="{{line.number}}">
           <td class="table-col-row-number">
             <span class="row-number"></span>
           </td>
           <td class="table-col-priority">
-              {{#if priority}}
-              <div class="task-priority priority-{{priority}}" title="{{t priority}}">
-                {{priorityIcon priority}}
+              {{#if state.priority}}
+              <div class="task-priority priority-{{state.priority}}" title="{{t state.priority}}">
+                {{priorityIcon state.priority}}
               </div>
               {{else}}
               <div class="task-priority priority-none" title="{{t 'none'}}">
@@ -95,12 +95,12 @@
               {{/if}}
           </td>
           <td class="table-col-status">
-            <div class="task-status-icon" title="{{t statusText}}" data-task-id="{{id}}">
-              <span class="status-icon" data-status="{{statusText}}">{{statusIcon}}</span>
+            <div class="task-status-icon" title="{{t state.text}}" data-task-id="{{id}}">
+              <span class="status-icon" data-status="{{state.text}}">{{state.icon}}</span>
             </div>
           </td>
           <td class="table-col-task">
-            <div class="task-description">{{description}}</div>
+            <div class="task-description">{{section.desc}}</div>
             {{#if subtasks}}
             <div class="task-subtasks-indicator">
               <span class="subtasks-count">{{subtasksCompletedCount}}/{{subtasksCount}}</span>
@@ -113,63 +113,63 @@
           <td class="table-col-folder">
             <div class="task-folder">
               <span class="folder-icon">📁</span>
-              <span class="folder-name">{{rootFolder}}</span>
+              <span class="folder-name">{{file.root}}</span>
             </div>
           </td>
           <td class="table-col-file">
             <div class="task-file">
               <span class="file-icon">📄</span>
-              <span class="file-name">{{fileBasename}}</span>
+              <span class="file-name">{{file.basename}}</span>
             </div>
           </td>
           <td class="table-col-due {{#if isOverdue}}overdue{{/if}} {{#if isDueToday}}due-today{{/if}}">
             <div class="task-dates">
-              {{#if dueDate}}
+              {{#if date.due}}
               <div class="task-date due-date" title="{{t 'due_date'}}">
                 <span class="date-icon">{{dateTypeIcon 'Due'}}</span>
-                <span class="date-text">{{formatDate dueDate}}</span>
+                <span class="date-text">{{formatDate date.due}}</span>
               </div>
               {{/if}}
 
-              {{#if scheduledDate}}
+              {{#if date.scheduled}}
               <div class="task-date scheduled-date" title="{{t 'scheduled_date'}}">
                 <span class="date-icon">{{dateTypeIcon 'Scheduled'}}</span>
-                <span class="date-text">{{formatDate scheduledDate}}</span>
+                <span class="date-text">{{formatDate date.scheduled}}</span>
               </div>
               {{/if}}
               
-              {{#if createdDate}}
+              {{#if date.created}}
               <div class="task-date created-date" title="{{t 'created_date'}}">
                 <span class="date-icon">{{dateTypeIcon 'Created'}}</span>
-                <span class="date-text">{{formatDate createdDate}}</span>
+                <span class="date-text">{{formatDate date.created}}</span>
               </div>
               {{/if}}
               
-              {{#if startDate}}
+              {{#if date.start}}
               <div class="task-date start-date" title="{{t 'start_date'}}">
                 <span class="date-icon">{{dateTypeIcon 'Start'}}</span>
-                <span class="date-text">{{formatDate startDate}}</span>
+                <span class="date-text">{{formatDate date.start}}</span>
               </div>
               {{/if}}
               
-              {{#if doneDate}}
+              {{#if date.done}}
               <div class="task-date done-date" title="{{t 'done_date'}}">
                 <span class="date-icon">{{dateTypeIcon 'Done'}}</span>
-                <span class="date-text">{{formatDate doneDate}}</span>
+                <span class="date-text">{{formatDate date.done}}</span>
               </div>
               {{/if}}
               
-              {{#if cancelledDate}}
+              {{#if date.cancelled}}
               <div class="task-date cancelled-date" title="{{t 'cancelled_date'}}">
                 <span class="date-icon">{{dateTypeIcon 'Cancelled'}}</span>
-                <span class="date-text">{{formatDate cancelledDate}}</span>
+                <span class="date-text">{{formatDate date.cancelled}}</span>
               </div>
               {{/if}}
             </div>
           </td>
           <td class="table-col-tags">
             <div class="task-tags">
-              {{#each tags}}
+              {{#each section.tags}}
               <span class="task-tag">{{this}}</span>
               {{/each}}
             </div>

@@ -41,12 +41,12 @@ export class CalendarDayView extends CalendarView {
     for (let hour = 0; hour < 24; hour++) {
       // Filtrar tareas para esta hora específica
       const hourTasks = dayTasks.filter(task => {
-        if (!task.dueDate) return false;
+        if (!task.date.due) return false;
         
         // Convertir a DateTime si es string
-        const taskDate = typeof task.dueDate === 'string'
-          ? DateTime.fromISO(task.dueDate)
-          : task.dueDate;
+        const taskDate = typeof task.date.due === 'string'
+          ? DateTime.fromISO(task.date.due)
+          : task.date.due;
           
         // Verificar si la tarea es para esta hora
         return taskDate.hour === hour;
@@ -97,18 +97,18 @@ export class CalendarDayView extends CalendarView {
     
     // Solo procesar una vez las tareas
     this.tasks.forEach(task => {
-      if (task.dueDate) {
+      if (task.date.due) {
         let dateString: string | undefined;
-        if (typeof task.dueDate === 'string') {
+        if (typeof task.date.due === 'string') {
           // Type guard ensures split is called only on string
-          dateString = (task.dueDate as string).split('T')[0]; // Extraer solo la parte de la fecha
-        } else if (task.dueDate instanceof Date) {
-          const isoDate = DateTime.fromJSDate(task.dueDate).toISODate();
+          dateString = (task.date.due as string).split('T')[0]; // Extraer solo la parte de la fecha
+        } else if (task.date.due instanceof Date) {
+          const isoDate = DateTime.fromJSDate(task.date.due).toISODate();
           if (isoDate !== null) {
             dateString = isoDate;
           }
-        } else if (task.dueDate && typeof task.dueDate === 'object' && 'toISODate' in task.dueDate) {
-          const isoDate = (task.dueDate as DateTime).toISODate();
+        } else if (task.date.due && typeof task.date.due === 'object' && 'toISODate' in task.date.due) {
+          const isoDate = (task.date.due as DateTime).toISODate();
           if (isoDate !== null) {
             dateString = isoDate;
           }
@@ -118,17 +118,17 @@ export class CalendarDayView extends CalendarView {
       }
       
       // También considerar fechas programadas si existen
-      if (task.scheduledDate) {
+      if (task.date.scheduled) {
         let dateString: string | undefined;
-        if (typeof task.scheduledDate === 'string') {
-          dateString = (task.scheduledDate as string).split('T')[0];
-        } else if (task.scheduledDate instanceof Date) {
-          const isoDate = DateTime.fromJSDate(task.scheduledDate).toISODate();
+        if (typeof task.date.scheduled === 'string') {
+          dateString = (task.date.scheduled as string).split('T')[0];
+        } else if (task.date.scheduled instanceof Date) {
+          const isoDate = DateTime.fromJSDate(task.date.scheduled).toISODate();
           if (isoDate !== null) {
             dateString = isoDate;
           }
-        } else if (task.scheduledDate && typeof task.scheduledDate === 'object' && 'toISODate' in task.scheduledDate) {
-          const isoDate = (task.scheduledDate as DateTime).toISODate();
+        } else if (task.date.scheduled && typeof task.date.scheduled === 'object' && 'toISODate' in task.date.scheduled) {
+          const isoDate = (task.date.scheduled as DateTime).toISODate();
           if (isoDate !== null) {
             dateString = isoDate;
           }

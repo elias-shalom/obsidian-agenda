@@ -1,4 +1,4 @@
-import { createLogger, format, transports } from 'winston';
+/*import { createLogger, format, transports } from 'winston';
 
 const logger = createLogger({
   level: 'debug', // Nivel mínimo de logging (puede ser 'error', 'warn', 'info', 'debug', etc.)
@@ -16,4 +16,4 @@ const logger = createLogger({
   ],
 });
 
-export default logger;
+export default logger;*/

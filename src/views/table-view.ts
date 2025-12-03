@@ -33,7 +33,7 @@ export class TableView extends BaseView {
   async onOpen(): Promise<void> {
     this.tasks = await this.getAllTasks(this.taskManager);
 
-    const uniqueFolders = [...new Set(this.tasks.map(task => task.rootFolder))].sort();
+    const uniqueFolders = [...new Set(this.tasks.map(task => task.file.root))].sort();
 
     await this.render(TABLE_VIEW_TYPE, { tasks: this.tasks,
     uniqueFolders: uniqueFolders }, this.i18n, this.plugin, this.leaf);

@@ -1,6 +1,6 @@
 import { OnCompletion, TaskPriorityIcon } from "../types/enums.ts";
 import { I18n } from "../core/i18n";
-import { RRule, rrulestr } from 'rrule';
+import { rrulestr } from 'rrule';
 
 export class TaskSection {
   header: string; // Representa el encabezado de la tarea
@@ -134,7 +134,8 @@ export class TaskSection {
           this.blockLink = this.extractBlockLink(text);
       } catch (error) {
           // Si ocurre un error, inicializar todo como vacío
-          console.warn(this.i18n.t('errors.initializeTaskSection', { error: error.message }));
+          const errorMsg = typeof error === 'object' && error !== null && 'message' in error ? (error as { message: string }).message : String(error);
+          console.error(this.i18n.t('errors.initializeTaskSection', { error: errorMsg }));
           this.header = "";
           this.description = "";
           this.tasksFields = [];
@@ -333,9 +334,10 @@ export class TaskSection {
                 } else {
                   throw new Error("No se pudo convertir al formato RRULE");
                 }
-              } catch (e) {                
+              } catch (error) {                
                 errorMessage = this.i18n.t('errors.invalidRecurrencePattern', { icon });
                 fieldText = `${fieldText} @${errorMessage}`;
+                console.error(error);
               }
             } else {              
               errorMessage = this.i18n.t('errors.invalidRecurrence', { icon });

@@ -161,9 +161,9 @@
         {{#if todayTasks.length}}
           <ul class="task-list">
             {{#each todayTasks}}
-              <li class="task-item {{#if this.completed}}completed{{/if}}" data-file-path="{{this.filePath}}" data-line-number="{{this.lineNumber}}">
+              <li class="task-item {{#if this.completed}}completed{{/if}}" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
                 <div class="task-details">
-                  <span class="task-text">{{priorityIcon this.priority}} {{this.description}}</span>
+                  <span class="task-text">{{priorityIcon this.state.priority}} {{this.section.desc}}</span>
                 </div>
               </li>
             {{/each}}
@@ -184,10 +184,10 @@
         {{#if overdueTasks.length}}
           <ul class="task-list">
             {{#each overdueTasks}}
-              <li class="task-item {{#if this.completed}}completed{{/if}}" data-file-path="{{this.filePath}}" data-line-number="{{this.lineNumber}}">
+              <li class="task-item {{#if this.completed}}completed{{/if}}" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
                 <div class="task-details">
-                  <span class="task-text">{{this.description}}</span>
-                  <span class="task-due overdue">{{formatDate this.dueDate}}</span>
+                  <span class="task-text">{{this.section.desc}}</span>
+                  <span class="task-due overdue">{{formatDate this.date.due}}</span>
                 </div>
               </li>
             {{/each}}
@@ -208,10 +208,10 @@
         {{#if upcomingTasks.length}}
           <ul class="task-list">
             {{#each upcomingTasks}}
-              <li class="task-item {{#if this.completed}}completed{{/if}}" data-file-path="{{this.filePath}}" data-line-number="{{this.lineNumber}}">
+              <li class="task-item {{#if this.completed}}completed{{/if}}" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
                 <div class="task-details">
-                  <span class="task-text">{{this.description}}</span>                  
-                  <span class="task-due">{{formatDate this.dueDate}}</span>
+                  <span class="task-text">{{this.section.desc}}</span>                  
+                  <span class="task-due">{{formatDate this.date.due}}</span>
                 </div>
               </li>
             {{/each}}
@@ -232,9 +232,9 @@
         {{#if invalidTasks.length}}
           <ul class="task-list">
             {{#each invalidTasks}}
-              <li class="task-item clickable" data-file-path="{{this.filePath}}" data-line-number="{{this.lineNumber}}">
+              <li class="task-item clickable" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
                 <div class="task-details">
-                  <span class="task-text">{{priorityIcon this.priority}} {{this.description}}</span>
+                  <span class="task-text">{{priorityIcon this.state.priority}} {{this.section.desc}}</span>
                   <div class="task-error-container">
                     {{#each this.errorMessages}}
                       <span class="task-error">{{this}}</span>
@@ -260,9 +260,9 @@
         {{#if oldestTasks.length}}
           <ul class="task-list">
             {{#each oldestTasks}}
-              <li class="task-item clickable" data-file-path="{{this.filePath}}" data-line-number="{{this.lineNumber}}">
+              <li class="task-item clickable" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
                 <div class="task-details">
-                  <span class="task-text">{{priorityIcon this.priority}} {{this.description}}</span>
+                  <span class="task-text">{{priorityIcon this.state.priority}} {{this.section.desc}}</span>
                   <span class="task-age">{{this.daysOld}} {{t "days_old"}}</span>
                 </div>
               </li>
@@ -287,9 +287,9 @@
               <h4 class="project-name">{{this.project}} ({{this.tasks.length}})</h4>
               <ul class="task-list">
                 {{#each this.tasks}}
-                  <li class="task-item clickable" data-file-path="{{this.filePath}}" data-line-number="{{this.lineNumber}}">
+                  <li class="task-item clickable" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
                     <div class="task-details">
-                      <span class="task-text">{{priorityIcon this.priority}} {{this.description}}</span>
+                      <span class="task-text">{{priorityIcon this.state.priority}} {{this.section.desc}}</span>
                     </div>
                   </li>
                 {{/each}}

@@ -1,7 +1,7 @@
 import { WorkspaceLeaf } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask, HourSlot } from '../types/interfaces';
+import { ITask } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import Handlebars from 'handlebars';
@@ -76,12 +76,12 @@ export abstract class CalendarView extends BaseView {
   protected getTasksForDate(date: DateTime): ITask[] {
     const dayUnit = 'day';
     return this.tasks.filter(task => {
-      if (!task.dueDate) return false;
+      if (!task.date.due) return false;
       
       // Convertir a DateTime si es string
-      const taskDate = typeof task.dueDate === 'string' 
-        ? DateTime.fromISO(task.dueDate) 
-        : task.dueDate;
+      const taskDate = typeof task.date.due === 'string' 
+        ? DateTime.fromISO(task.date.due) 
+        : task.date.due;
       
       return taskDate.hasSame(date, dayUnit);
     });
@@ -145,7 +145,8 @@ export abstract class CalendarView extends BaseView {
       }
       try {
         return typeof date.toISODate === 'function' ? date.toISODate() : '';
-      } catch (e) {
+      } catch (error) {
+        console.error(error);
         return '';
       }
     });

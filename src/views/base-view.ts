@@ -23,10 +23,10 @@ export abstract class BaseView extends ItemView {
     const rootFolders: Record<string, FolderNode> = {};
     
     tasks.forEach(task => {
-      if (!task.filePath) return;
+      if (!task.file.path) return;
       
       // Dividir la ruta del archivo en partes
-      const pathParts = task.filePath.split('/');
+      const pathParts = task.file.path.split('/');
       
       // Si no hay partes de ruta, asignar a "Root"
       if (pathParts.length === 1) {
@@ -210,8 +210,8 @@ export abstract class BaseView extends ItemView {
     // Las clases hijas sobrescribirán este método según sea necesario
   }
 
-  protected async renderHeader(container: HTMLElement, data: any): Promise<void> {
-    console.log("Dibuja encabezado"); 
+  protected renderHeader(container: HTMLElement, data: any): void {
+    console.debug("Dibuja encabezado");
     try {
       // Usar directamente la plantilla importada (ya compilada por el plugin)
       const headerHtml = headerTemplate({ data });
@@ -415,12 +415,12 @@ export abstract class BaseView extends ItemView {
         }
       }
     } catch (error) {
-      console.error(`Error al abrir el archivo: ${error}`);
+      console.error(`Error al abrir el archivo: ${String(error)}`);
     }
   }
 
   protected async render(viewType: string, data: any, i18n: any, plugin: any, leaf: any): Promise<void> {
-    console.log(`Dibuja vista: ${viewType}`); // Debugging line
+    console.debug(`Dibuja vista: ${viewType}`); // Debugging line
     const container = this.containerEl.children[1] as HTMLElement;
     container.empty(); // Limpia el contenido previo
 

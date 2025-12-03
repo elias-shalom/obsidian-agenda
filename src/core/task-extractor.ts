@@ -1,0 +1,231 @@
+import { App, TFile } from "obsidian";
+import { ITask } from "../types/interfaces";
+import { TaskSection } from "../entities/task-section";
+import { Task } from "../entities/task";
+import { I18n } from "./i18n";
+import { CoreTaskStatus, CoreTaskStatusIcon } from "../types/enums";
+import { DateTime } from "luxon";
+
+/**
+ * Clase responsable de extraer tareas desde archivos de Obsidian
+ * Utiliza tanto el caché de metadatos como métodos tradicionales
+ */
+export class TaskExtractor {
+  constructor(private app: App, private i18n: I18n) {}
+
+  /**
+   * Extrae tareas de un archivo específico
+   * @param file El archivo del cual extraer tareas
+   * @returns Una promesa que resuelve a un array de tareas
+   */
+  public async extractTasksFromFile(file: TFile): Promise<ITask[]> {
+    try {
+      //console.log(`Extrayendo tareas de ${file}...`);
+      const content = await this.app.vault.read(file);
+      
+      const cachedMetadata = this.app.metadataCache.getFileCache(file);
+      //console.log(`Metadatos en caché para ${file.path}:`, cachedMetadata);
+
+      // Verificar si podemos usar el caché de metadatos
+      if (cachedMetadata && cachedMetadata.listItems) {
+        const tasks = this.extractTasksFromCache(file, cachedMetadata, content);
+        if (tasks.length > 0) {
+          return tasks;
+        }
+        // Si no se encontraron tareas, caemos en el método tradicional (por si acaso)
+      }
+
+      // Usar el método tradicional como fallback
+      return this.extractTasksTraditionally(file, content, cachedMetadata ? cachedMetadata.frontmatter : undefined);
+
+    } catch (error) {
+      console.error("Error al extraer tareas del contenido:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Extrae tareas usando el caché de metadatos de Obsidian
+   */
+  private extractTasksFromCache(file: TFile, cache: any, content: string): ITask[] {
+    const tasks: ITask[] = [];
+    const lines = content.split("\n");
+    //console.debug(`Usando caché de metadatos para ${file.path}`);
+
+    // Solo procesar elementos de lista que son tareas
+    if (cache.listItems) {
+      for (const item of cache.listItems) {
+        // Verificar si es una tarea (tiene un carácter de tarea)
+        if (item.task !== undefined) {
+          // Obtener el número de línea (ajustado a base 0)
+          const lineNumber = item.position.start.line;
+
+          // Obtener el contenido de la línea
+          const line = lines[lineNumber];
+
+          // Solo procesar si coincide con el formato de tarea
+          if (line && line.match(TaskSection.taskFormatRegex)) {
+            const task = this.createTaskFromLine(file, line, lineNumber, cache.frontmatter);
+            if (task) {
+              tasks.push(task);
+            }
+          }
+        }
+      }
+    }
+    return tasks;
+  }
+
+  /**
+   * Extrae tareas usando el método tradicional (sin caché)
+   */
+  private extractTasksTraditionally(file: TFile, content: string, frontmatter: Record<string, any> | undefined): ITask[] {
+    //console.debug(`Usando método tradicional para ${file.path}`);
+    const lines = content.split("\n").filter(line => line.match(TaskSection.taskFormatRegex)); 
+    const tasks: ITask[] = [];
+
+    lines.forEach((line, lineNumber) => {
+      if (line) {
+        const task = this.createTaskFromLine(file, line, lineNumber,frontmatter);
+        if (task) {
+          tasks.push(task);
+        }
+      }
+    });
+    
+    //console.debug(`Extraídas ${tasks.length} tareas de ${file.path} usando método tradicional`);
+    return tasks;
+  }
+
+  /**
+   * Crea un objeto ITask a partir de una línea de texto con la nueva estructura
+   */
+  private createTaskFromLine(file: TFile, line: string, lineNumber: number, frontmatter: Record<string, any> | undefined): ITask | null {
+    try {
+      const taskSection = new TaskSection(this.i18n);
+      taskSection.initialize(line);
+      console.log(`Task data extraída de línea ${lineNumber + 1} en ${file.path}:`, taskSection);
+
+      const status = Task.extractStatusFromHeader(taskSection.header);
+      const tags = Task.extractTags(line);
+      const statusText = this.getCoreTaskStatusName(status);
+      // Obtiene el icono del enum CoreTaskStatusIcon
+      const statusIcon = this.getCoreTaskStatusIcon(status);
+      const rootFolder = this.getRootFolder(file.path);
+
+      // Crear la nueva estructura optimizada
+      return Task.create({
+        id: taskSection.taskData.id || `${file.path}-${lineNumber + 1}`,
+        
+        file: {
+          path: file.path,
+          basename: file.basename,
+          extension: file.extension,
+          root: rootFolder,
+          frontmatter: frontmatter || null
+        },
+        
+        line: {
+          number: lineNumber + 1,
+          text: line.trim()
+        },
+        
+        state: {
+          status: status,
+          icon: statusIcon,
+          text: statusText,
+          priority: taskSection.taskData.priority || "undefined",
+          isValid: taskSection.taskData.isValid || false
+        },
+        
+        date: {
+          due: taskSection.taskData.dueDate || null,
+          start: taskSection.taskData.startDate || null,
+          scheduled: taskSection.taskData.scheduledDate || null,
+          created: taskSection.taskData.createdDate || null,
+          done: taskSection.taskData.doneDate || null,
+          cancelled: taskSection.taskData.cancelledDate || null
+        },
+        
+        section: {
+          header: taskSection.header,
+          description: taskSection.description,
+          tags: tags,
+          fields: taskSection.tasksFields
+        },
+        
+        workflow: {
+          recurrence: taskSection.taskData.recurrence || "",
+          blockLink: taskSection.blockLink,
+          dependsOn: taskSection.taskData.dependsOn || [],
+          onCompletion: taskSection.taskData.onCompletion || null
+        }
+      });
+
+    } catch (error) {
+      console.error(`Error creando tarea de línea ${lineNumber + 1} en ${file.path}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Obtiene la carpeta raíz de un archivo
+   */
+  private getRootFolder(filePath: string): string {
+    if (filePath) {
+      // Dividir la ruta del archivo en partes
+      const pathParts = filePath.split('/');
+      
+      // El rootFolder es la primera parte de la ruta (si existe)
+      if (pathParts.length > 1) {
+        return pathParts[0];
+      } else {
+        // Si no hay separador de ruta, asignar "Root"
+        return "root";
+      }
+    } else {
+      // Si no hay ruta de archivo, asignar "Sin carpeta"
+      return "undefined";
+    }
+  }
+
+  /**
+   * Obtiene el nombre del estado de la tarea
+   */
+  private getCoreTaskStatusName(status: CoreTaskStatus): string {
+    switch (status) {
+      case CoreTaskStatus.Todo:
+        return "Todo";
+      case CoreTaskStatus.InProgress:
+        return "InProgress";
+      case CoreTaskStatus.Done:
+        return "Done";
+      case CoreTaskStatus.Cancelled:
+        return "Cancelled";
+      case CoreTaskStatus.nonTask:
+        return "NonTask";
+      default:
+        return "Unknown";
+    }
+  }
+
+  /**
+   * Obtiene el icono del estado de la tarea
+   */
+  private getCoreTaskStatusIcon(status: CoreTaskStatus): string {
+    switch (status) {
+      case CoreTaskStatus.Todo:
+        return CoreTaskStatusIcon.Todo;
+      case CoreTaskStatus.InProgress:
+        return CoreTaskStatusIcon.InProgress;
+      case CoreTaskStatus.Done:
+        return CoreTaskStatusIcon.Done;
+      case CoreTaskStatus.Cancelled:
+        return CoreTaskStatusIcon.Cancelled;
+      case CoreTaskStatus.nonTask:
+        return CoreTaskStatusIcon.nonTask;
+      default:
+        return CoreTaskStatusIcon.Todo;
+    }
+  }
+}

@@ -58,7 +58,7 @@ export default class ObsidianAgenda extends Plugin {
   }*/
 
   onunload() {
-    console.log('Descargando plugin Obsidian Agenda');
+    console.debug('Descargando plugin Obsidian Agenda');
 
     try {
       // Desregistrar vistas
@@ -67,10 +67,10 @@ export default class ObsidianAgenda extends Plugin {
         //logger.info('Vistas desregistradas correctamente');
       }
       
-      // Desregistrar eventos
+      // Limpiar TaskManager (incluye eventos y cache)
       if (this.taskManager) {
-        this.taskManager.unregisterEvents();
-        //logger.info('Eventos desregistrados correctamente');
+        this.taskManager.cleanup();
+        //logger.info('TaskManager limpiado correctamente');
       }
       
       // Eliminar estilos aplicados

@@ -211,7 +211,7 @@ export abstract class BaseView extends ItemView {
   }
 
   protected renderHeader(container: HTMLElement, data: any): void {
-    console.info("Dibuja encabezado");
+    console.debug("Dibuja encabezado");
     try {
       // Usar directamente la plantilla importada (ya compilada por el plugin)
       const headerHtml = headerTemplate({ data });
@@ -420,7 +420,7 @@ export abstract class BaseView extends ItemView {
   }
 
   protected async render(viewType: string, data: any, i18n: any, plugin: any, leaf: any): Promise<void> {
-    console.log(`Dibuja vista: ${viewType}`); // Debugging line
+    console.debug(`Dibuja vista: ${viewType}`); // Debugging line
     const container = this.containerEl.children[1] as HTMLElement;
     container.empty(); // Limpia el contenido previo
 

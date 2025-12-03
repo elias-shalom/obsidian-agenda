@@ -40,15 +40,15 @@ export class TaskSorter {
   private compareTasks(a: ITask, b: ITask, field: SortField): number {
     switch (field) {
       case 'dueDate':
-        return this.compareDates(a.dueDate, b.dueDate);
+        return this.compareDates(a.date.due, b.date.due);
       case 'startDate':
-        return this.compareDates(a.startDate, b.startDate);
+        return this.compareDates(a.date.start, b.date.start);
       case 'scheduledDate':
-        return this.compareDates(a.scheduledDate, b.scheduledDate);
+        return this.compareDates(a.date.scheduled, b.date.scheduled);
       case 'doneDate':
-        return this.compareDates(a.doneDate, b.doneDate);
+        return this.compareDates(a.date.done, b.date.done);
       case 'createdDate':
-        return this.compareDates(a.createdDate, b.createdDate);
+        return this.compareDates(a.date.created, b.date.created);
       case 'priority':
         const priorityMap: {[key: string]: number} = {
           'high': 1,
@@ -56,8 +56,8 @@ export class TaskSorter {
           'low': 3,
           'undefined': 4
         };
-        const priorityA = priorityMap[a.priority || 'undefined'] || 4;
-        const priorityB = priorityMap[b.priority || 'undefined'] || 4;
+        const priorityA = priorityMap[a.state.priority || 'undefined'] || 4;
+        const priorityB = priorityMap[b.state.priority || 'undefined'] || 4;
         return priorityA - priorityB;
       case 'status':
         const statusMap: {[key: string]: number} = {
@@ -67,13 +67,13 @@ export class TaskSorter {
           'DONE': 4,
           'CANCELLED': 5
         };
-        const statusA = statusMap[a.status || 'TODO'] || 1;
-        const statusB = statusMap[b.status || 'TODO'] || 1;
+        const statusA = statusMap[a.state.status || 'TODO'] || 1;
+        const statusB = statusMap[b.state.status || 'TODO'] || 1;
         return statusA - statusB;
       case 'text':
-        return (a.text || '').localeCompare(b.text || '');
+        return (a.line.text.trim() || '').localeCompare(b.line.text.trim() || '');
       case 'path':
-        return (a.filePath || '').localeCompare(b.filePath || '');
+        return (a.file.path || '').localeCompare(b.file.path || '');
       default:
         return 0;
     }
@@ -120,40 +120,40 @@ export class TaskSorter {
 
       switch (groupField) {
         case 'status':
-          groupKey = task.status || 'Unknown';
+          groupKey = task.state.status || 'Unknown';
           break;
         case 'priority':
-          groupKey = task.priority || 'undefined';
+          groupKey = task.state.priority || 'undefined';
           break;
         case 'dueDate':
-          if (!task.dueDate) {
+          if (!task.date.due) {
             groupKey = 'No Due Date';
           } else {
             let dueDate: Date | null = null;
-            if (typeof task.dueDate === 'string') {
-              dueDate = new Date(task.dueDate);
-            } else if (typeof (task.dueDate as any).toJSDate === 'function') {
-              dueDate = (task.dueDate as unknown as DateTime).toJSDate();
-            } else if (task.dueDate instanceof Date) {
-              dueDate = task.dueDate;
+            if (typeof task.date.due === 'string') {
+              dueDate = new Date(task.date.due);
+            } else if (typeof (task.date.due as any).toJSDate === 'function') {
+              dueDate = (task.date.due as unknown as DateTime).toJSDate();
+            } else if (task.date.due instanceof Date) {
+              dueDate = task.date.due;
             }
             groupKey = dueDate ? dueDate.toISOString().split('T')[0] : 'Invalid Date'; // YYYY-MM-DD
           }
           break;
         case 'path':
-          if (task.filePath) {
-            const lastSlashIndex = task.filePath.lastIndexOf('/');
-            groupKey = lastSlashIndex > 0 ? task.filePath.substring(0, lastSlashIndex) : '/';
+          if (task.file.path) {
+            const lastSlashIndex = task.file.path.lastIndexOf('/');
+            groupKey = lastSlashIndex > 0 ? task.file.path.substring(0, lastSlashIndex) : '/';
           } else {
             groupKey = 'Unknown';
           }
           break;
         case 'tags':
-          if (!task.tags || task.tags.length === 0) {
+          if (!task.section.tags || task.section.tags.length === 0) {
             groupKey = 'No Tags';
           } else {
             // Usamos la primera etiqueta como clave de grupo
-            groupKey = task.tags[0];
+            groupKey = task.section.tags[0];
           }
           break;
       }

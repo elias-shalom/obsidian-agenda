@@ -35,14 +35,14 @@ export class TaskFilter {
   private matchesStatusFilters(task: ITask, criteria: TaskFilterCriteria): boolean {
     // Filtrar por estado específico
     if (criteria.status && criteria.status.length > 0) {
-      if (!task.status || !criteria.status.includes(task.status)) {
+      if (!task.state.status || !criteria.status.includes(task.state.status)) {
         return false;
       }
     }
 
     // Filtrar por estado completado/no completado
     if (criteria.isCompleted !== undefined) {
-      const isTaskCompleted = task.status === 'DONE' || task.status === 'CANCELLED';
+      const isTaskCompleted = task.state.status === 'DONE' || task.state.status === 'CANCELLED';
       if (isTaskCompleted !== criteria.isCompleted) {
         return false;
       }
@@ -57,7 +57,7 @@ export class TaskFilter {
   private matchesTextFilters(task: ITask, criteria: TaskFilterCriteria): boolean {
     if (!criteria.text) return true;
 
-    const taskText = task.text?.toLowerCase() || '';
+    const taskText = task.line.text.trim()?.toLowerCase() || '';
 
     // Texto que debe incluir
     if (criteria.text.includes && criteria.text.includes.length > 0) {
@@ -97,7 +97,7 @@ export class TaskFilter {
   private matchesTagFilters(task: ITask, criteria: TaskFilterCriteria): boolean {
     if (!criteria.tags) return true;
     
-    const taskTags = task.tags || [];
+    const taskTags = task.section.tags || [];
 
     // Etiquetas que debe tener
     if (criteria.tags.includes && criteria.tags.includes.length > 0) {
@@ -124,7 +124,7 @@ export class TaskFilter {
   private matchesPriorityFilters(task: ITask, criteria: TaskFilterCriteria): boolean {
     if (!criteria.priority) return true;
 
-    const taskPriority = task.priority || 'undefined';
+    const taskPriority = task.state.priority || 'undefined';
 
     // Prioridad exacta
     if (criteria.priority.is && criteria.priority.is.length > 0) {
@@ -163,15 +163,15 @@ export class TaskFilter {
    */
   private matchesDateFilters(task: ITask, criteria: TaskFilterCriteria): boolean {
     // Empezamos verificando los filtros de fecha específicos
-    if (!this.matchesSpecificDateFilter(task.dueDate, criteria.dueDate)) return false;
-    if (!this.matchesSpecificDateFilter(task.startDate, criteria.startDate)) return false;
-    if (!this.matchesSpecificDateFilter(task.scheduledDate, criteria.scheduledDate)) return false;
-    if (!this.matchesSpecificDateFilter(task.doneDate, criteria.doneDate)) return false;
-    if (!this.matchesSpecificDateFilter(task.createdDate, criteria.createdDate)) return false;
+    if (!this.matchesSpecificDateFilter(task.date.due, criteria.dueDate)) return false;
+    if (!this.matchesSpecificDateFilter(task.date.start, criteria.startDate)) return false;
+    if (!this.matchesSpecificDateFilter(task.date.scheduled, criteria.scheduledDate)) return false;
+    if (!this.matchesSpecificDateFilter(task.date.done, criteria.doneDate)) return false;
+    if (!this.matchesSpecificDateFilter(task.date.created, criteria.createdDate)) return false;
 
     // Luego verificamos los filtros de fecha relativos (solo para dueDate)
     if (criteria.dueDateRelative) {
-      if (!this.matchesRelativeDateFilter(task.dueDate, criteria.dueDateRelative)) {
+      if (!this.matchesRelativeDateFilter(task.date.due, criteria.dueDateRelative)) {
         return false;
       }
     }
@@ -317,7 +317,7 @@ export class TaskFilter {
 
     // Filtrar por carpeta
     if (criteria.location.folder) {
-      const taskFolder = task.filePath?.substring(0, task.filePath.lastIndexOf('/') + 1) || '';
+      const taskFolder = task.file.path?.substring(0, task.file.path.lastIndexOf('/') + 1) || '';
       if (!taskFolder.startsWith(criteria.location.folder)) {
         return false;
       }
@@ -325,7 +325,7 @@ export class TaskFilter {
 
     // Filtrar por archivo
     if (criteria.location.file) {
-      if (!task.filePath?.includes(criteria.location.file)) {
+      if (!task.file.path?.includes(criteria.location.file)) {
         return false;
       }
     }
@@ -339,7 +339,7 @@ export class TaskFilter {
   private matchesAdvancedFilters(task: ITask, criteria: TaskFilterCriteria): boolean {
     // Filtros de recurrencia
     if (criteria.recurrence) {
-      const hasRecurrence = !!task.recurrence && task.recurrence.length > 0;
+      const hasRecurrence = !!task.flow.recur && task.flow.recur.length > 0;
 
       // Verificar si tiene recurrencia
       if (criteria.recurrence.has !== undefined && hasRecurrence !== criteria.recurrence.has) {
@@ -347,8 +347,8 @@ export class TaskFilter {
       }
 
       // Verificar patrón específico
-      if (criteria.recurrence.pattern && task.recurrence) {
-        if (!task.recurrence.includes(criteria.recurrence.pattern)) {
+      if (criteria.recurrence.pattern && task.flow.recur) {
+        if (!task.flow.recur.includes(criteria.recurrence.pattern)) {
           return false;
         }
       }
@@ -356,7 +356,7 @@ export class TaskFilter {
 
     // Filtros de dependencias
     if (criteria.dependencies) {
-      const hasDependencies = !!task.dependsOn && task.dependsOn.length > 0;
+      const hasDependencies = !!task.flow.deps && task.flow.deps.length > 0;
 
       // Verificar si tiene dependencias
       if (criteria.dependencies.has !== undefined && hasDependencies !== criteria.dependencies.has) {

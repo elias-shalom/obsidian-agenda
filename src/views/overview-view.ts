@@ -77,21 +77,21 @@ export class OverviewView extends BaseView {
    * Calcula el número de tareas completadas
    */
   private getCompletedTasksCount(): number {
-    return this.tasks.filter(task => task.statusText === 'Done').length;
+    return this.tasks.filter(task => task.state.text === 'Done').length;
   }
 
   /**
    * Calcula el número de tareas pendientes
    */
   private getPendingTasksCount(): number {
-    return this.tasks.filter(task => task.statusText === 'Todo' ).length;
+    return this.tasks.filter(task => task.state.text === 'Todo' ).length;
   }
 
   /**
    * Calcula el número de tareas en progreso
    */
   private getInProgressTasksCount(): number {
-    return this.tasks.filter(task => task.statusText === 'InProgress').length;
+    return this.tasks.filter(task => task.state.text === 'InProgress').length;
   }
 
   /**
@@ -109,8 +109,8 @@ export class OverviewView extends BaseView {
    */
   private getHighPriorityTasksCount(): number {
     return this.tasks.filter(task => 
-      String(task.priority) === String(TaskPriority.Highest) || 
-      String(task.priority) === String(TaskPriority.High)
+      String(task.state.priority) === String(TaskPriority.Highest) || 
+      String(task.state.priority) === String(TaskPriority.High)
     ).length;
   }
 
@@ -120,8 +120,8 @@ export class OverviewView extends BaseView {
   private calculateTotalEstimatedTime(): string {
   // todo: Implementar la lógica para calcular el tiempo estimado total de las tareas
     const totalEstimatedMinutes = this.tasks
-      .filter(task => task.statusText !== 'Done' && (Number(task.dueDate ?? 0) - Number(task.startDate ?? 0) > 0)) // Filtrar tareas no completadas y con fechas válidas
-      .reduce((total, task) => total + ((Number(task.dueDate ?? 0) - Number(task.startDate ?? 0)) || 0), 0);
+      .filter(task => task.state.text !== 'Done' && (Number(task.date.due ?? 0) - Number(task.date.start ?? 0) > 0)) // Filtrar tareas no completadas y con fechas válidas
+      .reduce((total, task) => total + ((Number(task.date.due ?? 0) - Number(task.date.start ?? 0)) || 0), 0);
 
     // Convertir minutos a formato legible (Xh Ym)
     const hours = Math.floor(totalEstimatedMinutes / 60);
@@ -138,7 +138,7 @@ export class OverviewView extends BaseView {
    * Calcula el número de tareas sin fecha asignada
    */
   private getNoDateTasksCount(): number {
-    return this.tasks.filter(task => !task.dueDate && !task.startDate && !task.doneDate && !task.scheduledDate && !task.cancelledDate).length;
+    return this.tasks.filter(task => !task.date.due && !task.date.start && !task.date.done && !task.date.scheduled && !task.date.cancelled).length;
   }
 
   /**
@@ -149,14 +149,14 @@ export class OverviewView extends BaseView {
 
     return this.tasks.filter(task => {
       // Primero verificamos que la tarea esté completada
-      if (task.statusText !== 'Done') return false;
+      if (task.state.text !== 'Done') return false;
       
       // Luego verificamos que tenga una fecha de finalización
-      if (!task.doneDate) return false;
+      if (!task.date.done) return false;
       
       // Finalmente comparamos las fechas
       try {
-        const taskDoneDate = this.toLocalMidnight(task.doneDate);
+        const taskDoneDate = this.toLocalMidnight(task.date.done);
         if (!taskDoneDate) return false;
         return taskDoneDate >= oneWeekAgo;
       } catch (error) {
@@ -172,14 +172,14 @@ export class OverviewView extends BaseView {
 
     return this.tasks.filter(task => {
       // Primero verificamos que la tarea esté completada
-      if (task.statusText !== 'Done') return false;
+      if (task.state.text !== 'Done') return false;
       
       // Luego verificamos que tenga una fecha de finalización
-      if (!task.doneDate) return false;
+      if (!task.date.done) return false;
       
       // Finalmente comparamos las fechas
       try {
-        const taskDoneDate = this.toLocalMidnight(task.doneDate);
+        const taskDoneDate = this.toLocalMidnight(task.date.done);
         if (!taskDoneDate) return false;
 
         return taskDoneDate < oneWeekAgo && taskDoneDate >= oneWeekBefore;
@@ -226,8 +226,8 @@ export class OverviewView extends BaseView {
     
     // Revisa cada tarea completada
     this.tasks.forEach(task => {
-      if (task.statusText === 'Done' && task.doneDate) {
-        const doneDate = this.toLocalMidnight(task.doneDate);
+      if (task.state.text === 'Done' && task.date.done) {
+        const doneDate = this.toLocalMidnight(task.date.done);
         if (!doneDate) return false;
 
         const doneDateLuxon = DateTime.fromJSDate(doneDate);
@@ -256,7 +256,7 @@ export class OverviewView extends BaseView {
     const healthyTasks = this.tasks.filter(task => {
       // Una tarea saludable debe tener texto, estado y al menos o bien una fecha
       // o bien una prioridad asignada
-      return task.isValid;
+      return task.state.isValid;
     }).length;
     
     return this.tasks.length > 0 
@@ -398,11 +398,11 @@ export class OverviewView extends BaseView {
     return this.tasks
       .filter(task => {
         // Si la tarea está completada o cancelada, no se incluye
-        if (task.statusText === 'Done' || task.statusText === 'Cancelled') return false;
+        if (task.state.text === 'Done' || task.state.text === 'Cancelled') return false;
         
         // Verificar si la tarea está programada para hoy
-        if (task.scheduledDate) {
-          const scheduledDate = this.toLocalMidnight(task.scheduledDate);
+        if (task.date.scheduled) {
+          const scheduledDate = this.toLocalMidnight(task.date.scheduled);
           if (!scheduledDate) return false;
           const scheduledDateTime = DateTime.fromJSDate(scheduledDate);
 
@@ -410,8 +410,8 @@ export class OverviewView extends BaseView {
         }
 
         // Si no tiene fecha programada pero tiene fecha de vencimiento hoy
-        if (task.dueDate) {
-          const dueDate = this.toLocalMidnight(task.dueDate);
+        if (task.date.due) {
+          const dueDate = this.toLocalMidnight(task.date.due);
           if (!dueDate) return false;
 
           const dueDateTime = DateTime.fromJSDate(dueDate).startOf('day');
@@ -422,13 +422,13 @@ export class OverviewView extends BaseView {
       })
       .sort((a, b) => {
         // Ordenar por prioridad (mayor primero)
-        if (a.priority !== b.priority) {
-          return (Number(b.priority || 0) - Number(a.priority || 0));
+        if (a.state.priority !== b.state.priority) {
+          return (Number(b.state.priority || 0) - Number(a.state.priority || 0));
         }
         
         // Si misma prioridad, ordenar por fecha de vencimiento
-        const aDate = a.dueDate ? this.toLocalMidnight(a.dueDate) : null;
-        const bDate = b.dueDate ? this.toLocalMidnight(b.dueDate) : null;
+        const aDate = a.date.due ? this.toLocalMidnight(a.date.due) : null;
+        const bDate = b.date.due ? this.toLocalMidnight(b.date.due) : null;
         
         if (aDate && bDate) return aDate.getTime() - bDate.getTime();
         if (aDate) return -1;
@@ -447,11 +447,11 @@ export class OverviewView extends BaseView {
     return this.tasks
       .filter(task => {
         // Si la tarea está completada o cancelada, no se incluye
-        if (task.statusText === 'Done' || task.statusText === 'Cancelled') return false;
+        if (task.state.text === 'Done' || task.state.text === 'Cancelled') return false;
         
         // Verificar si la tarea está vencida
-        if (task.dueDate) {
-          const dueDate = this.toLocalMidnight(task.dueDate);
+        if (task.date.due) {
+          const dueDate = this.toLocalMidnight(task.date.due);
           if (!dueDate) return false;
 
           const dueDateTime = DateTime.fromJSDate(dueDate).startOf('day');
@@ -462,8 +462,8 @@ export class OverviewView extends BaseView {
       })
       .sort((a, b) => {
         // Ordenar por fecha de vencimiento (más antigua primero)
-        const aDate = a.dueDate ? this.toLocalMidnight(a.dueDate) : null;
-        const bDate = b.dueDate ? this.toLocalMidnight(b.dueDate) : null;
+        const aDate = a.date.due ? this.toLocalMidnight(a.date.due) : null;
+        const bDate = b.date.due ? this.toLocalMidnight(b.date.due) : null;
         
         if (aDate && bDate) return aDate.getTime() - bDate.getTime();
         if (aDate) return -1;
@@ -483,11 +483,11 @@ export class OverviewView extends BaseView {
     return this.tasks
       .filter(task => {
         // Si la tarea está completada o cancelada, no se incluye
-        if (task.statusText === 'Done' || task.statusText === 'Cancelled') return false;
+        if (task.state.text === 'Done' || task.state.text === 'Cancelled') return false;
         
         // Verificar si la tarea vence próximamente
-        if (task.dueDate) {
-          const dueDate = this.toLocalMidnight(task.dueDate);
+        if (task.date.due) {
+          const dueDate = this.toLocalMidnight(task.date.due);
           if (!dueDate) return false;
 
           const dueDateTime = DateTime.fromJSDate(dueDate).startOf('day');
@@ -498,8 +498,8 @@ export class OverviewView extends BaseView {
       })
       .sort((a, b) => {
         // Ordenar por fecha de vencimiento (más cercana primero)
-        const aDate = a.dueDate ? this.toLocalMidnight(a.dueDate) : null;
-        const bDate = b.dueDate ? this.toLocalMidnight(b.dueDate) : null;
+        const aDate = a.date.due ? this.toLocalMidnight(a.date.due) : null;
+        const bDate = b.date.due ? this.toLocalMidnight(b.date.due) : null;
         
         if (aDate && bDate) return aDate.getTime() - bDate.getTime();
         if (aDate) return -1;
@@ -516,18 +516,18 @@ export class OverviewView extends BaseView {
     return this.tasks
     .filter(task => {
       // Filtrar solo tareas no válidas que no estén completadas o canceladas
-      return !task.isValid && 
-             task.statusText !== 'Done' && 
-             task.statusText !== 'Cancelled';
+      return !task.state.isValid && 
+             task.state.text !== 'Done' && 
+             task.state.text !== 'Cancelled';
     })
     .map(task => {
       // Añadir información de error desde taskFields
-      if (task.tasksFields) {
+      if (task.section.fields) {
         // Extraer los mensajes de error de taskFields
         const errorMessages: string[] = [];
         
         // Recorrer todos los campos en taskFields para encontrar errores
-        task.tasksFields.forEach(field => {
+        task.section.fields.forEach(field => {
           if (field) {
             errorMessages.push(`${field}`);
           }
@@ -545,8 +545,8 @@ export class OverviewView extends BaseView {
     })
     .sort((a, b) => {
       // Ordenar por más reciente primero
-      const aDate = a.createdDate ? this.toLocalMidnight(a.createdDate) : null;
-      const bDate = b.createdDate ? this.toLocalMidnight(b.createdDate) : null;
+      const aDate = a.date.created ? this.toLocalMidnight(a.date.created) : null;
+      const bDate = b.date.created ? this.toLocalMidnight(b.date.created) : null;
       
       if (aDate && bDate) return bDate.getTime() - aDate.getTime();
       if (aDate) return 1;
@@ -565,14 +565,14 @@ export class OverviewView extends BaseView {
     return this.tasks
       .filter(task => {
         // Filtrar tareas no completadas y no canceladas
-        return task.statusText !== 'Done' && 
-              task.statusText !== 'Cancelled' && 
-              task.createdDate;
+        return task.state.text !== 'Done' && 
+              task.state.text !== 'Cancelled' && 
+              task.date.created;
       })
       .sort((a, b) => {
         // Ordenar por fecha de creación (más antigua primero)
-        const aDate = a.createdDate ? this.toLocalMidnight(a.createdDate) : null;
-        const bDate = b.createdDate ? this.toLocalMidnight(b.createdDate) : null;
+        const aDate = a.date.created ? this.toLocalMidnight(a.date.created) : null;
+        const bDate = b.date.created ? this.toLocalMidnight(b.date.created) : null;
         
         if (aDate && bDate) return aDate.getTime() - bDate.getTime();
         if (aDate) return -1;
@@ -582,8 +582,8 @@ export class OverviewView extends BaseView {
       .slice(0, 5) // Limitar a 5 tareas para el widget
       .map(task => {
         // Calcular días desde creación para mostrar
-        if (task.createdDate) {
-          const createdDate = this.toLocalMidnight(task.createdDate);
+        if (task.date.created) {
+          const createdDate = this.toLocalMidnight(task.date.created);
           if (createdDate) {
             const createdLuxon = DateTime.fromJSDate(createdDate);
             const daysOld = Math.floor(now.diff(createdLuxon, 'days').days);
@@ -601,11 +601,11 @@ export class OverviewView extends BaseView {
     // Crear un mapa para agrupar tareas por proyecto
     const projectMap = new Map<string, ITask[]>();
     
-    // Agrupar por rootfolder
+    // Agrupar por file.root
     this.tasks
-      .filter(task => task.statusText !== 'Done' && task.statusText !== 'Cancelled')
+      .filter(task => task.state.text !== 'Done' && task.state.text !== 'Cancelled')
       .forEach(task => {
-        const projectName = task.rootFolder || 'Sin proyecto';
+        const projectName = task.file.root || 'Sin proyecto';
         
         if (!projectMap.has(projectName)) {
           projectMap.set(projectName, []);

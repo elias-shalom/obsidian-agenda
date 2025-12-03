@@ -23,10 +23,10 @@ export abstract class BaseView extends ItemView {
     const rootFolders: Record<string, FolderNode> = {};
     
     tasks.forEach(task => {
-      if (!task.filePath) return;
+      if (!task.file.path) return;
       
       // Dividir la ruta del archivo en partes
-      const pathParts = task.filePath.split('/');
+      const pathParts = task.file.path.split('/');
       
       // Si no hay partes de ruta, asignar a "Root"
       if (pathParts.length === 1) {

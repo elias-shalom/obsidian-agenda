@@ -76,12 +76,12 @@ export abstract class CalendarView extends BaseView {
   protected getTasksForDate(date: DateTime): ITask[] {
     const dayUnit = 'day';
     return this.tasks.filter(task => {
-      if (!task.dueDate) return false;
+      if (!task.date.due) return false;
       
       // Convertir a DateTime si es string
-      const taskDate = typeof task.dueDate === 'string' 
-        ? DateTime.fromISO(task.dueDate) 
-        : task.dueDate;
+      const taskDate = typeof task.date.due === 'string' 
+        ? DateTime.fromISO(task.date.due) 
+        : task.date.due;
       
       return taskDate.hasSame(date, dayUnit);
     });

@@ -13,7 +13,7 @@ export class TasksFile implements IFile<TFile> {
   _tags: string[] = [];
 
   constructor(private app: App, public file: TFile, cachedMetadata: CachedMetadata = {}) {
-    this.name = file.basename;
+    this.name = file.name;
     this._path = file.path;
     this._cachedMetadata = cachedMetadata;
 

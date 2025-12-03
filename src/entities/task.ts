@@ -1,5 +1,4 @@
-import { ITask, ITaskFile, ITaskLine, ITaskState, ITaskDate, ITaskSection, ITaskWorkflow } from "../types/interfaces";
-import { DateTime } from 'luxon';
+import { ITask, ITaskFile, ITaskLine, ITaskState, ITaskDate, ITaskSection, ITaskFlow } from "../types/interfaces";
 import { CoreTaskStatus } from "../types/enums";
 
 export class Task implements ITask {
@@ -9,7 +8,7 @@ export class Task implements ITask {
   state: ITaskState;
   date: ITaskDate;
   section: ITaskSection;
-  workflow: ITaskWorkflow;
+  flow: ITaskFlow;
   groupLabel?: string;
 
   constructor(
@@ -19,7 +18,7 @@ export class Task implements ITask {
     state: ITaskState,
     date: ITaskDate,
     section: ITaskSection,
-    workflow: ITaskWorkflow,
+    flow: ITaskFlow,
     groupLabel?: string
   ) {
     this.id = id;
@@ -28,14 +27,14 @@ export class Task implements ITask {
     this.state = state;
     this.date = date;
     this.section = section;
-    this.workflow = workflow;
+    this.flow = flow;
     this.groupLabel = groupLabel;
   }
 
-  // Getters para compatibilidad hacia atrás (deprecated)
-  get filePath(): string { return this.file.path; }
-  get fileName(): string { return `${this.file.basename}.${this.file.extension}`; }
-  get fileBasename(): string { return this.file.basename; }
+    // Getters para compatibilidad hacia atrás (deprecated)
+  /*get filePath(): string { return this.file.path; }
+  get fileName(): string { return `${this.file.name}.${this.file.ext}`; }
+  get fileBasename(): string { return this.file.name; }
   get rootFolder(): string { return this.file.root; }
   get title(): string { return this.line.text; }
   get text(): string { return this.line.text; }
@@ -51,17 +50,17 @@ export class Task implements ITask {
   get dueDate(): DateTime | null { return this.date.due; }
   get doneDate(): DateTime | null { return this.date.done; }
   get cancelledDate(): DateTime | null { return this.date.cancelled; }
-  get recurrence(): string { return this.workflow.recurrence; }
-  get onCompletion(): string | null { return this.workflow.onCompletion; }
-  get dependsOn(): string[] { return this.workflow.dependsOn; }
-  get blockLink(): string { return this.workflow.blockLink; }
+  get recurrence(): string { return this.recur; }
+  get onCompletion(): string | null { return this.flow.onCompletion; }
+  get dependsOn(): string[] { return this.flow.deps; }
+  get blockLink(): string { return this.flow.blockLink; }
   get header(): string { return this.section.header; }
-  get description(): string { return this.section.description; }
+  get description(): string { return this.section.desc; }
   get tasksFields(): string[] { return this.section.fields; }
-  get isValid(): boolean { return this.state.isValid; }
+  get isValid(): boolean { return this.state.isValid; }*/
 
   // Objeto de compatibilidad para taskData
-  get taskData(): Record<string, any> {
+  /*get taskData(): Record<string, any> {
     return {
       id: this.id,
       priority: this.state.priority,
@@ -71,12 +70,13 @@ export class Task implements ITask {
       createdDate: this.date.created,
       doneDate: this.date.done,
       cancelledDate: this.date.cancelled,
-      recurrence: this.workflow.recurrence,
-      onCompletion: this.workflow.onCompletion,
-      dependsOn: this.workflow.dependsOn,
+      recurrence: this.recur,
+      onCompletion: this.flow.onCompletion,
+      dependsOn: this.flow.deps,
       isValid: this.state.isValid
     };
-  }
+  }*/
+
 
   /**
    * Extrae el estado de la tarea desde el texto del header.
@@ -114,7 +114,7 @@ export class Task implements ITask {
     state: ITaskState;
     date: ITaskDate;
     section: ITaskSection;
-    workflow: ITaskWorkflow;
+    flow: ITaskFlow;
     groupLabel?: string;
   }): Task {
     return new Task(
@@ -124,7 +124,7 @@ export class Task implements ITask {
       data.state,
       data.date,
       data.section,
-      data.workflow,
+      data.flow,
       data.groupLabel
     );
   }

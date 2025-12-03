@@ -104,7 +104,7 @@ export class TaskExtractor {
     try {
       const taskSection = new TaskSection(this.i18n);
       taskSection.initialize(line);
-      console.log(`Task data extraída de línea ${lineNumber + 1} en ${file.path}:`, taskSection);
+      //console.log(`Task data extraída de línea ${lineNumber + 1} en ${file.path}:`, taskSection);
 
       const status = Task.extractStatusFromHeader(taskSection.header);
       const tags = Task.extractTags(line);
@@ -119,10 +119,10 @@ export class TaskExtractor {
         
         file: {
           path: file.path,
-          basename: file.basename,
-          extension: file.extension,
+          name: file.basename,
+          ext: file.extension,
           root: rootFolder,
-          frontmatter: frontmatter || null
+          meta: frontmatter || null
         },
         
         line: {
@@ -149,15 +149,15 @@ export class TaskExtractor {
         
         section: {
           header: taskSection.header,
-          description: taskSection.description,
+          desc: taskSection.description,
           tags: tags,
           fields: taskSection.tasksFields
         },
         
-        workflow: {
-          recurrence: taskSection.taskData.recurrence || "",
+        flow: {
+          recur: taskSection.taskData.recurrence || "",
           blockLink: taskSection.blockLink,
-          dependsOn: taskSection.taskData.dependsOn || [],
+          deps: taskSection.taskData.dependsOn || [],
           onCompletion: taskSection.taskData.onCompletion || null
         }
       });

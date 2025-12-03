@@ -6,10 +6,10 @@ import { DateTime } from 'luxon';
  */
 export interface ITaskFile {
   path: string;
-  basename: string;
-  extension: string;
+  name: string;
+  ext: string;
   root: string;
-  frontmatter: Record<string, any> | null;
+  meta: Record<string, any> | null;
 }
 
 /**
@@ -48,18 +48,18 @@ export interface ITaskDate {
  */
 export interface ITaskSection {
   header: string;
-  description: string;
+  desc: string;
   tags: string[];
   fields: string[];
 }
 
 /**
- * Configuración de workflow de la tarea
+ * Configuración de flow de la tarea
  */
-export interface ITaskWorkflow {
-  recurrence: string;
+export interface ITaskFlow {
+  recur: string;
   blockLink: string;
-  dependsOn: string[];
+  deps: string[];
   onCompletion: string | null;
 }
 
@@ -73,63 +73,63 @@ export interface ITask {
   state: ITaskState;
   date: ITaskDate;
   section: ITaskSection;
-  workflow: ITaskWorkflow;
-  
-  // Campos de compatibilidad temporal (deprecated)
+  flow: ITaskFlow;
+
+    // Campos de compatibilidad temporal (deprecated)
   /** @deprecated Use file.path instead */
-  get filePath(): string;
-  /** @deprecated Use file.basename + '.' + file.extension instead */
-  get fileName(): string;
-  /** @deprecated Use file.basename instead */
-  get fileBasename(): string;
+  //get filePath(): string;
+  /** @deprecated Use file.name + '.' + file.ext instead */
+  //get fileName(): string;
+  /** @deprecated Use file.name instead */
+  //get fileBasename(): string;
   /** @deprecated Use file.root instead */
-  get rootFolder(): string;
+  //get rootFolder(): string;
   /** @deprecated Use line.text instead */
-  get title(): string;
+  //get title(): string;
   /** @deprecated Use line.text instead */
-  get text(): string;
+  //get text(): string;
   /** @deprecated Use line.number instead */
-  get lineNumber(): number;
+  //get lineNumber(): number;
   /** @deprecated Use state.status instead */
-  get status(): string;
+  //get status(): string;
   /** @deprecated Use state.icon instead */
-  get statusIcon(): string;
+  //get statusIcon(): string;
   /** @deprecated Use state.text instead */
-  get statusText(): string;
+  //get statusText(): string;
   /** @deprecated Use section.tags instead */
-  get tags(): string[];
+  //get tags(): string[];
   /** @deprecated Use state.priority instead */
-  get priority(): string;
+  //get priority(): string;
   /** @deprecated Use date.created instead */
-  get createdDate(): DateTime | null;
+  //get createdDate(): DateTime | null;
   /** @deprecated Use date.start instead */
-  get startDate(): DateTime | null;
+  //get startDate(): DateTime | null;
   /** @deprecated Use date.scheduled instead */
-  get scheduledDate(): DateTime | null;
+  //get scheduledDate(): DateTime | null;
   /** @deprecated Use date.due instead */
-  get dueDate(): DateTime | null;
+  //get dueDate(): DateTime | null;
   /** @deprecated Use date.done instead */
-  get doneDate(): DateTime | null;
+  //get doneDate(): DateTime | null;
   /** @deprecated Use date.cancelled instead */
-  get cancelledDate(): DateTime | null;
-  /** @deprecated Use workflow.recurrence instead */
-  get recurrence(): string;
-  /** @deprecated Use workflow.onCompletion instead */
-  get onCompletion(): string | null;
-  /** @deprecated Use workflow.dependsOn instead */
-  get dependsOn(): string[];
-  /** @deprecated Use workflow.blockLink instead */
-  get blockLink(): string;
+  //get cancelledDate(): DateTime | null;
+  /** @deprecated Use recur instead */
+  //get recurrence(): string;
+  /** @deprecated Use flow.onCompletion instead */
+  //get onCompletion(): string | null;
+  /** @deprecated Use flow.deps instead */
+  //get dependsOn(): string[];
+  /** @deprecated Use flow.blockLink instead */
+  //get blockLink(): string;
   /** @deprecated Use section.header instead */
-  get header(): string;
-  /** @deprecated Use section.description instead */
-  get description(): string;
+  //get header(): string;
+  /** @deprecated Use section.desc instead */
+  //get description(): string;
   /** @deprecated Use section.fields instead */
-  get tasksFields(): string[];
+  //get tasksFields(): string[];
   /** @deprecated Use state.isValid instead */
-  get isValid(): boolean;
+  //get isValid(): boolean;
   /** @deprecated Legacy compatibility object */
-  get taskData(): Record<string, any>;
+  //get taskData(): Record<string, any>;
   
   groupLabel?: string;
 }

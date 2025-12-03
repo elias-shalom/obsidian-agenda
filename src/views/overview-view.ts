@@ -109,8 +109,8 @@ export class OverviewView extends BaseView {
    */
   private getHighPriorityTasksCount(): number {
     return this.tasks.filter(task => 
-      task.priority === TaskPriority.Highest || 
-      task.priority === TaskPriority.High
+      String(task.priority) === String(TaskPriority.Highest) || 
+      String(task.priority) === String(TaskPriority.High)
     ).length;
   }
 
@@ -527,12 +527,11 @@ export class OverviewView extends BaseView {
         const errorMessages: string[] = [];
         
         // Recorrer todos los campos en taskFields para encontrar errores
-        for (const index in task.tasksFields) {
-          const field = task.tasksFields[index];
+        task.tasksFields.forEach(field => {
           if (field) {
             errorMessages.push(`${field}`);
           }
-        }
+        });
         
         // Añadir los mensajes de error como propiedad temporal
         //task['errorMessages'] = errorMessages.length > 0 

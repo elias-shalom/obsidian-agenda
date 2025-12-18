@@ -437,11 +437,11 @@ export abstract class BaseView extends ItemView {
     this.registerHandlebarsHelpers(i18n || null);
 
     try {
-      // Paralelizar operaciones de renderizado
-      await Promise.all([
-        this.renderHeader(headerContainer, { i18n }),
-        this.renderTemplate(contentContainer, viewType, data)
-      ]);
+      // Renderizar header (síncrono)
+      this.renderHeader(headerContainer, { i18n });
+      
+      // Renderizar contenido (asíncrono)
+      await this.renderTemplate(contentContainer, viewType, data);
       
       // Agregar eventos a los botones
       this.attachEventTabs(headerContainer, plugin, leaf);

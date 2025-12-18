@@ -6,6 +6,11 @@ import { I18n } from '../core/i18n';
 import { TaskPriority } from '../types/enums';
 import { DateTime } from 'luxon';
 
+// Interfaz extendida para tareas con edad calculada
+interface ITaskWithAge extends ITask {
+  daysOld: number;
+}
+
 export const OVERVIEW_VIEW_TYPE = 'overview-view';
 
 export class OverviewView extends BaseView {
@@ -559,7 +564,7 @@ export class OverviewView extends BaseView {
   /**
    * Obtiene la lista de tareas más antiguas (tiempo sin completar)
    */
-  private getOldestTasksList(): ITask[] {
+  private getOldestTasksList(): ITaskWithAge[] {
     const now = DateTime.now();
     
     return this.tasks
@@ -582,15 +587,22 @@ export class OverviewView extends BaseView {
       .slice(0, 5) // Limitar a 5 tareas para el widget
       .map(task => {
         // Calcular días desde creación para mostrar
+        let daysOld = 0;
         if (task.date.created) {
           const createdDate = this.toLocalMidnight(task.date.created);
           if (createdDate) {
             const createdLuxon = DateTime.fromJSDate(createdDate);
-            const daysOld = Math.floor(now.diff(createdLuxon, 'days').days);
-            //task['daysOld'] = daysOld; // Añadir propiedad temporal
+            daysOld = Math.floor(now.diff(createdLuxon, 'days').days);
           }
         }
-        return task;
+        
+        // Crear objeto con type safety
+        const result: ITaskWithAge = {
+          ...task,
+          daysOld: daysOld
+        };
+        
+        return result;
       });
   }
 

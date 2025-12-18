@@ -86,6 +86,7 @@ export class TaskExtractor {
 
     lines.forEach((line, lineNumber) => {
       if (line) {
+        //console.debug(`Líneas de tareas encontradas en ${file.path}:`, line);
         const task = this.createTaskFromLine(file, line, lineNumber,frontmatter);
         if (task) {
           tasks.push(task);

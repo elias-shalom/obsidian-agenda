@@ -1,7 +1,7 @@
 import { App, TFile, Plugin } from "obsidian";
-import { ITask, TaskFilterCriteria, SortField, GroupField } from "../types/interfaces";
+import { ITask, TaskFilterCriteria } from "../types/interfaces";
 import { I18n } from "./i18n";
-import { EventBus, EVENTS } from "./event-bus";
+import { EventBus } from "./event-bus";
 import { TaskCache } from "./task-cache";
 import { TaskExtractor } from "./task-extractor";
 import { TaskFilter } from "./task-filter";

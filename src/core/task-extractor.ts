@@ -4,7 +4,6 @@ import { TaskSection } from "../entities/task-section";
 import { Task } from "../entities/task";
 import { I18n } from "./i18n";
 import { CoreTaskStatus, CoreTaskStatusIcon } from "../types/enums";
-import { DateTime } from "luxon";
 
 /**
  * Clase responsable de extraer tareas desde archivos de Obsidian

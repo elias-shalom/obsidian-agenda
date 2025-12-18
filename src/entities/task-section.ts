@@ -347,8 +347,8 @@ export class TaskSection {
                 const rruleText = this.convertToRRuleFormat(recurrenceText);               
 
                 if (rruleText) {
-                  // Intentar crear un objeto RRule para validar
-                  const rule = rrulestr(rruleText);
+                  // Validar sintaxis RRULE
+                  this.validateRRuleSyntax(rruleText);
                   // Si llegamos aquí, el patrón es válido
                   extractedValue = recurrenceText;
                 } else {
@@ -402,6 +402,10 @@ export class TaskSection {
     }
 
     return { fields, taskData };
+  }
+
+  private validateRRuleSyntax(rrule: string): void {
+    rrulestr(rrule); // Lanza excepción si es inválido
   }
 
   /**

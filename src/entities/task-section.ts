@@ -1,6 +1,18 @@
-import { OnCompletion, TaskPriorityIcon } from "../types/enums.ts";
+import { OnCompletion, TaskPriorityIcon } from "../types/enums";
 import { I18n } from "../core/i18n";
 import { rrulestr } from 'rrule';
+
+/**
+ * Interfaz para la configuración de iconos en las tareas
+ */
+interface IconConfig {
+  type: 'date' | 'priority' | 'recurrence' | 'id' | 'blocked' | 'completion';
+  property: string;
+  format?: string;
+  value?: any;
+  name?: string;
+  values?: any[];
+}
 
 export class TaskSection {
   header: string; // Representa el encabezado de la tarea
@@ -73,7 +85,7 @@ export class TaskSection {
   // Nueva propiedad estática para el formato de tareas
   static readonly taskFormatRegex: RegExp = /^[\t ]*(>*)\s*(-|\*|\+|\d+[.)]) {0,4}\[(.)\] {0,4}\S.+/g;
 
-  private readonly iconMapping = {
+  private readonly iconMapping: Record<string, IconConfig> = {
     // Iconos de fechas
     "📅": { type: "date", property: "dueDate", format: "YYYY-MM-DD" },
     "🛫": { type: "date", property: "startDate", format: "YYYY-MM-DD" },
@@ -105,8 +117,15 @@ export class TaskSection {
       this.blockLink = "";
       this.headerRegex = /^[\t ]*(>*)\s*(-|\*|\+|\d+[.)]) {0,4}\[(.)\] {0,4}/;
       this.iconRegex = /📅|🛫|⏳|✅|❌|➕|⏬|⏫|🔼|🔽|🔺|🔁|🆔|⛔|🏁/g;
-  iconRegex: RegExp;
+  }
 
+  /**
+   * Método helper para obtener la configuración de un icono de forma segura
+   * @param icon El icono a buscar
+   * @returns La configuración del icono o null si no existe
+   */
+  private getIconConfig(icon: string): IconConfig | null {
+    return this.iconMapping[icon] || null;
   }
 
   /**
@@ -120,6 +139,7 @@ export class TaskSection {
           remainingText = this.removeAllTags(remainingText); // Eliminar tags del texto restante
 
           this.description = this.extractDescription(remainingText);
+          //console.log(`Descripción extraída: ${this.description}`);
 
           remainingText = this.removeText(remainingText, this.description);
           const result = this.extractTasksFields(remainingText);
@@ -175,7 +195,7 @@ export class TaskSection {
    */
   private removeAllTags(text: string): string {
   // Eliminar todas las palabras que comienzan con #
-  let textWithoutTags = text.replace(/#[a-zA-Z0-9_\-\/]+\b/g, '');
+  let textWithoutTags = text.replace(/#[a-zA-Z0-9_\-/]+\b/g, '');
 
   // Eliminar espacios múltiples que pueden haber quedado
   textWithoutTags = textWithoutTags.replace(/\s+/g, ' ').trim();
@@ -195,7 +215,7 @@ export class TaskSection {
     const matches = text.matchAll(this.iconRegex);
 
     for (const match of matches) {
-        const index = match.index!;
+        const index = match.index;
         if (index < smallestIndex) {
             smallestIndex = index; // Actualizar el índice más pequeño
         }
@@ -231,8 +251,8 @@ export class TaskSection {
 
     for (let i = 0; i < matches.length; i++) {
       const match = matches[i];
-      const matchIndex = match.index!;
-      const nextMatchIndex = i + 1 < matches.length ? matches[i + 1].index! : text.length;
+      const matchIndex = match.index;
+      const nextMatchIndex = i + 1 < matches.length ? matches[i + 1].index : text.length;
 
       // Extraer el texto desde el inicio del ícono actual hasta justo antes del siguiente ícono
       let fieldText = text.slice(matchIndex, nextMatchIndex).trim();
@@ -240,7 +260,7 @@ export class TaskSection {
       const icon = match[0]; // Obtener el ícono actual
 
       // Obtener la configuración del icono desde el mapeo
-      const iconConfig = this.iconMapping[icon];
+      const iconConfig = this.getIconConfig(icon);
 
       if (iconConfig) {
         let isValid = true;

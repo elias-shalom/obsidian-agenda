@@ -108,7 +108,7 @@ export class CalendarDayView extends CalendarView {
             dateString = isoDate;
           }
         } else if (task.date.due && typeof task.date.due === 'object' && 'toISODate' in task.date.due) {
-          const isoDate = (task.date.due as DateTime).toISODate();
+          const isoDate = task.date.due.toISODate();
           if (isoDate !== null) {
             dateString = isoDate;
           }
@@ -128,7 +128,7 @@ export class CalendarDayView extends CalendarView {
             dateString = isoDate;
           }
         } else if (task.date.scheduled && typeof task.date.scheduled === 'object' && 'toISODate' in task.date.scheduled) {
-          const isoDate = (task.date.scheduled as DateTime).toISODate();
+          const isoDate = task.date.scheduled.toISODate();
           if (isoDate !== null) {
             dateString = isoDate;
           }

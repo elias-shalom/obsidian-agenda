@@ -342,23 +342,23 @@ export abstract class BaseView extends ItemView {
         const folderGroup = header.closest('.folder-group');
         folderGroup?.classList.toggle('collapsed');
 
-        // Guardar estado de plegado en localStorage usando la ruta completa
+        // Guardar estado de plegado usando métodos de Obsidian
         if (folderGroup) {
           const folderPath = folderGroup.getAttribute('data-folder-path');
           if (folderPath) {
             const isCollapsed = folderGroup.classList.contains('collapsed');
-            localStorage.setItem(`folder_${folderPath}_collapsed`, isCollapsed.toString());
+            this.app.saveLocalStorage(`folder_${folderPath}_collapsed`, isCollapsed.toString());
           }
         }
       });
     });
 
-    // Restaurar estado de plegado desde localStorage
+    // Restaurar estado de plegado usando métodos de Obsidian
     const folderGroups = container.querySelectorAll('.folder-group');
     folderGroups.forEach(group => {
       const folderPath = group.getAttribute('data-folder-path');
       if (folderPath) {
-        const isCollapsed = localStorage.getItem(`folder_${folderPath}_collapsed`) === 'true';
+        const isCollapsed = this.app.loadLocalStorage(`folder_${folderPath}_collapsed`) === 'true';
         if (isCollapsed) {
           group.classList.add('collapsed');
         }

@@ -132,12 +132,12 @@ export class CalendarWorkWeekView extends CalendarView {
           }
           
           // Guardar la preferencia del usuario para la vista workweek
-          localStorage.setItem('calendar-workweek-grid-style', selectedStyle);
+          this.app.saveLocalStorage('calendar-workweek-grid-style', selectedStyle);
         }
       });
       
       // Restaurar preferencia guardada al cargar la vista
-      const savedStyle = localStorage.getItem('calendar-workweek-grid-style');
+      const savedStyle = this.app.loadLocalStorage('calendar-workweek-grid-style');
       if (savedStyle) {
         gridStyleSelector.value = savedStyle;
         

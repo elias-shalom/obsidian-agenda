@@ -369,14 +369,14 @@ export class OverviewView extends BaseView {
       }
     });
     
-    localStorage.setItem('obsidian-agenda-widget-filters', JSON.stringify(state));
+    this.app.saveLocalStorage('obsidian-agenda-widget-filters', JSON.stringify(state));
   }
 
   /**
    * Carga el estado guardado de los filtros
    */
   private loadWidgetFiltersState(checkboxes: NodeListOf<Element>): void {
-    const savedState = localStorage.getItem('obsidian-agenda-widget-filters');
+    const savedState = this.app.loadLocalStorage('obsidian-agenda-widget-filters');
     if (!savedState) return;
     
     try {

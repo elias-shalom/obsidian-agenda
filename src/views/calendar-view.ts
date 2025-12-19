@@ -235,7 +235,7 @@ export abstract class CalendarView extends BaseView {
    */
   private switchToViewType(viewType: CalendarViewType): void {
     // Guardar preferencia del usuario
-    localStorage.setItem('calendar_view_type', viewType);
+    this.app.saveLocalStorage('calendar_view_type', viewType);
     
     // Determinar el ID de vista según el tipo
     let viewId;

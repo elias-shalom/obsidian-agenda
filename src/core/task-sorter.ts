@@ -49,7 +49,7 @@ export class TaskSorter {
         return this.compareDates(a.date.done, b.date.done);
       case 'createdDate':
         return this.compareDates(a.date.created, b.date.created);
-      case 'priority':
+      case 'priority': {
         const priorityMap: {[key: string]: number} = {
           'high': 1,
           'medium': 2,
@@ -59,7 +59,8 @@ export class TaskSorter {
         const priorityA = priorityMap[a.state.priority || 'undefined'] || 4;
         const priorityB = priorityMap[b.state.priority || 'undefined'] || 4;
         return priorityA - priorityB;
-      case 'status':
+      }
+      case 'status': {
         const statusMap: {[key: string]: number} = {
           'TODO': 1,
           'IN_PROGRESS': 2,
@@ -70,6 +71,7 @@ export class TaskSorter {
         const statusA = statusMap[a.state.status || 'TODO'] || 1;
         const statusB = statusMap[b.state.status || 'TODO'] || 1;
         return statusA - statusB;
+      }
       case 'text':
         return (a.line.text.trim() || '').localeCompare(b.line.text.trim() || '');
       case 'path':

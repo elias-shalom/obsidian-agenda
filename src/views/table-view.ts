@@ -427,7 +427,7 @@ export class TableView extends BaseView {
       
       // Extraer valores según el tipo de columna
       switch(sortBy) {
-        case 'priority':
+        case 'priority': {
           // Mapa de prioridades para ordenación
           const priorityMap: Record<string, number> = {
             'highest': 6, 'high': 5, 'medium': 4, 'normal': 3, 'low': 2, 'lowest': 1, 'none': 0
@@ -444,8 +444,9 @@ export class TableView extends BaseView {
           valueA = priorityMap[priorityA];
           valueB = priorityMap[priorityB];
           break;
+        }
           
-        case 'status':
+        case 'status': {
           // Mapa de estados para ordenación
           const statusMap: Record<string, number> = {
             'Todo': 4, 'InProgress': 3, 'Done': 2, 'Cancelled': 1, 'nonTask': 0
@@ -457,6 +458,7 @@ export class TableView extends BaseView {
           valueA = statusMap[statusA] || 0;
           valueB = statusMap[statusB] || 0;
           break;
+        }
           
         case 'description':
           valueA = a.querySelector('.task-description')?.textContent || '';

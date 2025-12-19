@@ -268,7 +268,7 @@ export class TaskSection {
         let errorMessage = "";
 
         switch (iconConfig.type) {
-          case "date":
+          case "date": {
             // Reiniciar la expresión regular (debido a 'g')
             iconDateRegex.lastIndex = 0;
 
@@ -285,6 +285,7 @@ export class TaskSection {
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
+          }
 
           case "priority":
             // Reiniciar la expresión regular (debido a 'g')
@@ -300,7 +301,7 @@ export class TaskSection {
             }
             break;
 
-          case "completion":
+          case "completion": {
             // Reiniciar la expresión regular (debido a 'g')
             iconCompletionRegex.lastIndex = 0;
 
@@ -316,7 +317,8 @@ export class TaskSection {
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
-          case "blocked":
+          }
+          case "blocked": {
             // Reiniciar la expresión regular (debido a 'g')
             iconBlockedRegex.lastIndex = 0;
 
@@ -334,7 +336,8 @@ export class TaskSection {
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
-          case "recurrence":
+          }
+          case "recurrence": {
             // ! Error en la recurrencia no invalida la tarea
             // Reiniciar la expresión regular (debido a 'g')
             iconRecurrenceRegex.lastIndex = 0;
@@ -364,7 +367,8 @@ export class TaskSection {
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
-          case "id":
+          }
+          case "id": {
             // Reiniciar la expresión regular (debido a 'g')
             idIconsRegex.lastIndex = 0;
 
@@ -376,6 +380,7 @@ export class TaskSection {
               extractedValue = fieldText.substring(icon.length).trim();
             }
             break;
+          }
         }
 
         // Si el campo es válido y tiene una propiedad definida, guardarla en taskData

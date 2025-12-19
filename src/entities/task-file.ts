@@ -1,6 +1,5 @@
 import { App, type CachedMetadata, type FrontMatterCache, getAllTags, parseFrontMatterTags, TFile } from 'obsidian';
 import { type IFile } from '../types/interfaces';
-import { type DateTime } from 'luxon';
 
 export type OptionalTasksFile = TasksFile | undefined;
 

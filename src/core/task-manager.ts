@@ -1,7 +1,7 @@
 import { App, TFile, Plugin } from "obsidian";
-import { ITask, TaskFilterCriteria, SortField, GroupField } from "../types/interfaces";
+import { ITask, TaskFilterCriteria } from "../types/interfaces";
 import { I18n } from "./i18n";
-import { EventBus, EVENTS } from "./event-bus";
+import { EventBus } from "./event-bus";
 import { TaskCache } from "./task-cache";
 import { TaskExtractor } from "./task-extractor";
 import { TaskFilter } from "./task-filter";
@@ -130,23 +130,23 @@ export class TaskManager {
       // Procesamiento por lotes
       for (let i = 0; i < files.length; i += batchSize) {
         const batch = files.slice(i, i + batchSize);
-        
+
         // Array para almacenar promesas
         const batchPromises = batch.map(async file => {
           // Primero verificar si hay un cache válido para este archivo
           if (this.taskCache.hasFileCache(file.path)) {
             return this.taskCache.getFileCache(file.path) || [];
-          }          
-          
+          }
+
           // Si no hay cache para el archivo, extraer las tareas
           const fileTasks = await this.taskExtractor.extractTasksFromFile(file);
           
           // Actualizar el cache para este archivo
           this.taskCache.setFileCache(file.path, fileTasks);
-          
+
           return fileTasks;
         });
-        
+
         const batchResults = await Promise.all(batchPromises);
         batchResults.forEach(fileTasks => {
           allTasks.push(...fileTasks);

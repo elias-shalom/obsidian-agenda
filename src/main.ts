@@ -22,7 +22,7 @@ export default class ObsidianAgenda extends Plugin {
 
   /// Método de inicializa del plugin.
   async onload(): Promise<void> {
-    console.info("Cargando el plugin Obsidian Agenda...");
+    console.debug("Cargando el plugin Obsidian Agenda...");
     const OVERVIEW_VIEW_TYPE = 'overview-view';
 
     try {
@@ -88,7 +88,7 @@ export default class ObsidianAgenda extends Plugin {
       // this.taskManager = null;
       // this.i18n = null;
       
-      console.info('Limpieza completada, plugin desactivado con éxito');
+      console.debug('Limpieza completada, plugin desactivado con éxito');
     } catch (error) {
       console.error(`Error durante la descarga del plugin: ${error instanceof Error ? error.message : String(error)}`);
     }

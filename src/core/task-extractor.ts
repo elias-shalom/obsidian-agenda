@@ -4,7 +4,6 @@ import { TaskSection } from "../entities/task-section";
 import { Task } from "../entities/task";
 import { I18n } from "./i18n";
 import { CoreTaskStatus, CoreTaskStatusIcon } from "../types/enums";
-import { DateTime } from "luxon";
 
 /**
  * Clase responsable de extraer tareas desde archivos de Obsidian
@@ -86,6 +85,7 @@ export class TaskExtractor {
 
     lines.forEach((line, lineNumber) => {
       if (line) {
+        //console.debug(`Líneas de tareas encontradas en ${file.path}:`, line);
         const task = this.createTaskFromLine(file, line, lineNumber,frontmatter);
         if (task) {
           tasks.push(task);

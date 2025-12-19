@@ -74,6 +74,7 @@ export interface ITask {
   date: ITaskDate;
   section: ITaskSection;
   flow: ITaskFlow;
+  groupLabel?: string;
 
     // Campos de compatibilidad temporal (deprecated)
   /** @deprecated Use file.path instead */
@@ -130,8 +131,6 @@ export interface ITask {
   //get isValid(): boolean;
   /** @deprecated Legacy compatibility object */
   //get taskData(): Record<string, any>;
-  
-  groupLabel?: string;
 }
 
 export interface DateRange {

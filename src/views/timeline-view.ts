@@ -1,4 +1,4 @@
-import { WorkspaceLeaf } from 'obsidian';
+import { WorkspaceLeaf, Plugin } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
 import { ITask } from '../types/interfaces';
@@ -11,7 +11,7 @@ export class TimelineView extends BaseView {
   private taskManager: TaskManager; // Instancia de TaskManager
   private i18n: I18n;
 
-  constructor(leaf: WorkspaceLeaf, private plugin: any, i18n: I18n) {
+  constructor(leaf: WorkspaceLeaf, private plugin: Plugin, i18n: I18n) {
     super(leaf);
     this.taskManager = new TaskManager(plugin.app, i18n, this.plugin); // Inicializa TaskManager
     this.i18n = i18n;

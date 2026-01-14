@@ -1,11 +1,12 @@
-import { ItemView, TFile, TFolder } from 'obsidian';
+import { ItemView, TFile, TFolder, Plugin } from 'obsidian';
 import Handlebars from 'handlebars';
-import { ITask, FolderNode } from '../types/interfaces';
+import { ITask, FolderNode, ViewData } from '../types/interfaces';
 import { TaskManager } from '../core/task-manager';
 import { DateTime } from 'luxon';
 import { TaskPriorityIcon } from '../types/enums';
 // @ts-ignore: Plugin de esbuild maneja los archivos .hbs
 import headerTemplate from './templates/header.hbs';
+import { I18n } from '../core/i18n';
 
 export abstract class BaseView extends ItemView {
   private helpersRegistered = false; // Flag para verificar si los helpers ya están registrados
@@ -123,7 +124,7 @@ export abstract class BaseView extends ItemView {
     }
   }
 
-  protected registerHandlebarsHelpers(i18n: any): void {
+  protected registerHandlebarsHelpers(i18n: I18n): void {
     // Si ya están registrados, no hacer nada
     if (this.helpersRegistered) return;
     
@@ -140,7 +141,7 @@ export abstract class BaseView extends ItemView {
    * Registra todos los helpers de Handlebars de una sola vez
    * @param i18n Servicio de internacionalización
    */
-  protected registerCommonHelpers(i18n: any): void {
+  protected registerCommonHelpers(i18n: I18n): void {
     
     // Helper para traducción
     Handlebars.registerHelper("t", (key: string) => i18n.t(key));
@@ -205,7 +206,7 @@ export abstract class BaseView extends ItemView {
  * Método para registrar helpers específicos para cada vista.
  * Las clases hijas pueden sobrescribir este método para registrar sus propios helpers.
  */
-  protected registerViewSpecificHelpers(i18n: any): void {
+  protected registerViewSpecificHelpers(_i18n: I18n): void {
     // Por defecto no registra ningún helper específico
     // Las clases hijas sobrescribirán este método según sea necesario
   }
@@ -379,7 +380,7 @@ export abstract class BaseView extends ItemView {
         const lineNumber = item.getAttribute('data-line-number');
         
         if (filePath) {
-          this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined);
+          this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined).catch(console.error);
         }
       });
     });
@@ -419,7 +420,7 @@ export abstract class BaseView extends ItemView {
     }
   }
 
-  protected async render(viewType: string, data: any, i18n: any, plugin: any, leaf: any): Promise<void> {
+  protected async render(viewType: string, data: any, i18n: I18n, plugin: Plugin, leaf: any): Promise<void> {
     console.debug(`Dibuja vista: ${viewType}`); // Debugging line
     const container = this.containerEl.children[1] as HTMLElement;
     container.empty(); // Limpia el contenido previo
@@ -438,7 +439,7 @@ export abstract class BaseView extends ItemView {
 
     try {
       // Renderizar header (síncrono)
-      this.renderHeader(headerContainer, { i18n });
+      this.renderHeader(headerContainer, { i18n: I18n });
       
       // Renderizar contenido (asíncrono)
       await this.renderTemplate(contentContainer, viewType, data);
@@ -457,9 +458,9 @@ export abstract class BaseView extends ItemView {
    * Método para configurar eventos específicos de la vista
    * Las clases hijas pueden sobrescribir este método para implementar sus propios listeners
    * @param container El contenedor donde se aplican los listeners
-   * @param data Los datos utilizados para el renderizado
+   * @param _data Los datos utilizados para el renderizado (puede no usarse en algunas vistas)
    */
-  protected setupViewSpecificEventListeners(container: HTMLElement, data: any): void {
+  protected setupViewSpecificEventListeners(_container: HTMLElement, _data: ViewData): void {
     // Implementación básica que puede ser sobrescrita
     // Por defecto, no hace nada
   }

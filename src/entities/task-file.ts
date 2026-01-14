@@ -172,9 +172,6 @@ export class TasksFile implements IFile<TFile> {
     return JSON.stringify(thisFrontmatter) === JSON.stringify(thatFrontmatter);
   }
 
-
-
-
   /**
    * This is documented for users and so must not be changed.
    * @param key
@@ -185,7 +182,7 @@ export class TasksFile implements IFile<TFile> {
       return false;
     }
 
-    const propertyValue = this.frontmatter[foundKey];
+    const propertyValue = this.frontmatter[foundKey] as string | number | boolean | string[] | number[] | null | undefined;
     if (propertyValue === null) {
       return false;
     }
@@ -207,13 +204,13 @@ export class TasksFile implements IFile<TFile> {
       return null;
     }
 
-    const propertyValue = this.frontmatter[foundKey];
+    const propertyValue = this.frontmatter[foundKey] as string | number | boolean | string[] | number[] | null | undefined;
     if (propertyValue === undefined) {
       return null;
     }
 
     if (Array.isArray(propertyValue)) {
-      return propertyValue.filter((item: any) => item !== null);
+      return propertyValue.filter((item: string | number | null) => item !== null) as string[] | number[];
     }
 
     return propertyValue;

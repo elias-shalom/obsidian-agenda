@@ -1,7 +1,7 @@
-import { WorkspaceLeaf } from 'obsidian';
+import { WorkspaceLeaf, Plugin } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask } from '../types/interfaces';
+import { ITask, TableViewData } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import Handlebars from 'handlebars';
 import { TaskDateType } from '../types/enums';
@@ -13,9 +13,8 @@ export class TableView extends BaseView {
   private currentSortColumn: string = ''; // Columna actualmente ordenada
   private currentSortDirection: 'asc' | 'desc' = 'asc'; // Dirección de la ordenación
 
-  constructor(leaf: WorkspaceLeaf, private plugin: any, private i18n: I18n, private taskManager: TaskManager) {
+  constructor(leaf: WorkspaceLeaf, private plugin: Plugin, private i18n: I18n, private taskManager: TaskManager) {
     super(leaf);
-    this.i18n = i18n;
   }
 
   getViewType(): string {
@@ -39,7 +38,7 @@ export class TableView extends BaseView {
     uniqueFolders: uniqueFolders }, this.i18n, this.plugin, this.leaf);
   }
 
-  protected registerViewSpecificHelpers(i18n: any): void {
+  protected registerViewSpecificHelpers(_i18n: I18n): void {
     // Implementar el helper 'equals' para comparaciones en la plantilla
     Handlebars.registerHelper('equals', function(arg1, arg2) {
       return arg1 === arg2;
@@ -65,7 +64,7 @@ export class TableView extends BaseView {
     });
   }
 
-  protected setupViewSpecificEventListeners(container: HTMLElement, data: any): void {
+  protected setupViewSpecificEventListeners(container: HTMLElement, _data: TableViewData): void {
     // Implementar los event listeners para la tabla aquí
     // Por ejemplo: ordenación, filtrado, paginación, etc.
     
@@ -139,12 +138,12 @@ export class TableView extends BaseView {
       row.addClass('clickable');
       
       // Evento de doble clic para abrir el archivo
-      row.addEventListener('dblclick', (event) => {
+      row.addEventListener('dblclick', (_event) => {
         const filePath = row.getAttribute('data-file-path');
         const lineNumber = row.getAttribute('data-line-number');
         
         if (filePath) {
-          this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined);
+          this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined).catch(console.error);
         }
       });
     });
@@ -423,8 +422,8 @@ export class TableView extends BaseView {
 
   private sortRows(rows: Element[], sortBy: string, direction: 'asc' | 'desc'): Element[] {
     return [...rows].sort((a, b) => {
-      let valueA: any;
-      let valueB: any;
+      let valueA: string | number;
+      let valueB: string | number;
       
       // Extraer valores según el tipo de columna
       switch(sortBy) {
@@ -515,9 +514,11 @@ export class TableView extends BaseView {
           ? valueA.localeCompare(valueB) 
           : valueB.localeCompare(valueA);
       } else {
+        const numA = Number(valueA);
+        const numB = Number(valueB);
         return direction === 'asc' 
-          ? (valueA - valueB) 
-          : (valueB - valueA);
+          ? (numA - numB) 
+          : (numB - numA);
       }
     });
   }

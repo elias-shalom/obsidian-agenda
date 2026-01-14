@@ -77,12 +77,12 @@ export class CalendarWeekView extends CalendarView {
 
   protected navigateToPrevious(): void {
     this.currentDate = this.currentDate.minus({ weeks: 1 });
-    void this.refreshView();
+    this.refreshView().catch(console.error);
   }
 
   protected navigateToNext(): void {
     this.currentDate = this.currentDate.plus({ weeks: 1 });
-    void this.refreshView();
+    this.refreshView().catch(console.error);
   }
 
   /**

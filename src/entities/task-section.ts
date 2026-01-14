@@ -1,6 +1,7 @@
 import { OnCompletion, TaskPriorityIcon } from "../types/enums";
 import { I18n } from "../core/i18n";
 import { rrulestr } from 'rrule';
+import { DateTime } from "luxon";
 
 /**
  * Interfaz para la configuración de iconos en las tareas
@@ -9,9 +10,9 @@ interface IconConfig {
   type: 'date' | 'priority' | 'recurrence' | 'id' | 'blocked' | 'completion';
   property: string;
   format?: string;
-  value?: any;
+  value?: string | number | TaskPriorityIcon;
   name?: string;
-  values?: any[];
+  values?: (string | number)[];
 }
 
 export class TaskSection {
@@ -19,7 +20,7 @@ export class TaskSection {
   description: string; // Representa la descripción de la tarea
   tasksFields: string[]; // Representa los campos específicos de la tarea como un arreglo de strings
   blockLink: string;
-  taskData: Record<string, any> = {};
+  taskData: Record<string, string | number | boolean | string[] | null | undefined> = {};
 
   /**
        * Expresión regular para validar el formato de una tarea.
@@ -129,6 +130,74 @@ export class TaskSection {
   }
 
   /**
+   * Extrae la prioridad de forma type-safe
+   * @param priority Valor de prioridad desde taskData
+   * @returns String de prioridad seguro
+   */
+  public extractPriority(priority: unknown): string {
+    return typeof priority === 'string' ? priority : "undefined";
+  }
+
+  /**
+   * Extrae el valor isValid de forma type-safe
+   * @param isValid Valor booleano desde taskData
+   * @returns Boolean seguro
+   */
+  public extractIsValid(isValid: unknown): boolean {
+    return typeof isValid === 'boolean' ? isValid : false;
+  }
+
+  /**
+   * Extrae fechas de forma type-safe
+   * @param date Valor de fecha desde taskData
+   * @returns DateTime object o null
+   */
+  public extractDate(date: unknown): DateTime | null {
+    if (date instanceof Date) return DateTime.fromJSDate(date);
+    if (typeof date === 'string') {
+      const parsed = DateTime.fromISO(date);
+      return parsed.isValid ? parsed : DateTime.fromFormat(date, 'yyyy-MM-dd').isValid 
+        ? DateTime.fromFormat(date, 'yyyy-MM-dd') 
+        : null;
+    }
+    if (date && typeof date === 'object' && 'toISO' in date) {
+      // Si ya es un objeto DateTime de Luxon
+      return date as DateTime;
+    }
+    return null;
+  }
+
+  /**
+   * Extrae strings de forma type-safe
+   * @param value Valor desde taskData
+   * @returns String seguro
+   */
+  public extractString(value: unknown): string {
+    return typeof value === 'string' ? value : "";
+  }
+
+  /**
+   * Extrae dependencias de forma type-safe
+   * @param deps Array de dependencias desde taskData
+   * @returns Array de strings seguro
+   */
+  public extractDependencies(deps: unknown): string[] {
+    if (Array.isArray(deps)) {
+      return deps.filter((dep): dep is string => typeof dep === 'string');
+    }
+    return [];
+  }
+
+  /**
+   * Extrae onCompletion de forma type-safe
+   * @param completion Valor de completion desde taskData
+   * @returns String o null seguro
+   */
+  public extractOnCompletion(completion: unknown): string | null {
+    return typeof completion === 'string' ? completion : null;
+  }
+
+  /**
    * Inicializa las propiedades de la clase a partir del texto proporcionado.
    * @param text Texto completo de la tarea.
    */
@@ -235,9 +304,9 @@ export class TaskSection {
    * @param text Texto restante después de eliminar el encabezado.
    * @returns Un objeto que contiene el arreglo de campos y los datos estructurados extraídos.
    */
-  private extractTasksFields(text: string): { fields: string[], taskData: Record<string, any> } {
+  private extractTasksFields(text: string): { fields: string[], taskData: Record<string, string | number | boolean | string[] | null | undefined> } {
     const fields: string[] = [];
-    const taskData: Record<string, any> = {};
+    const taskData: Record<string, string | number | boolean | string[] | null | undefined> = {};
     const errors: string[] = [];
 
     const iconDateRegex = /(📅|🛫|⏳|✅|❌|➕)\s*(\d{4}-\d{2}-\d{2})\s*$/g // Ícono seguido de una fecha en formato YYYY-MM-DD

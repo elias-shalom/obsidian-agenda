@@ -1,7 +1,7 @@
 import { getLanguage, App } from "obsidian";
 
 export class I18n {
-  private translations: Record<string, string> = {};
+  private translations: Record<string, unknown> = {};
   private currentLanguage: string = "en";
   private app: App; // Changed from any to App
 
@@ -14,8 +14,8 @@ export class I18n {
       const language = getLanguage();
       // Importar dinámicamente el archivo de idioma como módulo
       // esbuild maneja los archivos .json como módulos
-      const localeModule = await import(`../locales/${language}.json`);
-      this.translations = localeModule.default || localeModule;
+      const localeModule = await import(`../locales/${language}.json`) as { default?: Record<string, unknown> };
+      this.translations = (localeModule.default || localeModule) as Record<string, unknown>;
       this.currentLanguage = language;
     } catch (error) {
       console.error("Error loading translations:", error);

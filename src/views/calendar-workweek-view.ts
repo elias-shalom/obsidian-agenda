@@ -83,12 +83,12 @@ export class CalendarWorkWeekView extends CalendarView {
 
   protected navigateToPrevious(): void {
     this.currentDate = this.currentDate.minus({ weeks: 1 });
-    void this.refreshView();
+    this.refreshView().catch(console.error);
   }
 
   protected navigateToNext(): void {
     this.currentDate = this.currentDate.plus({ weeks: 1 });
-    void this.refreshView();
+    this.refreshView().catch(console.error);
   }
 
     /**
@@ -157,7 +157,7 @@ export class CalendarWorkWeekView extends CalendarView {
         
         if (filePath) {
           // Abrir el archivo en la línea donde está la tarea
-          this.plugin.app.workspace.openLinkText(filePath, '', false, { line: lineNumber });
+          this.plugin.app.workspace.openLinkText(filePath, '', false, { line: lineNumber }).catch(console.error);
         }
       });
     });

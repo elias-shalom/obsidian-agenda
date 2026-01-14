@@ -7,9 +7,6 @@
 		"dev": "node src/esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node src/esbuild.config.mjs production",
 		"version": "node src/version-bump.mjs && git add manifest.json versions.json",
-		"test": "jest",
-		"test:watch": "jest --watch",
-		"test:coverage": "jest --coverage",
 		"lint": "eslint"
 	},
 	"keywords": [],

@@ -8,17 +8,18 @@ export class TasksFile implements IFile<TFile> {
   _path: string;
   _cachedMetadata: CachedMetadata;
   // Always make TasksFile.frontmatter.tags exist and be empty, even if no frontmatter present:
-  _frontmatter = { tags: [] } as any;
+  _frontmatter: FrontMatterCache = { tags: [] };
   _tags: string[] = [];
 
   constructor(private app: App, public file: TFile, cachedMetadata: CachedMetadata = {}) {
+    this.app = app;
     this.name = file.name;
     this._path = file.path;
     this._cachedMetadata = cachedMetadata;
 
     const rawFrontmatter = cachedMetadata.frontmatter;
     if (rawFrontmatter !== undefined) {
-      this._frontmatter = JSON.parse(JSON.stringify(rawFrontmatter));
+      this._frontmatter = JSON.parse(JSON.stringify(rawFrontmatter)) as FrontMatterCache;
       this._frontmatter.tags = parseFrontMatterTags(rawFrontmatter) ?? [];
     }
 
@@ -200,7 +201,7 @@ export class TasksFile implements IFile<TFile> {
    * This is documented for users and so must not be changed.
    * @param key
    */
-  public property(key: string): any {
+  public property(key: string): string | number | boolean | string[] | number[] | null{
     const foundKey = this.findKeyInFrontmatter(key);
     if (foundKey === undefined) {
       return null;

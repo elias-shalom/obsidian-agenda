@@ -294,7 +294,7 @@ export class TableView extends BaseView {
                   }
                   break;
                   
-                case 'today':
+                case 'today': {
                   // Tareas para hoy
                   const isToday = dueDate.getDate() === today.getDate() && 
                                 dueDate.getMonth() === today.getMonth() && 
@@ -303,6 +303,7 @@ export class TableView extends BaseView {
                     shouldShow = false;
                   }
                   break;
+                }
                   
                 case 'thisweek':
                   // Tareas para esta semana (próximos 7 días)
@@ -475,7 +476,7 @@ export class TableView extends BaseView {
           valueB = b.querySelector('.file-name')?.textContent || '';
           break;
           
-        case 'due':
+        case 'due': {
           // Para fechas, buscamos primero la fecha de vencimiento
           const dueDateElementA = a.querySelector('.task-date.due-date .date-text');
           const dueDateElementB = b.querySelector('.task-date.due-date .date-text');
@@ -493,7 +494,7 @@ export class TableView extends BaseView {
             valueB = direction === 'asc' ? Number.MAX_SAFE_INTEGER : 0;
           }
           break;
-          
+        }
         case 'tags':
           valueA = Array.from(a.querySelectorAll('.task-tag'))
             .map(tag => tag.textContent)

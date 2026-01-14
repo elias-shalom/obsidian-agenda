@@ -1,7 +1,6 @@
-import { App, TFile, Plugin } from "obsidian";
+import { App, TFile, Plugin, EventRef } from "obsidian";
 import { ITask, TaskFilterCriteria } from "../types/interfaces";
 import { I18n } from "./i18n";
-import { EventBus } from "./event-bus";
 import { TaskCache } from "./task-cache";
 import { TaskExtractor } from "./task-extractor";
 import { TaskFilter } from "./task-filter";
@@ -11,8 +10,7 @@ import { TaskQueryHandler } from "./task-query-handler";
 export class TaskManager {
   private refreshInProgress: boolean = false;
   private refreshPromise: Promise<ITask[]> | null = null;
-  private eventBus: EventBus;
-  private registeredEvents: any[] = [];
+  private registeredEvents: EventRef[] = [];
   
   // Instancias de las clases especializadas
   private taskCache: TaskCache;
@@ -22,7 +20,6 @@ export class TaskManager {
   private queryHandler: TaskQueryHandler;
 
   constructor(private app: App, private i18n: I18n, private plugin: Plugin) {
-    this.eventBus = EventBus.getInstance();
     
     // Inicializar las clases especializadas
     this.taskCache = new TaskCache();
@@ -42,8 +39,8 @@ export class TaskManager {
     // Escuchar modificaciones de archivos Markdown
     //console.log("Escuchando eventos de modificación de archivos Markdown");
     const event = this.plugin.registerEvent(
-      this.app.vault.on('modify', (file: any) => {
-        if (file instanceof TFile && file.extension === 'md') {          
+      this.app.vault.on('modify', (file) => {
+        if (file instanceof TFile && file.extension === 'md') {
           this.invalidateFileCache(file.path);
         }
       })
@@ -53,7 +50,7 @@ export class TaskManager {
 
     // Escuchar creación de archivos Markdown
     const createEvent = this.plugin.registerEvent(
-      this.app.vault.on('create', (file: any) => {
+      this.app.vault.on('create', (file) => {
         if (file instanceof TFile && file.extension === 'md') {
           this.invalidateCache();
         }
@@ -64,7 +61,7 @@ export class TaskManager {
 
     // Escuchar eliminación de archivos Markdown
     const deleteEvent = this.plugin.registerEvent(
-      this.app.vault.on('delete', (file: any) => {
+      this.app.vault.on('delete', (file) => {
         if (file instanceof TFile && file.extension === 'md') {
           this.invalidateFileCache(file.path);
         }
@@ -75,7 +72,7 @@ export class TaskManager {
 
     // Escuchar renombrado de archivos Markdown
     const renameEvent = this.plugin.registerEvent(
-      this.app.vault.on('rename', (file: any, oldPath: string) => {
+      this.app.vault.on('rename', (file, oldPath) => {
         if (file instanceof TFile && file.extension === 'md') {
           this.invalidateFileCache(oldPath);
           this.invalidateFileCache(file.path);
@@ -303,7 +300,7 @@ export class TaskManager {
 
   /**
    * Obtiene las tareas para un archivo específico
-   
+
   async getTasksForFile(filePath: string): Promise<ITask[]> {
     // Si hay en el cache, devolver desde ahí
     if (this.taskCache.hasFileCache(filePath)) {

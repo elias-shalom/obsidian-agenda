@@ -1,5 +1,6 @@
 import { Plugin, WorkspaceLeaf} from "obsidian";
 import { I18n } from "./i18n";
+import { TaskManager } from "./task-manager";
 import { OverviewView, OVERVIEW_VIEW_TYPE, CalendarMonthView, CALENDAR_MONTH_VIEW_TYPE, CalendarWeekView, CALENDAR_WEEK_VIEW_TYPE, 
   CalendarWorkWeekView, CALENDAR_WORK_WEEK_VIEW_TYPE, CalendarDayView, CALENDAR_DAY_VIEW_TYPE, ListView, LIST_VIEW_TYPE,
   //CalendarView, CALENDAR_VIEW_TYPE, 
@@ -10,7 +11,7 @@ import { OverviewView, OVERVIEW_VIEW_TYPE, CalendarMonthView, CALENDAR_MONTH_VIE
 export class ViewManager {
   private registeredViewTypes: string[] = [];
 
-  constructor(private plugin: Plugin, private i18n: I18n, private taskManager: any) {  }
+  constructor(private plugin: Plugin, private i18n: I18n, private taskManager: TaskManager) {  }
 
   // Método para registrar todas las vistas
   public registerViews(): void {

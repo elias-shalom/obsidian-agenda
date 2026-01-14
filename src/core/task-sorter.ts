@@ -89,15 +89,15 @@ export class TaskSorter {
     const dateObjA = dateA
       ? typeof dateA === 'string'
         ? new Date(dateA)
-        : typeof (dateA as any).toJSDate === 'function'
-          ? (dateA as any).toJSDate()
+        : typeof (dateA as unknown as DateTime).toJSDate === 'function'
+          ? (dateA as unknown as DateTime).toJSDate()
           : dateA as Date
       : null;
     const dateObjB = dateB
       ? typeof dateB === 'string'
         ? new Date(dateB)
-        : typeof (dateB as any).toJSDate === 'function'
-          ? (dateB as any).toJSDate()
+        : typeof (dateB as unknown as DateTime).toJSDate === 'function'
+          ? (dateB as unknown as DateTime).toJSDate()
           : dateB as Date
       : null;
 
@@ -134,7 +134,7 @@ export class TaskSorter {
             let dueDate: Date | null = null;
             if (typeof task.date.due === 'string') {
               dueDate = new Date(task.date.due);
-            } else if (typeof (task.date.due as any).toJSDate === 'function') {
+            } else if (typeof (task.date.due as unknown as DateTime).toJSDate === 'function') {
               dueDate = (task.date.due as unknown as DateTime).toJSDate();
             } else if (task.date.due instanceof Date) {
               dueDate = task.date.due;

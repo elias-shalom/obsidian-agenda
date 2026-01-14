@@ -1,11 +1,11 @@
-import { getLanguage } from "obsidian";
+import { getLanguage, App } from "obsidian";
 
 export class I18n {
   private translations: Record<string, string> = {};
   private currentLanguage: string = "en";
-  private app: any; // Add a property for app
+  private app: App; // Changed from any to App
 
-  constructor(app: any) {
+  constructor(app: App) { // Changed from any to App
     this.app = app; // Initialize app in the constructor
   }
 
@@ -13,7 +13,7 @@ export class I18n {
     try {
       const language = getLanguage();
       // Importar dinámicamente el archivo de idioma como módulo
-      // @ts-ignore: esbuild maneja los archivos .json como módulos
+      // esbuild maneja los archivos .json como módulos
       const localeModule = await import(`../locales/${language}.json`);
       this.translations = localeModule.default || localeModule;
       this.currentLanguage = language;
@@ -22,15 +22,15 @@ export class I18n {
     }
   }
 
-  t(key: string, params?: Record<string, any>): string {
+  t(key: string, params?: Record<string, string | number | boolean>): string {
     // Dividir la clave por puntos para navegar en la estructura jerárquica
     const keys = key.split('.');
-    let result: any = this.translations;
+    let result: unknown = this.translations;
 
     // Navegar a través del objeto de traducciones
     for (const k of keys) {
-      if (result && result[k] !== undefined) {
-        result = result[k];
+      if (result && typeof result === 'object' && result !== null && k in result) {
+        result = (result as Record<string, unknown>)[k];
       } else {
         console.warn(`Translation key not found: ${key}`);
         return key; // Devolver la clave si no se encuentra la traducción

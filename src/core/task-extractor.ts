@@ -1,4 +1,4 @@
-import { App, TFile } from "obsidian";
+import { App, TFile, CachedMetadata, FrontMatterCache } from "obsidian";
 import { ITask } from "../types/interfaces";
 import { TaskSection } from "../entities/task-section";
 import { Task } from "../entities/task";
@@ -46,7 +46,7 @@ export class TaskExtractor {
   /**
    * Extrae tareas usando el caché de metadatos de Obsidian
    */
-  private extractTasksFromCache(file: TFile, cache: any, content: string): ITask[] {
+  private extractTasksFromCache(file: TFile, cache: CachedMetadata, content: string): ITask[] {
     const tasks: ITask[] = [];
     const lines = content.split("\n");
     //console.debug(`Usando caché de metadatos para ${file.path}`);
@@ -78,7 +78,7 @@ export class TaskExtractor {
   /**
    * Extrae tareas usando el método tradicional (sin caché)
    */
-  private extractTasksTraditionally(file: TFile, content: string, frontmatter: Record<string, any> | undefined): ITask[] {
+  private extractTasksTraditionally(file: TFile, content: string, frontmatter: FrontMatterCache | undefined): ITask[] {
     //console.debug(`Usando método tradicional para ${file.path}`);
     const lines = content.split("\n").filter(line => line.match(TaskSection.taskFormatRegex)); 
     const tasks: ITask[] = [];
@@ -100,7 +100,7 @@ export class TaskExtractor {
   /**
    * Crea un objeto ITask a partir de una línea de texto con la nueva estructura
    */
-  private createTaskFromLine(file: TFile, line: string, lineNumber: number, frontmatter: Record<string, any> | undefined): ITask | null {
+  private createTaskFromLine(file: TFile, line: string, lineNumber: number, frontmatter: FrontMatterCache | undefined): ITask | null {
     try {
       const taskSection = new TaskSection(this.i18n);
       taskSection.initialize(line);

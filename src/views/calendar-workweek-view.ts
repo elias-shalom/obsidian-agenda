@@ -1,7 +1,7 @@
-import { WorkspaceLeaf } from "obsidian";
+import { WorkspaceLeaf, Plugin } from "obsidian";
 import { CalendarView } from "./calendar-view";
 import { TaskManager } from "../core/task-manager";
-import { ITask } from '../types/interfaces';
+import { ITask, WeekDayData, WeekViewData } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import { CalendarViewType } from "../types/enums";
@@ -10,7 +10,7 @@ export const CALENDAR_WORK_WEEK_VIEW_TYPE = "calendar-workweek-view";
 
 export class CalendarWorkWeekView extends CalendarView {
 
-  constructor(leaf: WorkspaceLeaf, plugin: any, i18n: I18n, taskManager: TaskManager) {
+  constructor(leaf: WorkspaceLeaf, plugin: Plugin, i18n: I18n, taskManager: TaskManager) {
     super(leaf, plugin, i18n, taskManager);
 
   }
@@ -30,7 +30,7 @@ export class CalendarWorkWeekView extends CalendarView {
  /**
    * Genera datos para la vista mensual del calendario
    */
-  protected generateViewData(): any {
+  protected generateViewData(): WeekViewData {
     // Obtener la fecha actual
     const currentDate = this.currentDate;
     
@@ -41,23 +41,12 @@ export class CalendarWorkWeekView extends CalendarView {
     
     // Usar este lunes como fecha de inicio
     const weekStartDate = mondayOfWeek;
-       
+
     const daysToGenerate =  5;
 
     // Obtener los nombres de los días localizados
     const localizedDayNames = this.getLocalizedDayNames();
-    
-    // Define a type for day data
-    type WeekDayData = {
-      date: DateTime;
-      isToday: boolean;
-      dayOfMonth: number;
-      dayOfWeek: number;
-      dayName: string;
-      formattedDate: string;
-      tasksForDay: ITask[];
-    };
-    
+
     // Prepara los datos de los días
     const days: WeekDayData[] = [];
     let currentDay = weekStartDate;
@@ -94,12 +83,12 @@ export class CalendarWorkWeekView extends CalendarView {
 
   protected navigateToPrevious(): void {
     this.currentDate = this.currentDate.minus({ weeks: 1 });
-    this.refreshView();
+    void this.refreshView();
   }
 
   protected navigateToNext(): void {
     this.currentDate = this.currentDate.plus({ weeks: 1 });
-    this.refreshView();
+    void this.refreshView();
   }
 
     /**
@@ -107,7 +96,7 @@ export class CalendarWorkWeekView extends CalendarView {
    * @param container Contenedor donde se aplican los listeners
    * @param data Datos utilizados para renderizar la vista
    */
-  protected setupViewSpecificEventListeners(container: HTMLElement, data: any): void {
+  protected setupViewSpecificEventListeners(container: HTMLElement, data: WeekViewData): void {
     // Primero ejecuta los event listeners comunes
     super.setupViewSpecificEventListeners(container, data);
     

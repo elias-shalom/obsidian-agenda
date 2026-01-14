@@ -162,13 +162,21 @@ export class TaskFilter {
    * Verifica si una tarea coincide con los filtros de fechas
    */
   private matchesDateFilters(task: ITask, criteria: TaskFilterCriteria): boolean {
-    // Empezamos verificando los filtros de fecha específicos
-    if (!this.matchesSpecificDateFilter(task.date.due, criteria.dueDate)) return false;
-    if (!this.matchesSpecificDateFilter(task.date.start, criteria.startDate)) return false;
-    if (!this.matchesSpecificDateFilter(task.date.scheduled, criteria.scheduledDate)) return false;
-    if (!this.matchesSpecificDateFilter(task.date.done, criteria.doneDate)) return false;
-    if (!this.matchesSpecificDateFilter(task.date.created, criteria.createdDate)) return false;
+     // Definir configuración de fechas
+    const dateChecks = [
+      { taskDate: task.date.due, criteriaDate: criteria.dueDate },
+      { taskDate: task.date.start, criteriaDate: criteria.startDate },
+      { taskDate: task.date.scheduled, criteriaDate: criteria.scheduledDate },
+      { taskDate: task.date.done, criteriaDate: criteria.doneDate },
+      { taskDate: task.date.created, criteriaDate: criteria.createdDate }
+    ];
 
+    // Validar cada fecha
+    for (const { taskDate, criteriaDate } of dateChecks) {
+        if (!this.matchesSpecificDateFilter(taskDate, criteriaDate)) {
+          return false;
+        }
+    }
     // Luego verificamos los filtros de fecha relativos (solo para dueDate)
     if (criteria.dueDateRelative) {
       if (!this.matchesRelativeDateFilter(task.date.due, criteria.dueDateRelative)) {
@@ -182,7 +190,7 @@ export class TaskFilter {
   /**
    * Auxiliar para verificar filtros de fecha específicos
    */
-  private matchesSpecificDateFilter(taskDate: DateTime<boolean> | Date | string | null, filterCriteria: any): boolean {
+  private matchesSpecificDateFilter(taskDate: DateTime<boolean> | Date | string | null, filterCriteria: TaskFilterCriteria['dueDate'] | TaskFilterCriteria['startDate'] | TaskFilterCriteria['scheduledDate'] | TaskFilterCriteria['doneDate'] | TaskFilterCriteria['createdDate']): boolean {
     if (!filterCriteria) return true;
 
     // Convertir a Date si es string o DateTime
@@ -190,7 +198,7 @@ export class TaskFilter {
     if (taskDate) {
       if (typeof taskDate === 'string') {
         dateObj = new Date(taskDate);
-      } else if (typeof (taskDate as any).toJSDate === 'function') {
+      } else if (typeof (taskDate as unknown as DateTime).toJSDate === 'function') {
         dateObj = (taskDate as unknown as DateTime).toJSDate();
       } else if (taskDate instanceof Date) {
         dateObj = taskDate;
@@ -226,14 +234,14 @@ export class TaskFilter {
   /**
    * Auxiliar para verificar filtros de fecha relativos
    */
-  private matchesRelativeDateFilter(taskDate: DateTime<boolean> | Date | string | null, filterCriteria: any): boolean {
-    if (!taskDate) return true;
+  private matchesRelativeDateFilter(taskDate: DateTime<boolean> | Date | string | null, filterCriteria: TaskFilterCriteria['dueDateRelative']): boolean {
+    if (!filterCriteria || !taskDate) return true;
 
     let dateObj: Date;
     if (typeof taskDate === 'string') {
       dateObj = new Date(taskDate);
-    } else if (typeof (taskDate as any).toJSDate === 'function') {
-      dateObj = (taskDate as any).toJSDate();
+    } else if (typeof (taskDate as unknown as DateTime).toJSDate === 'function') {
+      dateObj = (taskDate as unknown as DateTime).toJSDate();
     } else {
       dateObj = taskDate as Date;
     }

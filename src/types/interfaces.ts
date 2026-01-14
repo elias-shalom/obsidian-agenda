@@ -1,5 +1,30 @@
 // This file exports interfaces and types used throughout the project.
 import { DateTime } from 'luxon';
+import { CalendarViewType } from './enums';
+
+/**
+ * Datos de un día específico en la vista semanal
+ */
+export interface WeekDayData {
+  date: DateTime;
+  isToday: boolean;
+  dayOfMonth: number;
+  dayOfWeek: number;
+  dayName: string;
+  formattedDate: string;
+  tasksForDay: ITask[];
+}
+
+/**
+ * Datos completos para la vista semanal del calendario
+ */
+export interface WeekViewData {
+  viewType: CalendarViewType;
+  weekNumber: number;
+  days: WeekDayData[];
+  dayNames: string[];
+  periodName: string;
+}
 
 /**
  * Información del archivo donde se encuentra la tarea
@@ -9,7 +34,7 @@ export interface ITaskFile {
   name: string;
   ext: string;
   root: string;
-  meta: Record<string, any> | null;
+  meta: Record<string, unknown> | null;
 }
 
 /**
@@ -247,8 +272,7 @@ export interface TaskFilterCriteria {
   groupBy?: GroupField;                // Agrupar por este campo
 }
 
-export type SortField = 'dueDate' | 'startDate' | 'scheduledDate' | 'doneDate' | 
-                       'createdDate' | 'priority' | 'status' | 'text' | 'path';
+export type SortField = 'dueDate' | 'startDate' | 'scheduledDate' | 'doneDate' | 'createdDate' | 'priority' | 'status' | 'text' | 'path';
 
 export type GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags';
 

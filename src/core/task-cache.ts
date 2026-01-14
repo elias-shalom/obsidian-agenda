@@ -66,7 +66,7 @@ export class TaskCache {
   public invalidateFileCache(filePath: string): void {
     this.tasksCache.delete(filePath);
     this.allTasksCache = null; // Invalidar cache global
-    this.eventBus.emit(EVENTS.TASKS_UPDATED, filePath);
+    this.eventBus.emit(EVENTS.TASKS_UPDATED, []);
   }
 
   /**
@@ -76,7 +76,7 @@ export class TaskCache {
     this.tasksCache.clear();
     this.allTasksCache = null;
     this.lastRefreshTime = 0;
-    this.eventBus.emit(EVENTS.TASKS_UPDATED);
+    this.eventBus.emit(EVENTS.TASKS_UPDATED, []);
   }
 
   /**

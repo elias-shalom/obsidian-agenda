@@ -120,7 +120,7 @@ export class CalendarWeekView extends CalendarView {
       });
       
       // Restaurar preferencia guardada al cargar la vista
-      const savedStyle = this.app.loadLocalStorage('calendar-grid-style');
+      const savedStyle = this.app.loadLocalStorage('calendar-grid-style') as string | null;
       if (savedStyle) {
         gridStyleSelector.value = savedStyle;
         

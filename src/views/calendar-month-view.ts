@@ -6,6 +6,7 @@ import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import { CalendarViewType } from "../types/enums";
 
+import { MonthViewData } from '../types/interfaces';
 export const CALENDAR_MONTH_VIEW_TYPE = "calendar-month-view";
 
 export class CalendarMonthView extends CalendarView {
@@ -29,7 +30,7 @@ export class CalendarMonthView extends CalendarView {
   /**
    * Genera datos para la vista mensual del calendario
    */
-  protected generateViewData(): any {
+  protected generateViewData(): MonthViewData {
     const startOfMonth = this.currentDate.startOf('month');
     const endOfMonth = this.currentDate.endOf('month');
     

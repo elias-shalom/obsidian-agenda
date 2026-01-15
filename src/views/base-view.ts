@@ -1,11 +1,14 @@
-import { ItemView, TFile, TFolder, Plugin } from 'obsidian';
+import { ItemView, TFile, TFolder, WorkspaceLeaf } from 'obsidian';
 import Handlebars from 'handlebars';
-import { ITask, FolderNode, ViewData } from '../types/interfaces';
+import { ITask, FolderNode, ViewData, AgendaPlugin } from '../types/interfaces';
 import { TaskManager } from '../core/task-manager';
 import { DateTime } from 'luxon';
 import { TaskPriorityIcon } from '../types/enums';
 // @ts-ignore: Plugin de esbuild maneja los archivos .hbs
 import headerTemplate from './templates/header.hbs';
+
+// Type declaration for handlebars template
+type HandlebarsTemplate = (data: ViewData) => string;
 import { I18n } from '../core/i18n';
 
 export abstract class BaseView extends ItemView {
@@ -93,7 +96,7 @@ export abstract class BaseView extends ItemView {
   /**
    * Convierte una fecha a objeto Date de JavaScript manteniendo el día correcto en la zona horaria local
    */
-  protected toLocalMidnight(dateInput: any): Date | null {
+  protected toLocalMidnight(dateInput: string | Date | DateTime | null | undefined): Date | null {
     if (!dateInput) return null;
     
     try {
@@ -116,7 +119,12 @@ export abstract class BaseView extends ItemView {
       }
       
       // Último recurso: intentar crear una fecha
-      date = new Date(dateInput);
+      // Si es un DateTime de Luxon, convertir a Date primero
+      if (dateInput && typeof dateInput === 'object' && 'toJSDate' in dateInput) {
+        date = dateInput.toJSDate();
+      } else {
+        date = new Date(dateInput as string | number | Date);
+      }
       return DateTime.fromJSDate(date).startOf('day').toJSDate();
     } catch (error) {
       console.error("Error al convertir fecha:", error, dateInput);
@@ -147,7 +155,7 @@ export abstract class BaseView extends ItemView {
     Handlebars.registerHelper("t", (key: string) => i18n.t(key));
     
     // Helper para formatear fechas
-    Handlebars.registerHelper("formatDate", function(date) {
+    Handlebars.registerHelper("formatDate", function(date: DateTime | string | Date | null | undefined) {
       if (!date) return "";
 
       // Si es un string, convertir a objeto DateTime
@@ -156,8 +164,8 @@ export abstract class BaseView extends ItemView {
       }
       
       // Si ya es un objeto DateTime de Luxon
-      if (date.isLuxonDateTime) {
-        return date.toFormat('dd MMM yyyy');
+      if (date && typeof date === 'object' && 'isLuxonDateTime' in date && date.isLuxonDateTime) {
+        return (date as DateTime).toFormat('dd MMM yyyy');
       }
       
       // Si es un objeto Date de JavaScript
@@ -170,11 +178,11 @@ export abstract class BaseView extends ItemView {
     });
     
     // Helper para convertir prioridad a ícono según el enum
-    Handlebars.registerHelper("priorityIcon", function(priority) {
+    Handlebars.registerHelper("priorityIcon", function(priority: string | undefined) {
       if (!priority) return "";
       
       // Devolver directamente el valor del enum si existe
-      if (Object.values(TaskPriorityIcon).includes(priority)) {
+      if (Object.values(TaskPriorityIcon).includes(priority as TaskPriorityIcon)) {
         return priority;
       }
       
@@ -196,7 +204,7 @@ export abstract class BaseView extends ItemView {
     });
 
     // Helper para sumar números (útil para incrementar nivel)
-    Handlebars.registerHelper("add", function(a, b) {
+    Handlebars.registerHelper("add", function(a: number, b: number): number {
       return a + b;
     });
 
@@ -211,21 +219,21 @@ export abstract class BaseView extends ItemView {
     // Las clases hijas sobrescribirán este método según sea necesario
   }
 
-  protected renderHeader(container: HTMLElement, data: any): void {
+  protected renderHeader(container: HTMLElement, data: ViewData): void {
     console.debug("Dibuja encabezado");
     try {
       // Usar directamente la plantilla importada (ya compilada por el plugin)
-      const headerHtml = headerTemplate({ data });
+      const headerHtml = (headerTemplate as HandlebarsTemplate)({ data });
       
       // Usar DOMParser para convertir HTML a nodos DOM
       const parser = new DOMParser();
-      const doc = parser.parseFromString(headerHtml, 'text/html');
+      const doc = parser.parseFromString(String(headerHtml), 'text/html');
 
       // Transferir cada elemento del body al contenedor usando Fragment
       // para mejorar el rendimiento
-      const fragment = document.createDocumentFragment();
+      const fragment = container.ownerDocument.createDocumentFragment();
       Array.from(doc.body.children).forEach(element => {
-        fragment.appendChild(document.importNode(element, true));
+        fragment.appendChild(container.ownerDocument.importNode(element, true));
       });
     
       // Añadir todos los elementos al contenedor de una vez
@@ -269,7 +277,7 @@ export abstract class BaseView extends ItemView {
       
       // Crear elemento de error usando createEl de Obsidian
       const errorMessage = error instanceof Error ? error.message : String(error);
-      const errorDiv = createEl('div', {
+      const errorDiv = container.createEl('div', {
         cls: 'error',
         text: `Error al cargar la plantilla de cabecera: ${errorMessage}`
       });
@@ -277,11 +285,11 @@ export abstract class BaseView extends ItemView {
     }
   }
 
-  protected async renderTemplate(container: HTMLElement, templatePath: string, data: any): Promise<void> {
+  protected async renderTemplate(container: HTMLElement, templatePath: string, data: ViewData): Promise<void> {
     try {
       // Importar dinámicamente la plantilla Handlebars según la vista
       // @ts-ignore: Plugin de esbuild maneja los archivos .hbs
-      const templateModule = await import(`./templates/${templatePath}.hbs`);
+      const templateModule = await import(`./templates/${templatePath}.hbs`) as { default: (data: ViewData) => string };
       const viewTemplate = templateModule.default;
 
       // Renderizar el HTML usando la plantilla importada
@@ -294,13 +302,13 @@ export abstract class BaseView extends ItemView {
       // Transferir todos los elementos del body al contenedor
       const bodyElements = Array.from(doc.body.children);
       bodyElements.forEach(element => {
-        container.appendChild(document.importNode(element, true));
+        container.appendChild(container.ownerDocument.importNode(element, true));
       });
     } catch (error) {
       console.error(`Error renderizando template ${templatePath}:`, error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       // Crear elemento de error usando createEl de Obsidian
-      const errorDiv = createEl('div', {
+      const errorDiv = container.createEl('div', {
         cls: 'error',
         text: `Error al cargar la plantilla: ${errorMessage}`
       });
@@ -308,7 +316,7 @@ export abstract class BaseView extends ItemView {
     }
   }
 
-  protected attachEventTabs(container: HTMLElement, plugin: any, leaf: any): void {
+  protected attachEventTabs(container: HTMLElement, plugin: AgendaPlugin, leaf: WorkspaceLeaf): void {
     //console.log("Agregando eventos a los botones"); // Debugging line
   
     const activeViewType = this.getViewType(); // Obtiene el tipo de vista actual
@@ -375,7 +383,7 @@ export abstract class BaseView extends ItemView {
       // Agregar cursor pointer para indicar que es clickeable
       item.addClass('clickable');
       
-      item.addEventListener('dblclick', (event) => {
+      item.addEventListener('dblclick', (_event) => {
         const filePath = item.getAttribute('data-file-path');
         const lineNumber = item.getAttribute('data-line-number');
         
@@ -420,7 +428,7 @@ export abstract class BaseView extends ItemView {
     }
   }
 
-  protected async render(viewType: string, data: any, i18n: I18n, plugin: Plugin, leaf: any): Promise<void> {
+  protected async render(viewType: string, data: ViewData, i18n: I18n, plugin: AgendaPlugin, leaf: WorkspaceLeaf): Promise<void> {
     console.debug(`Dibuja vista: ${viewType}`); // Debugging line
     const container = this.containerEl.children[1] as HTMLElement;
     container.empty(); // Limpia el contenido previo

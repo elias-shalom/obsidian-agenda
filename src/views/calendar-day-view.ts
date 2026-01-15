@@ -262,7 +262,7 @@ export class CalendarDayView extends CalendarView {
     // Añadir event listeners para los días del mini calendario
     const miniDays = container.querySelectorAll('.calendar-mini-day');
     miniDays.forEach(day => {
-      day.addEventListener('click', (e) => {
+      day.addEventListener('click', (_e) => {
         const dateStr = day.getAttribute('data-date');
         if (dateStr) {
           // Cambiar a la fecha seleccionada

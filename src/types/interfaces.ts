@@ -1,6 +1,13 @@
 // This file exports interfaces and types used throughout the project.
 import { DateTime } from 'luxon';
 import { CalendarViewType } from './enums';
+import { Plugin, WorkspaceLeaf } from 'obsidian';
+
+export interface AgendaPlugin extends Plugin {
+  viewManager: {
+    activateView: (viewType: string, leaf: WorkspaceLeaf) => void;
+  };
+}
 
 /**
  * Datos de un día específico en la vista semanal
@@ -384,15 +391,31 @@ export interface DayViewData {
   miniCalendar: MiniCalendarData;
 }
 
-/**
- * Datos base para vistas de calendario
- */
-export interface CalendarViewData {
-  tasks: ITask[];
-  currentDate: DateTime;
-  calendar: unknown; // El tipo específico depende de la vista (WeekViewData, DayViewData, etc.)
+export interface MonthViewData {
+  viewType: CalendarViewType;
+  weeks: {
+    days: {
+      date: DateTime;
+      isCurrentMonth: boolean;
+      isToday: boolean;
+      dayOfMonth: number;
+      tasksForDay: ITask[];
+    }[];
+    weekNumber: number;
+  }[];
+  monthName: string;
+  dayNames: string[];
+  periodName: string;
 }
 
+/**
+ * Tipo unión para todos los tipos de datos de vistas de calendario
+ * Esto permite que las clases derivadas usen tipos específicos mientras mantienen compatibilidad
+ */
+export type CalendarViewData = 
+  | WeekViewData
+  | DayViewData  
+  | MonthViewData;
 /**
  * Tipo unión para todos los posibles datos que pueden pasar las vistas específicas
  */
@@ -403,4 +426,5 @@ export type ViewData =
   | WeekViewData
   | DayViewData
   | CalendarViewData
+  | MonthViewData
   | Record<string, unknown>; // Para casos no especificados

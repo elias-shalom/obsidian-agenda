@@ -74,11 +74,11 @@ export class ListView extends BaseView {
         return count;
       }
       
-      return countAllTasks(folder);
+      return countAllTasks(folder as FolderNode);
     });
 
     // Helper para recorrer recursivamente la estructura de carpetas
-    Handlebars.registerHelper("renderFolderHierarchy", function(folder, options) {
+    Handlebars.registerHelper("renderFolderHierarchy", function(folder: FolderNode, options: Handlebars.HelperOptions) {
       let output = '';
       if (!folder) return output;
       
@@ -123,7 +123,7 @@ export class ListView extends BaseView {
       item.addClass('clickable');
 
       // Evento de doble clic para abrir el archivo
-      item.addEventListener('dblclick', (event) => {
+      item.addEventListener('dblclick', (_event) => {
         const filePath = item.getAttribute('data-file-path');
         const lineNumber = item.getAttribute('data-line-number');
 
@@ -133,7 +133,7 @@ export class ListView extends BaseView {
       });
 
       // Evento ADICIONAL para ListView - clic simple para seleccionar
-      item.addEventListener('click', (event) => {
+      item.addEventListener('click', (_event) => {
         // Remover selección previa
         container.querySelectorAll('.task-item.selected').forEach(el => {
           el.removeClass('selected');

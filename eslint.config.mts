@@ -16,21 +16,25 @@ export default defineConfig([
     //files: ["**/*.{js,mjs,cjs,ts,mts,cts}"],
     files: ["**/*.ts"],
     plugins: {
-      js,
       "@typescript-eslint": tseslint.plugin,
       obsidianmd: obsidianmd
     },
-    extends: ["js/recommended"],
     languageOptions:{
       globals: globals.node,
       parser: tsparser,
-      parserOptions: { project: "./tsconfig.json" },
+      parserOptions: { 
+        project: "./tsconfig.json",
+        ecmaVersion: 2022,
+        sourceType: "module"
+      },
     },
     rules: {
-      // Añadir reglas específicas si las necesitas
-      // Configurar para parámetros de constructor TypeScript
+      // DESACTIVAR la regla base de ESLint para evitar conflictos
+      "no-unused-vars": "off",
+      
+      // USAR solo la versión de TypeScript que respeta los patrones
       "@typescript-eslint/no-unused-vars": [
-        "warn",
+        "error",
         {
           "argsIgnorePattern": "^_",
           "varsIgnorePattern": "^_",

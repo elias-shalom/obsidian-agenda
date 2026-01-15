@@ -1,25 +1,25 @@
-import { WorkspaceLeaf } from 'obsidian';
+import { WorkspaceLeaf, Plugin } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask } from '../types/interfaces';
+import { ITask, OverviewViewData, ITaskWithAge } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { TaskPriority } from '../types/enums';
 import { DateTime } from 'luxon';
-
-// Interfaz extendida para tareas con edad calculada
-interface ITaskWithAge extends ITask {
-  daysOld: number;
-}
 
 export const OVERVIEW_VIEW_TYPE = 'overview-view';
 
 export class OverviewView extends BaseView {
   private tasks: ITask[] = []; // Lista de tareas
   private tasksLastWeek: ITask[] = []; // Tareas de la semana pasada (para comparaciones)
+  private i18n: I18n;
+  private plugin: Plugin;
+  private taskManager: TaskManager;
 
-  constructor(leaf: WorkspaceLeaf, private plugin: any, private i18n: I18n, private taskManager: TaskManager) {
+  constructor(leaf: WorkspaceLeaf, plugin: Plugin, i18n: I18n, taskManager: TaskManager) {
     super(leaf);
     this.i18n = i18n;
+    this.plugin = plugin;
+    this.taskManager = taskManager;
   }
 
   getViewType(): string {
@@ -269,11 +269,11 @@ export class OverviewView extends BaseView {
       : 100; // Si no hay tareas, consideramos el sistema como 100% saludable
   }
 
-  protected registerViewSpecificHelpers(i18n: any): void {
+  protected registerViewSpecificHelpers(_i18n: I18n): void {
     // Puedes añadir helpers específicos si es necesario
   }
 
-  protected setupViewSpecificEventListeners(container: HTMLElement, data: any): void {
+  protected setupViewSpecificEventListeners(container: HTMLElement, _data: OverviewViewData): void {
     this.addTaskItemClickListeners(container);
     this.setupWidgetFilterListeners(container);
   }
@@ -376,11 +376,11 @@ export class OverviewView extends BaseView {
    * Carga el estado guardado de los filtros
    */
   private loadWidgetFiltersState(checkboxes: NodeListOf<Element>): void {
-    const savedState = this.app.loadLocalStorage('obsidian-agenda-widget-filters');
+    const savedState = this.app.loadLocalStorage('obsidian-agenda-widget-filters') as string | null;
     if (!savedState) return;
     
     try {
-      const state = JSON.parse(savedState);
+      const state = JSON.parse(savedState) as Record<string, boolean>;
       checkboxes.forEach(checkbox => {
         const cb = checkbox as HTMLInputElement;
         const widgetClass = cb.dataset.widget;
@@ -521,9 +521,7 @@ export class OverviewView extends BaseView {
     return this.tasks
     .filter(task => {
       // Filtrar solo tareas no válidas que no estén completadas o canceladas
-      return !task.state.isValid && 
-             task.state.text !== 'Done' && 
-             task.state.text !== 'Cancelled';
+      return !task.state.isValid && task.state.text !== 'Done' && task.state.text !== 'Cancelled';
     })
     .map(task => {
       // Añadir información de error desde taskFields

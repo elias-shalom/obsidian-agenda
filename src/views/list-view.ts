@@ -1,9 +1,8 @@
-import { WorkspaceLeaf } from 'obsidian';
+import { WorkspaceLeaf, Plugin } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask } from '../types/interfaces';
+import { ITask, FolderNode, ListViewData } from '../types/interfaces';
 import { I18n } from '../core/i18n';
-import { FolderNode } from '../types/interfaces';
 import Handlebars from 'handlebars';
 
 export const LIST_VIEW_TYPE = 'list-view';
@@ -12,10 +11,9 @@ export class ListView extends BaseView {
   private tasks: ITask[] = []; // Lista de tareas
   private isHierarchicalView: boolean = true; // Modo predeterminado: jerárquico
 
-  constructor(leaf: WorkspaceLeaf, private plugin: any, private i18n: I18n, private taskManager: TaskManager) {
+  constructor(leaf: WorkspaceLeaf, private plugin: Plugin, private i18n: I18n,private taskManager: TaskManager) {
     // Constructor de la clase ListView
-    super(leaf);
-    this.i18n = i18n;
+    super(leaf); 
   }
 
   getViewType(): string {
@@ -35,7 +33,7 @@ export class ListView extends BaseView {
    */
   private toggleViewMode(): void {
     this.isHierarchicalView = !this.isHierarchicalView;
-    this.onOpen(); // Recargar la vista con el nuevo modo
+    this.onOpen().catch(console.error); // Recargar la vista con el nuevo modo
   }
 
   async onOpen(): Promise<void> {
@@ -56,7 +54,7 @@ export class ListView extends BaseView {
     }, this.i18n, this.plugin, this.leaf);
   }
 
-  protected registerViewSpecificHelpers(i18n: any): void {
+  protected registerViewSpecificHelpers(_i18n: I18n): void {
     // Helper para calcular el número total de tareas, incluyendo subcarpetas
     Handlebars.registerHelper("totalTaskCount", function(folder) {
       if (!folder) return 0;
@@ -76,11 +74,11 @@ export class ListView extends BaseView {
         return count;
       }
       
-      return countAllTasks(folder);
+      return countAllTasks(folder as FolderNode);
     });
 
     // Helper para recorrer recursivamente la estructura de carpetas
-    Handlebars.registerHelper("renderFolderHierarchy", function(folder, options) {
+    Handlebars.registerHelper("renderFolderHierarchy", function(folder: FolderNode, options: Handlebars.HelperOptions) {
       let output = '';
       if (!folder) return output;
       
@@ -105,7 +103,7 @@ export class ListView extends BaseView {
    * @param container Contenedor donde se aplican los listeners
    * @param data Datos utilizados para renderizar la vista
    */
-  protected setupViewSpecificEventListeners(container: HTMLElement, data: any): void {
+  protected setupViewSpecificEventListeners(container: HTMLElement, _data: ListViewData): void {
     // Implementar los listeners específicos de ListView
     const viewToggleButton = container.querySelector('.view-toggle-button');
     if (viewToggleButton) {
@@ -125,17 +123,17 @@ export class ListView extends BaseView {
       item.addClass('clickable');
 
       // Evento de doble clic para abrir el archivo
-      item.addEventListener('dblclick', (event) => {
+      item.addEventListener('dblclick', (_event) => {
         const filePath = item.getAttribute('data-file-path');
         const lineNumber = item.getAttribute('data-line-number');
 
         if (filePath) {
-          this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined);
+          this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined).catch(console.error);
         }
       });
 
       // Evento ADICIONAL para ListView - clic simple para seleccionar
-      item.addEventListener('click', (event) => {
+      item.addEventListener('click', (_event) => {
         // Remover selección previa
         container.querySelectorAll('.task-item.selected').forEach(el => {
           el.removeClass('selected');

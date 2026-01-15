@@ -50,54 +50,124 @@ Obsidian Agenda transforma tu bóveda en un potente sistema de productividad al 
 - ✅ Sincronización con las notas diarias nativas de Obsidian
 
 
-# Planificado para futuras versiones:
+# Planificado para futuras características de versiones
 
-01. Creación y edición de tareas nativas en las vistas de Agenda (abc tarea al calendario)
+## 🎯 Próximas Características (v1.x)
 
-02. Compatibilidad con la programación de tareas según la hora del día [vista por día (hora y dia completo)]
+### Core Tasks
+- [ ] Creación y edición de tareas nativas en las vistas de Agenda (abc tarea al calendario)
+- [ ] Compatibilidad con tareas recursivas/repetitivas (🔁) del pluiin tasks
+- [ ] Compatibilidad con la programación de tareas según la hora del día [vista por día (hora y día completo)]
+- [ ] Compatibilidad mejorada con el formato de vista de datos del plugin de Tareas (por ahora solo es compatible con el formato emoji)
+- [ ] Configuración de tareas por nota o multiples tareas por nota (reconocimiento)
 
-03. Compatibilidad con tareas recursivas/repetitivas (🔁)
+### Características Experimentales (Futuro)
+- [ ] Tareas seriadas
+- [ ] Grupos de tareas
+- [ ] Rutina diaria
 
-04. Implementación de estados personalizados (estados de las tareas personalizados acorde a tasks)
+### UX Improvements
+- [ ] Tool tips o help que diga como usar el plugin
+- [ ] Varias maneras de abrir el plugin
+- [ ] Más widgets en la vista del panel
+- [ ] Agregar atajo de ctrl + p
+- [ ] Configuración de sonidos de notificaciones
+- [ ] Configuración de las vistas que aparecen en el encabezado
+- [ ] Imagen de cargado
 
-05. Compatibilidad mejorada con el formato de vista de datos del plugin de Tareas (por ahora solo es compatible con el formato emoji)
+### Calendar Enhancements
+- [ ] Calendario Drag and drop de tareas cambiando las fechas
+- [ ] Calendario. Vista por año
+- [ ] Calendario. Secciones extra ![vista agenda ](attachments/extra-section.png)
 
-06. Funciones avanzadas de calendario con bloques de tiempo
+## 📊 Nuevas Vistas (v2.x)
 
-07. Compatibilidad con dispositivos móviles
+### Task Management Views
+- [ ] Habit tracker
+- [ ] Kanban view
+- [ ] To do view
+- [ ] Agenda view ![vista agenda ](attachments/agenda-view.png)
 
-08. Más widgets en la vista del panel
+### Timeline & Planning Views
+- [ ] List View. Vista de lista mejorada ![vista lista ](attachments/vista-lista.png)
+- [ ] Gantt view
+- [ ] Timeline view
 
-09. drag and drop de tareas en el calendario
+## 🔗 Integraciones y Características Avanzadas (v3.x)
 
-10. Habit tracker
+### External Integrations
+- [ ] Importar y exportar tareas de Google, Microsoft, etc
+- [ ] Compatibilidad con dispositivos móviles
 
-11. Kanban view
+### Advanced Features
+- [ ] Implementación de estados personalizados (estados de las tareas personalizados acorde a tasks)
+- [ ] Funciones avanzadas de calendario con bloques de tiempo
+- [ ] Manejar contexto o áreas
+- [ ] Carpeta de 'Archive' para las tareas archivadas
+- [ ] Notificaciones
+- [ ] Usar el frontmatter como base de datos
 
-12. Gantt view
-
-13. timeline veiw
-
-14. Tool tips o help que diga como usar el plug in
-
-15. Varias maneras de abrir el plug in
-
-16. Vista calendario por año 
-
-17. Vista de lista ![vista lista ](attachments/vista-lista.png)
-
-18. Manejar contexto o areas
-
-19. To do view
-
-20. Agenda view ![vista agenda ](attachments/agenda-view.png)
-
-21. Secciones extra en calendario ![vista agenda ](attachments/extra-section.png)
-
-22. Importar y exportar tareas de google, microsoft, etc
-
-23. Tareas seriadas
 
 # Fixes
 
-- ancho de las filas de la tabla en la vista tablas
+## 🐛 Correcciones Pendientes
+- [ ] Ancho de las filas de la tabla en la vista tablas
+
+# Características Adicionales Sugeridas
+
+## 📅 **Gestión de Tiempo Avanzada (v1.x - v2.x)**
+- [ ] Bloques de tiempo / Time blocking
+- [ ] Temporizador Pomodoro integrado
+- [ ] Estimación de duración de tareas
+- [ ] Seguimiento de tiempo real gastado vs estimado
+- [ ] Tiempo de buffer automático entre tareas
+
+## 🎯 **Productividad y Enfoque (v2.x)**
+- [ ] Seguimiento de niveles de energía (alta/media/baja energía)
+- [ ] Contextos de trabajo (@casa, @oficina, @llamadas)
+- [ ] Procesamiento por lotes de tareas similares
+- [ ] Programación de bloques de trabajo profundo
+- [ ] Períodos de bloqueo de distracciones
+
+## 🔄 **Revisión y Reflexión (v2.x - v3.x)**
+- [ ] Plantillas de revisión diaria/semanal/mensual
+- [ ] Analíticas de progreso y métricas
+- [ ] Retrospectivas automáticas
+- [ ] Seguimiento de objetivos y OKRs
+- [ ] Visualización de rachas de hábitos
+
+## 🤝 **Colaboración y Equipos (v3.x)**
+- [ ] Calendarios/agendas compartidas
+- [ ] Delegación de tareas
+- [ ] Seguimiento de disponibilidad del equipo
+- [ ] Integración de programación de reuniones
+
+## 🔔 **Notificaciones Inteligentes (v2.x)**
+- [ ] Notificaciones basadas en ubicación
+- [ ] Recordatorios inteligentes según patrones
+- [ ] Alertas de conflictos de horario
+- [ ] Preparación de tareas (recordar materiales)
+
+## 🤖 **IA y Automatización (v3.x)**
+- [ ] Priorización de tareas con IA
+- [ ] Programación automática inteligente
+- [ ] Reconocimiento de patrones en productividad
+- [ ] Auto-categorización de tareas
+- [ ] Duración predictiva de tareas
+
+## ⚡ **Mejoras UX Expandidas**
+- [ ] Tutorial de incorporación interactivo
+- [ ] Plantillas de configuración rápida
+- [ ] Atajos personalizables
+- [ ] Temas específicos para planificación
+- [ ] Captura rápida desde cualquier vista
+- [ ] Búsqueda semántica de tareas
+
+## 📈 **Mejoras de Calendario Robustas**
+- [ ] Soporte para múltiples calendarios
+- [ ] Integración del clima para planificación
+- [ ] Cálculo de tiempo de viaje
+- [ ] Sugerencias automáticas de programación
+- [ ] Resolución automática de conflictos
+- [ ] Mapas de calor del calendario
+

@@ -1,4 +1,4 @@
-import { WorkspaceLeaf } from "obsidian";
+import { WorkspaceLeaf, Plugin} from "obsidian";
 import { CalendarView } from "./calendar-view";
 import { TaskManager } from "../core/task-manager";
 import { ITask } from '../types/interfaces';
@@ -6,13 +6,13 @@ import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import { CalendarViewType } from "../types/enums";
 
+import { MonthViewData } from '../types/interfaces';
 export const CALENDAR_MONTH_VIEW_TYPE = "calendar-month-view";
 
 export class CalendarMonthView extends CalendarView {
 
-  constructor(leaf: WorkspaceLeaf, plugin: any, i18n: I18n, taskManager: TaskManager) {
+  constructor(leaf: WorkspaceLeaf, plugin: Plugin, i18n: I18n, taskManager: TaskManager) {
     super(leaf, plugin, i18n, taskManager);
-
   }
 
   getViewType(): string {
@@ -27,10 +27,10 @@ export class CalendarMonthView extends CalendarView {
     return 'calendar-check';
   }
 
- /**
+  /**
    * Genera datos para la vista mensual del calendario
    */
-  protected generateViewData(): any {
+  protected generateViewData(): MonthViewData {
     const startOfMonth = this.currentDate.startOf('month');
     const endOfMonth = this.currentDate.endOf('month');
     
@@ -101,12 +101,12 @@ export class CalendarMonthView extends CalendarView {
 
   protected navigateToPrevious(): void {
     this.currentDate = this.currentDate.minus({ months: 1 });
-    this.refreshView();
+    this.refreshView().catch(console.error);
   }
 
   protected navigateToNext(): void {
     this.currentDate = this.currentDate.plus({ months: 1 });
-    this.refreshView();
+    this.refreshView().catch(console.error);
   }
 
   async onClose(): Promise<void> {

@@ -35,7 +35,7 @@ export class TaskManager {
   * Configura los escuchadores de eventos usando registerEvent
   * para una limpieza automática cuando el plugin se descarga
   */
-  public registerEvents(plugin: Plugin): void {
+  public registerEvents(_plugin: Plugin): void {
     // Escuchar modificaciones de archivos Markdown
     //console.log("Escuchando eventos de modificación de archivos Markdown");
     const event = this.plugin.registerEvent(

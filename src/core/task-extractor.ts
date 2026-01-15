@@ -115,7 +115,7 @@ export class TaskExtractor {
 
       // Crear la nueva estructura optimizada
       return Task.create({
-        id: taskSection.taskData.id || `${file.path}-${lineNumber + 1}`,
+        id: (typeof taskSection.taskData.id === 'string' ? taskSection.taskData.id : null) || `${file.path}-${lineNumber + 1}`,
         
         file: {
           path: file.path,
@@ -134,17 +134,17 @@ export class TaskExtractor {
           status: status,
           icon: statusIcon,
           text: statusText,
-          priority: taskSection.taskData.priority || "undefined",
-          isValid: taskSection.taskData.isValid || false
+          priority: taskSection.extractPriority(taskSection.taskData.priority),
+          isValid: taskSection.extractIsValid(taskSection.taskData.isValid)
         },
         
         date: {
-          due: taskSection.taskData.dueDate || null,
-          start: taskSection.taskData.startDate || null,
-          scheduled: taskSection.taskData.scheduledDate || null,
-          created: taskSection.taskData.createdDate || null,
-          done: taskSection.taskData.doneDate || null,
-          cancelled: taskSection.taskData.cancelledDate || null
+          due: taskSection.extractDate(taskSection.taskData.dueDate),
+          start: taskSection.extractDate(taskSection.taskData.startDate),
+          scheduled: taskSection.extractDate(taskSection.taskData.scheduledDate),
+          created: taskSection.extractDate(taskSection.taskData.createdDate),
+          done: taskSection.extractDate(taskSection.taskData.doneDate),
+          cancelled: taskSection.extractDate(taskSection.taskData.cancelledDate)
         },
         
         section: {
@@ -155,10 +155,10 @@ export class TaskExtractor {
         },
         
         flow: {
-          recur: taskSection.taskData.recurrence || "",
+          recur: taskSection.extractString(taskSection.taskData.recurrence),
           blockLink: taskSection.blockLink,
-          deps: taskSection.taskData.dependsOn || [],
-          onCompletion: taskSection.taskData.onCompletion || null
+          deps: taskSection.extractDependencies(taskSection.taskData.dependsOn),
+          onCompletion: taskSection.extractOnCompletion(taskSection.taskData.onCompletion)
         }
       });
 

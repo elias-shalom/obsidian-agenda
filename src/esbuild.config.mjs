@@ -1,11 +1,11 @@
 import esbuild from "esbuild";
 import process from "process";
-import builtins from "builtin-modules";
+import { builtinModules } from "node:module"; 
 import copy from "esbuild-plugin-copy";
 import { sassPlugin } from 'esbuild-sass-plugin';
-import handlebars from 'handlebars';
-import fs from 'fs/promises';
-import path from 'path';
+//import handlebars from 'handlebars';
+//import fs from 'fs/promises';
+//import path from 'path';
 import { readFileSync } from "fs";
 
 const handlebarsPlugin = {
@@ -32,6 +32,22 @@ const prod = (process.argv[2] === "production");
 
 const outputDir = "dist"; // Cambiado de outfile a outdir
 
+const obsidianExternals = [
+  "obsidian",
+  "electron",
+  "@codemirror/autocomplete",
+  "@codemirror/collab",
+  "@codemirror/commands",
+  "@codemirror/language",
+  "@codemirror/lint",
+  "@codemirror/search",
+  "@codemirror/state",
+  "@codemirror/view",
+  "@lezer/common",
+  "@lezer/highlight",
+  "@lezer/lr"
+];
+
 const context = await esbuild.context({
 	banner: {
 		js: banner,
@@ -39,20 +55,8 @@ const context = await esbuild.context({
 	entryPoints: ["src/main.ts", "src/styles/styles.scss"], // Incluye tu archivo SCSS como entrada
 	bundle: true,
 	external: [
-		"obsidian",
-		"electron",
-		"@codemirror/autocomplete",
-		"@codemirror/collab",
-		"@codemirror/commands",
-		"@codemirror/language",
-		"@codemirror/lint",
-		"@codemirror/search",
-		"@codemirror/state",
-		"@codemirror/view",
-		"@lezer/common",
-		"@lezer/highlight",
-		"@lezer/lr",
-		...builtins],
+		...obsidianExternals,
+    ...builtinModules ],
 	format: "cjs",
 	target: "es2020", // Ajusta según tus necesidades
 	logLevel: "info",

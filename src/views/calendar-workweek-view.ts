@@ -1,7 +1,7 @@
 import { WorkspaceLeaf, Plugin } from "obsidian";
 import { CalendarView } from "./calendar-view";
 import { TaskManager } from "../core/task-manager";
-import { ITask, WeekDayData, WeekViewData } from '../types/interfaces';
+import { WeekDayData, WeekViewData, CalendarViewData } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import { CalendarViewType } from "../types/enums";
@@ -83,12 +83,12 @@ export class CalendarWorkWeekView extends CalendarView {
 
   protected navigateToPrevious(): void {
     this.currentDate = this.currentDate.minus({ weeks: 1 });
-    void this.refreshView();
+    this.refreshView().catch(console.error);
   }
 
   protected navigateToNext(): void {
     this.currentDate = this.currentDate.plus({ weeks: 1 });
-    void this.refreshView();
+    this.refreshView().catch(console.error);
   }
 
     /**
@@ -96,7 +96,7 @@ export class CalendarWorkWeekView extends CalendarView {
    * @param container Contenedor donde se aplican los listeners
    * @param data Datos utilizados para renderizar la vista
    */
-  protected setupViewSpecificEventListeners(container: HTMLElement, data: WeekViewData): void {
+  protected setupViewSpecificEventListeners(container: HTMLElement, data: CalendarViewData): void {
     // Primero ejecuta los event listeners comunes
     super.setupViewSpecificEventListeners(container, data);
     
@@ -126,8 +126,8 @@ export class CalendarWorkWeekView extends CalendarView {
       });
       
       // Restaurar preferencia guardada al cargar la vista
-      const savedStyle = this.app.loadLocalStorage('calendar-workweek-grid-style');
-      if (savedStyle) {
+      const savedStyle = this.app.loadLocalStorage('calendar-workweek-grid-style') as string | null;
+      if (savedStyle && typeof savedStyle === 'string') {
         gridStyleSelector.value = savedStyle;
         
         // Disparar el evento change manualmente para aplicar el estilo
@@ -157,7 +157,7 @@ export class CalendarWorkWeekView extends CalendarView {
         
         if (filePath) {
           // Abrir el archivo en la línea donde está la tarea
-          this.plugin.app.workspace.openLinkText(filePath, '', false, { line: lineNumber });
+          this.plugin.app.workspace.openLinkText(filePath, '', false, { eState: { line: lineNumber } }).catch(console.error);
         }
       });
     });

@@ -1,6 +1,13 @@
 // This file exports interfaces and types used throughout the project.
 import { DateTime } from 'luxon';
 import { CalendarViewType } from './enums';
+import { Plugin, WorkspaceLeaf } from 'obsidian';
+
+export interface AgendaPlugin extends Plugin {
+  viewManager: {
+    activateView: (viewType: string, leaf: WorkspaceLeaf) => void;
+  };
+}
 
 /**
  * Datos de un día específico en la vista semanal
@@ -308,3 +315,116 @@ export interface MiniCalendarDay {
   isSelected: boolean;
   hasTasks?: boolean;
 }
+
+/**
+ * Datos para la vista de tabla
+ */
+export interface TableViewData {
+  tasks: ITask[];
+  uniqueFolders: string[];
+}
+
+/**
+ * Interfaz extendida para tareas con edad calculada
+ */
+export interface ITaskWithAge extends ITask {
+  daysOld: number;
+}
+
+/**
+ * Datos para la vista de resumen (overview)
+ */
+export interface OverviewViewData {
+  tasks: ITask[];
+  totalTasks: number;
+  completedTasks: number;
+  pendingTasks: number;
+  inProgressTasks: number;
+  productivity: number;
+  highPriorityTasks: number;
+  totalEstimatedTime: string;
+  noDateTasks: number;
+  completedThisWeek: number;
+  completionTrend: string;
+  completionRatio: string;
+  consistency: number;
+  systemHealth: number;
+  todayTasks: ITask[];
+  overdueTasks: ITask[];
+  upcomingTasks: ITask[];
+  invalidTasks: ITask[];
+  oldestTasks: ITaskWithAge[];
+  projectTasks: { project: string; tasks: ITask[]; }[];
+}
+
+/**
+ * Datos para la vista de lista
+ */
+export interface ListViewData {
+  tasks: ITask[];
+  groupedTasks: Record<string, FolderNode>;
+  flattenedTasks: Record<string, FolderNode> | null;
+  isHierarchicalView: boolean;
+}
+
+/**
+ * Datos del mini calendario para la vista diaria
+ */
+export interface MiniCalendarData {
+  monthName: string;
+  weekdays: string[];
+  weeks: MiniCalendarDay[][];
+}
+
+/**
+ * Datos para la vista de calendario diario
+ */
+export interface DayViewData {
+  viewType: CalendarViewType;
+  date: DateTime;
+  weekday: number;
+  dayName: string;
+  isToday: boolean;
+  tasksForDay: ITask[];
+  hourSlots: HourSlot[];
+  periodName: string;
+  miniCalendar: MiniCalendarData;
+}
+
+export interface MonthViewData {
+  viewType: CalendarViewType;
+  weeks: {
+    days: {
+      date: DateTime;
+      isCurrentMonth: boolean;
+      isToday: boolean;
+      dayOfMonth: number;
+      tasksForDay: ITask[];
+    }[];
+    weekNumber: number;
+  }[];
+  monthName: string;
+  dayNames: string[];
+  periodName: string;
+}
+
+/**
+ * Tipo unión para todos los tipos de datos de vistas de calendario
+ * Esto permite que las clases derivadas usen tipos específicos mientras mantienen compatibilidad
+ */
+export type CalendarViewData = 
+  | WeekViewData
+  | DayViewData  
+  | MonthViewData;
+/**
+ * Tipo unión para todos los posibles datos que pueden pasar las vistas específicas
+ */
+export type ViewData = 
+  | OverviewViewData 
+  | TableViewData 
+  | ListViewData
+  | WeekViewData
+  | DayViewData
+  | CalendarViewData
+  | MonthViewData
+  | Record<string, unknown>; // Para casos no especificados

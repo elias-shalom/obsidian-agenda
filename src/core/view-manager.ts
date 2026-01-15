@@ -47,14 +47,15 @@ export class ViewManager {
       type: viewType,
       active: true,
     });
-    this.plugin.app.workspace.revealLeaf(leaf);
+    
+    this.plugin.app.workspace.revealLeaf(leaf).catch(console.error);
   }
 
   unregisterViews(): void {
     // Código para eliminar las vistas registradas
     // Por ejemplo:
-    this.registeredViewTypes.forEach(viewType => {
+    //this.registeredViewTypes.forEach(viewType => {
       //this.plugin.app.workspace.detachLeavesOfType(viewType);
-    });
+    //});
   }
 }

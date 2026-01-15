@@ -1,4 +1,4 @@
-import { App, Plugin } from "obsidian";
+import { App, Plugin, PluginManifest } from "obsidian";
 import { ViewManager } from "./core/view-manager";
 import { I18n } from "./core/i18n";
 //import logger from './core/logger';
@@ -13,7 +13,7 @@ export default class ObsidianAgenda extends Plugin {
   private taskManager: TaskManager; 
   
   /// Constructor de la clase ObsidianAgendaPlugin.
-  constructor(app: App, manifest: any) {
+  constructor(app: App, manifest: PluginManifest) {
       super(app, manifest);
       this.i18n = new I18n(app);
       this.taskManager = new TaskManager(app, this.i18n, this);
@@ -74,7 +74,7 @@ export default class ObsidianAgenda extends Plugin {
       }
       
       // Eliminar estilos aplicados
-      document.querySelectorAll('style[data-plugin="obsidian-agenda"]').forEach(element => {
+      this.app.workspace.containerEl.ownerDocument.querySelectorAll('style[data-plugin="obsidian-agenda"]').forEach(element => {
         element.remove();
       });
       

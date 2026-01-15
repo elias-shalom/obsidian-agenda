@@ -1,7 +1,7 @@
-import { WorkspaceLeaf } from "obsidian";
+import { WorkspaceLeaf, Plugin } from "obsidian";
 import { CalendarView } from "./calendar-view";
 import { TaskManager } from "../core/task-manager";
-import { HourSlot, MiniCalendarDay } from '../types/interfaces';
+import { HourSlot, MiniCalendarDay, DayViewData } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import { CalendarViewType } from "../types/enums";
@@ -12,7 +12,7 @@ export class CalendarDayView extends CalendarView {
   // Añadir una propiedad para rastrear el mes mostrado en el mini calendario
   private miniCalendarMonth: DateTime;
   
-  constructor(leaf: WorkspaceLeaf, plugin: any, i18n: I18n, taskManager: TaskManager) {
+  constructor(leaf: WorkspaceLeaf, plugin: Plugin, i18n: I18n, taskManager: TaskManager) {
     super(leaf, plugin, i18n, taskManager);
     // Inicializar el mes del mini calendario con la fecha actual
     this.miniCalendarMonth = this.currentDate;
@@ -33,7 +33,7 @@ export class CalendarDayView extends CalendarView {
   /**
    * Genera datos para la vista diaria del calendario
    */
-  protected generateViewData(): any {
+  protected generateViewData(): DayViewData {
     const dayTasks = this.getTasksForDate(this.currentDate);
 
     // Organizar tareas por hora (24 horas)
@@ -223,7 +223,7 @@ export class CalendarDayView extends CalendarView {
    */
   private navigateToPreviousMonth(): void {
     this.miniCalendarMonth = this.miniCalendarMonth.minus({ months: 1 });
-    this.refreshView();
+    this.refreshView().catch(console.error);
   }
 
   /**
@@ -231,45 +231,45 @@ export class CalendarDayView extends CalendarView {
    */
   private navigateToNextMonth(): void {
     this.miniCalendarMonth = this.miniCalendarMonth.plus({ months: 1 });
-    this.refreshView();
+    this.refreshView().catch(console.error);
   }
 
   protected navigateToPrevious(): void {
     this.currentDate = this.currentDate.minus({ days: 1 });
     this.miniCalendarMonth = this.currentDate; // Sincronizar el mes del mini calendario
-    this.refreshView();
+    this.refreshView().catch(console.error);
   }
 
   protected navigateToNext(): void {
     this.currentDate = this.currentDate.plus({ days: 1 });
     this.miniCalendarMonth = this.currentDate; // Sincronizar el mes del mini calendario
-    this.refreshView();
+    this.refreshView().catch(console.error);
   }
   
   protected navigateToToday(): void {
     this.currentDate = DateTime.now();
     this.miniCalendarMonth = this.currentDate; // Sincronizar el mes del mini calendario
-    this.refreshView();
+    this.refreshView().catch(console.error);
   }
 
   /**
    * Configura event listeners específicos para esta vista
    */
-  protected setupViewSpecificEventListeners(container: HTMLElement, data: any): void {
+  protected setupViewSpecificEventListeners(container: HTMLElement, data: DayViewData): void {
     // Ejecutar event listeners comunes primero
     super.setupViewSpecificEventListeners(container, data);
     
     // Añadir event listeners para los días del mini calendario
     const miniDays = container.querySelectorAll('.calendar-mini-day');
     miniDays.forEach(day => {
-      day.addEventListener('click', (e) => {
+      day.addEventListener('click', (_e) => {
         const dateStr = day.getAttribute('data-date');
         if (dateStr) {
           // Cambiar a la fecha seleccionada
           this.currentDate = DateTime.fromISO(dateStr);
           // Actualizar también el mes del mini calendario
           this.miniCalendarMonth = this.currentDate;
-          this.refreshView();
+          this.refreshView().catch(console.error);
         }
       });
     });

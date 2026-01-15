@@ -1,7 +1,7 @@
-import { WorkspaceLeaf } from 'obsidian';
+import { WorkspaceLeaf, Plugin } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask } from '../types/interfaces';
+import { ITask, CalendarViewData } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import Handlebars from 'handlebars';
@@ -13,12 +13,12 @@ export abstract class CalendarView extends BaseView {
   protected tasks: ITask[] = []; 
   protected currentDate: DateTime = DateTime.now();
 
-  constructor(leaf: WorkspaceLeaf, protected plugin: any, protected i18n: I18n, protected taskManager: TaskManager) {
+  constructor(leaf: WorkspaceLeaf, protected plugin: Plugin, protected i18n: I18n, protected taskManager: TaskManager) {
     super(leaf);
   }
 
   // Método que todas las vistas derivadas deben implementar
-  protected abstract generateViewData(): any;
+  protected abstract generateViewData(): CalendarViewData;
   
   // Método común para obtener el tipo de vista
   abstract getViewType(): string;
@@ -94,21 +94,24 @@ export abstract class CalendarView extends BaseView {
   // Método que todas las vistas utilizarán para ir a la fecha actual
   protected navigateToToday(): void {
     this.currentDate = DateTime.now();
-    this.refreshView();
+    this.refreshView().catch(console.error);
   }
 
   /**
    * Sobrescribe el método de BaseView para registrar helpers específicos de CalendarView
    * @param i18n Instancia de I18n para la internacionalización
    */
-  protected registerViewSpecificHelpers(i18n: any): void {
+  protected registerViewSpecificHelpers(_i18n: I18n): void {
     // Register calendar-specific helpers
     Handlebars.registerHelper('formatDateHeader', (date) => {
       if (!date) return '';
       if (typeof date === 'string') {
         return DateTime.fromISO(date).toFormat('ccc d');
       }
-      return date.toFormat('ccc d');
+      if (date instanceof DateTime) {
+        return date.toFormat('ccc d');
+      }
+      return '';
     });
 
     Handlebars.registerHelper('formatMonth', (date) => {
@@ -116,12 +119,17 @@ export abstract class CalendarView extends BaseView {
       if (typeof date === 'string') {
         return DateTime.fromISO(date).toFormat('MMMM yyyy');
       }
-      return date.toFormat('MMMM yyyy');
+      if (date instanceof DateTime) {
+        return date.toFormat('MMMM yyyy');
+      }
+      return '';
     });
     
     // Helper para formatear hora en 12H usando Luxon
     Handlebars.registerHelper('formatHour', (hour) => {
-      return DateTime.fromObject({ hour }).toFormat('h a');
+      const hourNum = typeof hour === 'number' ? hour : parseInt(hour as string, 10);
+      if (isNaN(hourNum)) return '';
+      return DateTime.fromObject({ hour: hourNum }).toFormat('h a');
     });
     
     // Helper para formatear fecha completa
@@ -130,11 +138,14 @@ export abstract class CalendarView extends BaseView {
       if (typeof date === 'string') {
         return DateTime.fromISO(date).toFormat('EEEE, MMMM d, yyyy');
       }
-      return date.toFormat('EEEE, MMMM d, yyyy');
+      if (date instanceof DateTime) {
+        return date.toFormat('EEEE, MMMM d, yyyy');
+      }
+      return '';
     });
     
     // Helper para comparar valores (útil para condiciones en plantillas)
-    Handlebars.registerHelper('equals', function(this: any, arg1: any, arg2: any, options: any) {
+    Handlebars.registerHelper('equals', function(this: unknown, arg1: unknown, arg2: unknown, options: Handlebars.HelperOptions) {
       return (arg1 === arg2) ? options.fn(this) : options.inverse(this);
     });
 
@@ -143,8 +154,13 @@ export abstract class CalendarView extends BaseView {
       if (typeof date === 'string') {
         return DateTime.fromISO(date).toISODate();
       }
+      if (date instanceof DateTime) {
+        return date.toISODate();
+      }
       try {
-        return typeof date.toISODate === 'function' ? date.toISODate() : '';
+        // Type assertion for objects that might have toISODate method
+        const dateObj = date as { toISODate?: () => string };
+        return typeof dateObj.toISODate === 'function' ? dateObj.toISODate() : '';
       } catch (error) {
         console.error(error);
         return '';
@@ -153,16 +169,22 @@ export abstract class CalendarView extends BaseView {
 
     Handlebars.registerHelper('getDayOfMonth', (date) => {
       if (!date) return '';
-      return date.day;
+      if (typeof date === 'string') {
+        return DateTime.fromISO(date).day;
+      }
+      if (date instanceof DateTime) {
+        return date.day;
+      }
+      return '';
     });
   }
 
   /**
    * Sobrescribe el método de BaseView para implementar event listeners específicos de CalendarView
    * @param container Contenedor donde se aplican los listeners
-   * @param data Datos utilizados para renderizar la vista
+   * @param _data Datos utilizados para renderizar la vista (no usado en la implementación base)
    */
-  protected setupViewSpecificEventListeners(container: HTMLElement, data: any): void {
+  protected setupViewSpecificEventListeners(container: HTMLElement, _data: CalendarViewData): void {
     // Add event listeners for navigation buttons
     const prevButton = container.querySelector('.calendar-prev');
     const nextButton = container.querySelector('.calendar-next');
@@ -206,7 +228,7 @@ export abstract class CalendarView extends BaseView {
         const lineNumber = target.getAttribute('data-line-number');
 
         if (filePath) {
-          this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined);
+          this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined).catch(console.error);
         }
       });
     });
@@ -258,9 +280,9 @@ export abstract class CalendarView extends BaseView {
 
     // Usar la factory para crear la vista correcta
     if (this.plugin && this.plugin.app) {
-      const leaf = this.plugin.app.workspace.activeLeaf;
+      const leaf = this.plugin.app.workspace.getActiveViewOfType(CalendarView)?.leaf;
       if (leaf) {
-        leaf.setViewState({ type: viewId });
+        leaf.setViewState({ type: viewId }).catch(console.error);
       }
     }
   }

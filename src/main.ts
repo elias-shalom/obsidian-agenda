@@ -73,11 +73,6 @@ export default class ObsidianAgenda extends Plugin {
         //logger.info('TaskManager limpiado correctamente');
       }
       
-      // Eliminar estilos aplicados
-      this.app.workspace.containerEl.ownerDocument.querySelectorAll('style[data-plugin="obsidian-agenda"]').forEach(element => {
-        element.remove();
-      });
-      
       // Limpiar cualquier tiempo/intervalo que pueda estar activo
       // Si tu plugin utiliza setInterval o setTimeout
       // clearInterval(this.someIntervalId);

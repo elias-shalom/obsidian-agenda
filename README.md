@@ -2,7 +2,7 @@
 
 A comprehensive task management and calendar plugin for Obsidian (https://obsidian.md).
 
-Obsidian Agenda transforms your vault into a powerful productivity system by providing intuitive task management interfaces and calendar views. Seamlessly integrate with your existing Obsidian notes while organizing tasks across multiple views.
+OBS Agenda transforms your vault into a powerful productivity system by providing intuitive task management interfaces and calendar views. Seamlessly integrate with your existing Obsidian notes while organizing tasks across multiple views.
 
 ## Features
 
@@ -111,7 +111,7 @@ For detailed usage instructions, please refer to the [Wiki](https://github.com/e
 
 ## Task Format and Compatibility
 
-Obsidian Agenda works with tasks created using the standard Obsidian checkbox format `- [ ]` and is fully compatible with the popular [Obsidian Tasks plugin](https://github.com/obsidian-tasks-group/obsidian-tasks). It recognizes and properly handles:
+OBS Agenda works with tasks created using the standard Obsidian checkbox format `- [ ]` and is fully compatible with the popular [Obsidian Tasks plugin](https://github.com/obsidian-tasks-group/obsidian-tasks). It recognizes and properly handles:
 
 - Due dates (📅)
 - Scheduled dates (⏳)
@@ -121,7 +121,7 @@ Obsidian Agenda works with tasks created using the standard Obsidian checkbox fo
 - Custom statuses (comming soon)
 - Task tags
 
-All metadata created with Obsidian Tasks will be properly recognized and displayed in Agenda views.
+All metadata created with Obsidian Tasks will be properly recognized and displayed in OBS Agenda views.
 
 ## Configuration
 

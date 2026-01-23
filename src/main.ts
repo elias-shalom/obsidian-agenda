@@ -22,7 +22,7 @@ export default class ObsidianAgenda extends Plugin {
 
   /// Método de inicializa del plugin.
   async onload(): Promise<void> {
-    console.debug("Cargando el plugin Obsidian Agenda...");
+    console.debug("Cargando el plugin OBS Agenda...");
     const OVERVIEW_VIEW_TYPE = 'overview-view';
 
     try {
@@ -58,7 +58,7 @@ export default class ObsidianAgenda extends Plugin {
   }*/
 
   onunload() {
-    console.debug('Descargando plugin Obsidian Agenda');
+    console.debug('Descargando plugin OBS Agenda');
 
     try {
       // Desregistrar vistas

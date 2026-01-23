@@ -89,7 +89,7 @@ export class TasksFile implements IFile<TFile> {
 
   async renameAsync(newPath: string): Promise<void> {
     await this.createHierachy(newPath);
-    await this.app.vault.rename(this.file, newPath);
+    await this.app.fileManager.renameFile(this.file, newPath);
   }
 
   isInFolder(folder: string): boolean {

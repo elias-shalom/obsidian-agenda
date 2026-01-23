@@ -9,30 +9,23 @@ import { OverviewView, OVERVIEW_VIEW_TYPE, CalendarMonthView, CALENDAR_MONTH_VIE
   TableView, TABLE_VIEW_TYPE } from "../views";
 
 export class ViewManager {
-  private registeredViewTypes: string[] = [];
 
   constructor(private plugin: Plugin, private i18n: I18n, private taskManager: TaskManager) {  }
 
   // Método para registrar todas las vistas
   public registerViews(): void {
     this.plugin.registerView(OVERVIEW_VIEW_TYPE, (leaf: WorkspaceLeaf) => new OverviewView(leaf, this.plugin, this.i18n, this.taskManager));
-    this.registeredViewTypes.push(OVERVIEW_VIEW_TYPE);
-    this.plugin.registerView(CALENDAR_MONTH_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarMonthView(leaf, this.plugin, this.i18n, this.taskManager));
-    this.registeredViewTypes.push(CALENDAR_MONTH_VIEW_TYPE);
+        this.plugin.registerView(CALENDAR_MONTH_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarMonthView(leaf, this.plugin, this.i18n, this.taskManager));
     this.plugin.registerView(CALENDAR_WEEK_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarWeekView(leaf, this.plugin, this.i18n, this.taskManager));
-    this.registeredViewTypes.push(CALENDAR_WEEK_VIEW_TYPE);
     this.plugin.registerView(CALENDAR_WORK_WEEK_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarWorkWeekView(leaf, this.plugin, this.i18n, this.taskManager));
-    this.registeredViewTypes.push(CALENDAR_WORK_WEEK_VIEW_TYPE);
     this.plugin.registerView(CALENDAR_DAY_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarDayView(leaf, this.plugin, this.i18n, this.taskManager));
-    this.registeredViewTypes.push(CALENDAR_DAY_VIEW_TYPE);
     this.plugin.registerView(LIST_VIEW_TYPE, (leaf: WorkspaceLeaf) => new ListView(leaf, this.plugin, this.i18n, this.taskManager));
-    this.registeredViewTypes.push(LIST_VIEW_TYPE);
     this.plugin.registerView(TABLE_VIEW_TYPE, (leaf: WorkspaceLeaf) => new TableView(leaf, this.plugin, this.i18n, this.taskManager));
-    this.registeredViewTypes.push(TABLE_VIEW_TYPE);
+
     //this.plugin.registerView(TIMELINE_VIEW_TYPE, (leaf: WorkspaceLeaf) => new TimelineView(leaf, this.plugin, this.i18n));
-    //this.registeredViewTypes.push(TIMELINE_VIEW_TYPE);
+
    //this.plugin.registerView(GANTT_VIEW_TYPE, (leaf: WorkspaceLeaf) => new GanttView(leaf, this.plugin, this.i18n));
-    //this.registeredViewTypes.push(GANTT_VIEW_TYPE);
+
   }
 
   // Método para activar una vista específica

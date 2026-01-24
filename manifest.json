@@ -1,11 +1,10 @@
 {
-	"id": "agenda-tasks",
-	"name": "Agenda Tasks",
+	"id": "obs-agenda",
+	"name": "OBS Agenda",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Agenda provide intuitive task management interfaces and calendar views. Seamlessly integrate with your existing notes while organizing tasks across multiple views.",
 	"author": "elias-shalom",
 	"authorUrl": "https://github.com/elias-shalom/",
-	"fundingUrl": "",
 	"isDesktopOnly": false
 }

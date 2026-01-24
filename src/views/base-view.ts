@@ -247,13 +247,13 @@ export abstract class BaseView extends ItemView {
         const tabId = tab.getAttribute("id");
         
         // Verificar coincidencia exacta o si es una vista de calendario
-        const isCalendarView = activeViewType.startsWith("calendar-") && tabId === "calendar-view-tab";
+        const isCalendarView = activeViewType.startsWith("calendar-") && tabId === "oa-calendar-view-tab";
         const isExactMatch = tabId === `${activeViewType}-tab`;
         
         if (isExactMatch || isCalendarView) {
-          tab.classList.add("active");
+          tab.classList.add("oa-active");
         } else {
-          tab.classList.remove("active");
+          tab.classList.remove("oa-active");
         }
       });
 
@@ -262,13 +262,13 @@ export abstract class BaseView extends ItemView {
       tabContainers.forEach((buttonContainer) => {
         const divId = buttonContainer.getAttribute("id");
         
-        const isCalendarContainer = activeViewType.startsWith("calendar-") && divId === "calendar-view-container";
+        const isCalendarContainer = activeViewType.startsWith("calendar-") && divId === "oa-calendar-view-container";
         const isExactMatch = divId === `${activeViewType}-container`;
         
         if (isExactMatch || isCalendarContainer) {
-          buttonContainer.classList.add("active");
+          buttonContainer.classList.add("oa-active");
         } else {
-          buttonContainer.classList.remove("active");
+          buttonContainer.classList.remove("oa-active");
         }
       });
 
@@ -321,12 +321,12 @@ export abstract class BaseView extends ItemView {
   
     const activeViewType = this.getViewType(); // Obtiene el tipo de vista actual
     const tabs = [
-      { id: "overview-view-tab", view: "overview-view" },
-      { id: "list-view-tab", view: "list-view" },
-      { id: "table-view-tab", view: "table-view" },
-      { id: "calendar-view-tab", view: "calendar-month-view" },
-      { id: "timeline-view-tab", view: "timeline-view" },
-      { id: "gantt-view-tab", view: "gantt-view" },
+      { id: "oa-overview-view-tab", view: "overview-view" },
+      { id: "oa-list-view-tab", view: "list-view" },
+      { id: "oa-table-view-tab", view: "table-view" },
+      { id: "oa-calendar-view-tab", view: "calendar-month-view" },
+      { id: "oa-timeline-view-tab", view: "timeline-view" },
+      { id: "oa-gantt-view-tab", view: "gantt-view" },
     ];
   
     tabs.forEach((tab) => {
@@ -344,18 +344,18 @@ export abstract class BaseView extends ItemView {
 
   // Añadir método para manejar eventos de los grupos de carpetas
   protected addFolderToggleListeners(container: HTMLElement): void {
-    const folderHeaders = container.querySelectorAll('.folder-name');
+    const folderHeaders = container.querySelectorAll('.oa-folder-name');
 
     folderHeaders.forEach(header => {
       header.addEventListener('click', () => {
-        const folderGroup = header.closest('.folder-group');
-        folderGroup?.classList.toggle('collapsed');
+        const folderGroup = header.closest('.oa-folder-group');
+        folderGroup?.classList.toggle('oa-collapsed');
 
         // Guardar estado de plegado usando métodos de Obsidian
         if (folderGroup) {
           const folderPath = folderGroup.getAttribute('data-folder-path');
           if (folderPath) {
-            const isCollapsed = folderGroup.classList.contains('collapsed');
+            const isCollapsed = folderGroup.classList.contains('oa-collapsed');
             this.app.saveLocalStorage(`folder_${folderPath}_collapsed`, isCollapsed.toString());
           }
         }
@@ -363,13 +363,13 @@ export abstract class BaseView extends ItemView {
     });
 
     // Restaurar estado de plegado usando métodos de Obsidian
-    const folderGroups = container.querySelectorAll('.folder-group');
+    const folderGroups = container.querySelectorAll('.oa-folder-group');
     folderGroups.forEach(group => {
       const folderPath = group.getAttribute('data-folder-path');
       if (folderPath) {
         const isCollapsed = this.app.loadLocalStorage(`folder_${folderPath}_collapsed`) === 'true';
         if (isCollapsed) {
-          group.classList.add('collapsed');
+          group.classList.add('oa-collapsed');
         }
       }
     });
@@ -377,7 +377,7 @@ export abstract class BaseView extends ItemView {
 
   // Añadir método para manejar eventos de doble clic en los elementos de tarea
   protected addTaskItemClickListeners(container: HTMLElement): void {
-    const taskItems = container.querySelectorAll('.task-item');
+    const taskItems = container.querySelectorAll('.oa-task-item');
     
     taskItems.forEach(item => {
       // Agregar cursor pointer para indicar que es clickeable

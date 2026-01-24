@@ -186,9 +186,9 @@ export abstract class CalendarView extends BaseView {
    */
   protected setupViewSpecificEventListeners(container: HTMLElement, _data: CalendarViewData): void {
     // Add event listeners for navigation buttons
-    const prevButton = container.querySelector('.calendar-prev');
-    const nextButton = container.querySelector('.calendar-next');
-    const todayButton = container.querySelector('.calendar-today');
+    const prevButton = container.querySelector('.oa-calendar-prev');
+    const nextButton = container.querySelector('.oa-calendar-next');
+    const todayButton = container.querySelector('.oa-calendar-today');
 
     if (prevButton) {
       prevButton.addEventListener('click', () => {
@@ -206,7 +206,7 @@ export abstract class CalendarView extends BaseView {
       todayButton.addEventListener('click', () => this.navigateToToday());
     }
 
-    const viewDropdown = container.querySelector('#calendar-view-dropdown') as HTMLSelectElement;
+    const viewDropdown = container.querySelector('#oa-calendar-view-dropdown') as HTMLSelectElement;
 
     if (viewDropdown) {
       // Establecer el valor actual basado en la vista actual
@@ -220,7 +220,7 @@ export abstract class CalendarView extends BaseView {
     }
 
   // Event listeners para tareas
-    const taskItems = container.querySelectorAll('.calendar-task');
+    const taskItems = container.querySelectorAll('.oa-calendar-task');
     taskItems.forEach(item => {
       item.addEventListener('click', (e) => {
         const target = e.currentTarget as HTMLElement;

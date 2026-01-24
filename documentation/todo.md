@@ -1,15 +1,15 @@
-Desarrollo Agenda Obsidian
+Desarrollo OBS Agenda for Obsidian
 
 # OBS Agenda Plugin
 
 Un complemento integral de gestión de tareas y calendario para Obsidian (https://obsidian.md).
 
-Obsidian Agenda transforma tu bóveda en un potente sistema de productividad al ofrecer interfaces intuitivas de gestión de tareas y vistas de calendario. Se integra a la perfección con tus notas de Obsidian y organiza las tareas en múltiples vistas.
+OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrecer interfaces intuitivas de gestión de tareas y vistas de calendario. Se integra a la perfección con tus notas de Obsidian y organiza las tareas en múltiples vistas.
 
 ## Características
 
 ### Características generales
-- ✅ Analiza y monitoriza tareas de todo tu almacén
+- ✅ Analiza y monitoriza tareas de todo tu vault
 - ✅ Compatible con la sintaxis y los metadatos de [Obsidian Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks)
 - ✅ Múltiples tipos de vista para gestionar tareas según tu flujo de trabajo
 - ✅ Actualizaciones de tareas en tiempo real
@@ -55,7 +55,7 @@ Obsidian Agenda transforma tu bóveda en un potente sistema de productividad al 
 ## 🎯 Próximas Características (v1.x)
 
 ### Core Tasks
-- [ ] Creación y edición de tareas nativas en las vistas de Agenda (abc tarea al calendario)
+- [ ] Creación y edición de tareas nativas en las vistas de OBS Agenda (abc tarea al calendario)
 - [ ] Compatibilidad con tareas recursivas/repetitivas (🔁) del pluiin tasks
 - [ ] Compatibilidad con la programación de tareas según la hora del día [vista por día (hora y día completo)]
 - [ ] Compatibilidad mejorada con el formato de vista de datos del plugin de Tareas (por ahora solo es compatible con el formato emoji)

@@ -95,13 +95,13 @@ export class CalendarWeekView extends CalendarView {
     super.setupViewSpecificEventListeners(container, data);
     
     // Añadir manejo del selector de estilo de cuadrícula
-    const gridStyleSelector = container.querySelector('#calendar-grid-style') as HTMLSelectElement;
+    const gridStyleSelector = container.querySelector('#oa-calendar-grid-style') as HTMLSelectElement;
     
     if (gridStyleSelector) {
       // Manejar cambios en el selector
       gridStyleSelector.addEventListener('change', () => {
         const selectedStyle = gridStyleSelector.value;
-        const weekDaysRow = container.querySelector('.calendar-week-days-row');
+        const weekDaysRow = container.querySelector('.oa-calendar-week-days-row');
         
         if (weekDaysRow) {
           // Eliminar clases de estilo anteriores

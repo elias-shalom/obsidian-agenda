@@ -1,5 +1,6 @@
 import AgendaPlugin from '../main';
-import { App, PluginSettingTab, Setting } from 'obsidian';
+//import { App, PluginSettingTab, Setting } from 'obsidian';
+import { App, PluginSettingTab } from 'obsidian';
 import { I18n } from "../core/i18n";
 
 export class SettingTab extends PluginSettingTab {
@@ -16,7 +17,7 @@ export class SettingTab extends PluginSettingTab {
 
     containerEl.empty();
 
-    new Setting(containerEl).setName(this.i18n.t("general_settings")).setHeading();
+    //new Setting(containerEl).setName(this.i18n.t("general_settings")).setHeading();
 
     /*new Setting(containerEl)
       .setName(this.i18n.t('language'))

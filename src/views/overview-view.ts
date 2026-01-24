@@ -283,12 +283,12 @@ export class OverviewView extends BaseView {
  */
   private setupWidgetFilterListeners(container: HTMLElement): void {
     // Botón para mostrar/ocultar el panel de filtros
-    const filterButton = container.querySelector('#widgets-filter-button');
-    const filterPanel = container.querySelector('#widgets-filter-panel');
-    const closeFilterButton = container.querySelector('#close-filter-panel');
-    const applyButton = container.querySelector('#apply-widget-filters');
-    const resetButton = container.querySelector('#reset-widget-filters');
-    const checkboxes = container.querySelectorAll('.widget-checkboxes input[type="checkbox"]');
+    const filterButton = container.querySelector('#oa-widgets-filter-button');
+    const filterPanel = container.querySelector('#oa-widgets-filter-panel');
+    const closeFilterButton = container.querySelector('#oa-close-filter-panel');
+    const applyButton = container.querySelector('#oa-apply-widget-filters');
+    const resetButton = container.querySelector('#oa-reset-widget-filters');
+    const checkboxes = container.querySelectorAll('.oa-widget-checkboxes input[type="checkbox"]');
     
     if (!filterButton || !filterPanel || !closeFilterButton || !applyButton || !resetButton) return;
 
@@ -300,19 +300,19 @@ export class OverviewView extends BaseView {
 
     // Mostrar/ocultar panel de filtros
     filterButton.addEventListener('click', () => {
-      filterPanel.classList.toggle('hidden');
+      filterPanel.classList.toggle('oa-hidden');
     });
 
     // Cerrar panel
     closeFilterButton.addEventListener('click', () => {
-      filterPanel.classList.add('hidden');
+      filterPanel.classList.add('oa-hidden');
     });
 
     // Aplicar filtros
     applyButton.addEventListener('click', () => {
       this.applyWidgetFilters(container, checkboxes);
       this.saveWidgetFiltersState(checkboxes);
-      filterPanel.classList.add('hidden');
+      filterPanel.classList.add('oa-hidden');
     });
 
     // Restablecer filtros
@@ -346,9 +346,9 @@ export class OverviewView extends BaseView {
         widgets.forEach(widget => {
           //console.log(`Aplicando ${cb.checked ? 'mostrar' : 'ocultar'} a widget: ${widgetType}`);
           if (cb.checked) {
-            widget.classList.remove('hidden');
+            widget.classList.remove('oa-hidden');
           } else {
-            widget.classList.add('hidden');
+            widget.classList.add('oa-hidden');
           }
         });
       }

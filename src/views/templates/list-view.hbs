@@ -1,5 +1,5 @@
-<div class="view-controls">
-  <button class="view-toggle-button clickable">
+<div class="oa-view-controls">
+  <button class="oa-view-toggle-button clickable">
     {{#if isHierarchicalView}}
       {{t "show_flat_view"}}
     {{else}}
@@ -12,31 +12,31 @@
   {{#if isHierarchicalView}}
     {{!-- Vista jerárquica (existente) --}}
     {{#each groupedTasks as |folder folderName|}}
-      <div class="folder-structure">
+      <div class="oa-folder-structure">
         {{> folderTemplate folder level=0}}
       </div>
     {{/each}}
   {{else}}
     {{!-- Vista plana (nueva) --}}
     {{#each flattenedTasks as |folder folderName|}}
-      <div class="folder-structure">
-        <div class="folder-group" data-folder="{{folderName}}" data-folder-path="{{folderName}}">
-          <h3 class="folder-name">
-            <span class="folder-toggle">⯆</span>
-            <span class="folder-title">{{folderName}}</span>
-            <span class="task-count">({{folder.tasks.length}})</span>
+      <div class="oa-folder-structure">
+        <div class="oa-folder-group" data-folder="{{folderName}}" data-folder-path="{{folderName}}">
+          <h3 class="oa-folder-name">
+            <span class="oa-folder-toggle">⯆</span>
+            <span class="oa-folder-title">{{folderName}}</span>
+            <span class="oa-task-count">({{folder.tasks.length}})</span>
           </h3>
-          <ul class="folder-tasks">
+          <ul class="oa-folder-tasks">
             {{#each folder.tasks}}
-              <li class="task-item" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
-                <div class="task-priority">{{priorityIcon this.state.priority}}</div>
-                <div class="task-content">
-                  <div class="task-description">{{this.section.desc}}</div>
-                  <div class="task-metadata">
+              <li class="oa-task-item" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
+                <div class="oa-task-priority">{{priorityIcon this.state.priority}}</div>
+                <div class="oa-task-content">
+                  <div class="oa-task-description">{{this.section.desc}}</div>
+                  <div class="oa-task-metadata">
                     {{#if this.date.due}}
-                      <span class="task-due-date">📅 {{formatDate this.date.due}}</span>
+                      <span class="oa-task-due-date">📅 {{formatDate this.date.due}}</span>
                     {{/if}}
-                    <span class="task-path">📄 {{this.file.path}}</span>
+                    <span class="oa-task-path">📄 {{this.file.path}}</span>
                   </div>
                 </div>
               </li>
@@ -52,23 +52,23 @@
 
 {{!-- Mantener el helper inline para la vista jerárquica --}}
 {{#*inline "folderTemplate"}}
-  <div class="folder-group" data-folder="{{name}}" data-folder-path="{{fullPath}}">
-    <h3 class="folder-name" style="padding-left: {{multiply level 15}}px;">
-      <span class="folder-toggle">⯆</span>
-      <span class="folder-title">{{name}}</span>
-      <span class="task-count">({{totalTaskCount this}})</span>
+  <div class="oa-folder-group" data-folder="{{name}}" data-folder-path="{{fullPath}}">
+    <h3 class="oa-folder-name" style="padding-left: {{multiply level 15}}px;">
+      <span class="oa-folder-toggle">⯆</span>
+      <span class="oa-folder-title">{{name}}</span>
+      <span class="oa-task-count">({{totalTaskCount this}})</span>
     </h3>
-    <ul class="folder-tasks">
+    <ul class="oa-folder-tasks">
       {{#each tasks}}
-        <li class="task-item" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
-          <div class="task-priority">{{priorityIcon this.state.priority}}</div>
-          <div class="task-content">
-            <div class="task-description">{{this.section.desc}}</div>
-            <div class="task-metadata">
+        <li class="oa-task-item" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
+          <div class="oa-task-priority">{{priorityIcon this.state.priority}}</div>
+          <div class="oa-task-content">
+            <div class="oa-task-description">{{this.section.desc}}</div>
+            <div class="oa-task-metadata">
               {{#if this.date.due}}
-                <span class="task-due-date">📅 {{formatDate this.date.due}}</span>
+                <span class="oa-task-due-date">📅 {{formatDate this.date.due}}</span>
               {{/if}}
-              <span class="task-path">📄 {{this.file.path}}</span>
+              <span class="oa-task-path">📄 {{this.file.path}}</span>
             </div>
           </div>
         </li>
@@ -76,7 +76,7 @@
     </ul>
     
     {{#if subfolders}}
-      <div class="subfolders-container">
+      <div class="oa-subfolders-container">
         {{#each subfolders as |subfolder subfolderName|}}
           {{> folderTemplate subfolder level=(add level 1)}}
         {{/each}}
@@ -84,3 +84,4 @@
     {{/if}}
   </div>
 {{/inline}}
+

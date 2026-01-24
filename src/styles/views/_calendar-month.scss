@@ -2,12 +2,12 @@
 @use '../variables' as *;
 
 /* Estilos para el número de semana */
-.calendar-month-header-row {
+.oa-calendar-month-header-row {
   display: flex;
   align-items: center;
 }
 
-.calendar-month-week-number-header {
+.oa-calendar-month-week-number-header {
   display: grid;
   width: 40px;
   text-align: center;
@@ -17,14 +17,14 @@
   margin-bottom: 8px;
 }
 
-.calendar-month-week {
+.oa-calendar-month-week {
   display: flex;
   width: 100%;
   min-height: 120px; // Aumentar la altura mínima
   margin-bottom: 5px; // Agregar espacio entre semanas
 }
 
-.calendar-month-week-number {
+.oa-calendar-month-week-number {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -41,7 +41,7 @@
   transition: background-color 0.2s ease;
 }
 
-.calendar-month-weekdays {
+.oa-calendar-month-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
@@ -52,36 +52,36 @@
   flex: 1;
 }
 
-.calendar-month-grid {
+.oa-calendar-month-grid {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
 }
 
-.calendar-month-day-header {
+.oa-calendar-month-day-header {
   display: flex;
   flex-shrink: 0;
 }
 
-.calendar-month-days-row {
+.oa-calendar-month-days-row {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   flex: 1;
-  min-height: 150px; // Mantener consistencia con .calendar-week
+  min-height: 150px; // Mantener consistencia con .oa-calendar-week
 }
 
-.calendar-other-month {
+.oa-calendar-other-month {
   opacity: 0.5;
   background-color: $heather-bg-color !important;
 }
 
-.calendar-month-day {
+.oa-calendar-month-day {
   @include calendar-day-styles("month");
 
 
 }
 
-.calendar-month-day-number {
+.oa-calendar-month-day-number {
   position: absolute; // Posición absoluta para colocarlo en la esquina
   bottom: 2px; // Distancia desde abajo
   right: 5px; // Distancia desde la derecha
@@ -94,7 +94,7 @@
   opacity: 0.8; // Semi-transparente para no distraer demasiado
 }
 
-.calendar-month-day-content {
+.oa-calendar-month-day-content {
   overflow-y: auto;
   flex-grow: 1;
   height: 100%;
@@ -112,16 +112,16 @@
 }
 
 // Estilo mejorado para las tareas del calendario
-.calendar-month-day-content .calendar-task {
+.oa-calendar-month-day-content .oa-calendar-task {
   @include calendar-task-styles;
   
 }
 
-.calendar-month-day.calendar-today {
+.oa-calendar-month-day.oa-calendar-today {
   background-color: color-mix(in srgb,var(--interactive-accent) 5%, transparent);
   border: 2px solid var(--interactive-accent);
   
-  .calendar-month-day-number {
+  .oa-calendar-month-day-number {
     color: var(--interactive-accent-rgb);
     font-weight: bold;
     opacity: 1;
@@ -141,4 +141,6 @@
     box-shadow: inset 0 0 5px color-mix(in srgb, var(--interactive-accent) 60%, transparent);
   }
 }
+
+
 

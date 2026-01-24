@@ -1,12 +1,12 @@
-<div class="calendar-container">
-  <div class="calendar-toolbar">
-    <div class="calendar-current-period">
+<div class="oa-calendar-container">
+  <div class="oa-calendar-toolbar">
+    <div class="oa-calendar-current-period">
       <h2>{{calendar.periodName}}</h2>
     </div>
     
-    <div class="calendar-nav-container">
-      <div class="calendar-view-selector">
-        <select id="calendar-view-dropdown" class="calendar-view-dropdown">
+    <div class="oa-calendar-nav-container">
+      <div class="oa-calendar-view-selector">
+        <select id="oa-calendar-view-dropdown" class="oa-calendar-view-dropdown">
           <option value="month" {{#equals calendar.viewType "month"}}selected{{/equals}}>{{t "month_view"}}</option>
           <option value="week" {{#equals calendar.viewType "week"}}selected{{/equals}}>{{t "week_view"}}</option>
           <option value="workweek" {{#equals calendar.viewType "workweek"}}selected{{/equals}}>{{t "workweek_view"}}</option>
@@ -14,14 +14,14 @@
         </select>
       </div>
       
-      <div class="calendar-navigation">
-        <button class="calendar-prev" aria-label="{{t 'previous'}}">
+      <div class="oa-calendar-navigation">
+        <button class="oa-calendar-prev" aria-label="{{t 'previous'}}">
           <span class="icon">◀</span>
         </button>
-        <button class="calendar-today" aria-label="{{t 'today'}}">
+        <button class="oa-calendar-today" aria-label="{{t 'today'}}">
           {{t 'today'}}
         </button>
-        <button class="calendar-next" aria-label="{{t 'next'}}">
+        <button class="oa-calendar-next" aria-label="{{t 'next'}}">
           <span class="icon">▶</span>
         </button>
       </div>
@@ -29,24 +29,24 @@
   </div>
   {{!-- Vista diaria --}}
   {{#equals calendar.viewType "day"}}
-  <div class="calendar-day-view">
-    <div class="calendar-day-container">
-      <div class="calendar-day-main-view">
-        <div class="calendar-day-header">
-          <div class="calendar-day-column-header {{#if calendar.isToday}}calendar-today{{/if}}">
-            <div class="calendar-day-name">{{calendar.dayName}}</div>
-            <div class="calendar-date">{{getDayOfMonth calendar.date}}</div>
+  <div class="oa-calendar-day-view">
+    <div class="oa-calendar-day-container">
+      <div class="oa-calendar-day-main-view">
+        <div class="oa-calendar-day-header">
+          <div class="oa-calendar-day-column-header {{#if calendar.isToday}}oa-calendar-today{{/if}}">
+            <div class="oa-calendar-day-name">{{calendar.dayName}}</div>
+            <div class="oa-calendar-date">{{getDayOfMonth calendar.date}}</div>
           </div>
         </div>
-        <div class="calendar-day-body">
-          <div class="calendar-day-full-row">
-            <div class="calendar-day-column {{#if calendar.isToday}}calendar-today{{/if}}" data-date="{{toISODate calendar.date}}">
+        <div class="oa-calendar-day-body">
+          <div class="oa-calendar-day-full-row">
+            <div class="oa-calendar-day-column {{#if calendar.isToday}}oa-calendar-today{{/if}}" data-date="{{toISODate calendar.date}}">
               {{#each calendar.tasksForDay}}
-                <div class="calendar-task" 
+                <div class="oa-calendar-task" 
                     data-file-path="{{file.path}}" 
                     data-line-number="{{line.number}}"
                     data-tooltip="{{section.desc}}">
-                  <span class="task-title">{{section.desc}}</span>
+                  <span class="oa-task-title">{{section.desc}}</span>
                 </div>
               {{/each}}
             </div>
@@ -54,31 +54,31 @@
         </div>
       </div>
 
-      <div class="calendar-mini-sidebar">
-        <div class="calendar-mini-month">
-          <div class="calendar-mini-month-header">
-            <div class="mini-month-nav">
-              <button class="mini-calendar-prev" aria-label="{{t 'previous_month'}}">
+      <div class="oa-calendar-mini-sidebar">
+        <div class="oa-calendar-mini-month">
+          <div class="oa-calendar-mini-month-header">
+            <div class="oa-mini-month-nav">
+              <button class="oa-mini-calendar-prev" aria-label="{{t 'previous_month'}}">
                 <span class="icon">◀</span>
               </button>
-              <div class="mini-month-name">{{calendar.miniCalendar.monthName}}</div>
-              <button class="mini-calendar-next" aria-label="{{t 'next_month'}}">
+              <div class="oa-mini-month-name">{{calendar.miniCalendar.monthName}}</div>
+              <button class="oa-mini-calendar-next" aria-label="{{t 'next_month'}}">
                 <span class="icon">▶</span>
               </button>
             </div>
           </div>
-          <div class="calendar-mini-month-weekdays">
+          <div class="oa-calendar-mini-month-weekdays">
             {{#each calendar.miniCalendar.weekdays}}
-              <div class="calendar-mini-weekday">{{this}}</div>
+              <div class="oa-calendar-mini-weekday">{{this}}</div>
             {{/each}}
           </div>
-          <div class="calendar-mini-month-grid">
+          <div class="oa-calendar-mini-month-grid">
             {{#each calendar.miniCalendar.weeks}}
-              <div class="calendar-mini-week">
+              <div class="oa-calendar-mini-week">
                 {{#each this}}
-                  <div class="calendar-mini-day {{#if isCurrentMonth}}current-month{{else}}other-month{{/if}} {{#if isToday}}mini-today{{/if}} {{#if isSelected}}mini-selected{{/if}}" 
+                  <div class="oa-calendar-mini-day {{#if isCurrentMonth}}oa-current-month{{else}}oa-other-month{{/if}} {{#if isToday}}oa-mini-today{{/if}} {{#if isSelected}}oa-mini-selected{{/if}}" 
                        data-date="{{date}}">
-                    <div class="mini-day-content {{#if hasTasks}}has-tasks{{/if}}">
+                    <div class="oa-mini-day-content {{#if hasTasks}}oa-has-tasks{{/if}}">
                       {{day}}
                     </div>
                   </div>
@@ -92,3 +92,5 @@
   </div>
   {{/equals}}
 </div>
+
+

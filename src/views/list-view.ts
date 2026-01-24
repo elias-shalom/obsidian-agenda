@@ -105,7 +105,7 @@ export class ListView extends BaseView {
    */
   protected setupViewSpecificEventListeners(container: HTMLElement, _data: ListViewData): void {
     // Implementar los listeners específicos de ListView
-    const viewToggleButton = container.querySelector('.view-toggle-button');
+    const viewToggleButton = container.querySelector('.oa-view-toggle-button');
     if (viewToggleButton) {
       viewToggleButton.addEventListener('click', () => {
         this.toggleViewMode();
@@ -116,7 +116,7 @@ export class ListView extends BaseView {
     this.addFolderToggleListeners(container);
 
     // 2. Eventos para tareas (personalizado para ListView)
-    const taskItems = container.querySelectorAll('.task-item');
+    const taskItems = container.querySelectorAll('.oa-task-item');
 
     taskItems.forEach(item => {
       // Añadir indicador visual
@@ -135,7 +135,7 @@ export class ListView extends BaseView {
       // Evento ADICIONAL para ListView - clic simple para seleccionar
       item.addEventListener('click', (_event) => {
         // Remover selección previa
-        container.querySelectorAll('.task-item.selected').forEach(el => {
+        container.querySelectorAll('.oa-task-item.selected').forEach(el => {
           el.removeClass('selected');
         });
 

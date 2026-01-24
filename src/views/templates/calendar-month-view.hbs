@@ -1,12 +1,12 @@
-<div class="calendar-container">
-  <div class="calendar-toolbar">
-    <div class="calendar-current-period">
+<div class="oa-calendar-container">
+  <div class="oa-calendar-toolbar">
+    <div class="oa-calendar-current-period">
       <h2>{{calendar.periodName}}</h2>
     </div>
 
-    <div class="calendar-nav-container">
-      <div class="calendar-view-selector">
-        <select id="calendar-view-dropdown" class="calendar-view-dropdown">
+    <div class="oa-calendar-nav-container">
+      <div class="oa-calendar-view-selector">
+        <select id="oa-calendar-view-dropdown" class="oa-calendar-view-dropdown">
           <option value="month" {{#equals calendar.viewType "month"}}selected{{/equals}}>{{t "month_view"}}</option>
           <option value="week" {{#equals calendar.viewType "week"}}selected{{/equals}}>{{t "week_view"}}</option>
           <option value="workweek" {{#equals calendar.viewType "workweek"}}selected{{/equals}}>{{t "workweek_view"}}</option>
@@ -14,14 +14,14 @@
         </select>
       </div>
       
-      <div class="calendar-navigation">
-        <button class="calendar-prev" aria-label="{{t 'previous'}}">
+      <div class="oa-calendar-navigation">
+        <button class="oa-calendar-prev" aria-label="{{t 'previous'}}">
           <span class="icon"><span class="icon">◀</span></span>
         </button>
-        <button class="calendar-today" aria-label="{{t 'today'}}">
+        <button class="oa-calendar-today" aria-label="{{t 'today'}}">
           {{t 'today'}}
         </button>
-        <button class="calendar-next" aria-label="{{t 'next'}}">
+        <button class="oa-calendar-next" aria-label="{{t 'next'}}">
           <span class="icon"><span class="icon">▶</span></span>
         </button>
       </div>
@@ -30,33 +30,33 @@
 
   {{!-- Vista mensual --}}
   {{#equals calendar.viewType "month"}}
-  <div class="calendar-month-view">
-    <div class="calendar-month-header-row">
-      <div class="calendar-month-week-number-header"> </div>
-      <div class="calendar-month-weekdays">
+  <div class="oa-calendar-month-view">
+    <div class="oa-calendar-month-header-row">
+      <div class="oa-calendar-month-week-number-header"> </div>
+      <div class="oa-calendar-month-weekdays">
         {{#each calendar.dayNames}}
-          <div class="calendar-weekday">{{this}}</div>
+          <div class="oa-calendar-weekday">{{this}}</div>
         {{/each}}
       </div>
     </div>
-    <div class="calendar-month-grid">
+    <div class="oa-calendar-month-grid">
       {{#each calendar.weeks}}
-        <div class="calendar-month-week">
-          <div class="calendar-month-week-number">w{{weekNumber}}</div>
+        <div class="oa-calendar-month-week">
+          <div class="oa-calendar-month-week-number">w{{weekNumber}}</div>
 
-          <div class="calendar-month-days-row">
+          <div class="oa-calendar-month-days-row">
             {{#each days}}
-              <div class="calendar-month-day {{#unless isCurrentMonth}}calendar-other-month{{/unless}} {{#if isToday}}calendar-today{{/if}}" data-date="{{toISODate dateValue}}">
-                <div class="calendar-month-day-header">
-                  <span class="calendar-month-day-number">{{dayOfMonth}}</span>
+              <div class="oa-calendar-month-day {{#unless isCurrentMonth}}oa-calendar-other-month{{/unless}} {{#if isToday}}oa-calendar-today{{/if}}" data-date="{{toISODate dateValue}}">
+                <div class="oa-calendar-month-day-header">
+                  <span class="oa-calendar-month-day-number">{{dayOfMonth}}</span>
                 </div>
-                <div class="calendar-month-day-content">
+                <div class="oa-calendar-month-day-content">
                   {{#each tasksForDay}}
-                    <div class="calendar-task" 
+                    <div class="oa-calendar-task" 
                         data-file-path="{{file.path}}" 
                         data-line-number="{{line.number}}"
                         title="{{file.name}}:{{line.number}} - {{section.desc}}">
-                      <span class="task-title">{{section.desc}}</span>
+                      <span class="oa-task-title">{{section.desc}}</span>
                     </div>
                   {{/each}}
                 </div>
@@ -69,3 +69,6 @@
   </div>
   {{/equals}}
 </div>
+
+
+

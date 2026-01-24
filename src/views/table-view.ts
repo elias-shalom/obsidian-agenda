@@ -69,7 +69,7 @@ export class TableView extends BaseView {
     // Por ejemplo: ordenación, filtrado, paginación, etc.
     
     // Listener para ordenar columnas
-    const sortableHeaders = container.querySelectorAll('th.sortable');
+    const sortableHeaders = container.querySelectorAll('th.oa-sortable');
     sortableHeaders.forEach(header => {
       header.addEventListener('click', () => {
         this.handleColumnSort(header as HTMLElement);
@@ -86,7 +86,7 @@ export class TableView extends BaseView {
     }
     
     // Listener para el filtro de búsqueda
-    const searchInput = container.querySelector('#table-search-input') as HTMLInputElement;
+    const searchInput = container.querySelector('#oa-table-search-input') as HTMLInputElement;
     if (searchInput) {
       searchInput.addEventListener('input', () => {
         this.filterTasks(container);
@@ -94,7 +94,7 @@ export class TableView extends BaseView {
     }
     
     // Listener para los filtros de dropdown
-    const filterDropdowns = container.querySelectorAll('.table-filter-dropdown');
+    const filterDropdowns = container.querySelectorAll('.oa-table-filter-dropdown');
     filterDropdowns.forEach(dropdown => {
       dropdown.addEventListener('change', () => {
         this.filterTasks(container);
@@ -102,15 +102,15 @@ export class TableView extends BaseView {
     });
 
     // Configurar el botón de limpiar búsqueda
-    const searchClearButton = container.querySelector('#table-search-clear') as HTMLButtonElement;
+    const searchClearButton = container.querySelector('#oa-table-search-clear') as HTMLButtonElement;
 
     if (searchInput && searchClearButton) {
       // Mostrar/ocultar botón según el contenido
       searchInput.addEventListener('input', () => {
         if (searchInput.value) {
-          searchClearButton.classList.add('visible');
+          searchClearButton.classList.add('oa-visible');
         } else {
-          searchClearButton.classList.remove('visible');
+          searchClearButton.classList.remove('oa-visible');
         }
         this.filterTasks(container);
       });
@@ -118,20 +118,20 @@ export class TableView extends BaseView {
       // Limpiar el campo de búsqueda al hacer clic en el botón
       searchClearButton.addEventListener('click', () => {
         searchInput.value = '';
-        searchClearButton.classList.remove('visible');
+        searchClearButton.classList.remove('oa-visible');
         searchInput.focus(); // Opcional: mantiene el foco en el campo
         this.filterTasks(container); // Volver a aplicar filtros sin el texto
       });
       
       // Inicialmente ocultar el botón si no hay texto
       if (searchInput.value) {
-        searchClearButton.classList.add('visible');
+        searchClearButton.classList.add('oa-visible');
       } else {
-        searchClearButton.classList.remove('visible');
+        searchClearButton.classList.remove('oa-visible');
       }
     }
 
-    const tableRows = container.querySelectorAll('tr.task-row');
+    const tableRows = container.querySelectorAll('tr.oa-task-row');
   
     tableRows.forEach(row => {
       // Añadir indicador visual
@@ -165,11 +165,11 @@ export class TableView extends BaseView {
 
   private filterTasks(container: HTMLElement): void {
     // Obtener valores de los filtros
-    const searchInput = container.querySelector('#table-search-input') as HTMLInputElement;
-    const priorityFilter = container.querySelector('#table-priority-filter') as HTMLSelectElement;
-    const statusFilter = container.querySelector('#table-status-filter') as HTMLSelectElement;
-    const folderFilter = container.querySelector('#table-folder-filter') as HTMLSelectElement;
-    const dueFilter = container.querySelector('#table-due-filter') as HTMLSelectElement;
+    const searchInput = container.querySelector('#oa-table-search-input') as HTMLInputElement;
+    const priorityFilter = container.querySelector('#oa-table-priority-filter') as HTMLSelectElement;
+    const statusFilter = container.querySelector('#oa-table-status-filter') as HTMLSelectElement;
+    const folderFilter = container.querySelector('#oa-table-folder-filter') as HTMLSelectElement;
+    const dueFilter = container.querySelector('#oa-table-due-filter') as HTMLSelectElement;
     
     // Obtener los valores seleccionados
     const rawSearchText = searchInput?.value?.trim() || '';
@@ -180,7 +180,7 @@ export class TableView extends BaseView {
     const dueValue = dueFilter?.value || 'all';
     
     // Obtener todas las filas de tareas
-    const tableRows = container.querySelectorAll('tr.task-row');
+    const tableRows = container.querySelectorAll('tr.oa-task-row');
     let visibleCount = 0;
     
     // Obtener la fecha actual para los filtros de fecha
@@ -197,10 +197,10 @@ export class TableView extends BaseView {
       
       // 1. Filtro de texto (búsqueda) - ahora con normalización
       if (normalizedSearchText) {
-        const taskDescription = row.querySelector('.task-description')?.textContent || '';
+        const taskDescription = row.querySelector('.oa-task-description')?.textContent || '';
         const normalizedDescription = this.normalizeText(taskDescription);
         
-        const taskTags = Array.from(row.querySelectorAll('.task-tag'))
+        const taskTags = Array.from(row.querySelectorAll('.oa-task-tag'))
           .map(tag => tag.textContent || '')
           .join(' ');
         const normalizedTags = this.normalizeText(taskTags);
@@ -215,7 +215,7 @@ export class TableView extends BaseView {
       if (shouldShow && priorityValue !== 'all') {
         if (priorityValue === 'none') {
           // Buscar tareas sin prioridad
-          const priorityElement = row.querySelector('.task-priority');
+          const priorityElement = row.querySelector('.oa-task-priority');
           const hasPriority = !priorityElement?.classList.contains('priority-none');
           
           if (hasPriority) {
@@ -233,7 +233,7 @@ export class TableView extends BaseView {
       
       // 3. Filtro por estado
       if (shouldShow && statusValue !== 'all') {
-        const statusIcon = row.querySelector('.status-icon');
+        const statusIcon = row.querySelector('.oa-status-icon');
         const currentStatus = statusIcon?.getAttribute('data-status') || '';
         
         if (currentStatus !== statusValue) {
@@ -243,7 +243,7 @@ export class TableView extends BaseView {
 
       // 4. Filtro por carpeta
       if (shouldShow && folderValue !== 'all') {
-        const folderName = row.querySelector('.folder-name')?.textContent || '';
+        const folderName = row.querySelector('.oa-folder-name')?.textContent || '';
         
         if (folderName !== folderValue) {
           shouldShow = false;
@@ -253,9 +253,9 @@ export class TableView extends BaseView {
       // 5. Filtro por fecha de vencimiento
       if (shouldShow && dueValue !== 'all') {
         // Verificar presencia de cualquier fecha con contenido
-        const dateElements = row.querySelectorAll('.task-date');
+        const dateElements = row.querySelectorAll('.oa-task-date');
         const hasDateWithContent = Array.from(dateElements).some(el => {
-          const dateText = el.querySelector('.date-text')?.textContent || '';
+          const dateText = el.querySelector('.oa-date-text')?.textContent || '';
           return dateText.trim().length > 0;
         });
         
@@ -279,7 +279,7 @@ export class TableView extends BaseView {
             shouldShow = false;
           } else {
             // Obtener el texto de la fecha del span con la clase 'date-text'
-            const dateText = dueDateElement.querySelector('.date-text')?.textContent || '';
+            const dateText = dueDateElement.querySelector('.oa-date-text')?.textContent || '';
             // Convertir a objeto Date
             const dueDate = new Date(dateText);
             
@@ -328,17 +328,17 @@ export class TableView extends BaseView {
 
       // Aplicar visibilidad según resultado de filtros
       if (shouldShow) {
-        row.classList.remove('hidden');
+        row.classList.remove('oa-hidden');
         visibleCount++;
       } else {
-        row.classList.add('hidden');
+        row.classList.add('oa-hidden');
       }
     });
 
     // Luego actualizar los números solo para las filas visibles
     let rowNumber = 1;
     tableRows.forEach(row => {
-      if (!row.classList.contains('hidden')) {
+      if (!row.classList.contains('oa-hidden')) {
         const rowNumberElement = row.querySelector('.row-number');
         if (rowNumberElement) {
           rowNumberElement.textContent = rowNumber.toString();
@@ -348,18 +348,18 @@ export class TableView extends BaseView {
     });
 
     // Actualizar el contador total en el encabezado
-    const totalRowCountElement = container.querySelector('#total-row-count');
+    const totalRowCountElement = container.querySelector('#oa-total-row-count');
     if (totalRowCountElement) {
       totalRowCountElement.textContent = `(${visibleCount})`;
     }
 
     // Mostrar mensaje si no hay resultados
-    const emptyMessage = container.querySelector('.empty-table-message') as HTMLElement;
+    const emptyMessage = container.querySelector('.oa-empty-table-message') as HTMLElement;
     if (emptyMessage) {
       if (visibleCount === 0) {
-        emptyMessage.classList.add('visible');
+        emptyMessage.classList.add('oa-visible');
       } else {
-        emptyMessage.classList.remove('visible');
+        emptyMessage.classList.remove('oa-visible');
       }
     }
   }
@@ -388,7 +388,7 @@ export class TableView extends BaseView {
     const tableBody = container.querySelector('tbody');
     if (!tableBody) return;
     
-    const rows = Array.from(tableBody.querySelectorAll('tr.task-row'));
+    const rows = Array.from(tableBody.querySelectorAll('tr.oa-task-row'));
     
     // Ordenar las filas
     const sortedRows = this.sortRows(rows, sortBy, this.currentSortDirection);
@@ -405,17 +405,17 @@ export class TableView extends BaseView {
 
   private updateSortIndicators(container: Element): void {
     // Eliminar indicadores existentes
-    const allSortIndicators = container.querySelectorAll('.sort-indicator');
+    const allSortIndicators = container.querySelectorAll('.oa-sort-indicator');
     allSortIndicators.forEach(indicator => {
-      indicator.classList.remove('sort-asc', 'sort-desc');
+      indicator.classList.remove('oa-sort-asc', 'oa-sort-desc');
     });
     
     // Añadir indicador a la columna activa
     const activeHeader = container.querySelector(`[data-sort="${this.currentSortColumn}"]`);
     if (activeHeader) {
-      const indicator = activeHeader.querySelector('.sort-indicator');
+      const indicator = activeHeader.querySelector('.oa-sort-indicator');
       if (indicator) {
-        indicator.classList.add(this.currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+        indicator.classList.add(this.currentSortDirection === 'asc' ? 'oa-sort-asc' : 'oa-sort-desc');
       }
     }
   }
@@ -434,8 +434,8 @@ export class TableView extends BaseView {
           };
           
           // Obtener clases de prioridad
-          const priorityClassA = a.querySelector('.task-priority')?.classList.toString() || '';
-          const priorityClassB = b.querySelector('.task-priority')?.classList.toString() || '';
+          const priorityClassA = a.querySelector('.oa-task-priority')?.classList.toString() || '';
+          const priorityClassB = b.querySelector('.oa-task-priority')?.classList.toString() || '';
           
           // Extraer el nivel de prioridad de la clase
           const priorityA = Object.keys(priorityMap).find(p => priorityClassA.includes(`priority-${p}`)) || 'none';
@@ -452,8 +452,8 @@ export class TableView extends BaseView {
             'Todo': 4, 'InProgress': 3, 'Done': 2, 'Cancelled': 1, 'nonTask': 0
           };
           
-          const statusA = a.querySelector('.status-icon')?.getAttribute('data-status') || '';
-          const statusB = b.querySelector('.status-icon')?.getAttribute('data-status') || '';
+          const statusA = a.querySelector('.oa-status-icon')?.getAttribute('data-status') || '';
+          const statusB = b.querySelector('.oa-status-icon')?.getAttribute('data-status') || '';
           
           valueA = statusMap[statusA] || 0;
           valueB = statusMap[statusB] || 0;
@@ -461,18 +461,18 @@ export class TableView extends BaseView {
         }
           
         case 'description':
-          valueA = a.querySelector('.task-description')?.textContent || '';
-          valueB = b.querySelector('.task-description')?.textContent || '';
+          valueA = a.querySelector('.oa-task-description')?.textContent || '';
+          valueB = b.querySelector('.oa-task-description')?.textContent || '';
           break;
           
         case 'folder':
-          valueA = a.querySelector('.folder-name')?.textContent || '';
-          valueB = b.querySelector('.folder-name')?.textContent || '';
+          valueA = a.querySelector('.oa-folder-name')?.textContent || '';
+          valueB = b.querySelector('.oa-folder-name')?.textContent || '';
           break;
           
         case 'file':
-          valueA = a.querySelector('.file-name')?.textContent || '';
-          valueB = b.querySelector('.file-name')?.textContent || '';
+          valueA = a.querySelector('.oa-file-name')?.textContent || '';
+          valueB = b.querySelector('.oa-file-name')?.textContent || '';
           break;
           
         case 'due': {
@@ -495,10 +495,10 @@ export class TableView extends BaseView {
           break;
         }
         case 'tags':
-          valueA = Array.from(a.querySelectorAll('.task-tag'))
+          valueA = Array.from(a.querySelectorAll('.oa-task-tag'))
             .map(tag => tag.textContent)
             .join(',') || '';
-          valueB = Array.from(b.querySelectorAll('.task-tag'))
+          valueB = Array.from(b.querySelectorAll('.oa-task-tag'))
             .map(tag => tag.textContent)
             .join(',') || '';
           break;

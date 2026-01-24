@@ -1,4 +1,4 @@
-import { App, TFile, Plugin, EventRef } from "obsidian";
+import { App, TFile, Plugin } from "obsidian";
 import { ITask, TaskFilterCriteria } from "../types/interfaces";
 import { I18n } from "./i18n";
 import { TaskCache } from "./task-cache";
@@ -10,7 +10,6 @@ import { TaskQueryHandler } from "./task-query-handler";
 export class TaskManager {
   private refreshInProgress: boolean = false;
   private refreshPromise: Promise<ITask[]> | null = null;
-  private registeredEvents: EventRef[] = [];
   
   // Instancias de las clases especializadas
   private taskCache: TaskCache;
@@ -38,7 +37,7 @@ export class TaskManager {
   public registerEvents(_plugin: Plugin): void {
     // Escuchar modificaciones de archivos Markdown
     //console.log("Escuchando eventos de modificación de archivos Markdown");
-    const event = this.plugin.registerEvent(
+    this.plugin.registerEvent(
       this.app.vault.on('modify', (file) => {
         if (file instanceof TFile && file.extension === 'md') {
           this.invalidateFileCache(file.path);
@@ -46,10 +45,8 @@ export class TaskManager {
       })
     );
 
-    this.registeredEvents.push(event);
-
     // Escuchar creación de archivos Markdown
-    const createEvent = this.plugin.registerEvent(
+    this.plugin.registerEvent(
       this.app.vault.on('create', (file) => {
         if (file instanceof TFile && file.extension === 'md') {
           this.invalidateCache();
@@ -57,10 +54,8 @@ export class TaskManager {
       })
     );
 
-    this.registeredEvents.push(createEvent);
-
     // Escuchar eliminación de archivos Markdown
-    const deleteEvent = this.plugin.registerEvent(
+    this.plugin.registerEvent(
       this.app.vault.on('delete', (file) => {
         if (file instanceof TFile && file.extension === 'md') {
           this.invalidateFileCache(file.path);
@@ -68,10 +63,8 @@ export class TaskManager {
       })
     );
 
-    this.registeredEvents.push(deleteEvent);
-
     // Escuchar renombrado de archivos Markdown
-    const renameEvent = this.plugin.registerEvent(
+    this.plugin.registerEvent(
       this.app.vault.on('rename', (file, oldPath) => {
         if (file instanceof TFile && file.extension === 'md') {
           this.invalidateFileCache(oldPath);
@@ -79,15 +72,13 @@ export class TaskManager {
         }
       })
     );
-
-    this.registeredEvents.push(renameEvent);
   }
 
   unregisterEvents(): void {
     // Los eventos registrados con this.plugin.registerEvent() 
     // se limpian automáticamente cuando el plugin se descarga
     // No necesitamos hacer nada aquí manualmente
-    this.registeredEvents.length = 0; // Limpiar el array
+    // this.registeredEvents.length = 0; // Limpiar el array
   }
 
   /**
@@ -112,7 +103,7 @@ export class TaskManager {
     this.taskCache.cleanup();
     
     // Limpiar array de eventos (aunque Obsidian maneja la limpieza automática)
-    this.registeredEvents.length = 0;
+    // this.registeredEvents.length = 0;
   }
 
   /**

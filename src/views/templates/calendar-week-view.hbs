@@ -1,13 +1,13 @@
-<div class="calendar-container">
-  <div class="calendar-toolbar">
-    <div class="calendar-current-period">
+<div class="oa-calendar-container">
+  <div class="oa-calendar-toolbar">
+    <div class="oa-calendar-current-period">
       <h2>{{t "week"}} {{calendar.weekNumber}} - {{calendar.periodName}}</h2>
     </div>
 
-    <div class="calendar-nav-container">
+    <div class="oa-calendar-nav-container">
       {{#equals calendar.viewType "week"}}
-      <div class="calendar-grid-style-selector">
-        <select id="calendar-grid-style" class="calendar-grid-style-dropdown">
+      <div class="oa-calendar-grid-style-selector">
+        <select id="oa-calendar-grid-style" class="oa-calendar-grid-style-dropdown">
           <option value="default">{{t "default_grid"}}</option>
           <option value="style1">{{t "grid_style1"}}</option>
           <option value="style2">{{t "grid_style2"}}</option>
@@ -23,8 +23,8 @@
         </select>
       </div>
       {{/equals}}
-      <div class="calendar-view-selector">
-        <select id="calendar-view-dropdown" class="calendar-view-dropdown">
+      <div class="oa-calendar-view-selector">
+        <select id="oa-calendar-view-dropdown" class="oa-calendar-view-dropdown">
           <option value="month" {{#equals calendar.viewType "month"}}selected{{/equals}}>{{t "month_view"}}</option>
           <option value="week" {{#equals calendar.viewType "week"}}selected{{/equals}}>{{t "week_view"}}</option>
           <option value="workweek" {{#equals calendar.viewType "workweek"}}selected{{/equals}}>{{t "workweek_view"}}</option>
@@ -32,14 +32,14 @@
         </select>
       </div>
       
-      <div class="calendar-navigation">
-        <button class="calendar-prev" aria-label="{{t 'previous'}}">
+      <div class="oa-calendar-navigation">
+        <button class="oa-calendar-prev" aria-label="{{t 'previous'}}">
           <span class="icon">◀</span>
         </button>
-        <button class="calendar-today" aria-label="{{t 'today'}}">
+        <button class="oa-calendar-today" aria-label="{{t 'today'}}">
           {{t 'today'}}
         </button>
-        <button class="calendar-next" aria-label="{{t 'next'}}">
+        <button class="oa-calendar-next" aria-label="{{t 'next'}}">
           <span class="icon">▶</span>
         </button>
       </div>
@@ -47,25 +47,25 @@
   </div>
   {{!-- Vista semanal --}}
   {{#equals calendar.viewType "week"}}
-  <div class="calendar-week-view">
-    <div class="calendar-week-body">
-      <div class="calendar-week-days-row">
+  <div class="oa-calendar-week-view">
+    <div class="oa-calendar-week-body">
+      <div class="oa-calendar-week-days-row">
         {{#each calendar.days}}
-          <div class="calendar-week-day-container {{#if isToday}}calendar-today{{/if}}" data-date="{{toISODate dateValue}}">
-            <div class="calendar-week-day-header">
-              <div class="calendar-day-name">{{dayName}}</div>
+          <div class="oa-calendar-week-day-container {{#if isToday}}oa-calendar-today{{/if}}" data-date="{{toISODate dateValue}}">
+            <div class="oa-calendar-week-day-header">
+              <div class="oa-calendar-day-name">{{dayName}}</div>
             </div>
-            <div class="calendar-day-content">
+            <div class="oa-calendar-day-content">
               {{#each tasksForDay}}
-                <div class="calendar-task" 
+                <div class="oa-calendar-task" 
                      data-file-path="{{file.path}}" 
                      data-line-number="{{line.number}}"
                      title="{{file.basename}}:{{line.number}} - {{section.desc}}">
-                  <span class="task-title">{{section.desc}}</span>
+                  <span class="oa-task-title">{{section.desc}}</span>
                 </div>
               {{/each}}
             </div>
-            <div class="calendar-date">{{dayOfMonth}}</div>
+            <div class="oa-calendar-date">{{dayOfMonth}}</div>
           </div>
         {{/each}}
       </div>
@@ -73,3 +73,5 @@
   </div>
   {{/equals}}
 </div>
+
+

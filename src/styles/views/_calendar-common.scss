@@ -2,14 +2,14 @@
 @use '../variables' as *;
 
 /* Calendar View Styles */
-.calendar-container {
+.oa-calendar-container {
   display: flex;
   flex-direction: column;
   height: 100%;
   padding: 10px;
 }
 
-.calendar-toolbar {
+.oa-calendar-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -18,7 +18,7 @@
 }
 
 /* Adaptar período actual en toolbar */
-.calendar-current-period h2 {
+.oa-calendar-current-period h2 {
   margin: 0;
   font-size: 1.2em;
   line-height: 1.2;
@@ -29,10 +29,10 @@
 }
 
 /* Estilos para el selector de vista de calendario */
-.calendar-view-controls {
+.oa-calendar-view-controls {
   margin: 0 10px;
   
-  select.calendar-view-type {
+  select.oa-calendar-view-type {
     background-color: color-mix(in srgb,$primary-bg-color 80%, transparent);
     color: $text-color;
     border: 1px solid var(--background-modifier-border);
@@ -54,7 +54,7 @@
 }
 
 /* Adaptar botones de navegación para las diferentes vistas */
-.calendar-navigation {
+.oa-calendar-navigation {
   display: flex;
   gap: 8px;
 
@@ -75,21 +75,21 @@
   }
 }
 
-.calendar-today {
+.oa-calendar-today {
   background-color: var(--background-modifier-hover);
   border: 2px solid $today-border-color; 
 }
 
-.task-title {
+.oa-task-title {
   display: block;
   @include text-truncate();
   width: 100%;
 }
 
 /* Estilos para las vistas semanales y diarias */
-.calendar-week-view, 
-.calendar-workweek-view, 
-.calendar-day-view {
+.oa-calendar-week-view, 
+.oa-calendar-workweek-view, 
+.oa-calendar-day-view {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -97,21 +97,21 @@
   overflow-x: hidden;
 }
 
-.calendar-week-header, 
-.calendar-day-header {
+.oa-calendar-week-header, 
+.oa-calendar-day-header {
   display: flex;
   border-bottom: 1px solid var(--background-modifier-border);
   flex-shrink: 0;
 }
 
-.calendar-week-hour-header, 
-.calendar-day-hour-header {
+.oa-calendar-week-hour-header, 
+.oa-calendar-day-hour-header {
   height: 50px;
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.calendar-week-body, 
-.calendar-day-body {
+.oa-calendar-week-body, 
+.oa-calendar-day-body {
   flex-grow: 1;
   overflow-y: auto;
   display: flex;
@@ -119,30 +119,38 @@
 }
 
 /* Estilos para las vistas semanales (sin horas) */
-.calendar-week-view, 
-.calendar-workweek-view {
+.oa-calendar-week-view, 
+.oa-calendar-workweek-view {
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
 }
 
-.calendar-nav-container {
+.oa-calendar-nav-container {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 
   // Selectores con margen
-  .calendar-view-selector,
-  .calendar-grid-style-selector {
+  .oa-calendar-view-selector,
+  .oa-calendar-grid-style-selector {
     margin-right: 8px;
   }
 
   // Estilos comunes para todos los dropdowns
-  .calendar-view-dropdown,
-  .calendar-grid-style-dropdown {
+  .oa-calendar-view-dropdown,
+  .oa-calendar-grid-style-dropdown {
     @include interactive-control;
+    border-radius: 6px; // Reducir border-radius para dropdowns
+    padding: 6px 10px;
+    appearance: none; // Remover estilos nativos del navegador
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 1.2em;
+    padding-right: 32px;
 
     // Estilos para las opciones desplegables
     option {
@@ -157,7 +165,7 @@
   }
 
   // Navegación y botones
-  .calendar-navigation {
+  .oa-calendar-navigation {
     display: flex;
     gap: 4px;
 
@@ -174,8 +182,8 @@
   }
 }
 
-.calendar-view-selector,
-.calendar-grid-style-selector {
+.oa-calendar-view-selector,
+.oa-calendar-grid-style-selector {
   margin-right: 16px;
   display: flex;
   align-items: center;
@@ -183,23 +191,24 @@
 
 /* Adaptaciones responsive */
 @include respond-to("md-lg") {
-  .calendar-toolbar {
+  .oa-calendar-toolbar {
     flex-wrap: wrap;
     justify-content: center;
 
-    .calendar-current-period {
+    .oa-calendar-current-period {
       order: 1;
       width: 100%;
       text-align: center;
       margin-bottom: 8px;
     }
 
-    .calendar-view-controls {
+    .oa-calendar-view-controls {
       order: 2;
     }
 
-    .calendar-navigation {
+    .oa-calendar-navigation {
       order: 3;
     }
   }
 }
+

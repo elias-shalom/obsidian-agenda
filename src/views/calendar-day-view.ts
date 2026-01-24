@@ -260,7 +260,7 @@ export class CalendarDayView extends CalendarView {
     super.setupViewSpecificEventListeners(container, data);
     
     // Añadir event listeners para los días del mini calendario
-    const miniDays = container.querySelectorAll('.calendar-mini-day');
+    const miniDays = container.querySelectorAll('.oa-calendar-mini-day');
     miniDays.forEach(day => {
       day.addEventListener('click', (_e) => {
         const dateStr = day.getAttribute('data-date');
@@ -275,8 +275,8 @@ export class CalendarDayView extends CalendarView {
     });
     
     // Añadir event listeners para los botones de navegación del mini calendario
-    const miniPrevButton = container.querySelector('.mini-calendar-prev');
-    const miniNextButton = container.querySelector('.mini-calendar-next');
+    const miniPrevButton = container.querySelector('.oa-mini-calendar-prev');
+    const miniNextButton = container.querySelector('.oa-mini-calendar-next');
     
     if (miniPrevButton) {
       miniPrevButton.addEventListener('click', () => {

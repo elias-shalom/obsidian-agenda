@@ -1,14 +1,14 @@
 @use "sass:color";
 @use '../variables' as *;
 
-.table-view-container {
+.oa-table-view-container {
   display: flex;
   flex-direction: column;
   height: 100%;
   gap: 12px;
 }
 
-.table-toolbar {
+.oa-table-toolbar {
   display: flex;
   gap: 10px;
   padding: 8px;
@@ -45,7 +45,7 @@
       align-items: center;
       justify-content: center;
 
-      &.visible {
+      &.oa-visible {
         display: flex; // Mostrar como flex cuando tiene la clase visible
       }
       
@@ -61,13 +61,13 @@
     gap: 8px;
     flex-wrap: wrap;
     
-    .table-filter-dropdown {
+    .oa-table-filter-dropdown {
       @include interactive-control;
     }
   }
 }
 
-.table-container {
+.oa-table-container {
   flex: 1;
   overflow: auto;
   @include custom-scrollbar();
@@ -75,7 +75,7 @@
   border-radius: 4px;
   background-color: $primary-bg-color;
   
-  .tasks-table {
+  .oa-tasks-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
@@ -91,7 +91,7 @@
       z-index: 1;
       border: 1px solid var(--background-modifier-border);
       
-      &.sortable {
+      &.oa-sortable {
         cursor: pointer;
         
         &:hover {
@@ -99,7 +99,7 @@
         }
       }
       
-      .sort-indicator {
+      .oa-sort-indicator {
         display: inline-flex;
         align-items: center;
         
@@ -110,12 +110,12 @@
           opacity: 0.5;
         }
         
-        &.sort-asc::after {
+        &.oa-sort-asc::after {
           content: "▲";
           opacity: 1;
         }
         
-        &.sort-desc::after {
+        &.oa-sort-desc::after {
           content: "▼";
           opacity: 1;
         }
@@ -132,25 +132,25 @@
       box-shadow: inset 0 0 0 1px color-mix(in srgb,var(--background-primary-rgb) 30%, transparent);
     }
     
-    .task-row {
+    .oa-task-row {
       &:hover td {
         background-color: var(--background-modifier-hover);
       }
       
-      &.task-completed {
+      &.oa-task-completed {
         opacity: 0.7;
         
         td {
           background-color: color-mix(in srgb,var(--background-primary-rgb) 80%, transparent);
         }
         
-        .task-description {
+        .oa-task-description {
           text-decoration: line-through;
           color: var(--text-muted);
         }
       }
 
-      &.hidden {
+      &.oa-hidden {
         display: none;
       }
     }
@@ -158,30 +158,30 @@
 }
 
 // Specific column styling
-.table-col-priority {
+.oa-table-col-priority {
   min-width: 25px;
   width: auto;
   text-align: center;
 }
 
-.task-priority {
+.oa-task-priority {
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.table-col-status {
+.oa-table-col-status {
   min-width: 25px;
   width: auto;
   text-align: center;
 }
 
-.table-col-task {
+.oa-table-col-task {
   min-width: 200px;
 }
 
-.table-col-due {
+.oa-table-col-due {
   min-width: 150px;
   width: auto;
   
@@ -204,21 +204,21 @@
     flex-direction: column;
     gap: 3px;
     
-    .task-date {
+    .oa-task-date {
       display: flex;
       align-items: center;
       gap: 4px;
       font-size: 0.9em;
       white-space: nowrap;
       
-      .date-icon {
+      .oa-date-icon {
         opacity: 0.9;
       }
     }
   }
 }
 
-.table-col-folder {
+.oa-table-col-folder {
   min-width: 100px;
 
   .task-folder {
@@ -232,7 +232,7 @@
   }
 }
 
-.table-col-file {
+.oa-table-col-file {
   min-width: 200px;
 
   .task-file {
@@ -246,10 +246,10 @@
   }
 }
 
-.table-col-tags {
+.oa-table-col-tags {
   width: 180px;
   
-  .task-tag {
+  .oa-task-tag {
     display: inline-block;
     background-color: color-mix(in srgb,var(--interactive-accent-rgb) 10%, transparent);
     color: var(--text-accent);
@@ -262,7 +262,7 @@
 }
 
 // Empty state and pagination
-.empty-table-message {
+.oa-empty-table-message {
   padding: 20px;
   text-align: center;
   color: var(--text-muted);
@@ -272,12 +272,12 @@
   margin: 20px 0;
   display: none; // Oculto por defecto
   
-  &.visible {
+  &.oa-visible {
     display: block; // Se muestra cuando tiene la clase visible
   }
 }
 
-.table-pagination {
+.oa-table-pagination {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -313,7 +313,7 @@
         cursor: not-allowed;
       }
       
-      &.active {
+      &.oa-active {
         background-color: var(--interactive-accent);
         color: var(--text-on-accent);
       }
@@ -326,7 +326,7 @@
   }
 }
 
-.task-status-icon {
+.oa-task-status-icon {
   display: inline-flex;
   justify-content: center;
   align-items: center;
@@ -335,7 +335,7 @@
   margin: 0 auto;
   cursor: pointer;
 
-  .status-icon {
+  .oa-status-icon {
     font-size: 16px;
   }
   
@@ -345,14 +345,14 @@
   }
 }
 
-.table-col-row-number {
+.oa-table-col-row-number {
   width: 30px;
   min-width: 30px;
   text-align: center;
   color: var(--text-muted);
 }
 
-.row-number {
+.oa-row-number {
   font-size: 0.9em;
 }
 
@@ -365,7 +365,7 @@
 
 // Responsive adjustments
 @include respond-to("md-lg") {
-  .table-toolbar {
+  .oa-table-toolbar {
     flex-direction: column;
     align-items: stretch;
     
@@ -374,11 +374,12 @@
     }
   }
   
-  .table-container {
+  .oa-table-container {
     overflow-x: hidden;
     
-    .tasks-table {
+    .oa-tasks-table {
       min-width: 700px;
     }
   }
 }
+

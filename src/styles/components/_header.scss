@@ -52,7 +52,7 @@
   padding: 8px 1px; // Padding horizontal reducido
   min-width: 0; // Permite que se encoja si es necesario
   
-  &.active {
+  &.oa-active {
     border-bottom: 3px solid $active-line-color !important; // Línea en la parte inferior
     padding-bottom: 5px; // Ajustar el espacio interno para que la línea no toque el contenido
   }
@@ -92,7 +92,7 @@
       }
     }
 
-    &.active {
+    &.oa-active {
       background-color: $hover-bg-color !important; // Fondo más claro
       color: var(--text-normal) !important; // Texto blanco
       svg {

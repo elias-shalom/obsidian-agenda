@@ -2,17 +2,17 @@
 @use '../variables' as *;
 
 // Estilos para el selector de cuadrícula
-.calendar-grid-style-selector {
+.oa-calendar-grid-style-selector {
   margin-left: 10px;
 
 }
 
-.calendar-week-header {
+.oa-calendar-week-header {
   display: flex;
   border-bottom: 1px solid var(--background-modifier-border);
   flex-shrink: 0;
   
-  .calendar-weekday {
+  .oa-calendar-weekday {
     flex: 1;
     text-align: center;
     padding: 10px 0;
@@ -21,35 +21,35 @@
   }
 }
 
-.calendar-week-body {
+.oa-calendar-week-body {
   flex-grow: 1;
   overflow-y: auto;
   height: calc(100% - 40px);
 }
 
-.calendar-week-day-container {
+.oa-calendar-week-day-container {
   @include calendar-day-styles("week");
 
-  .calendar-week-day-header {
+  .oa-calendar-week-day-header {
     background-color: color-mix(in srgb, var(--background-modifier-border-rgb) 20%, transparent);
     padding: 8px;
     text-align: center;
     border-bottom: 1px solid var(--background-modifier-border);
     flex-shrink: 0;
     
-    .calendar-day-name {
+    .oa-calendar-day-name {
       font-weight: bold;
       margin-bottom: 4px;
     }
     
     // Ocultar la fecha original que estaba en el encabezado
-    .calendar-date {
+    .oa-calendar-date {
       display: none;
     }
   }
   
   // Añadir nuevo estilo para la fecha en la esquina inferior derecha
-  .calendar-date {
+  .oa-calendar-date {
     position: absolute; 
     bottom: 2px; 
     right: 5px; 
@@ -62,7 +62,7 @@
     opacity: 0.8;
   }
   
-  .calendar-day-content {
+  .oa-calendar-day-content {
     flex-grow: 1;
     overflow-y: auto;
     padding: 8px;
@@ -76,23 +76,23 @@
     // Ocultar la barra de scroll pero mantener la funcionalidad
     @include custom-scrollbar($visible: false);
 
-    .calendar-task {
+    .oa-calendar-task {
       @include calendar-task-styles;
       
       // Agregar cualquier estilo específico para vista semanal
     }
   }
   
-  &.calendar-today {
+  &.oa-calendar-today {
     background-color: color-mix(in srgb, $today-border-color 5%, transparent);
     border: 2px solid $today-border-color;
     
-    .calendar-week-day-header {
+    .oa-calendar-week-day-header {
       background-color: color-mix(in srgb, $today-border-color 10%, transparent);
     }
     
     // Estilo específico para el número del día actual
-    .calendar-date {
+    .oa-calendar-date {
       color: $today-border-color;
       font-weight: bold;
       opacity: 1;
@@ -114,7 +114,7 @@
   }
 }
 
-.calendar-week-days-row {
+.oa-calendar-week-days-row {
   display: grid;
   // Estilo por defecto
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
@@ -128,26 +128,26 @@
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(6, 1fr);
     
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 3; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 3 / 1 / 5 / 3; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 5 / 1 / 7 / 3; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 1 / 3 / 3 / 5; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 3 / 3 / 5 / 5; }
-    .calendar-week-day-container:nth-child(6) { grid-area: 5 / 3 / 6 / 5; }
-    .calendar-week-day-container:nth-child(7) { grid-area: 6 / 3 / 7 / 5; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 3; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 3 / 1 / 5 / 3; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 5 / 1 / 7 / 3; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 1 / 3 / 3 / 5; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 3 / 3 / 5 / 5; }
+    .oa-calendar-week-day-container:nth-child(6) { grid-area: 5 / 3 / 6 / 5; }
+    .oa-calendar-week-day-container:nth-child(7) { grid-area: 6 / 3 / 7 / 5; }
   }
   
   &.style2 {
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(6, 1fr);
     
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 3; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 3 / 1 / 5 / 3; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 5 / 1 / 7 / 3; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 1 / 3 / 3 / 5; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 3 / 3 / 5 / 5; }
-    .calendar-week-day-container:nth-child(6) { grid-area: 5 / 3 / 6 / 5; }
-    .calendar-week-day-container:nth-child(7) { grid-area: 6 / 3 / 7 / 5; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 3; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 3 / 1 / 5 / 3; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 5 / 1 / 7 / 3; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 1 / 3 / 3 / 5; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 3 / 3 / 5 / 5; }
+    .oa-calendar-week-day-container:nth-child(6) { grid-area: 5 / 3 / 6 / 5; }
+    .oa-calendar-week-day-container:nth-child(7) { grid-area: 6 / 3 / 7 / 5; }
   }
   
   &.style3 {
@@ -164,86 +164,86 @@
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(10, 1fr);
     
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 2; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 3 / 1 / 5 / 2; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 5 / 1 / 7 / 2; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 7 / 1 / 9 / 2; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 9 / 1 / 11 / 2; }
-    .calendar-week-day-container:nth-child(6) { grid-area: 1 / 2 / 6 / 3; }
-    .calendar-week-day-container:nth-child(7) { grid-area: 6 / 2 / 11 / 3; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 2; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 3 / 1 / 5 / 2; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 5 / 1 / 7 / 2; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 7 / 1 / 9 / 2; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 9 / 1 / 11 / 2; }
+    .oa-calendar-week-day-container:nth-child(6) { grid-area: 1 / 2 / 6 / 3; }
+    .oa-calendar-week-day-container:nth-child(7) { grid-area: 6 / 2 / 11 / 3; }
   }
   
   &.style6 {
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(10, 1fr);
     
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 3; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 3 / 1 / 5 / 3; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 5 / 1 / 7 / 3; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 7 / 1 / 9 / 3; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 9 / 1 / 11 / 3; }
-    .calendar-week-day-container:nth-child(6) { grid-area: 1 / 3 / 6 / 4; }
-    .calendar-week-day-container:nth-child(7) { grid-area: 6 / 3 / 11 / 4; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 3; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 3 / 1 / 5 / 3; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 5 / 1 / 7 / 3; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 7 / 1 / 9 / 3; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 9 / 1 / 11 / 3; }
+    .oa-calendar-week-day-container:nth-child(6) { grid-area: 1 / 3 / 6 / 4; }
+    .oa-calendar-week-day-container:nth-child(7) { grid-area: 6 / 3 / 11 / 4; }
   }
   
   &.style7 {
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(8, 1fr);
     
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 2; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 3 / 1 / 5 / 2; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 5 / 1 / 7 / 2; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 7 / 1 / 9 / 2; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 1 / 2 / 3 / 3; }
-    .calendar-week-day-container:nth-child(6) { grid-area: 3 / 2 / 6 / 3; }
-    .calendar-week-day-container:nth-child(7) { grid-area: 6 / 2 / 9 / 3; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 2; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 3 / 1 / 5 / 2; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 5 / 1 / 7 / 2; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 7 / 1 / 9 / 2; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 1 / 2 / 3 / 3; }
+    .oa-calendar-week-day-container:nth-child(6) { grid-area: 3 / 2 / 6 / 3; }
+    .oa-calendar-week-day-container:nth-child(7) { grid-area: 6 / 2 / 9 / 3; }
   }
   
   &.style8 {
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(5, 1fr);
     
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 2; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 1 / 2 / 3 / 3; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 1 / 3 / 3 / 4; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 3 / 1 / 5 / 2; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 3 / 2 / 5 / 3; }
-    .calendar-week-day-container:nth-child(6) { grid-area: 3 / 3 / 5 / 4; }
-    .calendar-week-day-container:nth-child(7) { grid-area: 5 / 1 / 6 / 4; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 2; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 1 / 2 / 3 / 3; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 1 / 3 / 3 / 4; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 3 / 1 / 5 / 2; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 3 / 2 / 5 / 3; }
+    .oa-calendar-week-day-container:nth-child(6) { grid-area: 3 / 3 / 5 / 4; }
+    .oa-calendar-week-day-container:nth-child(7) { grid-area: 5 / 1 / 6 / 4; }
   }
   
   &.style9 {
     grid-template-columns: repeat(10, 1fr);
     grid-template-rows: repeat(3, 1fr);
     
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 3; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 1 / 3 / 3 / 5; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 1 / 5 / 3 / 7; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 1 / 7 / 3 / 9; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 1 / 9 / 3 / 11; }
-    .calendar-week-day-container:nth-child(6) { grid-area: 3 / 1 / 4 / 6; }
-    .calendar-week-day-container:nth-child(7) { grid-area: 3 / 6 / 4 / 11; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 3; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 1 / 3 / 3 / 5; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 1 / 5 / 3 / 7; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 1 / 7 / 3 / 9; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 1 / 9 / 3 / 11; }
+    .oa-calendar-week-day-container:nth-child(6) { grid-area: 3 / 1 / 4 / 6; }
+    .oa-calendar-week-day-container:nth-child(7) { grid-area: 3 / 6 / 4 / 11; }
   }
   
   &.style10 {
     grid-template-columns: repeat(10, 1fr);
     grid-template-rows: repeat(3, 1fr);
     
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 4 / 3; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 1 / 3 / 4 / 5; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 1 / 5 / 4 / 7; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 1 / 7 / 3 / 9; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 1 / 9 / 3 / 11; }
-    .calendar-week-day-container:nth-child(6) { grid-area: 3 / 7 / 4 / 9; }
-    .calendar-week-day-container:nth-child(7) { grid-area: 3 / 9 / 4 / 11; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 4 / 3; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 1 / 3 / 4 / 5; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 1 / 5 / 4 / 7; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 1 / 7 / 3 / 9; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 1 / 9 / 3 / 11; }
+    .oa-calendar-week-day-container:nth-child(6) { grid-area: 3 / 7 / 4 / 9; }
+    .oa-calendar-week-day-container:nth-child(7) { grid-area: 3 / 9 / 4 / 11; }
   }
   
   &.style11 {
     grid-template-rows: 1fr;
     grid-template-columns: repeat(5, 1fr);
     
-    .calendar-week-day-container:nth-child(1),
-    .calendar-week-day-container:nth-child(7) {
+    .oa-calendar-week-day-container:nth-child(1),
+    .oa-calendar-week-day-container:nth-child(7) {
       display: none;
     }
   }
@@ -251,25 +251,25 @@
 
 /* Adaptaciones responsive para las vistas semanales */
 @include respond-to("md-lg") {
-  .calendar-week-days-row {
+  .oa-calendar-week-days-row {
     gap: 4px;
     padding: 4px;
   }
   
-  .calendar-week-day-container {
-    .calendar-week-day-header {
+  .oa-calendar-week-day-container {
+    .oa-calendar-week-day-header {
       padding: 4px;
       
-      .calendar-day-name {
+      .oa-calendar-day-name {
         font-size: 0.8em;
       }
       
-      .calendar-date {
+      .oa-calendar-date {
         font-size: 1em;
       }
     }
     
-    .calendar-day-content {
+    .oa-calendar-day-content {
       padding: 4px;
     }
   }
@@ -277,8 +277,8 @@
 
 /* Adaptaciones para pantallas más pequeñas */
 @include respond-to("md-lg") {
-  .calendar-day-content {
-    .calendar-task {
+  .oa-calendar-day-content {
+    .oa-calendar-task {
       // En pantallas pequeñas, mantener una columna para 1-3 tareas
       &:nth-child(-n+3) {
         flex: 0 0 100%;
@@ -297,3 +297,4 @@
     }
   }
 }
+

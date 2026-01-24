@@ -1,20 +1,20 @@
-<div class="overview-container">
-  <div class="overview-header">
+<div class="oa-overview-container">
+  <div class="oa-overview-header">
     <h2>{{t "dashboard_title"}}</h2>
-    <div class="widgets-filter">
-      <button id="widgets-filter-button" class="widgets-filter-button" title="{{t 'filter_widgets_tooltip'}}">
-        <span class="filter-icon">⚙️</span> {{t "filter_widgets"}}
+    <div class="oa-widgets-filter">
+      <button id="oa-widgets-filter-button" class="oa-widgets-filter-button" title="{{t 'filter_widgets_tooltip'}}">
+        <span class="oa-filter-icon">⚙️</span> {{t "filter_widgets"}}
       </button>
     </div>
   </div>
 
   <!-- Panel de filtros (inicialmente oculto) -->
-  <div id="widgets-filter-panel" class="widgets-filter-panel hidden">
-    <div class="filter-header">
+  <div id="oa-widgets-filter-panel" class="oa-widgets-filter-panel oa-hidden">
+    <div class="oa-filter-header">
       <h3>{{t "select_widgets"}}</h3>
-      <button id="close-filter-panel" class="close-filter-button">×</button>
+      <button id="oa-close-filter-panel" class="oa-close-filter-button">×</button>
     </div>
-    <div class="widget-checkboxes">
+    <div class="oa-widget-checkboxes">
       <label><input type="checkbox" data-widget="total-tasks" checked> {{t "total_tasks"}}</label>
       <label><input type="checkbox" data-widget="completed-tasks" checked> {{t "completed_tasks"}}</label>
       <label><input type="checkbox" data-widget="pending-tasks" checked> {{t "pending_tasks"}}</label>
@@ -35,209 +35,209 @@
       <label><input type="checkbox" data-widget="oldest-tasks" checked> {{t "oldest_tasks"}}</label>
       <label><input type="checkbox" data-widget="project-tasks" checked> {{t "project_tasks"}}</label>
     </div>
-    <div class="filter-actions">
-      <button id="apply-widget-filters" class="apply-filter-button">{{t "apply"}}</button>
-      <button id="reset-widget-filters" class="reset-filter-button">{{t "reset"}}</button>
+    <div class="oa-filter-actions">
+      <button id="oa-apply-widget-filters" class="oa-apply-filter-button">{{t "apply"}}</button>
+      <button id="oa-reset-widget-filters" class="oa-reset-filter-button">{{t "reset"}}</button>
     </div>
   </div>
   <!-- Widget de estadísticas -->
-  <div class="stats-widgets">
-    <div class="stat-card" data-widget-type="total-tasks" title="{{t 'total_tasks_tooltip'}}">
+  <div class="oa-stats-widgets">
+    <div class="oa-stat-card" data-widget-type="total-tasks" title="{{t 'total_tasks_tooltip'}}">
       <h3>{{t "total_tasks"}}</h3>
-      <div class="stat-content">
-        <span class="stat-number">{{totalTasks}}</span>
-        <div class="stat-icon">📋</div>
+      <div class="oa-stat-content">
+        <span class="oa-stat-number">{{totalTasks}}</span>
+        <div class="oa-stat-icon">📋</div>
       </div>
     </div>
 
-    <div class="stat-card" data-widget-type="completed-tasks" title="{{t 'completed_tasks_tooltip'}}">
+    <div class="oa-stat-card" data-widget-type="completed-tasks" title="{{t 'completed_tasks_tooltip'}}">
       <h3>{{t "completed_tasks"}}</h3>
-      <div class="stat-content">
-        <span class="stat-number">{{completedTasks}}</span>
-        <div class="stat-icon">✅</div>
+      <div class="oa-stat-content">
+        <span class="oa-stat-number">{{completedTasks}}</span>
+        <div class="oa-stat-icon">✅</div>
       </div>
     </div>
 
-    <div class="stat-card" data-widget-type="pending-tasks" title="{{t 'pending_tasks_tooltip'}}">
+    <div class="oa-stat-card" data-widget-type="pending-tasks" title="{{t 'pending_tasks_tooltip'}}">
       <h3>{{t "pending_tasks"}}</h3>
-      <div class="stat-content">
-        <span class="stat-number">{{pendingTasks}}</span>
-        <div class="stat-icon">⭕</div>
+      <div class="oa-stat-content">
+        <span class="oa-stat-number">{{pendingTasks}}</span>
+        <div class="oa-stat-icon">⭕</div>
       </div>
     </div>
 
-    <div class="stat-card" data-widget-type="in-progress-tasks" title="{{t 'in_progress_tasks_tooltip'}}">
+    <div class="oa-stat-card" data-widget-type="in-progress-tasks" title="{{t 'in_progress_tasks_tooltip'}}">
       <h3>{{t "in_progress_tasks"}}</h3>
-      <div class="stat-content">
-        <span class="stat-number">{{inProgressTasks}}</span>
-        <div class="stat-icon">🛠️</div>
+      <div class="oa-stat-content">
+        <span class="oa-stat-number">{{inProgressTasks}}</span>
+        <div class="oa-stat-icon">🛠️</div>
       </div>
     </div>
 
-    <div class="stat-card" data-widget-type="productivity" title="{{t 'productivity_tooltip'}}">
+    <div class="oa-stat-card" data-widget-type="productivity" title="{{t 'productivity_tooltip'}}">
       <h3>{{t "productivity"}}</h3>
-      <div class="stat-content">
-        <span class="stat-number">{{productivity}}%</span>
-        <div class="stat-icon">📊</div>
+      <div class="oa-stat-content">
+        <span class="oa-stat-number">{{productivity}}%</span>
+        <div class="oa-stat-icon">📊</div>
       </div>
     </div>
 
-    <div class="stat-card" data-widget-type="high-priority" title="{{t 'high_priority_tooltip'}}">
+    <div class="oa-stat-card" data-widget-type="high-priority" title="{{t 'high_priority_tooltip'}}">
       <h3>{{t "high_priority_w"}}</h3>
-      <div class="stat-content">
-        <span class="stat-number">{{highPriorityTasks}}</span>
-        <div class="stat-icon">🔺</div>
+      <div class="oa-stat-content">
+        <span class="oa-stat-number">{{highPriorityTasks}}</span>
+        <div class="oa-stat-icon">🔺</div>
       </div>
     </div>
 
-    <!--<div class="stat-card" data-widget-type="estimated-time" title="{{t 'estimated_time_tooltip'}}">
+    <!--<div class="oa-stat-card" data-widget-type="estimated-time" title="{{t 'estimated_time_tooltip'}}">
       <h3>{{t "estimated_time"}}</h3>
-      <div class="stat-content">
-        <span class="stat-number">{{totalEstimatedTime}}</span>
-        <div class="stat-icon">⏱️</div>
+      <div class="oa-stat-content">
+        <span class="oa-stat-number">{{totalEstimatedTime}}</span>
+        <div class="oa-stat-icon">⏱️</div>
       </div>
     </div>-->
     
     <!-- Nuevos widgets -->
-    <div class="stat-card" data-widget-type="no-date-tasks" title="{{t 'no_date_tasks_tooltip'}}">
+    <div class="oa-stat-card" data-widget-type="no-date-tasks" title="{{t 'no_date_tasks_tooltip'}}">
       <h3>{{t "no_date_tasks"}}</h3>
-      <div class="stat-content">
-        <span class="stat-number">{{noDateTasks}}</span>
-        <div class="stat-icon">📅</div>
+      <div class="oa-stat-content">
+        <span class="oa-stat-number">{{noDateTasks}}</span>
+        <div class="oa-stat-icon">📅</div>
       </div>
     </div>
 
-    <div class="stat-card" data-widget-type="completed-this-week" title="{{t 'completed_this_week_tooltip'}}">
+    <div class="oa-stat-card" data-widget-type="completed-this-week" title="{{t 'completed_this_week_tooltip'}}">
       <h3>{{t "completed_this_week"}}</h3>
-      <div class="stat-content">
-        <span class="stat-number">{{completedThisWeek}}</span>
-        <div class="stat-icon">🗓️</div>
+      <div class="oa-stat-content">
+        <span class="oa-stat-number">{{completedThisWeek}}</span>
+        <div class="oa-stat-icon">🗓️</div>
       </div>
     </div>
 
     <!--<div class="stat-card completion-trend" title="{{t 'completion_trend_tooltip'}}">
       <h3>{{t "completion_trend"}}</h3>
-      <div class="stat-content">
-        <span class="stat-number">{{completionTrend}}</span>
-        <div class="stat-icon">📈</div>
+      <div class="oa-stat-content">
+        <span class="oa-stat-number">{{completionTrend}}</span>
+        <div class="oa-stat-icon">📈</div>
       </div>
     </div>-->
 
-    <div class="stat-card" data-widget-type="completion-ratio" title="{{t 'completion_ratio_tooltip'}}">
+    <div class="oa-stat-card" data-widget-type="completion-ratio" title="{{t 'completion_ratio_tooltip'}}">
       <h3>{{t "completion_ratio"}}</h3>
-      <div class="stat-content">
-        <span class="stat-number">{{completionRatio}}</span>
-        <div class="stat-icon">📆</div>
+      <div class="oa-stat-content">
+        <span class="oa-stat-number">{{completionRatio}}</span>
+        <div class="oa-stat-icon">📆</div>
       </div>
     </div>
 
-    <div class="stat-card" data-widget-type="consistency" title="{{t 'consistency_tooltip'}}">
+    <div class="oa-stat-card" data-widget-type="consistency" title="{{t 'consistency_tooltip'}}">
       <h3>{{t "consistency"}}</h3>
-      <div class="stat-content">
-        <span class="stat-number">{{consistency}}%</span>
-        <div class="stat-icon">🔄</div>
+      <div class="oa-stat-content">
+        <span class="oa-stat-number">{{consistency}}%</span>
+        <div class="oa-stat-icon">🔄</div>
       </div>
     </div>
 
-    <div class="stat-card" data-widget-type="system-health" title="{{t 'system_health_tooltip'}}">
+    <div class="oa-stat-card" data-widget-type="system-health" title="{{t 'system_health_tooltip'}}">
       <h3>{{t "system_health"}}</h3>
-      <div class="stat-content">
-        <span class="stat-number">{{systemHealth}}%</span>
-        <div class="stat-icon">❤️</div>
+      <div class="oa-stat-content">
+        <span class="oa-stat-number">{{systemHealth}}%</span>
+        <div class="oa-stat-icon">❤️</div>
       </div>
     </div>
   </div>
 
   <!-- Widgets de listas de tareas -->
-  <div class="task-widgets-container">
+  <div class="oa-task-widgets-container">
     <!-- Tareas para hoy -->
-    <div class="task-widget" data-widget-type="today-tasks" title="{{t 'today_tasks_tooltip'}}">
+    <div class="oa-task-widget" data-widget-type="today-tasks" title="{{t 'today_tasks_tooltip'}}">
 
-      <div class="task-widget-header">
+      <div class="oa-task-widget-header">
         <h3>{{t "today_tasks"}}</h3>
-        <div class="task-widget-icon">📅</div>
+        <div class="oa-task-widget-icon">📅</div>
       </div>
-      <div class="task-list-content">
+      <div class="oa-task-list-content">
         {{#if todayTasks.length}}
-          <ul class="task-list">
+          <ul class="oa-task-list">
             {{#each todayTasks}}
-              <li class="task-item {{#if this.completed}}completed{{/if}}" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
-                <div class="task-details">
-                  <span class="task-text">{{priorityIcon this.state.priority}} {{this.section.desc}}</span>
+              <li class="oa-task-item {{#if this.completed}}completed{{/if}}" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
+                <div class="oa-task-details">
+                  <span class="oa-task-text">{{priorityIcon this.state.priority}} {{this.section.desc}}</span>
                 </div>
               </li>
             {{/each}}
           </ul>
         {{else}}
-          <div class="empty-list">{{t "no_today_tasks"}}</div>
+          <div class="oa-empty-list">{{t "no_today_tasks"}}</div>
         {{/if}}
       </div>
     </div>
 
     <!-- Tareas vencidas -->
-    <div class="task-widget" data-widget-type="overdue-tasks" title="{{t 'overdue_tasks_tooltip'}}">
-      <div class="task-widget-header">
+    <div class="oa-task-widget" data-widget-type="overdue-tasks" title="{{t 'overdue_tasks_tooltip'}}">
+      <div class="oa-task-widget-header">
         <h3>{{t "overdue_tasks"}}</h3>
-        <div class="task-widget-icon">⚠️</div>
+        <div class="oa-task-widget-icon">⚠️</div>
       </div>
-      <div class="task-list-content">
+      <div class="oa-task-list-content">
         {{#if overdueTasks.length}}
-          <ul class="task-list">
+          <ul class="oa-task-list">
             {{#each overdueTasks}}
-              <li class="task-item {{#if this.completed}}completed{{/if}}" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
-                <div class="task-details">
-                  <span class="task-text">{{this.section.desc}}</span>
-                  <span class="task-due overdue">{{formatDate this.date.due}}</span>
+              <li class="oa-task-item {{#if this.completed}}completed{{/if}}" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
+                <div class="oa-task-details">
+                  <span class="oa-task-text">{{this.section.desc}}</span>
+                  <span class="oa-task-due overdue">{{formatDate this.date.due}}</span>
                 </div>
               </li>
             {{/each}}
           </ul>
         {{else}}
-          <div class="empty-list">{{t "no_overdue_tasks"}}</div>
+          <div class="oa-empty-list">{{t "no_overdue_tasks"}}</div>
         {{/if}}
       </div>
     </div>
 
     <!-- Tareas próximas a vencer -->
-    <div class="task-widget" data-widget-type="upcoming-tasks" title="{{t 'upcoming_tasks_tooltip'}}">
-      <div class="task-widget-header">
+    <div class="oa-task-widget" data-widget-type="upcoming-tasks" title="{{t 'upcoming_tasks_tooltip'}}">
+      <div class="oa-task-widget-header">
         <h3>{{t "upcoming_tasks"}}</h3>
-        <div class="task-widget-icon">🔜</div>
+        <div class="oa-task-widget-icon">🔜</div>
       </div>
-      <div class="task-list-content">
+      <div class="oa-task-list-content">
         {{#if upcomingTasks.length}}
-          <ul class="task-list">
+          <ul class="oa-task-list">
             {{#each upcomingTasks}}
-              <li class="task-item {{#if this.completed}}completed{{/if}}" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
-                <div class="task-details">
-                  <span class="task-text">{{this.section.desc}}</span>                  
-                  <span class="task-due">{{formatDate this.date.due}}</span>
+              <li class="oa-task-item {{#if this.completed}}completed{{/if}}" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
+                <div class="oa-task-details">
+                  <span class="oa-task-text">{{this.section.desc}}</span>                  
+                  <span class="oa-task-due">{{formatDate this.date.due}}</span>
                 </div>
               </li>
             {{/each}}
           </ul>
         {{else}}
-          <div class="empty-list">{{t "no_upcoming_tasks"}}</div>
+          <div class="oa-empty-list">{{t "no_upcoming_tasks"}}</div>
         {{/if}}
       </div>
     </div>
 
     <!-- Widget de tareas no válidas -->
-    <div class="task-widget" data-widget-type="invalid-tasks" title="{{t 'invalid_tasks_tooltip'}}">
-      <div class="task-widget-header">
+    <div class="oa-task-widget" data-widget-type="invalid-tasks" title="{{t 'invalid_tasks_tooltip'}}">
+      <div class="oa-task-widget-header">
         <h3>{{t "invalid_tasks"}}</h3>
-        <div class="task-widget-icon">⚠️</div>
+        <div class="oa-task-widget-icon">⚠️</div>
       </div>
-      <div class="task-list-content">
+      <div class="oa-task-list-content">
         {{#if invalidTasks.length}}
-          <ul class="task-list">
+          <ul class="oa-task-list">
             {{#each invalidTasks}}
-              <li class="task-item clickable" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
-                <div class="task-details">
-                  <span class="task-text">{{priorityIcon this.state.priority}} {{this.section.desc}}</span>
-                  <div class="task-error-container">
+              <li class="oa-task-item clickable" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
+                <div class="oa-task-details">
+                  <span class="oa-task-text">{{priorityIcon this.state.priority}} {{this.section.desc}}</span>
+                  <div class="oa-task-error-container">
                     {{#each this.errorMessages}}
-                      <span class="task-error">{{this}}</span>
+                      <span class="oa-task-error">{{this}}</span>
                     {{/each}}
                   </div>
                 </div>
@@ -245,51 +245,51 @@
             {{/each}}
           </ul>
         {{else}}
-          <div class="empty-list">{{t "no_invalid_tasks"}}</div>
+          <div class="oa-empty-list">{{t "no_invalid_tasks"}}</div>
         {{/if}}
       </div>
     </div>
 
     <!-- Widget de tareas más antiguas -->
-    <div class="task-widget" data-widget-type="oldest-tasks" title="{{t 'oldest_tasks_tooltip'}}">
-      <div class="task-widget-header">
+    <div class="oa-task-widget" data-widget-type="oldest-tasks" title="{{t 'oldest_tasks_tooltip'}}">
+      <div class="oa-task-widget-header">
         <h3>{{t "oldest_tasks"}}</h3>
-        <div class="task-widget-icon">⏳</div>
+        <div class="oa-task-widget-icon">⏳</div>
       </div>
-      <div class="task-list-content">
+      <div class="oa-task-list-content">
         {{#if oldestTasks.length}}
-          <ul class="task-list">
+          <ul class="oa-task-list">
             {{#each oldestTasks}}
-              <li class="task-item clickable" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
-                <div class="task-details">
-                  <span class="task-text">{{priorityIcon this.state.priority}} {{this.section.desc}}</span>
-                  <span class="task-age">{{this.daysOld}} {{t "days_old"}}</span>
+              <li class="oa-task-item clickable" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
+                <div class="oa-task-details">
+                  <span class="oa-task-text">{{priorityIcon this.state.priority}} {{this.section.desc}}</span>
+                  <span class="oa-task-age">{{this.daysOld}} {{t "days_old"}}</span>
                 </div>
               </li>
             {{/each}}
           </ul>
         {{else}}
-          <div class="empty-list">{{t "no_old_tasks"}}</div>
+          <div class="oa-empty-list">{{t "no_old_tasks"}}</div>
         {{/if}}
       </div>
     </div>
 
     <!-- Widget de tareas por proyecto -->
-    <div class="task-widget" data-widget-type="project-tasks" title="{{t 'project_tasks_tooltip'}}">
-      <div class="task-widget-header">
+    <div class="oa-task-widget" data-widget-type="project-tasks" title="{{t 'project_tasks_tooltip'}}">
+      <div class="oa-task-widget-header">
         <h3>{{t "project_tasks"}}</h3>
-        <div class="task-widget-icon">📁</div>
+        <div class="oa-task-widget-icon">📁</div>
       </div>
-      <div class="task-list-content">
+      <div class="oa-task-list-content">
         {{#if projectTasks.length}}
           {{#each projectTasks}}
-            <div class="project-group">
-              <h4 class="project-name">{{this.project}} ({{this.tasks.length}})</h4>
-              <ul class="task-list">
+            <div class="oa-project-group">
+              <h4 class="oa-project-name">{{this.project}} ({{this.tasks.length}})</h4>
+              <ul class="oa-task-list">
                 {{#each this.tasks}}
-                  <li class="task-item clickable" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
-                    <div class="task-details">
-                      <span class="task-text">{{priorityIcon this.state.priority}} {{this.section.desc}}</span>
+                  <li class="oa-task-item clickable" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
+                    <div class="oa-task-details">
+                      <span class="oa-task-text">{{priorityIcon this.state.priority}} {{this.section.desc}}</span>
                     </div>
                   </li>
                 {{/each}}
@@ -297,10 +297,11 @@
             </div>
           {{/each}}
         {{else}}
-          <div class="empty-list">{{t "no_project_tasks"}}</div>
+          <div class="oa-empty-list">{{t "no_project_tasks"}}</div>
         {{/if}}
       </div>
     </div>
 
   </div>
 </div>
+

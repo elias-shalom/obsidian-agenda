@@ -2,43 +2,43 @@
 @use '../variables' as *;
 
 /* Estilos específicos para la vista de semana laboral */
-.calendar-workweek-view {
+.oa-calendar-workweek-view {
   overflow-x: hidden;
   /* Heredar estilos base de la vista semanal */
-  .calendar-week-header {
+  .oa-calendar-week-header {
     /* Sólo mostrar 5 días laborables */
-    .calendar-weekday:nth-child(6),
-    .calendar-weekday:nth-child(7) {
+    .oa-calendar-weekday:nth-child(6),
+    .oa-calendar-weekday:nth-child(7) {
       display: none;
     }
   }
   
-  .calendar-week-days-row {
+  .oa-calendar-week-days-row {
     /* Ajustar para días laborables (5 días) */
     grid-template-columns: repeat(5, 1fr);
     
     /* Ocultar fin de semana */
-    .calendar-week-day-container:nth-child(6),
-    .calendar-week-day-container:nth-child(7) {
+    .oa-calendar-week-day-container:nth-child(6),
+    .oa-calendar-week-day-container:nth-child(7) {
       display: none;
     }
   }
   
-  .calendar-week-day-container {
-    .calendar-day-content {
+  .oa-calendar-week-day-container {
+    .oa-calendar-day-content {
       overflow-y: auto;
       max-height: none;
       min-height: 0;
     }
 
-    &.calendar-today {
+    &.oa-calendar-today {
       background-color: color-mix(in srgb,$today-border-color 5%, transparent);
       border: 2px solid $today-border-color;
       
-      .calendar-week-day-header {
+      .oa-calendar-week-day-header {
         background-color: color-mix(in srgb,$today-border-color 10%, transparent);
 
-        .calendar-date {
+        .oa-calendar-date {
           color: $today-border-color;
           font-weight: bold;
           background-color: color-mix(in srgb,$today-border-color 10%, transparent);
@@ -56,117 +56,117 @@
   }
   
   /* Estilos de cuadrícula adaptados para la semana laboral (5 días) */
-  .calendar-week-days-row.style1 {
+  .oa-calendar-week-days-row.style1 {
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(5, 1fr);
     
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 2; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 3 / 1 / 5 / 2; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 1 / 2 / 3 / 3; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 3 / 2 / 5 / 3; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 1 / 3 / 5 / 4; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 2; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 3 / 1 / 5 / 2; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 1 / 2 / 3 / 3; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 3 / 2 / 5 / 3; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 1 / 3 / 5 / 4; }
   }
   
-  .calendar-week-days-row.style2 {
+  .oa-calendar-week-days-row.style2 {
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(4, 1fr);
     
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 2 / 3; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 2 / 1 / 3 / 3; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 3 / 1 / 4 / 3; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 4 / 1 / 5 / 3; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 1 / 3 / 5 / 4; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 2 / 3; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 2 / 1 / 3 / 3; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 3 / 1 / 4 / 3; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 4 / 1 / 5 / 3; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 1 / 3 / 5 / 4; }
   }
   
-  .calendar-week-days-row.style3 {
+  .oa-calendar-week-days-row.style3 {
     grid-template-columns: 1fr;
     grid-template-rows: repeat(5, 1fr);
 
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 2 / 2; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 2 / 1 / 3 / 2; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 3 / 1 / 4 / 2; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 4 / 1 / 5 / 2; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 5 / 1 / 6 / 2; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 2 / 2; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 2 / 1 / 3 / 2; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 3 / 1 / 4 / 2; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 4 / 1 / 5 / 2; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 5 / 1 / 6 / 2; }
   }
   
-  .calendar-week-days-row.style4 {
+  .oa-calendar-week-days-row.style4 {
     grid-template-columns: repeat(5, 1fr);
     grid-template-rows: 1fr;
 
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 2 / 2; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 1 / 2 / 2 / 3; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 1 / 3 / 2 / 4; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 1 / 4 / 2 / 5; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 1 / 5 / 2 / 6; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 2 / 2; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 1 / 2 / 2 / 3; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 1 / 3 / 2 / 4; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 1 / 4 / 2 / 5; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 1 / 5 / 2 / 6; }
   }
   
-  .calendar-week-days-row.style5 {
+  .oa-calendar-week-days-row.style5 {
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(6, 1fr);
     
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 2; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 3 / 1 / 5 / 2; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 5 / 1 / 7 / 2; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 1 / 2 / 4 / 4; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 4 / 2 / 7 / 4; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 2; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 3 / 1 / 5 / 2; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 5 / 1 / 7 / 2; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 1 / 2 / 4 / 4; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 4 / 2 / 7 / 4; }
   }
   
-  .calendar-week-days-row.style6 {
+  .oa-calendar-week-days-row.style6 {
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(6, 1fr);
     
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 4 / 3; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 4 / 1 / 7 / 3; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 1 / 3 / 3 / 5; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 3 / 3 / 5 / 5; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 5 / 3 / 7 / 5; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 4 / 3; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 4 / 1 / 7 / 3; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 1 / 3 / 3 / 5; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 3 / 3 / 5 / 5; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 5 / 3 / 7 / 5; }
   }
   
-  .calendar-week-days-row.style7 {
+  .oa-calendar-week-days-row.style7 {
     grid-template-columns: repeat(5, 1fr);
     grid-template-rows: repeat(3, 1fr);
     
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 2 / 3; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 2 / 1 / 3 / 3; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 3 / 1 / 4 / 3; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 1 / 3 / 3 / 6; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 3 / 3 / 4 / 6; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 2 / 3; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 2 / 1 / 3 / 3; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 3 / 1 / 4 / 3; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 1 / 3 / 3 / 6; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 3 / 3 / 4 / 6; }
   }
   
-  .calendar-week-days-row.style8 {
+  .oa-calendar-week-days-row.style8 {
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
 
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 2 / 2; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 1 / 2 / 2 / 3; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 1 / 3 / 2 / 4; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 2 / 1 / 3 / 3; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 2 / 3 / 4 / 4; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 2 / 2; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 1 / 2 / 2 / 3; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 1 / 3 / 2 / 4; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 2 / 1 / 3 / 3; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 2 / 3 / 4 / 4; }
   }
   
-  .calendar-week-days-row.style9 {
+  .oa-calendar-week-days-row.style9 {
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(4, 1fr);
 
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 3; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 1 / 3 / 3 / 5; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 1 / 5 / 3 / 7; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 1 / 7 / 3 / 9; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 3 / 1 / 5 / 9; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 3 / 3; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 1 / 3 / 3 / 5; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 1 / 5 / 3 / 7; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 1 / 7 / 3 / 9; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 3 / 1 / 5 / 9; }
   }
   
-  .calendar-week-days-row.style10 {
+  .oa-calendar-week-days-row.style10 {
     grid-template-columns: repeat(6, 1fr);
     grid-template-rows: repeat(3, 1fr);
 
-    .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 4 / 3; }
-    .calendar-week-day-container:nth-child(2) { grid-area: 1 / 3 / 2 / 7; }
-    .calendar-week-day-container:nth-child(3) { grid-area: 2 / 3 / 3 / 7; }
-    .calendar-week-day-container:nth-child(4) { grid-area: 3 / 3 / 4 / 5; }
-    .calendar-week-day-container:nth-child(5) { grid-area: 3 / 5 / 4 / 7; }
+    .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 4 / 3; }
+    .oa-calendar-week-day-container:nth-child(2) { grid-area: 1 / 3 / 2 / 7; }
+    .oa-calendar-week-day-container:nth-child(3) { grid-area: 2 / 3 / 3 / 7; }
+    .oa-calendar-week-day-container:nth-child(4) { grid-area: 3 / 3 / 4 / 5; }
+    .oa-calendar-week-day-container:nth-child(5) { grid-area: 3 / 5 / 4 / 7; }
   }
   
-  .calendar-week-days-row.style11 {
+  .oa-calendar-week-days-row.style11 {
     // Estilo simple: una fila de 5 columnas iguales
     grid-template-columns: repeat(5, 1fr);
     grid-template-rows: 1fr;
@@ -174,40 +174,40 @@
   }
 
   // Estilos específicos para tareas en vista de semana laboral
-  .calendar-day-content {
-    .calendar-task {
+  .oa-calendar-day-content {
+    .oa-calendar-task {
       // Más destacados en la vista de semana laboral
       padding: 6px 8px;
 
       // Mostrar encabezado de archivo
-      .calendar-file-header {
+      .oa-calendar-file-header {
         display: block;
         margin-bottom: 3px;
       }
 
       // Más espacio para el título de la tarea
-      .task-title {
+      .oa-task-title {
         line-height: 1.5;
       }
     }
   }
   
   // En la vista con estilo 1 y similares, ajustar tareas para celdas más grandes
-  .calendar-week-days-row.style1,
-  .calendar-week-days-row.style2,
-  .calendar-week-days-row.style5,
-  .calendar-week-days-row.style6 {
-    .calendar-day-content {
+  .oa-calendar-week-days-row.style1,
+  .oa-calendar-week-days-row.style2,
+  .oa-calendar-week-days-row.style5,
+  .oa-calendar-week-days-row.style6 {
+    .oa-calendar-day-content {
       // Para celdas grandes, mostrar tareas en diseño de dos columnas
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
 
-      .calendar-task {
+      .oa-calendar-task {
         flex: 0 0 calc(50% - 8px);
 
         // Permite mostrar todo el texto en celdas más grandes
-        .task-title {
+        .oa-task-title {
           white-space: normal;
           display: -webkit-box;
           -webkit-line-clamp: 2;
@@ -221,57 +221,57 @@
 
 /* Adaptaciones responsive para workweek */
 @include respond-to("md-lg") {
-  .calendar-workweek-view {
-    .calendar-week-days-row {
+  .oa-calendar-workweek-view {
+    .oa-calendar-week-days-row {
       gap: 4px;
       padding: 4px;
     }
     
-    .calendar-week-day-container {
+    .oa-calendar-week-day-container {
       margin: 2px;
       
-      .calendar-week-day-header {
+      .oa-calendar-week-day-header {
         padding: 3px;
         
-        .calendar-day-name {
+        .oa-calendar-day-name {
           font-size: 0.8em;
         }
         
-        .calendar-date {
+        .oa-calendar-date {
           font-size: 0.9em;
         }
       }
       
-      .calendar-day-content {
+      .oa-calendar-day-content {
         padding: 4px;
       }
     }
     
     /* Ajustes responsive para los estilos de cuadrícula en pantallas pequeñas */
-    .calendar-week-days-row.style1,
-    .calendar-week-days-row.style2,
-    .calendar-week-days-row.style5,
-    .calendar-week-days-row.style6,
-    .calendar-week-days-row.style7,
-    .calendar-week-days-row.style8,
-    .calendar-week-days-row.style9,
-    .calendar-week-days-row.style10 {
+    .oa-calendar-week-days-row.style1,
+    .oa-calendar-week-days-row.style2,
+    .oa-calendar-week-days-row.style5,
+    .oa-calendar-week-days-row.style6,
+    .oa-calendar-week-days-row.style7,
+    .oa-calendar-week-days-row.style8,
+    .oa-calendar-week-days-row.style9,
+    .oa-calendar-week-days-row.style10 {
       grid-template-columns: 1fr;
       grid-template-rows: repeat(5, 1fr);
       
-      .calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 2 / 2; }
-      .calendar-week-day-container:nth-child(2) { grid-area: 2 / 1 / 3 / 2; }
-      .calendar-week-day-container:nth-child(3) { grid-area: 3 / 1 / 4 / 2; }
-      .calendar-week-day-container:nth-child(4) { grid-area: 4 / 1 / 5 / 2; }
-      .calendar-week-day-container:nth-child(5) { grid-area: 5 / 1 / 6 / 2; }
+      .oa-calendar-week-day-container:nth-child(1) { grid-area: 1 / 1 / 2 / 2; }
+      .oa-calendar-week-day-container:nth-child(2) { grid-area: 2 / 1 / 3 / 2; }
+      .oa-calendar-week-day-container:nth-child(3) { grid-area: 3 / 1 / 4 / 2; }
+      .oa-calendar-week-day-container:nth-child(4) { grid-area: 4 / 1 / 5 / 2; }
+      .oa-calendar-week-day-container:nth-child(5) { grid-area: 5 / 1 / 6 / 2; }
     }
   }
 }
 
 /* Estilo para impresión */
 @media print {
-  .calendar-workweek-view {
-    .calendar-week-days-row {
+  .oa-calendar-workweek-view {
+    .oa-calendar-week-days-row {
       gap: 1px;
       padding: 0;
       
@@ -279,9 +279,10 @@
       grid-template-columns: repeat(5, 1fr) !important;
       grid-template-rows: 1fr !important;
       
-      .calendar-week-day-container {
+      .oa-calendar-week-day-container {
         grid-area: auto !important;
       }
     }
   }
 }
+

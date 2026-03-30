@@ -34,7 +34,7 @@ export default class ObsidianAgenda extends Plugin {
       // Añadir la pestaña de configuración
       //this.addSettingTab(new SettingTab(this.app, this, this.i18n));
 
-      this.addRibbonIcon("calendar-check", this.i18n.t("agenda_title"), async () => {
+      this.addRibbonIcon("notebook-tabs", this.i18n.t("agenda_title"), async () => {
         await this.viewManager.activateView(OVERVIEW_VIEW_TYPE);
       });
 

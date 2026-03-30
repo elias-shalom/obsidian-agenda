@@ -55,11 +55,12 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 ## 🎯 Próximas Características (v1.x)
 
 ### Core Tasks
-- [ ] Creación y edición de tareas nativas en las vistas de OBS Agenda (abc tarea al calendario)
-- [ ] Compatibilidad con tareas recursivas/repetitivas (🔁) del pluiin tasks
 - [ ] Compatibilidad con la programación de tareas según la hora del día [vista por día (hora y día completo)]
-- [ ] Compatibilidad mejorada con el formato de vista de datos del plugin de Tareas (por ahora solo es compatible con el formato emoji)
 - [ ] Configuración de tareas por nota o multiples tareas por nota (reconocimiento)
+- [ ] Creación y edición de tareas nativas en las vistas de OBS Agenda (abc tarea al calendario)
+
+- [ ] Compatibilidad con tareas recursivas/repetitivas (🔁) del pluiin tasks
+- [ ] Compatibilidad mejorada con el formato de vista de datos del plugin de Tareas (por ahora solo es compatible con el formato emoji)
 
 ### Características Experimentales (Futuro)
 - [ ] Tareas seriadas
@@ -68,16 +69,19 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 
 ### UX Improvements
 - [ ] Tool tips o help que diga como usar el plugin
-- [ ] Varias maneras de abrir el plugin
+- [ ] Varias maneras de abrir el plugin (Se agregó el command palette para abrir la obs agenda)
 - [ ] Más widgets en la vista del panel
-- [ ] Agregar atajo de ctrl + p
+- [x] Agregar atajo de ctrl + p (Se agregó el command palette para abrir la obs agenda)
 - [ ] Configuración de sonidos de notificaciones
-- [ ] Configuración de las vistas que aparecen en el encabezado
-- [ ] Imagen de cargado
+- [ ] Configuración de las vistas que aparecen en el encabezado (siguente)
+
+- [ ] Imagen de cargado (siguente)
 
 ### Calendar Enhancements
 - [ ] Calendario Drag and drop de tareas cambiando las fechas
-- [ ] Calendario. Vista por año
+
+- [ ] Calendario. Vista por año (siguente)
+
 - [ ] Calendario. Secciones extra ![vista agenda ](attachments/extra-section.png)
 
 ## 📊 Nuevas Vistas (v2.x)
@@ -97,7 +101,7 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 
 ### External Integrations
 - [ ] Importar y exportar tareas de Google, Microsoft, etc
-- [ ] Compatibilidad con dispositivos móviles
+- [ ] Compatibilidad con dispositivos móviles (validar que sea compatible)
 
 ### Advanced Features
 - [ ] Implementación de estados personalizados (estados de las tareas personalizados acorde a tasks)
@@ -170,4 +174,3 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [ ] Sugerencias automáticas de programación
 - [ ] Resolución automática de conflictos
 - [ ] Mapas de calor del calendario
-

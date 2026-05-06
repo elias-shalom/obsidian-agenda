@@ -35,6 +35,8 @@ export class OverviewView extends BaseView {
   }
 
   async onOpen(): Promise<void> {
+    this.showLoadingOverlay();
+
     this.tasks = await this.getAllTasks(this.taskManager); 
 
     // Preparar los datos para la plantilla usando las funciones específicas

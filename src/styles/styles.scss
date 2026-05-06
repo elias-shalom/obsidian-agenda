@@ -1,6 +1,7 @@
 @use "sass:color";
 @use "variables" as *; // Importar variables de otro archivo SCSS
 @use "components/header";
+@use "components/loading";
 @use "layout";
 @use "views/calendar-common";
 @use "views/calendar-month";

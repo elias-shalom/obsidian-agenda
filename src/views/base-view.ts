@@ -472,4 +472,12 @@ export abstract class BaseView extends ItemView {
     // Implementación básica que puede ser sobrescrita
     // Por defecto, no hace nada
   }
+
+  protected showLoadingOverlay(): void {
+    const container = this.containerEl.children[1] as HTMLElement;
+    //container.style.position = "relative";
+    const overlay = container.createDiv({ cls: "agenda-loading-overlay" });
+    overlay.createDiv({ cls: "agenda-loading-spinner" });
+    overlay.createDiv({ cls: "agenda-loading-label", text: "Agenda" });
+  }
 }

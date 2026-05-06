@@ -1,0 +1,43 @@
+.agenda-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background-color: var(--background-primary);
+  opacity: 1;
+  transition: opacity 0.4s ease;
+
+  &.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+.agenda-loading-spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid var(--background-modifier-border);
+  border-top-color: var(--interactive-accent);
+  border-radius: 50%;
+  animation: agenda-spin 0.75s linear infinite;
+}
+
+.agenda-loading-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  animation: agenda-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes agenda-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes agenda-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}

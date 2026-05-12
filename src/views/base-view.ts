@@ -248,7 +248,7 @@ export abstract class BaseView extends ItemView {
         
         // Verificar coincidencia exacta o si es una vista de calendario
         const isCalendarView = activeViewType.startsWith("calendar-") && tabId === "oa-calendar-view-tab";
-        const isExactMatch = tabId === `${activeViewType}-tab`;
+        const isExactMatch = tabId === `oa-${activeViewType}-tab`;
         
         if (isExactMatch || isCalendarView) {
           tab.classList.add("oa-active");
@@ -263,7 +263,7 @@ export abstract class BaseView extends ItemView {
         const divId = buttonContainer.getAttribute("id");
         
         const isCalendarContainer = activeViewType.startsWith("calendar-") && divId === "oa-calendar-view-container";
-        const isExactMatch = divId === `${activeViewType}-container`;
+        const isExactMatch = divId === `oa-${activeViewType}-container`;
         
         if (isExactMatch || isCalendarContainer) {
           buttonContainer.classList.add("oa-active");

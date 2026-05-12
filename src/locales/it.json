@@ -38,6 +38,8 @@
   "month_view_title": "Mese",
   "day_view_title": "Giorno",
   "workweek_view_title": "5 Giorni",
+  "year_view": "Anno",
+  "year_view_title": "Anno",
   "default_grid": "Griglia predefinita",
   "grid_style1": "Layout di messa a fuoco",
   "grid_style2": "Ampia parte superiore",

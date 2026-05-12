@@ -79,6 +79,7 @@ export enum TaskMisc {
 }
 
 export enum CalendarViewType {
+  Year = 'year',
   Month = 'month',
   Week = 'week',
   WorkWeek = 'workweek',

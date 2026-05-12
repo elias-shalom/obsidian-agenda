@@ -3,7 +3,7 @@ import { I18n } from "./i18n";
 import { TaskManager } from "./task-manager";
 import { OverviewView, OVERVIEW_VIEW_TYPE, CalendarMonthView, CALENDAR_MONTH_VIEW_TYPE, CalendarWeekView, CALENDAR_WEEK_VIEW_TYPE, 
   CalendarWorkWeekView, CALENDAR_WORK_WEEK_VIEW_TYPE, CalendarDayView, CALENDAR_DAY_VIEW_TYPE, ListView, LIST_VIEW_TYPE,
-  //CalendarView, CALENDAR_VIEW_TYPE, 
+  CalendarYearView, CALENDAR_YEAR_VIEW_TYPE, 
   //TimelineView, TIMELINE_VIEW_TYPE,
   //GanttView, GANTT_VIEW_TYPE, 
   TableView, TABLE_VIEW_TYPE } from "../views";
@@ -15,7 +15,8 @@ export class ViewManager {
   // Método para registrar todas las vistas
   public registerViews(): void {
     this.plugin.registerView(OVERVIEW_VIEW_TYPE, (leaf: WorkspaceLeaf) => new OverviewView(leaf, this.plugin, this.i18n, this.taskManager));
-        this.plugin.registerView(CALENDAR_MONTH_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarMonthView(leaf, this.plugin, this.i18n, this.taskManager));
+    this.plugin.registerView(CALENDAR_YEAR_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarYearView(leaf, this.plugin, this.i18n, this.taskManager));
+    this.plugin.registerView(CALENDAR_MONTH_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarMonthView(leaf, this.plugin, this.i18n, this.taskManager));
     this.plugin.registerView(CALENDAR_WEEK_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarWeekView(leaf, this.plugin, this.i18n, this.taskManager));
     this.plugin.registerView(CALENDAR_WORK_WEEK_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarWorkWeekView(leaf, this.plugin, this.i18n, this.taskManager));
     this.plugin.registerView(CALENDAR_DAY_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarDayView(leaf, this.plugin, this.i18n, this.taskManager));

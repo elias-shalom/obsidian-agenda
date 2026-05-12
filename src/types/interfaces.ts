@@ -408,6 +408,30 @@ export interface MonthViewData {
   periodName: string;
 }
 
+export interface YearViewData {
+  viewType: CalendarViewType;
+  year: number;
+  months: {
+    monthName: string;
+    monthAbbr: string;
+    monthNumber: number;
+    year: number;
+    weeks: {
+      days: {
+        date: DateTime;
+        isCurrentMonth: boolean;
+        isToday: boolean;
+        dayOfMonth: number;
+        hasTasksDue: boolean;
+        taskCount: number;
+      }[];
+      weekNumber: number;
+    }[];
+  }[];
+  dayNames: string[];
+  periodName: string;
+}
+
 /**
  * Tipo unión para todos los tipos de datos de vistas de calendario
  * Esto permite que las clases derivadas usen tipos específicos mientras mantienen compatibilidad
@@ -415,7 +439,8 @@ export interface MonthViewData {
 export type CalendarViewData = 
   | WeekViewData
   | DayViewData  
-  | MonthViewData;
+  | MonthViewData
+  | YearViewData;
 /**
  * Tipo unión para todos los posibles datos que pueden pasar las vistas específicas
  */
@@ -427,4 +452,5 @@ export type ViewData =
   | DayViewData
   | CalendarViewData
   | MonthViewData
+  | YearViewData
   | Record<string, unknown>; // Para casos no especificados

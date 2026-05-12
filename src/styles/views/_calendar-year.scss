@@ -1,0 +1,164 @@
+@use "sass:color";
+@use '../variables' as *;
+
+// Calendar Year View Styles
+.oa-calendar-year-view {
+  padding: 20px;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.oa-calendar-year-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 1400px;
+}
+
+.oa-calendar-year-month {
+  border: 1px solid var(--divider-color);
+  border-radius: 8px;
+  padding: 12px;
+  background-color: var(--background-secondary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.oa-calendar-year-month-header {
+  margin-bottom: 10px;
+  text-align: center;
+
+  h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-normal);
+  }
+}
+
+.oa-calendar-year-month-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.oa-calendar-year-weekday {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  padding: 4px 0;
+}
+
+.oa-calendar-year-month-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.oa-calendar-year-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.oa-calendar-year-day {
+  aspect-ratio: 1;
+  border: 1px solid var(--divider-color);
+  border-radius: 4px;
+  background-color: var(--background-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 2px;
+  font-size: 11px;
+  min-height: 30px;
+
+  &.oa-other-month {
+    background-color: var(--background-secondary);
+    opacity: 0.5;
+    color: var(--text-muted);
+  }
+
+  &.oa-current-month {
+    background-color: var(--background-primary);
+    color: var(--text-normal);
+  }
+
+  &.oa-year-today {
+    background-color: var(--interactive-accent);
+    color: white;
+    font-weight: 600;
+    border-color: var(--interactive-accent);
+  }
+
+  &.oa-has-tasks {
+    &:not(.oa-year-today) {
+      background-color: var(--background-tertiary);
+      border-color: var(--interactive-accent);
+    }
+  }
+
+  &:hover:not(.oa-other-month) {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+  }
+}
+
+.oa-year-day-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  gap: 1px;
+}
+
+.oa-year-day-number {
+  font-weight: 500;
+  font-size: 11px;
+}
+
+.oa-year-task-indicator {
+  font-size: 8px;
+  color: var(--interactive-accent);
+  line-height: 1;
+}
+
+// Responsive adjustments
+@media (max-width: 1200px) {
+  .oa-calendar-year-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .oa-calendar-year-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .oa-calendar-year-month {
+    padding: 10px;
+  }
+
+  .oa-calendar-year-day {
+    min-height: 25px;
+  }
+
+  .oa-calendar-year-weekday {
+    font-size: 10px;
+  }
+
+  .oa-year-day-number {
+    font-size: 10px;
+  }
+}

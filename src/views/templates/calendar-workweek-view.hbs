@@ -25,6 +25,7 @@
       {{/equals}}
       <div class="oa-calendar-view-selector">
         <select id="oa-calendar-view-dropdown" class="oa-calendar-view-dropdown">
+          <option value="year" {{#equals calendar.viewType "year"}}selected{{/equals}}>{{t "year_view"}}</option>
           <option value="month" {{#equals calendar.viewType "month"}}selected{{/equals}}>{{t "month_view"}}</option>
           <option value="week" {{#equals calendar.viewType "week"}}selected{{/equals}}>{{t "week_view"}}</option>
           <option value="workweek" {{#equals calendar.viewType "workweek"}}selected{{/equals}}>{{t "workweek_view"}}</option>

@@ -38,6 +38,8 @@
   "month_view_title": "Month",
   "day_view_title": "Day",
   "workweek_view_title": "Work week",
+  "year_view": "Year",
+  "year_view_title": "Year",
   "default_grid": "Default grid",
   "grid_style1": "Focus layout",
   "grid_style2": "Wide top",

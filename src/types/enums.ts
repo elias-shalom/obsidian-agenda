@@ -53,7 +53,7 @@ export enum TaskPriority {
   Highest = "highest"
 }
 
-export enum TaskPriorityIcon {
+export enum TaskPriorityEmoji {
   Lowest = "⏬",
   Low = "🔽", 
   Normal = "▶️", // Sin ícono específico
@@ -79,6 +79,7 @@ export enum TaskMisc {
 }
 
 export enum CalendarViewType {
+  Year = 'year',
   Month = 'month',
   Week = 'week',
   WorkWeek = 'workweek',

@@ -4,6 +4,7 @@
 @use "components/loading";
 @use "layout";
 @use "views/calendar-common";
+@use "views/calendar-year";
 @use "views/calendar-month";
 @use "views/calendar-week";
 @use "views/calendar-workweek";
@@ -11,4 +12,3 @@
 @use "views/list-view";
 @use "views/table-view";
 @use "views/overview-view";
-

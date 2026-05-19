@@ -246,6 +246,8 @@ export abstract class CalendarView extends BaseView {
         return CalendarViewType.WorkWeek;
       case 'day':
         return CalendarViewType.Day;
+      case 'year':
+        return CalendarViewType.Year;
       default:
         return CalendarViewType.Month; // Valor por defecto
     }
@@ -262,6 +264,9 @@ export abstract class CalendarView extends BaseView {
     // Determinar el ID de vista según el tipo
     let viewId;
     switch (viewType) {
+      case CalendarViewType.Year:
+        viewId = 'calendar-year-view';
+        break;
       case CalendarViewType.Month:
         viewId = 'calendar-month-view';
         break;

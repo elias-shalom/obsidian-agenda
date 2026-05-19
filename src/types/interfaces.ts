@@ -57,7 +57,7 @@ export interface ITaskLine {
  */
 export interface ITaskState {
   status: string;
-  icon: string;
+  emoji: string;
   text: string;
   priority: string;
   isValid: boolean;
@@ -89,9 +89,9 @@ export interface ITaskSection {
  * Configuración de flow de la tarea
  */
 export interface ITaskFlow {
-  recur: string;
+  repeat: string;
   blockLink: string;
-  deps: string[];
+  dependsOn: string[];
   onCompletion: string | null;
 }
 
@@ -125,8 +125,8 @@ export interface ITask {
   //get lineNumber(): number;
   /** @deprecated Use state.status instead */
   //get status(): string;
-  /** @deprecated Use state.icon instead */
-  //get statusIcon(): string;
+  /** @deprecated Use state.emoji instead */
+  //get statusEmoji(): string;
   /** @deprecated Use state.text instead */
   //get statusText(): string;
   /** @deprecated Use section.tags instead */
@@ -149,7 +149,7 @@ export interface ITask {
   //get recurrence(): string;
   /** @deprecated Use flow.onCompletion instead */
   //get onCompletion(): string | null;
-  /** @deprecated Use flow.deps instead */
+  /** @deprecated Use flow.dependsOn instead */
   //get dependsOn(): string[];
   /** @deprecated Use flow.blockLink instead */
   //get blockLink(): string;
@@ -408,6 +408,30 @@ export interface MonthViewData {
   periodName: string;
 }
 
+export interface YearViewData {
+  viewType: CalendarViewType;
+  year: number;
+  months: {
+    monthName: string;
+    monthAbbr: string;
+    monthNumber: number;
+    year: number;
+    weeks: {
+      days: {
+        date: DateTime;
+        isCurrentMonth: boolean;
+        isToday: boolean;
+        dayOfMonth: number;
+        hasTasksDue: boolean;
+        taskCount: number;
+      }[];
+      weekNumber: number;
+    }[];
+  }[];
+  dayNames: string[];
+  periodName: string;
+}
+
 /**
  * Tipo unión para todos los tipos de datos de vistas de calendario
  * Esto permite que las clases derivadas usen tipos específicos mientras mantienen compatibilidad
@@ -415,7 +439,8 @@ export interface MonthViewData {
 export type CalendarViewData = 
   | WeekViewData
   | DayViewData  
-  | MonthViewData;
+  | MonthViewData
+  | YearViewData;
 /**
  * Tipo unión para todos los posibles datos que pueden pasar las vistas específicas
  */
@@ -427,4 +452,5 @@ export type ViewData =
   | DayViewData
   | CalendarViewData
   | MonthViewData
+  | YearViewData
   | Record<string, unknown>; // Para casos no especificados

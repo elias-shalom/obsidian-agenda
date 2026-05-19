@@ -1,4 +1,5 @@
 {
+  "no_overdue_tasks": "Nenhuma tarefa atrasada",
   "no_today_tasks": "Nenhuma tarefa para hoje",
   "no_upcoming_tasks": "Nenhuma tarefa próxima",
   "agenda_title": "Agenda",
@@ -38,6 +39,8 @@
   "month_view_title": "Mês",
   "day_view_title": "Dia",
   "workweek_view_title": "5 Dias",
+  "year_view": "Ano",
+  "year_view_title": "Ano",
   "default_grid": "Grade padrão",
   "grid_style1": "Layout de foco",
   "grid_style2": "Topo largo",

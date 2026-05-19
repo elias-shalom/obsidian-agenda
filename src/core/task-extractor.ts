@@ -109,8 +109,8 @@ export class TaskExtractor {
       const status = Task.extractStatusFromHeader(taskSection.header);
       const tags = Task.extractTags(line);
       const statusText = this.getCoreTaskStatusName(status);
-      // Obtiene el icono del enum CoreTaskStatusIcon
-      const statusIcon = this.getCoreTaskStatusIcon(status);
+      // Obtiene el emoji del enum CoreTaskStatusEmoji
+      const statusEmoji = this.getCoreTaskStatusEmoji(status);
       const rootFolder = this.getRootFolder(file.path);
 
       // Crear la nueva estructura optimizada
@@ -132,7 +132,7 @@ export class TaskExtractor {
         
         state: {
           status: status,
-          icon: statusIcon,
+          emoji: statusEmoji,
           text: statusText,
           priority: taskSection.extractPriority(taskSection.taskData.priority),
           isValid: taskSection.extractIsValid(taskSection.taskData.isValid)
@@ -155,9 +155,9 @@ export class TaskExtractor {
         },
         
         flow: {
-          recur: taskSection.extractString(taskSection.taskData.recurrence),
+          repeat: taskSection.extractString(taskSection.taskData.recurrence),
           blockLink: taskSection.blockLink,
-          deps: taskSection.extractDependencies(taskSection.taskData.dependsOn),
+          dependsOn: taskSection.extractDependencies(taskSection.taskData.dependsOn),
           onCompletion: taskSection.extractOnCompletion(taskSection.taskData.onCompletion)
         }
       });
@@ -212,7 +212,7 @@ export class TaskExtractor {
   /**
    * Obtiene el icono del estado de la tarea
    */
-  private getCoreTaskStatusIcon(status: CoreTaskStatus): string {
+  private getCoreTaskStatusEmoji(status: CoreTaskStatus): string {
     switch (status) {
       case CoreTaskStatus.Todo:
         return CoreTaskStatusIcon.Todo;

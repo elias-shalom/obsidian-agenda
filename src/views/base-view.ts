@@ -3,7 +3,7 @@ import Handlebars from 'handlebars';
 import { ITask, FolderNode, ViewData, AgendaPlugin } from '../types/interfaces';
 import { TaskManager } from '../core/task-manager';
 import { DateTime } from 'luxon';
-import { TaskPriorityIcon } from '../types/enums';
+import { TaskPriorityEmoji } from '../types/enums';
 // @ts-ignore: Plugin de esbuild maneja los archivos .hbs
 import headerTemplate from './templates/header.hbs';
 
@@ -182,15 +182,15 @@ export abstract class BaseView extends ItemView {
       if (!priority) return "";
       
       // Devolver directamente el valor del enum si existe
-      if (Object.values(TaskPriorityIcon).includes(priority as TaskPriorityIcon)) {
+      if (Object.values(TaskPriorityEmoji).includes(priority as TaskPriorityEmoji)) {
         return priority;
       }
       
       // Si es un string que coincide con una clave del enum (case insensitive)
       const uppercasePriority = priority.toUpperCase?.() || priority;
-      for (const key in TaskPriorityIcon) {
+      for (const key in TaskPriorityEmoji) {
         if (key.toUpperCase() === uppercasePriority) {
-          return TaskPriorityIcon[key as keyof typeof TaskPriorityIcon];
+          return TaskPriorityEmoji[key as keyof typeof TaskPriorityEmoji];
         }
       }
       
@@ -248,7 +248,7 @@ export abstract class BaseView extends ItemView {
         
         // Verificar coincidencia exacta o si es una vista de calendario
         const isCalendarView = activeViewType.startsWith("calendar-") && tabId === "oa-calendar-view-tab";
-        const isExactMatch = tabId === `${activeViewType}-tab`;
+        const isExactMatch = tabId === `oa-${activeViewType}-tab`;
         
         if (isExactMatch || isCalendarView) {
           tab.classList.add("oa-active");
@@ -263,7 +263,7 @@ export abstract class BaseView extends ItemView {
         const divId = buttonContainer.getAttribute("id");
         
         const isCalendarContainer = activeViewType.startsWith("calendar-") && divId === "oa-calendar-view-container";
-        const isExactMatch = divId === `${activeViewType}-container`;
+        const isExactMatch = divId === `oa-${activeViewType}-container`;
         
         if (isExactMatch || isCalendarContainer) {
           buttonContainer.classList.add("oa-active");

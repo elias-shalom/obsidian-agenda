@@ -1,16 +1,16 @@
-import { OnCompletion, TaskPriorityIcon } from "../types/enums";
+import { OnCompletion, TaskPriorityEmoji } from "../types/enums";
 import { I18n } from "../core/i18n";
 import { rrulestr } from 'rrule';
 import { DateTime } from "luxon";
 
 /**
- * Interfaz para la configuración de iconos en las tareas
+ * Interfaz para la configuración de emojios en las tareas
  */
-interface IconConfig {
+interface EmojiConfig {
   type: 'date' | 'priority' | 'recurrence' | 'id' | 'blocked' | 'completion';
   property: string;
   format?: string;
-  value?: string | number | TaskPriorityIcon;
+  value?: string | number | TaskPriorityEmoji;
   name?: string;
   values?: (string | number)[];
 }
@@ -81,13 +81,39 @@ export class TaskSection {
        */
   // Propiedades para las expresiones regulares
   private headerRegex: RegExp;
-  private iconRegex: RegExp;
+  private emojiRegex: RegExp;
 
   // Nueva propiedad estática para el formato de tareas
   static readonly taskFormatRegex: RegExp = /^[\t ]*(>*)\s*(-|\*|\+|\d+[.)]) {0,4}\[(.)\] {0,4}\S.+/g;
 
-  private readonly iconMapping: Record<string, IconConfig> = {
-    // Iconos de fechas
+  private readonly dataviewKeyMapping: Record<string, string> = {
+    'due':           'dueDate',
+    'duedate':       'dueDate',
+    'start':         'startDate',
+    'startdate':     'startDate',
+    'scheduled':     'scheduledDate',
+    'scheduleddate': 'scheduledDate',
+    'created':       'createdDate',
+    'createddate':   'createdDate',
+    'done':          'doneDate',
+    'donedate':      'doneDate',
+    'cancelled':     'cancelledDate',
+    'cancelleddate': 'cancelledDate',
+    'canceled':      'cancelledDate',
+    'canceleddate':  'cancelledDate',
+    'priority':      'priority',
+    'recurrence':    'recurrence',
+    'repeat':        'recurrence',
+    'id':            'id',
+    'dependson':     'dependsOn',
+    'depends':       'dependsOn',
+    'blockedby':     'dependsOn',
+    'oncompletion':  'onCompletion',
+    'completion':    'onCompletion',
+  };
+
+  private readonly emojiMapping: Record<string, EmojiConfig> = {
+    // Emojios de fechas
     "📅": { type: "date", property: "dueDate", format: "YYYY-MM-DD" },
     "🛫": { type: "date", property: "startDate", format: "YYYY-MM-DD" },
     "⏳": { type: "date", property: "scheduledDate", format: "YYYY-MM-DD" },
@@ -95,14 +121,14 @@ export class TaskSection {
     "❌": { type: "date", property: "cancelledDate", format: "YYYY-MM-DD" },
     "➕": { type: "date", property: "createdDate", format: "YYYY-MM-DD" },
     
-    // Iconos de prioridad con nombre legible
-    "⏬": { type: "priority", property: "priority", value: TaskPriorityIcon.Lowest, name: "lowest" },
-    "🔽": { type: "priority", property: "priority", value: TaskPriorityIcon.Low, name: "low" },
-    "🔼": { type: "priority", property: "priority", value: TaskPriorityIcon.Medium, name: "medium" },
-    "⏫": { type: "priority", property: "priority", value: TaskPriorityIcon.High, name: "high" },
-    "🔺": { type: "priority", property: "priority", value: TaskPriorityIcon.Highest, name: "highest" },
+    // Emojios de prioridad con nombre legible
+    "⏬": { type: "priority", property: "priority", value: TaskPriorityEmoji.Lowest, name: "lowest" },
+    "🔽": { type: "priority", property: "priority", value: TaskPriorityEmoji.Low, name: "low" },
+    "🔼": { type: "priority", property: "priority", value: TaskPriorityEmoji.Medium, name: "medium" },
+    "⏫": { type: "priority", property: "priority", value: TaskPriorityEmoji.High, name: "high" },
+    "🔺": { type: "priority", property: "priority", value: TaskPriorityEmoji.Highest, name: "highest" },
 
-    // Otros iconos
+    // Otros emojios
     "🔁": { type: "recurrence", property: "recurrence" },
     "🆔": { type: "id", property: "id" },
     "⛔": { type: "blocked", property: "blockedBy" },
@@ -117,16 +143,16 @@ export class TaskSection {
       this.tasksFields = [];
       this.blockLink = "";
       this.headerRegex = /^[\t ]*(>*)\s*(-|\*|\+|\d+[.)]) {0,4}\[(.)\] {0,4}/;
-      this.iconRegex = /📅|🛫|⏳|✅|❌|➕|⏬|⏫|🔼|🔽|🔺|🔁|🆔|⛔|🏁/g;
+      this.emojiRegex = /📅|🛫|⏳|✅|❌|➕|⏬|⏫|🔼|🔽|🔺|🔁|🆔|⛔|🏁/g;
   }
 
   /**
-   * Método helper para obtener la configuración de un icono de forma segura
-   * @param icon El icono a buscar
-   * @returns La configuración del icono o null si no existe
+   * Método helper para obtener la configuración de un emoji de forma segura
+   * @param emoji El emoji a buscar
+   * @returns La configuración del emoji o null si no existe
    */
-  private getIconConfig(icon: string): IconConfig | null {
-    return this.iconMapping[icon] || null;
+  private getEmojiConfig(emoji: string): EmojiConfig | null {
+    return this.emojiMapping[emoji] || null;
   }
 
   /**
@@ -280,14 +306,17 @@ export class TaskSection {
   private extractDescription(text: string): string {
     let smallestIndex = text.length; // Inicializar con el tamaño máximo del texto
 
-    // Buscar todas las coincidencias de los íconos
-    const matches = text.matchAll(this.iconRegex);
+    // Buscar todas las coincidencias de los emojis
+    for (const match of text.matchAll(this.emojiRegex)) {
+      const index = match.index;
+      if (index < smallestIndex) smallestIndex = index;
+    }
 
-    for (const match of matches) {
-        const index = match.index;
-        if (index < smallestIndex) {
-            smallestIndex = index; // Actualizar el índice más pequeño
-        }
+    // Buscar marcadores dataview [key::
+    const dataviewMarkerRegex = /\[[a-zA-Z][a-zA-Z0-9_]*::/g;
+    for (const match of text.matchAll(dataviewMarkerRegex)) {
+      const index = match.index;
+      if (index < smallestIndex) smallestIndex = index;
     }
 
     // Si se encontró un ícono, cortar el texto hasta el índice más pequeño
@@ -300,49 +329,106 @@ export class TaskSection {
   }
 
   /**
+ * Extrae los campos específicos de la tarea del texto restante.
+ * Orquesta la extracción en dos formatos: emoji y dataview.
+ * @param text Texto restante después de eliminar el encabezado.
+ * @returns Un objeto que contiene el arreglo de campos y los datos estructurados extraídos.
+ */
+  private extractTasksFields(text: string): { fields: string[], taskData: Record<string, string | number | boolean | string[] | null | undefined> } {
+    const errors: string[] = [];
+    const taskData: Record<string, string | number | boolean | string[] | null | undefined> = {};
+    const allFields: string[] = [];
+
+    // Extraer todos los campos dataview del texto original
+    const dataviewFieldRegex = /\[([a-zA-Z][a-zA-Z0-9_]*)::\s*([^\]]*)\]/g;
+    const dataviewMatches = Array.from(text.matchAll(dataviewFieldRegex));
+    
+    // Crear un texto sin los dataview para procesarlo con emojis
+    let textWithoutDataview = text;
+    for (const match of dataviewMatches) {
+      textWithoutDataview = textWithoutDataview.replace(match[0], '');
+    }
+    textWithoutDataview = textWithoutDataview.replace(/\s+/g, ' ').trim();
+
+    // Extraer campos en formato emoji
+    const emojiResult = this.extractEmojiFields(textWithoutDataview);
+    allFields.push(...emojiResult.fields);
+    Object.assign(taskData, emojiResult.taskData);
+    if (emojiResult.errors) {
+      errors.push(...emojiResult.errors);
+    }
+
+    // Extraer campos en formato dataview
+    const dataviewResult = this.extractDataviewFields(text);
+    allFields.push(...dataviewResult.fields);
+    // Merge dataview taskData sin sobrescribir valores existentes (emoji tiene prioridad)
+    for (const [key, value] of Object.entries(dataviewResult.taskData)) {
+      if (!(key in taskData)) {
+        taskData[key] = value;
+      } else if (key === 'dependsOn' && Array.isArray(taskData[key]) && Array.isArray(value)) {
+        // Caso especial: merge de dependencias
+        taskData[key] = [...(taskData[key]), ...value];
+      }
+    }
+    if (dataviewResult.errors) {
+      errors.push(...dataviewResult.errors);
+    }
+
+    // Establecer estado final
+    if (errors.length > 0) {
+      taskData.errors = errors;
+      taskData.isValid = false;
+    } else {
+      taskData.isValid = true;
+    }
+
+    return { fields: allFields, taskData };
+  }
+
+  /**
    * Extrae los campos específicos de la tarea del texto restante.
    * @param text Texto restante después de eliminar el encabezado.
    * @returns Un objeto que contiene el arreglo de campos y los datos estructurados extraídos.
    */
-  private extractTasksFields(text: string): { fields: string[], taskData: Record<string, string | number | boolean | string[] | null | undefined> } {
+  private extractEmojiFields(text: string): { fields: string[], taskData: Record<string, string | number | boolean | string[] | null | undefined>, errors: string[]  } {
     const fields: string[] = [];
     const taskData: Record<string, string | number | boolean | string[] | null | undefined> = {};
     const errors: string[] = [];
 
-    const iconDateRegex = /(📅|🛫|⏳|✅|❌|➕)\s*(\d{4}-\d{2}-\d{2})\s*$/g // Ícono seguido de una fecha en formato YYYY-MM-DD
-    const iconEmptyRegex = /(⏬|⏫|🔼|🔽|🔺)\s*$/g; // Ícono seguido solo por espacios o tabulaciones
-    const iconCompletionRegex = /🏁\s*(keep|delete)/g; // Ícono 🏁 seguido de valores válidos de OnCompletion
-    const iconBlockedRegex = /⛔\s*(.*)/g; // Ícono bloqueado seguido de una cadena de identificadores
-    const iconRecurrenceRegex = /🔁\s*(.*)/g; // Ícono de recurrencia seguido de una cadena de texto
-    const idIconsRegex = /🆔\s*(.*)/g; // Otros íconos que no requieren validación adicional
+    const emojiDateRegex = /(📅|🛫|⏳|✅|❌|➕)\s*(\d{4}-\d{2}-\d{2})\s*$/g // Ícono seguido de una fecha en formato YYYY-MM-DD
+    const emojiEmptyRegex = /(⏬|⏫|🔼|🔽|🔺)\s*$/g; // Ícono seguido solo por espacios o tabulaciones
+    const emojiCompletionRegex = /🏁\s*(keep|delete)/g; // Ícono 🏁 seguido de valores válidos de OnCompletion
+    const emojiBlockedRegex = /⛔\s*(.*)/g; // Ícono bloqueado seguido de una cadena de identificadores
+    const emojiRecurrenceRegex = /🔁\s*(.*)/g; // Ícono de recurrencia seguido de una cadena de texto
+    const idEmojisRegex = /🆔\s*(.*)/g; // Otros íconos que no requieren validación adicional
 
-    const matches = Array.from(text.matchAll(this.iconRegex)); // Encontrar todas las coincidencias de íconos
+    const matches = Array.from(text.matchAll(this.emojiRegex)); // Encontrar todas las coincidencias de emojis
 
     for (let i = 0; i < matches.length; i++) {
       const match = matches[i];
       const matchIndex = match.index;
       const nextMatchIndex = i + 1 < matches.length ? matches[i + 1].index : text.length;
 
-      // Extraer el texto desde el inicio del ícono actual hasta justo antes del siguiente ícono
+      // Extraer el texto desde el inicio del emoji actual hasta justo antes del siguiente emoji
       let fieldText = text.slice(matchIndex, nextMatchIndex).trim();
       
-      const icon = match[0]; // Obtener el ícono actual
+      const emoji = match[0]; // Obtener el emoji actual
 
-      // Obtener la configuración del icono desde el mapeo
-      const iconConfig = this.getIconConfig(icon);
+      // Obtener la configuración del emoji desde el mapeo
+      const emojiConfig = this.getEmojiConfig(emoji);
 
-      if (iconConfig) {
+      if (emojiConfig) {
         let isValid = true;
         let extractedValue: string | null = null;
         let errorMessage = "";
 
-        switch (iconConfig.type) {
+        switch (emojiConfig.type) {
           case "date": {
             // Reiniciar la expresión regular (debido a 'g')
-            iconDateRegex.lastIndex = 0;
+            emojiDateRegex.lastIndex = 0;
 
             // Verificar si el campo es válido usando la expresión regular específica
-            if (iconDateRegex.test(fieldText)) {
+            if (emojiDateRegex.test(fieldText)) {
               // Extraer la fecha YYYY-MM-DD
               const dateMatch = fieldText.match(/\d{4}-\d{2}-\d{2}/);
               if (dateMatch) {
@@ -350,7 +436,7 @@ export class TaskSection {
               }
             } else {
               isValid = false;
-              errorMessage = this.i18n.t('errors.invalidDate', { icon: icon });
+              errorMessage = this.i18n.t('errors.invalidDate', { emoji: emoji });
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
@@ -358,41 +444,41 @@ export class TaskSection {
 
           case "priority":
             // Reiniciar la expresión regular (debido a 'g')
-            iconEmptyRegex.lastIndex = 0;
+            emojiEmptyRegex.lastIndex = 0;
 
             // Verificar si el campo es válido usando la expresión regular específica
-            if (iconEmptyRegex.test(fieldText)) {
-              extractedValue = iconConfig.name || "normal";
+            if (emojiEmptyRegex.test(fieldText)) {
+              extractedValue = emojiConfig.name || "normal";
             } else {
               isValid = false;
-              errorMessage = this.i18n.t('errors.invalidPriority', { icon: icon });
+              errorMessage = this.i18n.t('errors.invalidPriority', { emoji: emoji });
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
 
           case "completion": {
             // Reiniciar la expresión regular (debido a 'g')
-            iconCompletionRegex.lastIndex = 0;
+            emojiCompletionRegex.lastIndex = 0;
 
             // Verificar si el campo es válido usando la expresión regular específica
-            if (iconCompletionRegex.test(fieldText)) {
+            if (emojiCompletionRegex.test(fieldText)) {
               const completionMatch = fieldText.match(/keep|delete/i);
               if (completionMatch) {
                 extractedValue = completionMatch[0].toLowerCase();
               }
             } else {
               isValid = false;
-              errorMessage = this.i18n.t('errors.invalidCompletion', { icon: icon });;
+              errorMessage = this.i18n.t('errors.invalidCompletion', { emoji: emoji });;
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
           }
           case "blocked": {
             // Reiniciar la expresión regular (debido a 'g')
-            iconBlockedRegex.lastIndex = 0;
+            emojiBlockedRegex.lastIndex = 0;
 
-            if (iconBlockedRegex.test(fieldText) ) {
-              extractedValue = fieldText.substring(icon.length).trim();
+            if (emojiBlockedRegex.test(fieldText) ) {
+              extractedValue = fieldText.substring(emoji.length).trim();
               const dependencies = extractedValue.split(',').map(dep => dep.trim()).filter(dep => dep.length > 0);
               
               // Asignar como array en lugar de string
@@ -401,7 +487,7 @@ export class TaskSection {
               }
             } else {
               isValid = false;
-              errorMessage = this.i18n.t('errors.invalidDependency', { icon: icon });
+              errorMessage = this.i18n.t('errors.invalidDependency', { emoji: emoji });
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
@@ -409,10 +495,10 @@ export class TaskSection {
           case "recurrence": {
             // ! Error en la recurrencia no invalida la tarea
             // Reiniciar la expresión regular (debido a 'g')
-            iconRecurrenceRegex.lastIndex = 0;
+            emojiRecurrenceRegex.lastIndex = 0;
 
-            if (iconRecurrenceRegex.test(fieldText)) {
-              const recurrenceText = fieldText.substring(icon.length).trim();
+            if (emojiRecurrenceRegex.test(fieldText)) {
+              const recurrenceText = fieldText.substring(emoji.length).trim();
 
               try {
                 // Convertir texto de recurrencia al formato RRULE
@@ -427,37 +513,37 @@ export class TaskSection {
                   throw new Error("No se pudo convertir al formato RRULE");
                 }
               } catch (error) {                
-                errorMessage = this.i18n.t('errors.invalidRecurrencePattern', { icon });
+                errorMessage = this.i18n.t('errors.invalidRecurrencePattern', { emoji: emoji });
                 fieldText = `${fieldText} @${errorMessage}`;
                 console.error(error);
               }
             } else {              
-              errorMessage = this.i18n.t('errors.invalidRecurrence', { icon });
+              errorMessage = this.i18n.t('errors.invalidRecurrence', { emoji: emoji });
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
           }
           case "id": {
             // Reiniciar la expresión regular (debido a 'g')
-            idIconsRegex.lastIndex = 0;
+            idEmojisRegex.lastIndex = 0;
 
-            // Para otros tipos de iconos, usar la expresión regular de otros iconos
-            const otherMatch = idIconsRegex.exec(fieldText);
+            // Para otros tipos de emojis, usar la expresión regular de otros emojis
+            const otherMatch = idEmojisRegex.exec(fieldText);
             if (otherMatch && otherMatch[2] !== undefined) {
               extractedValue = otherMatch[2].trim();
             } else {
-              extractedValue = fieldText.substring(icon.length).trim();
+              extractedValue = fieldText.substring(emoji.length).trim();
             }
             break;
           }
         }
 
         // Si el campo es válido y tiene una propiedad definida, guardarla en taskData
-        if (isValid && iconConfig.property) {
-          taskData[iconConfig.property] = extractedValue;
+        if (isValid && emojiConfig.property) {
+          taskData[emojiConfig.property] = extractedValue;
         } else if (!isValid) {
           // Si el campo es inválido, guardar el error en taskData
-          const errorProperty = `${iconConfig.property || 'field'}_error`;
+          const errorProperty = `${emojiConfig.property || 'field'}_error`;
           taskData[errorProperty] = errorMessage;
           errors.push(errorMessage); // Agregar al array de errores
         }
@@ -475,7 +561,93 @@ export class TaskSection {
       taskData.isValid = true;
     }
 
-    return { fields, taskData };
+    return { fields, taskData, errors };
+  }
+
+  /**
+   * Extrae campos en formato dataview (ej: [due:: 2023-05-01] [priority:: high])
+   * @param text Texto a procesar
+   * @returns Objeto con fields, taskData y errors
+   */
+  private extractDataviewFields(text: string): { fields: string[], taskData: Record<string, string | number | boolean | string[] | null | undefined>, errors: string[] } {
+    const fields: string[] = [];
+    const taskData: Record<string, string | number | boolean | string[] | null | undefined> = {};
+    const errors: string[] = [];
+
+    const dataviewFieldRegex = /\[([a-zA-Z][a-zA-Z0-9_]*)::\s*([^\]]*)\]/g;
+    const dataviewMatches = Array.from(text.matchAll(dataviewFieldRegex));
+
+    for (const dvMatch of dataviewMatches) {
+      const key = dvMatch[1].trim().toLowerCase();
+      const value = dvMatch[2].trim();
+      const fieldText = dvMatch[0]; // e.g. "[priority:: high]"
+
+      const property = this.dataviewKeyMapping[key];
+      if (!property) {
+        fields.push(fieldText); // clave desconocida, guardar como campo raw
+        continue;
+      }
+
+      let isValid = true;
+      let errorMessage = "";
+      const keyLabel = `[${dvMatch[1]}::]`;
+
+      if (['dueDate', 'startDate', 'scheduledDate', 'doneDate', 'cancelledDate', 'createdDate'].includes(property)) {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+          if (!(property in taskData)) taskData[property] = value;
+        } else {
+          isValid = false;
+          errorMessage = this.i18n.t('errors.invalidDate', { emoji: keyLabel });
+        }
+      } else if (property === 'priority') {
+        const validPriorities = ['lowest', 'low', 'normal', 'medium', 'high', 'highest'];
+        if (validPriorities.includes(value.toLowerCase())) {
+          if (!('priority' in taskData)) taskData.priority = value.toLowerCase();
+        } else {
+          isValid = false;
+          errorMessage = this.i18n.t('errors.invalidPriority', { emoji: keyLabel });
+        }
+      } else if (property === 'recurrence') {
+        try {
+          const rruleText = this.convertToRRuleFormat(value);
+          if (rruleText) {
+            this.validateRRuleSyntax(rruleText);
+            if (!('recurrence' in taskData)) taskData.recurrence = value;
+          } else {
+            throw new Error("No se pudo convertir al formato RRULE");
+          }
+        } catch (error) {
+          errorMessage = this.i18n.t('errors.invalidRecurrencePattern', { emoji: keyLabel });
+          console.error(error);
+        }
+      } else if (property === 'dependsOn') {
+        const deps = value.split(',').map(d => d.trim()).filter(d => d.length > 0);
+        if (deps.length > 0) {
+          const existing = taskData.dependsOn;
+          taskData.dependsOn = Array.isArray(existing) ? [...(existing), ...deps] : deps;
+        }
+      } else if (property === 'onCompletion') {
+        if (/^(keep|delete)$/i.test(value)) {
+          if (!('onCompletion' in taskData)) taskData.onCompletion = value.toLowerCase();
+        } else {
+          isValid = false;
+          errorMessage = this.i18n.t('errors.invalidCompletion', { emoji: keyLabel });
+        }
+      } else {
+        // id y otros campos simples
+        if (!(property in taskData)) taskData[property] = value;
+      }
+
+      if (!isValid) {
+        const errorProperty = `${property}_error`;
+        taskData[errorProperty] = errorMessage;
+        errors.push(errorMessage);
+      }
+
+      fields.push(fieldText);
+    }
+
+    return { fields, taskData, errors };
   }
 
   private validateRRuleSyntax(rrule: string): void {

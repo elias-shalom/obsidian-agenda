@@ -3,7 +3,7 @@ import Handlebars from 'handlebars';
 import { ITask, FolderNode, ViewData, AgendaPlugin } from '../types/interfaces';
 import { TaskManager } from '../core/task-manager';
 import { DateTime } from 'luxon';
-import { TaskPriorityIcon } from '../types/enums';
+import { TaskPriorityEmoji } from '../types/enums';
 // @ts-ignore: Plugin de esbuild maneja los archivos .hbs
 import headerTemplate from './templates/header.hbs';
 
@@ -182,15 +182,15 @@ export abstract class BaseView extends ItemView {
       if (!priority) return "";
       
       // Devolver directamente el valor del enum si existe
-      if (Object.values(TaskPriorityIcon).includes(priority as TaskPriorityIcon)) {
+      if (Object.values(TaskPriorityEmoji).includes(priority as TaskPriorityEmoji)) {
         return priority;
       }
       
       // Si es un string que coincide con una clave del enum (case insensitive)
       const uppercasePriority = priority.toUpperCase?.() || priority;
-      for (const key in TaskPriorityIcon) {
+      for (const key in TaskPriorityEmoji) {
         if (key.toUpperCase() === uppercasePriority) {
-          return TaskPriorityIcon[key as keyof typeof TaskPriorityIcon];
+          return TaskPriorityEmoji[key as keyof typeof TaskPriorityEmoji];
         }
       }
       

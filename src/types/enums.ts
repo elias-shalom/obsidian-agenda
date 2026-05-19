@@ -53,7 +53,7 @@ export enum TaskPriority {
   Highest = "highest"
 }
 
-export enum TaskPriorityIcon {
+export enum TaskPriorityEmoji {
   Lowest = "⏬",
   Low = "🔽", 
   Normal = "▶️", // Sin ícono específico

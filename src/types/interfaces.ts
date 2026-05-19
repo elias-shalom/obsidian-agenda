@@ -57,7 +57,7 @@ export interface ITaskLine {
  */
 export interface ITaskState {
   status: string;
-  icon: string;
+  emoji: string;
   text: string;
   priority: string;
   isValid: boolean;
@@ -89,9 +89,9 @@ export interface ITaskSection {
  * Configuración de flow de la tarea
  */
 export interface ITaskFlow {
-  recur: string;
+  repeat: string;
   blockLink: string;
-  deps: string[];
+  dependsOn: string[];
   onCompletion: string | null;
 }
 
@@ -125,8 +125,8 @@ export interface ITask {
   //get lineNumber(): number;
   /** @deprecated Use state.status instead */
   //get status(): string;
-  /** @deprecated Use state.icon instead */
-  //get statusIcon(): string;
+  /** @deprecated Use state.emoji instead */
+  //get statusEmoji(): string;
   /** @deprecated Use state.text instead */
   //get statusText(): string;
   /** @deprecated Use section.tags instead */
@@ -149,7 +149,7 @@ export interface ITask {
   //get recurrence(): string;
   /** @deprecated Use flow.onCompletion instead */
   //get onCompletion(): string | null;
-  /** @deprecated Use flow.deps instead */
+  /** @deprecated Use flow.dependsOn instead */
   //get dependsOn(): string[];
   /** @deprecated Use flow.blockLink instead */
   //get blockLink(): string;

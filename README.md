@@ -1,4 +1,4 @@
-# Agenda Tasks 1.0.1
+# Agenda Tasks 1.0.2
 
 A comprehensive task management and calendar plugin for Obsidian (https://obsidian.md).
 
@@ -155,7 +155,12 @@ Current Limitations:
 2. Recursive/repeating tasks support (🔁)
 3. Support for mobile devices
 
-Planned for Future Versions:
+
+## Scope this version 1.0.2
+1. Calendar view year view
+2. Fix some issues 
+
+## Planned for Future Versions
 
 1. Native task creation and editing within Agenda views
 2. Support for time-of-day task scheduling

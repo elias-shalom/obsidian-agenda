@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-agenda",
-	"version": "1.0.1",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"name": "agenda-tasks",
+	"version": "1.0.2",
+	"description": "Agenda provide intuitive task management interfaces and calendar views. Seamlessly integrate with your existing notes while organizing tasks across multiple views.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node src/esbuild.config.mjs",

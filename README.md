@@ -1,4 +1,4 @@
-# Agenda Tasks 1.0.1
+# Agenda Tasks 1.0.2
 
 A comprehensive task management and calendar plugin for Obsidian (https://obsidian.md).
 
@@ -72,16 +72,16 @@ Day View
 
 
 ### Overview View Demo
-Coming soon...
+See the [Overview screenshot](screenshots/Overview.png) for a preview of the dashboard.
 
 ### List View Demo
-Coming soon...
+See the [List View screenshot](screenshots/ListView.png) for a preview of the list layout.
 
 ### Table View Demo
-Coming soon...
+See the [Table View screenshot](screenshots/TableView.png) for a preview of the spreadsheet-style layout.
 
 ### Calendar View Demo
-Coming soon...
+See the [Month View screenshot](screenshots/MonthView.png) and [Week View screenshot](screenshots/WeekView.png) for calendar previews.
 
 ## Installation
 
@@ -118,7 +118,7 @@ Agenda Tasks works with tasks created using the standard Obsidian checkbox forma
 - Start dates (🛫)
 - Priority markers (⏫⏬)
 - Recurring tasks (🔁)
-- Custom statuses (comming soon)
+- Custom statuses (planned for a future version)
 - Task tags
 
 All metadata created with Obsidian Tasks will be properly recognized and displayed in Agenda Tasks views.
@@ -155,7 +155,12 @@ Current Limitations:
 2. Recursive/repeating tasks support (🔁)
 3. Support for mobile devices
 
-Planned for Future Versions:
+
+## Scope this version 1.0.2
+1. Calendar view year view
+2. Fix some issues 
+
+## Planned for Future Versions
 
 1. Native task creation and editing within Agenda views
 2. Support for time-of-day task scheduling
@@ -167,10 +172,8 @@ Planned for Future Versions:
 
 If you encounter any issues or have suggestions for improvements, please file an issue on the [GitHub repository](https://github.com/elias-shalom/obsidian-agenda/issues).
 
-## Funding (comming soon)
+## Funding
 
-If you find this plugin useful, please consider supporting its development:
-
-Coming soon...
+If you find this plugin useful, please consider supporting its development by starring the [GitHub repository](https://github.com/elias-shalom/obsidian-agenda) and spreading the word.
 
 

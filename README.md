@@ -1,8 +1,8 @@
-# OBS Agenda Plugin
+# Agenda Tasks 1.0.1
 
 A comprehensive task management and calendar plugin for Obsidian (https://obsidian.md).
 
-OBS Agenda transforms your vault into a powerful productivity system by providing intuitive task management interfaces and calendar views. Seamlessly integrate with your existing Obsidian notes while organizing tasks across multiple views.
+Agenda Tasks transforms your vault into a powerful productivity system by providing intuitive task management interfaces and calendar views. Seamlessly integrate with your existing Obsidian notes while organizing tasks across multiple views.
 
 ## Features
 
@@ -72,16 +72,16 @@ Day View
 
 
 ### Overview View Demo
-[Coming soon]
+Coming soon...
 
 ### List View Demo
-[Coming soon]
+Coming soon...
 
 ### Table View Demo
-[Coming soon]
+Coming soon...
 
 ### Calendar View Demo
-[Coming soon]
+Coming soon...
 
 ## Installation
 
@@ -111,21 +111,21 @@ For detailed usage instructions, please refer to the [Wiki](https://github.com/e
 
 ## Task Format and Compatibility
 
-OBS Agenda works with tasks created using the standard Obsidian checkbox format `- [ ]` and is fully compatible with the popular [Obsidian Tasks plugin](https://github.com/obsidian-tasks-group/obsidian-tasks). It recognizes and properly handles:
+Agenda Tasks works with tasks created using the standard Obsidian checkbox format `- [ ]` and is fully compatible with the popular [Obsidian Tasks plugin](https://github.com/obsidian-tasks-group/obsidian-tasks). It recognizes and properly handles:
 
 - Due dates (📅)
 - Scheduled dates (⏳)
 - Start dates (🛫)
 - Priority markers (⏫⏬)
-- Recurring tasks (🔁) (comming soon)
+- Recurring tasks (🔁)
 - Custom statuses (comming soon)
 - Task tags
 
-All metadata created with Obsidian Tasks will be properly recognized and displayed in OBS Agenda views.
+All metadata created with Obsidian Tasks will be properly recognized and displayed in Agenda Tasks views.
 
 ## Configuration
 
-Obs Agenda offers numerous configuration options through the settings tab:
+Agenda Tasks offers numerous configuration options through the settings tab:
 - Task parsing rules
 - Default view settings
 - Display preferences
@@ -133,7 +133,7 @@ Obs Agenda offers numerous configuration options through the settings tab:
 
 ## Scope this version 1.0.0
 
-Version 1.0.0 of OBS Agenda focuses on providing robust viewing and organization capabilities for your tasks while maintaining compatibility with existing Obsidian workflows:
+Version 1.0.0 of Agenda Tasks focuses on providing robust viewing and organization capabilities for your tasks while maintaining compatibility with existing Obsidian workflows:
 
 Included in Version 1.0.0:
 
@@ -149,16 +149,19 @@ Current Limitations:
 2. Calendar view does not support time-of-day scheduling (hours) as the Tasks plugin doesn't recognize this format
 3. View-only functionality for most task operations
 
+## Scope this version 1.0.1
+
+1. Enhanced compatibility with Tasks plugin dataview format
+2. Recursive/repeating tasks support (🔁)
+3. Support for mobile devices
+
 Planned for Future Versions:
 
 1. Native task creation and editing within Agenda views
 2. Support for time-of-day task scheduling
-3. Recursive/repeating tasks support (🔁)
-4. Custom status implementation
-5. Enhanced compatibility with Tasks plugin dataview format
-6. Advanced calendar features with time blocks
-7. Support for mobile devices
-8. More widgets on dashboard view
+3. Custom status implementation
+4. Advanced calendar features with time blocks
+5. More widgets on dashboard view
 
 ## Support and Feedback
 
@@ -168,6 +171,6 @@ If you encounter any issues or have suggestions for improvements, please file an
 
 If you find this plugin useful, please consider supporting its development:
 
-[Your funding URL here]
+Coming soon...
 
 

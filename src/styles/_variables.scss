@@ -189,7 +189,7 @@ $breakpoints: (
 // Mixin para estilos de tareas en el calendario
 @mixin calendar-task-styles {
   background-color: color-mix(in srgb,$today-border-color 50%, transparent);
-  color: var(--text-on-accent);
+  color: var(--text-normal);
   border-radius: 8px;
   padding: 4px 6px;
   margin-bottom: 5px;

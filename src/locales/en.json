@@ -152,6 +152,11 @@
   "project_tasks_tooltip": "List of tasks grouped by project",
 
   "general_settings": "General settings",
+  "tabs_visibility_settings": "Tab Visibility",
+  "show_overview_tab": "Show Overview tab",
+  "show_list_tab": "Show List tab",
+  "show_table_tab": "Show Table tab",
+  "show_calendar_tab": "Show Calendar tab",
   "language": "Language",
   "language_description": "Select the language for the agenda.",
 

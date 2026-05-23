@@ -152,6 +152,11 @@
   "project_tasks_tooltip": "Lista de tareas agrupadas por proyecto",
 
   "general_settings": "Configuración general",
+  "tabs_visibility_settings": "Visibilidad de pestañas",
+  "show_overview_tab": "Mostrar pestaña General",
+  "show_list_tab": "Mostrar pestaña Lista",
+  "show_table_tab": "Mostrar pestaña Tabla",
+  "show_calendar_tab": "Mostrar pestaña Calendario",
   "language": "Idioma",
   "language_description": "Selecciona el idioma de la agenda.",
 

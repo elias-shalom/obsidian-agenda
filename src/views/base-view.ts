@@ -6,6 +6,7 @@ import { DateTime } from 'luxon';
 import { TaskPriorityEmoji } from '../types/enums';
 // @ts-ignore: Plugin de esbuild maneja los archivos .hbs
 import headerTemplate from './templates/header.hbs';
+import { AgendaPluginSettings } from '../settings/settings';
 
 // Type declaration for handlebars template
 type HandlebarsTemplate = (data: ViewData) => string;
@@ -219,11 +220,11 @@ export abstract class BaseView extends ItemView {
     // Las clases hijas sobrescribirán este método según sea necesario
   }
 
-  protected renderHeader(container: HTMLElement, data: ViewData): void {
+  protected renderHeader(container: HTMLElement, data: ViewData, settings: AgendaPluginSettings): void {
     console.debug("Dibuja encabezado");
     try {
       // Usar directamente la plantilla importada (ya compilada por el plugin)
-      const headerHtml = (headerTemplate as HandlebarsTemplate)({ data });
+      const headerHtml = (headerTemplate as HandlebarsTemplate)({ data, settings });
       
       // Usar DOMParser para convertir HTML a nodos DOM
       const parser = new DOMParser();
@@ -446,8 +447,9 @@ export abstract class BaseView extends ItemView {
     this.registerHandlebarsHelpers(i18n || null);
 
     try {
+      
       // Renderizar header (síncrono)
-      this.renderHeader(headerContainer, { i18n: I18n });
+      this.renderHeader(headerContainer, { i18n: I18n }, plugin.settings);
       
       // Renderizar contenido (asíncrono)
       await this.renderTemplate(contentContainer, viewType, data);

@@ -152,6 +152,11 @@
   "project_tasks_tooltip": "Elenco delle attività raggruppate per progetto",
 
   "general_settings": "Impostazioni generali",
+  "tabs_visibility_settings": "Visibilita delle schede",
+  "show_overview_tab": "Mostra scheda Panoramica",
+  "show_list_tab": "Mostra scheda Elenco",
+  "show_table_tab": "Mostra scheda Tabella",
+  "show_calendar_tab": "Mostra scheda Calendario",
   "language": "Lingua",
   "language_description": "Seleziona la lingua per l'agenda.",
 

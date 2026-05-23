@@ -3,11 +3,11 @@ import { ViewManager } from "./core/view-manager";
 import { I18n } from "./core/i18n";
 //import logger from './core/logger';
 import { TaskManager } from "./core/task-manager";
-//import { SettingTab } from "./settings/setting-tab";
-//import { 	DEFAULT_SETTINGS, AgendaPluginSettings, } from "./settings/settings";
+import { SettingTab } from "./settings/setting-tab";
+import { 	DEFAULT_SETTINGS, AgendaPluginSettings, } from "./settings/settings";
 
 export default class ObsidianAgenda extends Plugin {
-  //settings: AgendaPluginSettings;
+  settings: AgendaPluginSettings = DEFAULT_SETTINGS;
   private viewManager: ViewManager ;
   private i18n: I18n;
   private taskManager: TaskManager; 
@@ -26,13 +26,13 @@ export default class ObsidianAgenda extends Plugin {
     const OVERVIEW_VIEW_TYPE = 'overview-view';
 
     try {
-      //await this.loadSettings();
+      await this.loadSettings();
 
       // Cargar idioma (puedes usar una configuración o detectar el idioma del sistema)
       await this.i18n.loadLanguage();
 
       // Añadir la pestaña de configuración
-      //this.addSettingTab(new SettingTab(this.app, this, this.i18n));
+      this.addSettingTab(new SettingTab(this.app, this, this.i18n));
 
       this.addRibbonIcon("notebook-tabs", this.i18n.t("agenda_title"), async () => {
         await this.viewManager.activateView(OVERVIEW_VIEW_TYPE);
@@ -58,13 +58,28 @@ export default class ObsidianAgenda extends Plugin {
     }
   }
 
-  /*async loadSettings(): Promise<void> {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  async loadSettings(): Promise<void> {
+    const raw: unknown = await this.loadData();
+
+    if (!raw || typeof raw !== "object") {
+      this.settings = { ...DEFAULT_SETTINGS };
+      return;
+    }
+
+    const data = raw as Partial<AgendaPluginSettings>;
+
+    this.settings = {
+      ...DEFAULT_SETTINGS,
+      ...(typeof data.showOverviewTab === "boolean" ? { showOverviewTab: data.showOverviewTab } : {}),
+      ...(typeof data.showListTab === "boolean" ? { showListTab: data.showListTab } : {}),
+      ...(typeof data.showTableTab === "boolean" ? { showTableTab: data.showTableTab } : {}),
+      ...(typeof data.showCalendarTab === "boolean" ? { showCalendarTab: data.showCalendarTab } : {}),
+    };
   }
 
   async saveSettings(): Promise<void> {
     await this.saveData(this.settings);
-  }*/
+  }
 
   onunload() {
     console.debug('Descargando plugin OBS Agenda');

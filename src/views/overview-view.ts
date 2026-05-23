@@ -1,7 +1,7 @@
-import { WorkspaceLeaf, Plugin } from 'obsidian';
+import { WorkspaceLeaf, getLanguage } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask, OverviewViewData, ITaskWithAge } from '../types/interfaces';
+import { ITask, OverviewViewData, ITaskWithAge, AgendaPlugin } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { TaskPriority } from '../types/enums';
 import { DateTime } from 'luxon';
@@ -12,10 +12,10 @@ export class OverviewView extends BaseView {
   private tasks: ITask[] = []; // Lista de tareas
   private tasksLastWeek: ITask[] = []; // Tareas de la semana pasada (para comparaciones)
   private i18n: I18n;
-  private plugin: Plugin;
+  private plugin: AgendaPlugin;
   private taskManager: TaskManager;
 
-  constructor(leaf: WorkspaceLeaf, plugin: Plugin, i18n: I18n, taskManager: TaskManager) {
+  constructor(leaf: WorkspaceLeaf, plugin: AgendaPlugin, i18n: I18n, taskManager: TaskManager) {
     super(leaf);
     this.i18n = i18n;
     this.plugin = plugin;
@@ -41,6 +41,7 @@ export class OverviewView extends BaseView {
 
     // Preparar los datos para la plantilla usando las funciones específicas
     const templateData = {
+      dashboardDate: DateTime.now().setLocale(getLanguage()).toFormat('cccc, MMM dd'),
       tasks: this.tasks,
       totalTasks: this.tasks.length,
       completedTasks: this.getCompletedTasksCount(),

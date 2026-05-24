@@ -145,6 +145,11 @@
   "system_health_tooltip": "Prozentsatz der korrekt konfigurierten Aufgaben",
 
   "general_settings": "Allgemeine einstellungen",
+  "tabs_visibility_settings": "Sichtbarkeit der Tabs",
+  "show_overview_tab": "Tab \"Ubersicht\" anzeigen",
+  "show_list_tab": "Tab \"Liste\" anzeigen",
+  "show_table_tab": "Tab \"Tabelle\" anzeigen",
+  "show_calendar_tab": "Tab \"Kalender\" anzeigen",
   "language": "Sprache",
   "language_description": "Wählen Sie die Sprache für die Agenda aus.",
 

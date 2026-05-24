@@ -57,6 +57,8 @@
     border-bottom-left-radius: 6px;
     border-bottom-right-radius: 6px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding-inline: 10px; // espacio interno izq/der para las tareas
+    box-sizing: border-box;
     
     &.oa-calendar-today {
       background-color: color-mix(in srgb, $today-border-color 5%, transparent);
@@ -72,6 +74,7 @@
       
       // Si necesitas centrar horizontalmente también
       justify-content: flex-start;
+      margin: 10px 0; // Espacio entre tareas
     }
   }
 }

@@ -188,17 +188,17 @@ $breakpoints: (
 
 // Mixin para estilos de tareas en el calendario
 @mixin calendar-task-styles {
-  background-color: color-mix(in srgb,$today-border-color 10%, transparent);
-  color: var(--text-on-accent);
-  border-radius: 4px;
+  background-color: color-mix(in srgb,$today-border-color 50%, transparent);
+  color: var(--text-normal);
+  border-radius: 8px;
   padding: 4px 6px;
   margin-bottom: 5px;
   display: flex;
   flex-wrap: wrap;  
-  border-left: 5px solid var(--interactive-accent); 
-  border-right: 1px solid var(--interactive-accent);
-  border-bottom: 1px solid var(--interactive-accent);
-  border-top: 1px solid var(--interactive-accent);
+  border-left: 8px solid var(--interactive-accent); 
+  border-right: 1px color-mix(in srgb,$today-border-color 50%, transparent);
+  border-bottom: 1px color-mix(in srgb,$today-border-color 50%, transparent);
+  border-top: 1px color-mix(in srgb,$today-border-color 50%, transparent);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
 
@@ -207,6 +207,7 @@ $breakpoints: (
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%; /* Asegura que no exceda el ancho de la celda */
+  width: 100%;
   box-sizing: border-box;
   max-height: 50px;
 
@@ -215,7 +216,7 @@ $breakpoints: (
   }
   
   .task-title {
-    font-size: clamp(0.7em, 0.5em + 0.5vw, 1.1em);
+    font-size: clamp(0.4em, 0.2em + 0.2vw, 0.8em);
     flex: 1 0 100%;
     @include text-truncate();
     line-height: 1.4;

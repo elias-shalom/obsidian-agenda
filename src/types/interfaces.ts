@@ -2,11 +2,13 @@
 import { DateTime } from 'luxon';
 import { CalendarViewType } from './enums';
 import { Plugin, WorkspaceLeaf } from 'obsidian';
+import { AgendaPluginSettings } from '../settings/settings';
 
 export interface AgendaPlugin extends Plugin {
   viewManager: {
-    activateView: (viewType: string, leaf: WorkspaceLeaf) => void;
+    activateView: (viewType: string, leaf: WorkspaceLeaf) => void;    
   };
+  settings: AgendaPluginSettings;
 }
 
 /**

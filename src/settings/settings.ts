@@ -1,10 +1,14 @@
-//export interface AgendaPluginSettings {
+export interface AgendaPluginSettings {
   // Define your plugin settings here
-  //language: string;
-  //colorScheme: string;
-//}
+  showOverviewTab: boolean;
+  showListTab: boolean;
+  showTableTab: boolean;
+  showCalendarTab: boolean;
+}
 
-//export const DEFAULT_SETTINGS: AgendaPluginSettings = {
-  //language: "en",
-  //colorScheme: "dark",
-//};
+export const DEFAULT_SETTINGS: AgendaPluginSettings = {
+  showOverviewTab: true,
+  showListTab: true,
+  showTableTab: true,
+  showCalendarTab: true,
+};

@@ -152,6 +152,11 @@
   "project_tasks_tooltip": "Liste des tâches regroupées par projet",
 
   "general_settings": "Paramètres généraux",
+  "tabs_visibility_settings": "Visibilite des onglets",
+  "show_overview_tab": "Afficher l'onglet Apercu",
+  "show_list_tab": "Afficher l'onglet Liste",
+  "show_table_tab": "Afficher l'onglet Tableau",
+  "show_calendar_tab": "Afficher l'onglet Calendrier",
   "language": "Langue",
   "language_description": "Sélectionnez la langue pour l'agenda.",
 

@@ -1,4 +1,4 @@
-# Agenda Tasks 1.0.2
+# Agenda Tasks 1.0.3
 
 A comprehensive task management and calendar plugin for Obsidian (https://obsidian.md).
 
@@ -131,6 +131,22 @@ Agenda Tasks offers numerous configuration options through the settings tab:
 - Display preferences
 - Integration with other plugins
 
+## Scome this version 1.0.3
+
+1. Now you can configure the views you can display on header
+2. Date of today into Overview tab
+3. Week number into the header week view
+
+## Scope this version 1.0.2
+1. Calendar view year view
+2. Fix some issues 
+
+## Scope this version 1.0.1
+
+1. Enhanced compatibility with Tasks plugin dataview format
+2. Recursive/repeating tasks support (🔁)
+3. Support for mobile devices
+
 ## Scope this version 1.0.0
 
 Version 1.0.0 of Agenda Tasks focuses on providing robust viewing and organization capabilities for your tasks while maintaining compatibility with existing Obsidian workflows:
@@ -148,17 +164,6 @@ Current Limitations:
 1. Task creation and editing requires using Markdown files or the Obsidian Tasks plugin
 2. Calendar view does not support time-of-day scheduling (hours) as the Tasks plugin doesn't recognize this format
 3. View-only functionality for most task operations
-
-## Scope this version 1.0.1
-
-1. Enhanced compatibility with Tasks plugin dataview format
-2. Recursive/repeating tasks support (🔁)
-3. Support for mobile devices
-
-
-## Scope this version 1.0.2
-1. Calendar view year view
-2. Fix some issues 
 
 ## Planned for Future Versions
 

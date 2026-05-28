@@ -131,7 +131,7 @@ Agenda Tasks offers numerous configuration options through the settings tab:
 - Display preferences
 - Integration with other plugins
 
-## Scome this version 1.0.3
+## Scope this version 1.0.3
 
 1. Now you can configure the views you can display on header
 2. Date of today into Overview tab

@@ -161,7 +161,7 @@ export class TaskManager {
   */
   async forceRefreshTasks(): Promise<ITask[]> {
     this.invalidateCache();
-    return this.getAllTasks();
+    return this.refreshAllTasksCache();
   }
 
   /**

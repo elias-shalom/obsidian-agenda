@@ -1,7 +1,7 @@
 import { WorkspaceLeaf, Plugin } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask, CalendarViewData } from '../types/interfaces';
+import { ITask, CalendarViewData, AgendaPlugin } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import Handlebars from 'handlebars';
@@ -33,10 +33,10 @@ export abstract class CalendarView extends BaseView {
 
   async onOpen(): Promise<void> {
     this.tasks = await this.getAllTasks(this.taskManager);
-    await this.refreshView();
+    await this.refreshCalendar();
   }
 
-  protected async refreshView(): Promise<void> {
+  protected async refreshCalendar(): Promise<void> {
 
     const viewData = {
       tasks: this.tasks,
@@ -44,7 +44,7 @@ export abstract class CalendarView extends BaseView {
       calendar: this.generateViewData()
     };
 
-    await this.render(this.getViewType(), viewData, this.i18n, this.plugin, this.leaf);
+    await this.render(this.getViewType(), viewData, this.i18n, this.plugin as AgendaPlugin, this.leaf);
   }
 
   /**

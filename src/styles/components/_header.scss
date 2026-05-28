@@ -254,3 +254,17 @@
     }
   }
 }
+
+.c-refresh-container {
+  flex: 0 0 auto;   // No crece ni encoge
+  margin-left: auto; // Se empuja al extremo derecho
+
+  .c-refresh-btn {
+    width: auto;
+    padding: 6px 8px;
+
+    svg {
+      margin-right: 0; // Sin margen porque no hay texto
+    }
+  }
+}

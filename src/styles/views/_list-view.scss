@@ -224,7 +224,7 @@
     transition: background-color 0.2s ease;
     
     &:hover {
-      background-color: color-mix(in srgb,$hover-bg-color 20%, transparent);
+      background-color: var(--background-modifier-hover);
     }
     
     .task-priority {
@@ -272,7 +272,7 @@
     transition: background-color 0.2s ease;
     
     &:hover {
-      background-color: color-mix(in srgb,$hover-bg-color 30%, transparent);
+      background-color: var(--background-modifier-hover);
     }
     
     &:active {

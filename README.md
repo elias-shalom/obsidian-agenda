@@ -1,4 +1,4 @@
-# Agenda Tasks 1.0.3
+# Agenda Tasks 1.0.4
 
 A comprehensive task management and calendar plugin for Obsidian (https://obsidian.md).
 
@@ -131,7 +131,17 @@ Agenda Tasks offers numerous configuration options through the settings tab:
 - Display preferences
 - Integration with other plugins
 
-## Scome this version 1.0.3
+## Scope this version 1.0.4
+
+ 1. Native task creation from OBS Agenda calendar views (add task to calendar)
+ 2. Ctrl + P shortcut (Command palette added for task creation)
+ 3. Task reload button
+ 4. Mouse over highlight in list view
+ 5. Alphabetical sorting in list view
+ 6. Day line indicator in month view 
+ 7. Navigate to day view from year view
+
+## Scope this version 1.0.3
 
 1. Now you can configure the views you can display on header
 2. Date of today into Overview tab

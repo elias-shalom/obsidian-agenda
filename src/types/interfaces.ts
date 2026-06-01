@@ -9,6 +9,9 @@ export interface AgendaPlugin extends Plugin {
     activateView: (viewType: string, leaf: WorkspaceLeaf) => void;    
   };
   settings: AgendaPluginSettings;
+  modalManager: {
+    openModal: (modalType: string, options?: ModalOptions) => void;
+  };
 }
 
 /**
@@ -281,9 +284,21 @@ export interface TaskFilterCriteria {
   groupBy?: GroupField;                // Agrupar por este campo
 }
 
+export interface ModalConfig {
+  template: string;
+  title: string;
+  description?: string;
+}
+
+export interface ModalOptions {
+  [key: string]: unknown;
+}
+
 export type SortField = 'dueDate' | 'startDate' | 'scheduledDate' | 'doneDate' | 'createdDate' | 'priority' | 'status' | 'text' | 'path';
 
 export type GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags';
+
+export type ModalType = "create-task" | "edit-task" | "quick-capture"; // Extensible
 
 export interface IFile<T> {
   file: T,

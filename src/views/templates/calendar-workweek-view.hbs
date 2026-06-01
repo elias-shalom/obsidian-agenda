@@ -51,7 +51,7 @@
     <div class="oa-calendar-week-body">
       <div class="oa-calendar-week-days-row">
         {{#each calendar.days}}
-          <div class="oa-calendar-week-day-container {{#if isToday}}oa-calendar-today{{/if}}" data-date="{{toISODate dateValue}}">
+          <div class="oa-calendar-week-day-container {{#if isToday}}oa-calendar-today{{/if}}" data-date="{{toISODate date}}">
             <div class="oa-calendar-week-day-header">
               <div class="oa-calendar-day-name">{{dayName}}</div>              
             </div>

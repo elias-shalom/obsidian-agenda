@@ -1,7 +1,7 @@
-import { WorkspaceLeaf, Plugin } from 'obsidian';
+import { WorkspaceLeaf } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask, FolderNode, ListViewData } from '../types/interfaces';
+import { ITask, FolderNode, ListViewData, AgendaPlugin } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import Handlebars from 'handlebars';
 
@@ -11,7 +11,7 @@ export class ListView extends BaseView {
   private tasks: ITask[] = []; // Lista de tareas
   private isHierarchicalView: boolean = true; // Modo predeterminado: jerárquico
 
-  constructor(leaf: WorkspaceLeaf, private plugin: Plugin, private i18n: I18n,private taskManager: TaskManager) {
+  constructor(leaf: WorkspaceLeaf, private plugin: AgendaPlugin, private i18n: I18n, private taskManager: TaskManager) {
     // Constructor de la clase ListView
     super(leaf); 
   }

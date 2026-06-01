@@ -47,7 +47,7 @@
 
           <div class="oa-calendar-month-days-row">
             {{#each days}}
-              <div class="oa-calendar-month-day {{#unless isCurrentMonth}}oa-calendar-other-month{{/unless}} {{#if isToday}}oa-calendar-today{{/if}}" data-date="{{toISODate dateValue}}">
+              <div class="oa-calendar-month-day {{#unless isCurrentMonth}}oa-calendar-other-month{{/unless}} {{#if isToday}}oa-calendar-today{{/if}}" data-date="{{toISODate date}}">
                 <div class="oa-calendar-month-day-header">
                   <span class="oa-calendar-month-day-number">{{dayOfMonth}}</span>
                 </div>

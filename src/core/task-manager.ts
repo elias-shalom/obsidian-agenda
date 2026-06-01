@@ -111,7 +111,8 @@ export class TaskManager {
    */
   private async refreshAllTasksCache(): Promise<ITask[]> {
     try {
-      const files = this.app.vault.getMarkdownFiles();
+      const files = this.app.vault.getMarkdownFiles()
+        .sort((a, b) => a.path.localeCompare(b.path)); // Ordenar por ruta para consistencia
       const batchSize = 10;
       const allTasks: ITask[] = [];
 
@@ -161,7 +162,7 @@ export class TaskManager {
   */
   async forceRefreshTasks(): Promise<ITask[]> {
     this.invalidateCache();
-    return this.getAllTasks();
+    return this.refreshAllTasksCache();
   }
 
   /**

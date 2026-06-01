@@ -19,8 +19,8 @@ export class TaskExtractor {
    */
   public async extractTasksFromFile(file: TFile): Promise<ITask[]> {
     try {
-      //console.log(`Extrayendo tareas de ${file}...`);
-      const content = await this.app.vault.read(file);
+      //console.debug(`Extrayendo tareas de ${file}...`);
+      const content = await this.app.vault.cachedRead(file);
       
       const cachedMetadata = this.app.metadataCache.getFileCache(file);
       //console.log(`Metadatos en caché para ${file.path}:`, cachedMetadata);

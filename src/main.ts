@@ -4,13 +4,15 @@ import { I18n } from "./core/i18n";
 //import logger from './core/logger';
 import { TaskManager } from "./core/task-manager";
 import { SettingTab } from "./settings/setting-tab";
-import { 	DEFAULT_SETTINGS, AgendaPluginSettings, } from "./settings/settings";
+import { TASK_MODAL_TYPE, ModalManager } from "./core/modal-manager";
+import { DEFAULT_SETTINGS, AgendaPluginSettings, } from "./settings/settings";
 
 export default class ObsidianAgenda extends Plugin {
   settings: AgendaPluginSettings = DEFAULT_SETTINGS;
   private viewManager: ViewManager ;
   private i18n: I18n;
   private taskManager: TaskManager; 
+  public modalManager: ModalManager;
   
   /// Constructor de la clase ObsidianAgendaPlugin.
   constructor(app: App, manifest: PluginManifest) {
@@ -18,6 +20,7 @@ export default class ObsidianAgenda extends Plugin {
       this.i18n = new I18n(app);
       this.taskManager = new TaskManager(app, this.i18n, this);
       this.viewManager = new ViewManager(this, this.i18n, this.taskManager); // Pasar la instancia del plugin
+      this.modalManager = new ModalManager(app, this.i18n, this.taskManager);
   }
 
   /// Método de inicializa del plugin.
@@ -44,6 +47,20 @@ export default class ObsidianAgenda extends Plugin {
         name: this.i18n.t("agenda_title"),
         callback: async () => {
           await this.viewManager.activateView(OVERVIEW_VIEW_TYPE);
+        }
+      });
+
+      // dentro de onload(), junto al icono existente:
+      this.addRibbonIcon("calendar-plus", this.i18n.t("new_task"), () => {
+        this.modalManager.openModal(TASK_MODAL_TYPE);
+      });
+
+      // opcional: comando
+      this.addCommand({
+        id: "open-create-task-modal",
+        name: this.i18n.t("new_task"),
+        callback: () => {
+          this.modalManager.openModal(TASK_MODAL_TYPE);
         }
       });
 

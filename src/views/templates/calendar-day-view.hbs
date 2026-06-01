@@ -78,7 +78,7 @@
               <div class="oa-calendar-mini-week">
                 {{#each this}}
                   <div class="oa-calendar-mini-day {{#if isCurrentMonth}}oa-current-month{{else}}oa-other-month{{/if}} {{#if isToday}}oa-mini-today{{/if}} {{#if isSelected}}oa-mini-selected{{/if}}" 
-                       data-date="{{date}}">
+                      data-date="{{toISODate date}}">
                     <div class="oa-mini-day-content {{#if hasTasks}}oa-has-tasks{{/if}}">
                       {{day}}
                     </div>

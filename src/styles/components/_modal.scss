@@ -1,0 +1,218 @@
+// Modal Task styles
+.oa-task-modal__wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.oa-task-modal__header {
+  margin-bottom: 0.5rem;
+}
+
+.oa-task-modal__title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--text-normal);
+}
+
+.oa-task-modal__description {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.oa-task-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.oa-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.oa-form-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.oa-form-required {
+  color: var(--text-error);
+  margin-left: 0.25rem;
+}
+
+.oa-form-input,
+.oa-form-select {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 2px var(--interactive-accent-rgb, 255 0 0) / 0.1;
+  }
+
+  &::placeholder {
+    color: var(--text-faint);
+  }
+}
+
+.oa-task-modal__actions {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 0.5rem;
+}
+
+.oa-btn {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+
+  &--primary {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+
+    &:hover {
+      opacity: 0.9;
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  &--secondary {
+    background-color: var(--background-modifier-border);
+    color: var(--text-normal);
+
+    &:hover {
+      background-color: var(--background-modifier-hover);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+}
+
+// Date Picker Button Styles
+.oa-date-picker-group, .oa-priority-picker-group  {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+
+.oa-date-trigger, .oa-priority-trigger {
+  padding: 0;
+  border: none;
+  background-color: transparent !important;
+  color: var(--text-normal);
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: auto;
+  min-width: auto;
+  height: auto;
+  opacity: 0.8;
+
+  &:hover {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+
+  &:focus {
+    outline: none;
+    opacity: 1;
+    transform: scale(0.95);
+    background-color: transparent !important;
+  }
+
+  &:active {
+    transform: scale(0.95);
+    background-color: transparent !important;
+  }
+}
+
+.oa-date-input-hidden, .oa-priority-select-hidden{
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: auto;
+}
+
+.oa-date-label, .oa-priority-label{
+  font-size: 0.7rem;
+  color: var(--text-normal);
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.oa-file-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+
+  &--new {
+    color: var(--interactive-accent);
+  }
+}
+
+.oa-file-picker-group {
+  position: relative;
+}
+
+.oa-file-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--background-primary);
+  border: 1px solid var(--interactive-accent);
+  border-radius: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 120px; // ← reducido de 200px
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+
+  &.oa-hidden {
+    display: none;
+  }
+}
+
+.oa-file-suggestion-item {
+  padding: 0.3rem 0.8rem; // ← reducido de 0.5rem
+  cursor: pointer;
+  font-size: 0.85rem; // ← ligeramente más pequeño
+  color: var(--text-normal);
+
+  &:hover {
+    background-color: var(--background-modifier-hover);
+    color: var(--interactive-accent);
+  }
+}

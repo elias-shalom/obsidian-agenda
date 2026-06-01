@@ -1,0 +1,86 @@
+{{!-- src/modals/templates/create-task-modal.hbs --}}
+<div class="oa-task-modal__wrapper">
+  <!-- Encabezado principal -->
+  <div class="oa-task-modal__header">
+    <h1 class="oa-task-modal__title">{{t "new_task"}}</h1>    
+  </div>
+
+  <!-- Formulario -->
+  <form id="oa-task-form" class="oa-task-modal__form">    
+    <!-- Campo de Título -->
+    <div class="oa-form-group">
+      <input 
+        id="oa-task-title" 
+        type="text" 
+        class="oa-form-input"
+        placeholder="{{t "task_description_placeholder"}}"
+        required 
+      />
+    </div>
+
+        <!-- Campo de Archivo destino -->
+    <div class="oa-form-group oa-file-picker-group">
+      <input 
+        id="oa-task-file" 
+        type="text" 
+        class="oa-form-input"
+        value="" 
+        placeholder="{{t "task_file_placeholder"}}"
+        autocomplete="off"
+      />
+      <ul id="oa-file-suggestions" class="oa-file-suggestions oa-hidden"></ul>
+      <span id="oa-file-hint" class="oa-file-hint"></span>
+    </div>
+
+        <!-- Campo de Prioridad -->
+    <div class="oa-form-group oa-priority-picker-group">
+      <button 
+        type="button" 
+        id="oa-priority-trigger" 
+        class="oa-priority-trigger"
+        title="{{t "title_priority"}}"
+      >
+        🚩
+      </button>
+      <span id="oa-priority-label" class="oa-priority-label">{{t "normal_priority"}}</span>
+      <select id="oa-task-priority" class="oa-form-select oa-priority-select-hidden">
+        <option value="">{{t "normal_priority"}}</option>
+        <option value="⏬">{{t "lowest_priority"}}</option>
+        <option value="🔽">{{t "low_priority"}}</option>
+        <option value="🔼">{{t "medium_priority"}}</option>
+        <option value="⏫">{{t "high_priority"}}</option>
+        <option value="🔺">{{t "highest_priority"}}</option>
+      </select>
+    </div>
+
+    <!-- Campo de Fecha con botón trigger -->
+    <div class="oa-form-group oa-date-picker-group">
+      <button 
+        type="button" 
+        id="oa-date-trigger" 
+        class="oa-date-trigger"
+        title="{{t "due_date"}}"
+      >
+        📅
+      </button>
+      <span id="oa-date-label" class="oa-date-label">{{today}}</span>
+      <input 
+        id="oa-task-due" 
+        type="date" 
+        class="oa-form-input oa-date-input-hidden"
+        value="{{today}}" 
+      />
+    </div>
+
+
+    <!-- Botones de acción -->
+    <div class="oa-task-modal__actions">
+      <button type="submit" class="oa-btn oa-btn--primary">
+        {{t "save"}}
+      </button>
+      <button type="button" id="oa-task-cancel" class="oa-btn oa-btn--secondary">
+        {{t "cancel"}}
+      </button>
+    </div>
+  </form>
+</div>

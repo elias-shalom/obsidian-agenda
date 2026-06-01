@@ -14,10 +14,21 @@ import { I18n } from '../core/i18n';
 
 export abstract class BaseView extends ItemView {
   private helpersRegistered = false; // Flag para verificar si los helpers ya están registrados
+  private _forceNextRefresh = false;
 
   protected async getAllTasks(taskManager: TaskManager): Promise<ITask[]> {
-    //console.log("Actualizando tareas"); // Debugging line
+    // console.log("Actualizando tareas"); // Debugging line
+    if (this._forceNextRefresh) {
+      this._forceNextRefresh = false;
+      console.debug("Forzando actualización de tareas"); // Debugging line
+      return await taskManager.forceRefreshTasks();
+    }
     return await taskManager.getAllTasks();
+  }
+
+  protected async refreshView(): Promise<void> {
+    this._forceNextRefresh = true;
+    await this.onOpen();
   }
 
   protected async getTodayTasks(taskManager: TaskManager): Promise<ITask[]> {
@@ -340,6 +351,11 @@ export abstract class BaseView extends ItemView {
       element?.addEventListener("click", () => {
         plugin.viewManager.activateView(tab.view, leaf);
       });
+    });
+
+    const refreshBtn = container.querySelector('#oa-refresh-btn');
+    refreshBtn?.addEventListener('click', () => {
+      this.refreshView().catch(console.error);
     });
   }
 

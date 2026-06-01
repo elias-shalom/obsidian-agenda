@@ -1,7 +1,7 @@
 import { WorkspaceLeaf, Plugin } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask, CalendarViewData } from '../types/interfaces';
+import { ITask, CalendarViewData, AgendaPlugin } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import Handlebars from 'handlebars';
@@ -33,10 +33,10 @@ export abstract class CalendarView extends BaseView {
 
   async onOpen(): Promise<void> {
     this.tasks = await this.getAllTasks(this.taskManager);
-    await this.refreshView();
+    await this.refreshCalendar();
   }
 
-  protected async refreshView(): Promise<void> {
+  protected async refreshCalendar(): Promise<void> {
 
     const viewData = {
       tasks: this.tasks,
@@ -44,7 +44,7 @@ export abstract class CalendarView extends BaseView {
       calendar: this.generateViewData()
     };
 
-    await this.render(this.getViewType(), viewData, this.i18n, this.plugin, this.leaf);
+    await this.render(this.getViewType(), viewData, this.i18n, this.plugin as AgendaPlugin, this.leaf);
   }
 
   /**
@@ -232,6 +232,22 @@ export abstract class CalendarView extends BaseView {
         }
       });
     });
+
+    const dayCells = container.querySelectorAll<HTMLElement>(
+      '.oa-calendar-month-day, .oa-calendar-week-day-container, ' +
+      '.oa-calendar-day-column, .oa-calendar-year-day'
+    );
+
+    dayCells.forEach(cell => {
+      cell.addEventListener('dblclick', (e) => {        
+        // Evitar abrir si se dio doble clic sobre una tarea (burbuja)
+        if ((e.target as HTMLElement).closest('.oa-calendar-task')) return;
+
+        const dateStr = cell.dataset.date;
+        console.debug(`Fecha obtenida del dataset: ${dateStr}`); // Debugging line
+        if (dateStr) this.openCreateTaskForDate(dateStr);
+      });
+    });
   }
 
   private getCalendarViewTypeFromString(viewTypeString: string): CalendarViewType {
@@ -292,7 +308,19 @@ export abstract class CalendarView extends BaseView {
     }
   }
 
+  private openCreateTaskForDate(dateStr: string): void {
+    console.debug(`Abriendo modal para crear tarea en fecha ${dateStr}`); // Debugging line
+    const plugin = this.plugin as AgendaPlugin;
+    plugin.modalManager.openModal("create-task", { today: dateStr });
+  }
+
   async onClose(): Promise<void> {
     // Limpia recursos si es necesario
+  }
+
+  protected navigateToDayView(dateStr: string): void {
+    this.app.saveLocalStorage('oa_navigate_to_date', dateStr);
+    const leaf = this.plugin.app.workspace.getActiveViewOfType(CalendarView)?.leaf;
+    leaf?.setViewState({ type: 'calendar-day-view' }).catch(console.error);
   }
 }

@@ -174,5 +174,22 @@
     "invalidRecurrence": "Icon {icon} ist nicht gefolgt von einem gültigen Wiederholungsmuster.",
     "initializeTaskSection": "Fehler bei der Initialisierung der TaskSection: {error}",
     "invalidRecurrencePattern": "Icon {icon} ist nicht gefolgt von einem gültigen Wiederholungsmuster."
-  }
+  },
+  "title_priority": "Priorität",
+  "new_task": "Neue Aufgabe",
+  "edit_task": "Aufgabe bearbeiten",
+  "description_required": "Beschreibung ist erforderlich",
+  "task_created": "Aufgabe erstellt",
+  "task_description_placeholder": "Beschreibung für die Aufgabe eingeben (z.B. 'Lebensmittel kaufen')",
+  "file_will_be_created": "Neue Datei — wird beim Speichern erstellt",
+  "file_created": "Neue Datei erstellt: {{file}}",
+  "file_required": "Dateipfad ist erforderlich",
+  "file_invalid_extension": "Datei muss die Erweiterung .md haben",
+  "task_file_placeholder": "Pfad zur Datei (z.B. 'Projekte/Aufgaben.md')",
+  "task_priority": "Priorität",
+  "task_due_date": "Fälligkeitsdatum",
+  "save": "Speichern",
+  "cancel": "Abbrechen",
+  "delete": "Löschen",
+  "confirm_delete": "Möchten Sie diese Aufgabe wirklich löschen?"
 }

@@ -317,4 +317,10 @@ export abstract class CalendarView extends BaseView {
   async onClose(): Promise<void> {
     // Limpia recursos si es necesario
   }
+
+  protected navigateToDayView(dateStr: string): void {
+    this.app.saveLocalStorage('oa_navigate_to_date', dateStr);
+    const leaf = this.plugin.app.workspace.getActiveViewOfType(CalendarView)?.leaf;
+    leaf?.setViewState({ type: 'calendar-day-view' }).catch(console.error);
+  }
 }

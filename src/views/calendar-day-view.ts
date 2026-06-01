@@ -30,6 +30,18 @@ export class CalendarDayView extends CalendarView {
     return 'calendar-check';
   }
 
+  async onOpen(): Promise<void> {
+    const savedDate = this.app.loadLocalStorage('oa_navigate_to_date') as string | null;
+    if (savedDate) {
+      this.currentDate = DateTime.fromISO(savedDate);
+      this.miniCalendarMonth = this.currentDate;
+      this.app.saveLocalStorage('oa_navigate_to_date', '');
+    }
+    // ... resto del onOpen existente
+    this.tasks = await this.getAllTasks(this.taskManager);
+    await this.refreshCalendar();
+  }
+
   /**
    * Genera datos para la vista diaria del calendario
    */

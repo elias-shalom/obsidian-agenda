@@ -160,9 +160,10 @@
 }
 
 .oa-calendar-mini-month {
-  background-color: var(--background-primary);
-  border-radius: 6px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  background-color: var(--background-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--divider-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
@@ -170,8 +171,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
+  padding: 8px 12px;
   background-color: var(--background-secondary);
+  border-bottom: 1px solid var(--divider-color);
   
   .oa-mini-month-nav {
     display: flex;
@@ -181,9 +183,11 @@
   }
   
   .oa-mini-month-name {
-    font-weight: bold;
+    font-weight: 600;
+    font-size: 13px;
     text-align: center;
     flex-grow: 1;
+    color: var(--text-normal);
   }
   
   .oa-mini-calendar-prev,
@@ -196,11 +200,11 @@
     justify-content: center;
     padding: 4px;
     color: var(--text-muted);
+    border-radius: 4px;
     
     &:hover {
       color: var(--text-normal);
       background-color: var(--background-modifier-hover);
-      border-radius: 4px;
     }
     
     .icon {
@@ -212,68 +216,101 @@
 .oa-calendar-mini-month-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  padding: 6px 0;
-  border-bottom: 1px solid var(--background-modifier-border);
+  padding: 6px 8px 2px;
   text-align: center;
-  font-size: 0.8em;
+  font-size: 10px;
+  font-weight: 500;
   color: var(--text-muted);
+  background-color: var(--background-secondary);
 }
 
 .oa-calendar-mini-month-grid {
-  padding: 5px;
+  padding: 6px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background-color: var(--background-secondary);
 }
 
 .oa-calendar-mini-week {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
 }
 
 .oa-calendar-mini-day {
-  height: 30px;
+  aspect-ratio: 1;
+  border: 1px solid var(--divider-color);
+  border-radius: 4px;
+  background-color: var(--background-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  margin: 2px;
-  font-size: 0.9em;
+  font-size: 10px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-height: 22px;
+  position: relative;   // ← agregar esto
   
   .oa-mini-day-content {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
+    width: 100%;
+    height: 100%;
+    border-radius: 3px;
     
     // Indicador de tareas
-    &.oa-has-tasks::after {
-      content: "";
-      display: block;
-      width: 4px;
-      height: 4px;
-      background-color: var(--interactive-accent);
-      border-radius: 50%;
-      margin-top: 2px;
+    &.oa-has-tasks {
+      background-color: var(--background-tertiary);
+      border: 1px solid var(--interactive-accent);
+      border-radius: 3px;
+      
+      &::after {
+        content: "●";
+        display: block;
+        font-size: 6px;
+        color: var(--interactive-accent);
+        line-height: 1;
+        position: absolute;
+        bottom: 2px;
+      }
     }
   }
-  
-  &:hover {
-    background-color: var(--background-modifier-hover);
+
+  &:hover:not(.oa-other-month) {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+    z-index: 1;
   }
   
   &.oa-other-month {
+    background-color: var(--background-secondary);
     opacity: 0.5;
+    color: var(--text-muted);
   }
   
-  &.oa-mini-today .oa-mini-day-content {
-    border: 1px solid var(--interactive-accent);
-    font-weight: bold;
-  }
-  
-  &.oa-mini-selected .oa-mini-day-content {
+  &.oa-mini-today {
     background-color: var(--interactive-accent);
+    border-color: var(--interactive-accent);
     color: var(--text-on-accent);
+    font-weight: 600;
+    
+    .oa-mini-day-content {
+      background-color: transparent;
+      border: none;
+    }
+  }
+  
+  &.oa-mini-selected:not(.oa-mini-today) {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 1px var(--interactive-accent);
+    
+    .oa-mini-day-content {
+      background-color: transparent;
+      border: none;
+    }
   }
 }
 

@@ -56,10 +56,9 @@
                       data-date="{{toISODate date}}"
                       data-task-count="{{taskCount}}">
                     <div class="oa-year-day-content">
-                      <span class="oa-year-day-number">{{dayOfMonth}}</span>
-                      {{#if hasTasksDue}}
-                        <span class="oa-year-task-indicator">●</span>
-                      {{/if}}
+                      <span class="oa-year-day-number {{#if hasTasksDue}}oa-day-has-tasks{{/if}}">
+                        {{dayOfMonth}}
+                      </span>
                     </div>
                   </div>
                 {{/each}}

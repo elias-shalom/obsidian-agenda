@@ -162,3 +162,16 @@
     font-size: 10px;
   }
 }
+
+.oa-year-day-number.oa-day-has-tasks {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  cursor: pointer;
+}

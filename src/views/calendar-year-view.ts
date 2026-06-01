@@ -131,4 +131,17 @@ export class CalendarYearView extends CalendarView {
   async onClose(): Promise<void> {
     // Limpia recursos si es necesario
   }
+
+  protected setupViewSpecificEventListeners(container: HTMLElement, data: YearViewData): void {
+  super.setupViewSpecificEventListeners(container, data);
+
+  container.querySelectorAll<HTMLElement>('.oa-year-day-number.oa-day-has-tasks').forEach(span => {
+    span.addEventListener('click', (e) => {
+      e.stopPropagation(); // evita conflicto con dblclick de la celda
+      const cell = span.closest<HTMLElement>('.oa-calendar-year-day');
+      const dateStr = cell?.dataset.date;
+      if (dateStr) this.navigateToDayView(dateStr);
+    });
+  });
+}
 }

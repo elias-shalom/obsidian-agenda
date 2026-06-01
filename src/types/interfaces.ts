@@ -9,6 +9,9 @@ export interface AgendaPlugin extends Plugin {
     activateView: (viewType: string, leaf: WorkspaceLeaf) => void;    
   };
   settings: AgendaPluginSettings;
+  modalManager: {
+    openModal: (modalType: string, options?: ModalOptions) => void;
+  };
 }
 
 /**

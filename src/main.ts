@@ -12,7 +12,7 @@ export default class ObsidianAgenda extends Plugin {
   private viewManager: ViewManager ;
   private i18n: I18n;
   private taskManager: TaskManager; 
-  private modalManager: ModalManager;
+  public modalManager: ModalManager;
   
   /// Constructor de la clase ObsidianAgendaPlugin.
   constructor(app: App, manifest: PluginManifest) {

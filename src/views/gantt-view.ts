@@ -1,7 +1,7 @@
-import { WorkspaceLeaf, Plugin } from 'obsidian';
+import { WorkspaceLeaf } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask } from '../types/interfaces';
+import { ITask, AgendaPlugin } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 
 export const GANTT_VIEW_TYPE = 'gantt-view';
@@ -10,7 +10,7 @@ export class GanttView extends BaseView {
   private tasks: ITask[] = []; // Lista de tareas
   private taskManager: TaskManager; // Instancia de TaskManager
 
-  constructor(leaf: WorkspaceLeaf, private plugin: Plugin, private i18n: I18n) {
+  constructor(leaf: WorkspaceLeaf, private plugin: AgendaPlugin, private i18n: I18n) {
     super(leaf);
     this.taskManager = new TaskManager(plugin.app, i18n, this.plugin); // Inicializa TaskManager con la 
   }

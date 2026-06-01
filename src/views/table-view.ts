@@ -1,7 +1,7 @@
 import { WorkspaceLeaf, Plugin } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask, TableViewData } from '../types/interfaces';
+import { ITask, TableViewData, AgendaPlugin } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import Handlebars from 'handlebars';
 import { TaskDateType } from '../types/enums';
@@ -35,7 +35,7 @@ export class TableView extends BaseView {
     const uniqueFolders = [...new Set(this.tasks.map(task => task.file.root))].sort();
 
     await this.render(TABLE_VIEW_TYPE, { tasks: this.tasks,
-    uniqueFolders: uniqueFolders }, this.i18n, this.plugin, this.leaf);
+    uniqueFolders: uniqueFolders }, this.i18n, this.plugin as AgendaPlugin, this.leaf);
   }
 
   protected registerViewSpecificHelpers(_i18n: I18n): void {

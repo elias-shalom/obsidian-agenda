@@ -1,6 +1,6 @@
 {
 	"name": "agenda-tasks",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "Agenda provide intuitive task management interfaces and calendar views. Seamlessly integrate with your existing notes while organizing tasks across multiple views.",
 	"main": "main.js",
 	"scripts": {

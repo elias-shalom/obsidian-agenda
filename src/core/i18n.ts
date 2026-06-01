@@ -32,7 +32,7 @@ export class I18n {
       if (result && typeof result === 'object' && result !== null && k in result) {
         result = (result as Record<string, unknown>)[k];
       } else {
-        console.warn(`Translation key not found: ${key}`);
+        console.warn(`[i18n-${this.currentLanguage}] Translation key not found: "${key}"`);
         return key; // Devolver la clave si no se encuentra la traducción
       }
     }

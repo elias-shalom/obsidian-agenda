@@ -174,5 +174,22 @@
     "invalidRecurrence": "Icona {icon} non è seguita da un modello di ricorrenza valido.",
     "initializeTaskSection": "Errore durante l'inizializzazione della sezione attività: {error}",
     "invalidRecurrencePattern": "Icona {icon} non è seguita da un modello di ricorrenza valido."
-  }
+  },
+  "title_priority": "Priorità",
+  "new_task": "Nuova attività",
+  "edit_task": "Modifica attività",
+  "description_required": "La descrizione è obbligatoria",
+  "task_created": "Attività creata",
+  "task_description_placeholder": "Scrivi una descrizione per la tua attività (es: 'Fare la spesa')",
+  "file_will_be_created": "Nuovo file — verrà creato al salvataggio",
+  "file_created": "Nuovo file creato: {{file}}",
+  "file_required": "Il percorso del file è obbligatorio",
+  "file_invalid_extension": "Il file deve avere l'estensione .md",
+  "task_file_placeholder": "Percorso al file (es: 'Progetti/Attività.md')",
+  "task_priority": "Priorità",
+  "task_due_date": "Data di scadenza",
+  "save": "Salva",
+  "cancel": "Annulla",
+  "delete": "Elimina",
+  "confirm_delete": "Sei sicuro di voler eliminare questa attività?"
 }

@@ -174,5 +174,22 @@
     "invalidRecurrence": "L'icône {icon} n'est pas suivie d'un modèle de récurrence valide.",
     "initializeTaskSection": "Erreur lors de l'initialisation de la section des tâches : {error}",
     "invalidRecurrencePattern": "L'icône {icon} n'est pas suivie d'un modèle de récurrence valide."
-  }
+  },
+  "title_priority": "Priorité",
+  "new_task": "Nouvelle tâche",
+  "edit_task": "Modifier la tâche",
+  "description_required": "La description est obligatoire",
+  "task_created": "Tâche créée",
+  "task_description_placeholder": "Écrivez une description pour votre tâche (ex: 'Acheter des courses')",
+  "file_will_be_created": "Nouveau fichier — sera créé lors de l'enregistrement",
+  "file_created": "Nouveau fichier créé : {{file}}",
+  "file_required": "Le chemin du fichier est obligatoire",
+  "file_invalid_extension": "Le fichier doit avoir l'extension .md",
+  "task_file_placeholder": "Chemin vers le fichier (ex: 'Projets/Tâches.md')",
+  "task_priority": "Priorité",
+  "task_due_date": "Date d'échéance",
+  "save": "Enregistrer",
+  "cancel": "Annuler",
+  "delete": "Supprimer",
+  "confirm_delete": "Êtes-vous sûr de vouloir supprimer cette tâche ?"
 }

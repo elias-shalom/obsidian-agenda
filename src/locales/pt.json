@@ -174,5 +174,22 @@
     "invalidRecurrence": "Ícone {icon} não é seguido por um padrão de recorrência válido.",
     "initializeTaskSection": "Erro ao inicializar a seção de tarefas: {error}",
     "invalidRecurrencePattern": "Ícone {icon} não é seguido por um padrão de recorrência válido."
-  }
+  },
+  "title_priority": "Prioridade",
+  "new_task": "Nova tarefa",
+  "edit_task": "Editar tarefa",
+  "description_required": "Descrição é obrigatória",
+  "task_created": "Tarefa criada",
+  "task_description_placeholder": "Escreva uma descrição para sua tarefa (ex: 'Comprar mantimentos')",
+  "file_will_be_created": "Arquivo novo — será criado ao salvar",
+  "file_created": "Arquivo novo criado: {{file}}",
+  "file_required": "Caminho do arquivo é obrigatório",
+  "file_invalid_extension": "O arquivo deve ter a extensão .md",
+  "task_file_placeholder": "Caminho para o arquivo onde a tarefa será salva (ex: 'Projetos/Tarefas.md')",
+  "task_priority": "Prioridade",
+  "task_due_date": "Data de vencimento",
+  "save": "Salvar",
+  "cancel": "Cancelar",
+  "delete": "Excluir",
+  "confirm_delete": "Tem certeza de que deseja excluir esta tarefa?"
 }

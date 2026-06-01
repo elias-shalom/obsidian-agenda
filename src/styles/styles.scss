@@ -2,6 +2,7 @@
 @use "variables" as *; // Importar variables de otro archivo SCSS
 @use "components/header";
 @use "components/loading";
+@use "components/modal";
 @use "layout";
 @use "views/calendar-common";
 @use "views/calendar-year";
@@ -12,3 +13,4 @@
 @use "views/list-view";
 @use "views/table-view";
 @use "views/overview-view";
+@use './components/_flatpickr.scss';

@@ -174,5 +174,22 @@
     "invalidRecurrence": "El ícono {icon} no está seguido por un patrón de recurrencia válido.",
     "initializeTaskSection": "Error al inicializar TaskSection: {error}",
     "invalidRecurrencePattern": "El ícono {icon} no está seguido por un patrón de recurrencia válido."
-  }
+  },
+  "title_priority": "Prioridad",
+  "new_task": "Nueva tarea",
+  "edit_task": "Editar tarea",
+  "description_required": "La descripción es obligatoria",
+  "task_created": "Tarea creada",
+  "task_description_placeholder": "Escribe una descripción para tu tarea (ej: 'Comprar víveres')",
+  "file_will_be_created": "Archivo nuevo — se creará al guardar",
+  "file_created": "Archivo nuevo creado: {{file}}",
+  "file_required": "La ruta del archivo es obligatoria",
+  "file_invalid_extension": "El archivo debe tener extensión .md",
+  "task_file_placeholder": "Ruta del archivo donde se guardará la tarea (ej: 'Proyectos/Tareas.md')",
+  "task_priority": "Prioridad",
+  "task_due_date": "Fecha de vencimiento",
+  "save": "Guardar",
+  "cancel": "Cancelar",
+  "delete": "Eliminar",
+  "confirm_delete": "¿Estás seguro de que deseas eliminar esta tarea?"
 }

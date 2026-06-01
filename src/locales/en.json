@@ -70,6 +70,7 @@
   "medium": "Medium",
   "high": "High",
   "highest": "Highest",
+  "title_priority": "Priority",
   "all_priorities": "All priorities",
   "lowest_priority": "Lowest",
   "low_priority": "Low",
@@ -174,5 +175,22 @@
     "invalidRecurrence": "Icon {icon} is not followed by a valid recurrence pattern.",
     "initializeTaskSection": "Error initializing TaskSection: {error}",
     "invalidRecurrencePattern": "Icon {icon} is not followed by a valid recurrence pattern."
-  }
+  },
+  "new_task": "New task",
+  "edit_task": "Edit task",
+  "description_required": "Description is required",
+  "task_created": "Task created",
+  "task_description_placeholder": "Write a description for your task (e.g., 'Buy groceries')",
+  "file_will_be_created": "New file — will be created on save",
+  "file_created": "New file created: {{file}}",
+  "file_required": "File path is required",
+  "file_invalid_extension": "File must have a .md extension",
+  "task_file_placeholder": "Path to the file where the task is located (e.g., 'Projects/Tasks.md')",
+
+  "task_priority": "Priority",
+  "task_due_date": "Due date",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "confirm_delete": "Are you sure you want to delete this task?"
 }

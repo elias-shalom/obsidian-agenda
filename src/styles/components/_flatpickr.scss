@@ -1,0 +1,98 @@
+// Personalización de Flatpickr calendar con más contraste
+
+.flatpickr-calendar {
+  background-color: var(--background-primary);
+  border:2px solid var(--interactive-accent);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  z-index: 9999 !important;
+  position: fixed !important;
+}
+
+.flatpickr-months {
+  background-color: var(--interactive-accent);
+}
+
+.flatpickr-month {
+  color: var(--text-on-accent);
+  font-weight: 700;
+}
+
+.flatpickr-weekdays {
+  background-color: var(--background-modifier-border);
+  padding: 0.5rem;
+}
+
+.flatpickr-weekday {
+  background-color: transparent;
+  color: var(--text-normal);
+  font-weight: 700;
+  //text-transform: lowercase;
+  font-size: 0.85rem;
+}
+
+.flatpickr-day {
+  color: var(--text-normal);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover:not(.disabled) {
+    background-color: var(--background-modifier-border);
+    color: var(--text-normal);
+    border-color: var(--interactive-accent);
+    font-weight: 600;
+  }
+
+  &.selected {
+    background-color: var(--interactive-accent) !important;
+    color: var(--text-on-accent);
+    border-color: var(--interactive-accent);
+    border-radius: 4px;
+    font-weight: 700;
+    box-shadow: inset 0 0 0 1px var(--interactive-accent);
+  }
+
+  &.today {
+    border: 2px solid var(--interactive-accent);
+    border-radius: 4px;
+    font-weight: 700;
+    background-color: transparent;
+  }
+
+  &.disabled {
+    color: var(--text-faint);
+    opacity: 0.5;
+  }
+
+  &.nextMonthDay,
+  &.prevMonthDay {
+    color: var(--text-faint);
+    opacity: 0.4;
+  }
+}
+
+.flatpickr-prev,
+.flatpickr-next {
+  color: var(--text-on-accent);
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    opacity: 1;
+  }
+}
+
+.flatpickr-input {
+  color: var(--text-normal) !important;
+  background-color: var(--background-primary) !important;
+  border: 1px solid var(--background-modifier-border) !important;
+  font-weight: 600;
+}

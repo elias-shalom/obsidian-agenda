@@ -220,6 +220,18 @@ export abstract class BaseView extends ItemView {
       return a + b;
     });
 
+    // Helpers de comparación para lógica condicional
+    Handlebars.registerHelper("lt", function(a: number, b: number): boolean {
+      return a < b;
+    });
+
+    Handlebars.registerHelper("gt", function(a: number, b: number): boolean {
+      return a > b;
+    });
+
+    Handlebars.registerHelper("eq", function(a: unknown, b: unknown): boolean {
+      return a === b;
+    });
   }
 
   /**
@@ -410,6 +422,26 @@ export abstract class BaseView extends ItemView {
       });
     });
   }
+
+  /**
+   * Agrega listener de doble clic al oa-critical-task para abrir el archivo
+   */
+  protected addCriticalTaskClickListener(container: HTMLElement): void {
+    const criticalTask = container.querySelector('.oa-critical-task');
+    if (!criticalTask) return;
+
+    criticalTask.addEventListener('dblclick', () => {
+      const filePath = criticalTask.getAttribute('data-file-path');
+      const lineNumber = criticalTask.getAttribute('data-line-number');
+
+      if (filePath) {
+        this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined).catch(console.error);
+      }
+    });
+
+    // Agregar estilo visual para indicar que es clickeable
+    criticalTask.addClass('clickable');
+  }
   
   protected async openTaskFile(filePath: string, lineNumber?: number): Promise<void> {
     try {
@@ -491,11 +523,36 @@ export abstract class BaseView extends ItemView {
     // Por defecto, no hace nada
   }
 
-  protected showLoadingOverlay(): void {
+  protected showLoadingOverlay(linesCount: number = 6, hasHeader: boolean = false): void {
     const container = this.containerEl.children[1] as HTMLElement;
-    //container.style.position = "relative";
-    const overlay = container.createDiv({ cls: "agenda-loading-overlay" });
-    overlay.createDiv({ cls: "agenda-loading-spinner" });
-    overlay.createDiv({ cls: "agenda-loading-label", text: "Agenda" });
+    container.empty();
+    
+    const skeletonContainer = container.createDiv({ cls: "loading-skeleton loading-skeleton--rich" });
+
+    const toolbar = skeletonContainer.createDiv({ cls: "skeleton-toolbar" });
+    toolbar.createDiv({ cls: "skeleton-pill" });
+    toolbar.createDiv({ cls: "skeleton-pill" });
+    toolbar.createDiv({ cls: "skeleton-pill skeleton-pill--short" });
+
+    // Header opcional
+    if (hasHeader) {
+      skeletonContainer.createDiv({ cls: "skeleton-line skeleton-line--header" });
+    }
+
+    const cards = skeletonContainer.createDiv({ cls: "skeleton-cards" });
+    for (let i = 0; i < 3; i++) {
+      const card = cards.createDiv({ cls: "skeleton-card" });
+      card.createDiv({ cls: "skeleton-line skeleton-line--short" });
+      card.createDiv({ cls: "skeleton-block" });
+    }
+
+    const list = skeletonContainer.createDiv({ cls: "skeleton-list" });
+    for (let i = 0; i < linesCount; i++) {
+      const row = list.createDiv({ cls: "skeleton-row" });
+      row.createDiv({ cls: "skeleton-dot" });
+      const content = row.createDiv({ cls: "skeleton-row-content" });
+      content.createDiv({ cls: "skeleton-line" });
+      content.createDiv({ cls: "skeleton-line skeleton-line--short" });
+    }
   }
 }

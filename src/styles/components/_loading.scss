@@ -1,43 +1,133 @@
-.agenda-loading-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
+.loading-skeleton {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  background-color: var(--background-primary);
-  opacity: 1;
-  transition: opacity 0.4s ease;
+  gap: 14px;
+  padding: 16px;
+}
 
-  &.is-hidden {
-    opacity: 0;
-    pointer-events: none;
+.loading-skeleton--rich {
+  .skeleton-toolbar {
+    display: flex;
+    gap: 8px;
+  }
+
+  .skeleton-pill {
+    height: 26px;
+    width: 112px;
+    border-radius: 999px;
+    background: linear-gradient(90deg,
+      var(--background-modifier-border) 20%,
+      var(--background-modifier-hover) 50%,
+      var(--background-modifier-border) 80%);
+    background-size: 220% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+
+  .skeleton-pill--short {
+    width: 72px;
+  }
+
+  .skeleton-cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .skeleton-card {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+    padding: 10px;
+    background: color-mix(in srgb, var(--background-secondary) 70%, transparent);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .skeleton-block {
+    height: 26px;
+    width: 60%;
+    border-radius: 6px;
+    background: linear-gradient(90deg,
+      var(--background-modifier-border) 20%,
+      var(--background-modifier-hover) 50%,
+      var(--background-modifier-border) 80%);
+    background-size: 220% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  .skeleton-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .skeleton-row {
+    display: grid;
+    grid-template-columns: 12px 1fr;
+    gap: 10px;
+    align-items: start;
+  }
+
+  .skeleton-dot {
+    margin-top: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: linear-gradient(90deg,
+      var(--background-modifier-border) 20%,
+      var(--background-modifier-hover) 50%,
+      var(--background-modifier-border) 80%);
+    background-size: 220% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
+  .skeleton-row-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
 }
 
-.agenda-loading-spinner {
-  width: 44px;
-  height: 44px;
-  border: 3px solid var(--background-modifier-border);
-  border-top-color: var(--interactive-accent);
-  border-radius: 50%;
-  animation: agenda-spin 0.75s linear infinite;
+.loading-skeleton .skeleton-line {
+  height: 14px;
+  border-radius: 5px;
+  background: linear-gradient(90deg,
+    var(--background-modifier-border) 20%,
+    var(--background-modifier-hover) 50%,
+    var(--background-modifier-border) 80%);
+  background-size: 220% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
 }
 
-.agenda-loading-label {
-  font-size: 13px;
-  color: var(--text-muted);
-  letter-spacing: 0.04em;
-  animation: agenda-pulse 1.4s ease-in-out infinite;
+.loading-skeleton .skeleton-line--short {
+  width: 58%;
 }
 
-@keyframes agenda-spin {
-  to { transform: rotate(360deg); }
+.loading-skeleton .skeleton-line--header {
+  height: 24px;
+  width: min(320px, 45%);
 }
 
-@keyframes agenda-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
+@media (max-width: 900px) {
+  .loading-skeleton--rich .skeleton-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-skeleton .skeleton-line,
+  .loading-skeleton--rich .skeleton-pill,
+  .loading-skeleton--rich .skeleton-block,
+  .loading-skeleton--rich .skeleton-dot {
+    animation: none;
+  }
+}
+
+@keyframes shimmer {
+  0% { 
+    background-position: 200% 0; 
+  }
+  100% { 
+    background-position: -200% 0; 
+  }
 }

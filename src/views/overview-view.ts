@@ -35,14 +35,28 @@ export class OverviewView extends BaseView {
   }
 
   async onOpen(): Promise<void> {
-    this.showLoadingOverlay();
+    this.showLoadingOverlay(8, true);
 
     this.tasks = await this.getAllTasks(this.taskManager); 
+
+    // Calcular datos del Hero
+    const weeklyProgress = this.getWeeklyProgress();
+    const nextCriticalTask = this.getNextCriticalTask();
+    const nextCriticalDaysLeft = nextCriticalTask ? this.getDaysUntilDeadline(nextCriticalTask) : 0;
 
     // Preparar los datos para la plantilla usando las funciones específicas
     const templateData = {
       dashboardDate: DateTime.now().setLocale(getLanguage()).toFormat('cccc, MMM dd'),
       tasks: this.tasks,
+      // === HERO DATA ===
+      todayCompletedCount: this.getTodayCompletedCount(),
+      todayPendingCount: this.getTodayPendingCount(),
+      weeklyProgressDone: weeklyProgress.done,
+      weeklyProgressTotal: weeklyProgress.total,
+      weeklyProgressPct: weeklyProgress.percentage,
+      nextCriticalTask: nextCriticalTask,
+      nextCriticalDaysLeft: nextCriticalDaysLeft,
+      // === LEGACY DATA (mantener para compatibilidad) ===
       totalTasks: this.tasks.length,
       completedTasks: this.getCompletedTasksCount(),
       pendingTasks: this.getPendingTasksCount(),
@@ -52,7 +66,7 @@ export class OverviewView extends BaseView {
       totalEstimatedTime: this.calculateTotalEstimatedTime(),
       // Nuevos widgets
       noDateTasks: this.getNoDateTasksCount(),
-      completedThisWeek: this.getCompletedThisWeekCount(),
+      completedSevenLastDays: this.getCompletedSevenLastDaysCount(),
       completionTrend: this.calculateCompletionTrend(),
       completionRatio: this.calculateCompletionRatio(),
       consistency: this.calculateConsistency(),
@@ -152,7 +166,7 @@ export class OverviewView extends BaseView {
   /**
    * Calcula el número de tareas completadas en la última semana
    */
-  private getCompletedThisWeekCount(): number {
+  private getCompletedSevenLastDaysCount(): number {
     const oneWeekAgo = DateTime.now().minus({ days: 7 }).toJSDate();
 
     return this.tasks.filter(task => {
@@ -202,7 +216,7 @@ export class OverviewView extends BaseView {
    * Calcula la tendencia de completado (% de cambio respecto a semana anterior)
    */
   private calculateCompletionTrend(): string {
-    const completedThisWeek = this.getCompletedThisWeekCount();
+    const completedThisWeek = this.getCompletedSevenLastDaysCount();
 
     const completedLastWeek = this.getCompletedLastWeekCount();
     
@@ -218,7 +232,7 @@ export class OverviewView extends BaseView {
    * Calcula el promedio de tareas completadas por día en la última semana
    */
   private calculateCompletionRatio(): string {
-    const completedThisWeek = this.getCompletedThisWeekCount();
+    const completedThisWeek = this.getCompletedSevenLastDaysCount();
     const ratio = completedThisWeek / 7; // División por 7 días
     
     return ratio.toFixed(1) + "/día";
@@ -278,6 +292,7 @@ export class OverviewView extends BaseView {
 
   protected setupViewSpecificEventListeners(container: HTMLElement, _data: OverviewViewData): void {
     this.addTaskItemClickListeners(container);
+    this.addCriticalTaskClickListener(container);
     this.setupWidgetFilterListeners(container);
   }
 
@@ -636,6 +651,127 @@ export class OverviewView extends BaseView {
       .slice(0, 5); // Mostrar solo los 5 proyectos principales
     
     return result;
+  }
+
+  /**
+   * Obtiene el conteo de tareas completadas hoy
+   */
+  private getTodayCompletedCount(): number {
+    const today = DateTime.now().startOf('day');
+    const tomorrow = today.plus({ days: 1 });
+    
+    return this.tasks.filter(task => {
+      if (task.state.text !== 'Done') return false;
+      if (!task.date.done) return false;
+      
+      try {
+        const dueDate = this.toLocalMidnight(task.date.due);  // ✅ Usar due en lugar de done
+        if (!dueDate) return false;
+        const dueLuxon = DateTime.fromJSDate(dueDate);
+        return dueLuxon >= today && dueLuxon < tomorrow;
+      } catch {
+        return false;
+      }
+    }).length;
+  }
+
+  /**
+   * Obtiene el conteo de tareas pendientes hoy
+   */
+  private getTodayPendingCount(): number {
+    return this.getTodayTasksList().length; // Usa la lista que ya filtra
+  }
+
+  private getCompletedThisWeekCount(): number {
+  const today = DateTime.now().startOf('day');
+  const weekStart = today.startOf('week');  // ← Primer día de la semana (lunes)
+
+  return this.tasks.filter(task => {
+    if (task.state.text !== 'Done') return false;
+    if (!task.date.done) return false;
+    
+    try {
+      const taskDoneDate = this.toLocalMidnight(task.date.done);
+      if (!taskDoneDate) return false;
+      const doneLuxon = DateTime.fromJSDate(taskDoneDate);
+      
+      return doneLuxon >= weekStart && doneLuxon < weekStart.plus({ days: 7 });
+    } catch {
+      return false;
+    }
+  }).length;
+}
+
+  /**
+   * Calcula progreso semanal (tareas completadas / tareas en scope semanal)
+   */
+  private getWeeklyProgress(): { done: number; total: number; percentage: number } {
+    const today = DateTime.now().startOf('day');
+    const weekStart = today.startOf('week');
+    const weekEnd = weekStart.plus({ days: 7 });
+
+    const weeklyPlannedTasks = this.tasks.filter(task => {
+      // Excluir canceladas del plan
+      if (task.state.text === 'Cancelled') return false;
+
+      // Si due cae en semana actual, entra al plan
+      if (task.date.due) {
+        const dueDate = this.toLocalMidnight(task.date.due);
+        if (dueDate) {
+          const dueLuxon = DateTime.fromJSDate(dueDate);
+          if (dueLuxon >= weekStart && dueLuxon < weekEnd) return true;
+        }
+      }
+
+      // Si scheduled cae en semana actual, entra al plan
+      if (task.date.scheduled) {
+        const scheduledDate = this.toLocalMidnight(task.date.scheduled);
+        if (scheduledDate) {
+          const scheduledLuxon = DateTime.fromJSDate(scheduledDate);
+          if (scheduledLuxon >= weekStart && scheduledLuxon < weekEnd) return true;
+        }
+      }
+
+      return false;
+    });
+
+    const total = weeklyPlannedTasks.length;
+    const done = weeklyPlannedTasks.filter(task => task.state.text === 'Done').length;
+    const percentage = total > 0 ? Math.round((done / total) * 100) : 0;
+
+    return { done, total, percentage };
+  }
+
+  /**
+   * Obtiene la próxima tarea crítica (deadline más cercano, highest priority if tie)
+   */
+  private getNextCriticalTask(): ITask | null {
+    if (this.getUpcomingTasksList().length === 0) {
+      return null;
+    }
+
+    // Próxima tarea más urgente
+    return this.getUpcomingTasksList()[0];
+  }
+
+  /**
+   * Calcula días restantes hasta deadline
+   */
+  private getDaysUntilDeadline(task: ITask): number {
+    if (!task.date.due) return 0;
+
+    try {
+      const dueDate = this.toLocalMidnight(task.date.due);
+      if (!dueDate) return 0;
+
+      const today = DateTime.now().startOf('day');
+      const dueLuxon = DateTime.fromJSDate(dueDate);
+      const diff = dueLuxon.diff(today, 'days').days;
+
+      return Math.floor(diff);
+    } catch {
+      return 0;
+    }
   }
 
   async onClose(): Promise<void> {

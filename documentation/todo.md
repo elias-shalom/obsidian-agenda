@@ -1,4 +1,4 @@
-Desarrollo OBS Agenda for Obsidian
+Desarrollo Agenda Tasks for Obsidian
 
 # OBS Agenda Plugin
 
@@ -49,45 +49,83 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - ✅ Creación rápida de tareas en momentos específicos
 - ✅ Sincronización con las notas diarias nativas de Obsidian
 
-
 # Planificado para futuras características de versiones
 
-## 🎯 Próximas Características (v1.x)
+## 🎯 Características (v1.0.2)
+
+### Core Tasks
+- [x] Compatibilidad mejorada con el formato dataview del plugin de Tareas (por ahora solo es compatible con el formato emoji)
+- [x] Compatibilidad con dispositivos móviles (validar que sea compatible)
+
+### UX Improvements
+- [x] Imagen de cargado - spinner (siguente)
+- [x] Agregar atajo de ctrl + p (Se agregó el command palette para abrir la obs agenda)
+
+### Calendar Enhancements
+- [x] Calendario. Vista por año !(se agregó solo visualización)
+- [x] Mejorar el diseño de los contenedores de las tareas
+
+## 🎯 Características (v1.0.3)
+
+### UX Improvements
+- [x] Configuración de las vistas que aparecen en el encabezado
+
+### Calendar Enhancements
+- [x] agregar fecha al panel de overview
+- [X] agregar el numero de la semana en vista semanal
+
+## 🎯 Características (v1.0.4)
+- [x] Creación de tareas nativas en las vistas de OBS Agenda (abc tarea al calendario)
+- [x] Agregar atajo de ctrl + p (Se agregó el command palette para crear tareas)
+
+### UX Improvements
+- [x] Boton de reload de tareas
+- [x] On mouse over en la lista
+- [x] Orden alfabetico de la vista de lista
+- [x] Linea de días en mes
+
+### Calendar Enhancements
+- [x] Funcion en vista anual ir a vista por día
+
+## 🎯 Características (v1.0.5)
+- [x] Skeleton loading (reemplazo del spinner)
+- [x] Mejoras estéticas en la vista de lista
+- [x] Distinción y resaltado de prioridades en la lista
+- [x] Nuevo hero widget en el dashboard
+- [x] Mejoras generales de UI/UX
+
+## 🎯 Próximas Características (v1.1.0)
 
 ### Core Tasks
 - [ ] Compatibilidad con la programación de tareas según la hora del día [vista por día (hora y día completo)]
-- [ ] Configuración de tareas por nota o multiples tareas por nota (reconocimiento)
-- [ ] Creación y edición de tareas nativas en las vistas de OBS Agenda (abc tarea al calendario)
-
-- [ ] Compatibilidad con tareas recursivas/repetitivas (🔁) del pluiin tasks
-- [ ] Compatibilidad mejorada con el formato de vista de datos del plugin de Tareas (por ahora solo es compatible con el formato emoji)
-
-### Características Experimentales (Futuro)
-- [ ] Tareas seriadas
-- [ ] Grupos de tareas
-- [ ] Rutina diaria
+  - [ ] Una forma de agregar la fecha desde el archivo con iconos
+  - [ ] Puede ser con el boton secundario agregar las fechas y demás
+- [ ] Edición de tareas nativas en las vistas de OBS Agenda (abc tarea al calendario)
+- [ ] Creación avanzada de tareas (todas las fechas, id, dependencias, estatus, proyectos, etc)
 
 ### UX Improvements
 - [ ] Tool tips o help que diga como usar el plugin
-- [ ] Varias maneras de abrir el plugin (Se agregó el command palette para abrir la obs agenda)
 - [ ] Más widgets en la vista del panel
-- [x] Agregar atajo de ctrl + p (Se agregó el command palette para abrir la obs agenda)
-- [ ] Configuración de sonidos de notificaciones
-- [ ] Configuración de las vistas que aparecen en el encabezado (siguente)
-
-- [ ] Imagen de cargado (siguente)
+- [ ] Diferencia si segun el estado
 
 ### Calendar Enhancements
 - [ ] Calendario Drag and drop de tareas cambiando las fechas
-
-- [ ] Calendario. Vista por año (siguente)
-
-- [ ] Calendario. Secciones extra ![vista agenda ](attachments/extra-section.png)
-
-## 📊 Nuevas Vistas (v2.x)
+- [ ] Agregar date picker navegable por niveles (año → mes → día), abierto desde el encabezado del calendario, que al confirmar/seleccionar lleve la vista a la fecha elegida de forma inmediata.
 
 ### Task Management Views
 - [ ] Habit tracker
+- [ ] Rutina diaria
+
+### 🐛 Correcciones Pendientes
+- [ ] Ancho de las filas de la tabla en la vista tablas
+
+## 📊 Próximas Características (v1.x)
+
+### Core Tasks
+- [ ] Compatibilidad con tareas recursivas/repetitivas (🔁) del pluiin tasks (las tareas recursivas se van creando cuando se marca como terminada la misma anterior)
+- [ ] Configuración de tareas por nota o multiples tareas por nota (reconocimiento)
+
+### Task Management Views
 - [ ] Kanban view
 - [ ] To do view
 - [ ] Agenda view ![vista agenda ](attachments/agenda-view.png)
@@ -97,11 +135,30 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [ ] Gantt view
 - [ ] Timeline view
 
+### Características Experimentales (Futuro)
+- [ ] Tareas seriadas (esto lo debo hacer con los id, depende de)
+- [ ] Grupos de tareas (aqui lo vamos a resolver por carpeta o por archivo, es decir, los grupos seran así)
+
+### UX Improvements
+- [ ] Configuración de sonidos de notificaciones
+- [x] Agregar atajo de ctrl + p (Se agregó el command palette para abrir la obs agenda)
+  - [ ] Varias maneras de abrir el plugin (Se agregó el command palette para abrir la obs agenda)
+
+### Calendar Enhancements
+- [ ] Calendario. Secciones extra ![vista agenda ](attachments/extra-section.png)
+
+
+## 🔄 **Revisión y Reflexión (v2.x - v3.x)**
+- [ ] Plantillas de revisión diaria/semanal/mensual
+- [ ] Analíticas de progreso y métricas
+- [ ] Retrospectivas automáticas
+- [ ] Seguimiento de objetivos y OKRs
+- [ ] Visualización de rachas de hábitos
+
 ## 🔗 Integraciones y Características Avanzadas (v3.x)
 
 ### External Integrations
 - [ ] Importar y exportar tareas de Google, Microsoft, etc
-- [ ] Compatibilidad con dispositivos móviles (validar que sea compatible)
 
 ### Advanced Features
 - [ ] Implementación de estados personalizados (estados de las tareas personalizados acorde a tasks)
@@ -111,11 +168,7 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [ ] Notificaciones
 - [ ] Usar el frontmatter como base de datos
 
-
 # Fixes
-
-## 🐛 Correcciones Pendientes
-- [ ] Ancho de las filas de la tabla en la vista tablas
 
 # Características Adicionales Sugeridas
 
@@ -133,12 +186,7 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [ ] Programación de bloques de trabajo profundo
 - [ ] Períodos de bloqueo de distracciones
 
-## 🔄 **Revisión y Reflexión (v2.x - v3.x)**
-- [ ] Plantillas de revisión diaria/semanal/mensual
-- [ ] Analíticas de progreso y métricas
-- [ ] Retrospectivas automáticas
-- [ ] Seguimiento de objetivos y OKRs
-- [ ] Visualización de rachas de hábitos
+
 
 ## 🤝 **Colaboración y Equipos (v3.x)**
 - [ ] Calendarios/agendas compartidas

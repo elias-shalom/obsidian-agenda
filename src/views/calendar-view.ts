@@ -32,6 +32,7 @@ export abstract class CalendarView extends BaseView {
   }
 
   async onOpen(): Promise<void> {
+    this.showLoadingOverlay(8, true);
     this.tasks = await this.getAllTasks(this.taskManager);
     await this.refreshCalendar();
   }

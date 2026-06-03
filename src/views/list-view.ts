@@ -37,6 +37,8 @@ export class ListView extends BaseView {
   }
 
   async onOpen(): Promise<void> {
+    this.showLoadingOverlay(5, false);
+
     this.tasks = await this.getAllTasks(this.taskManager); // Cargar tareas
 
     // Siempre crear la estructura jerárquica

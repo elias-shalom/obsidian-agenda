@@ -22,20 +22,26 @@
       <div class="oa-folder-structure">
         <div class="oa-folder-group" data-folder="{{folderName}}" data-folder-path="{{folderName}}">
           <h3 class="oa-folder-name">
-            <span class="oa-folder-toggle">⯆</span>
+            <span class="oa-folder-toggle" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right">
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
+            </span>
             <span class="oa-folder-title">{{folderName}}</span>
             <span class="oa-task-count">({{folder.tasks.length}})</span>
           </h3>
           <ul class="oa-folder-tasks">
             {{#each folder.tasks}}
-              <li class="oa-task-item" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
+              <li class="oa-task-item" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}" data-priority="{{this.state.priority}}">
                 <div class="oa-task-priority">{{priorityIcon this.state.priority}}</div>
                 <div class="oa-task-content">
-                  <div class="oa-task-description">{{this.section.desc}}</div>
-                  <div class="oa-task-metadata">
+                  <div class="oa-task-description">
+                    {{this.section.desc}}
                     {{#if this.date.due}}
                       <span class="oa-task-due-date">📅 {{formatDate this.date.due}}</span>
                     {{/if}}
+                  </div>
+                  <div class="oa-task-metadata">
                     <span class="oa-task-path">📄 {{this.file.path}}</span>
                   </div>
                 </div>
@@ -54,21 +60,27 @@
 {{#*inline "folderTemplate"}}
   <div class="oa-folder-group" data-folder="{{name}}" data-folder-path="{{fullPath}}">
     <h3 class="oa-folder-name" style="padding-left: {{multiply level 15}}px;">
-      <span class="oa-folder-toggle">⯆</span>
+      <span class="oa-folder-toggle" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right">
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+      </span>
       <span class="oa-folder-title">{{name}}</span>
       <span class="oa-task-count">({{totalTaskCount this}})</span>
     </h3>
     <ul class="oa-folder-tasks">
       {{#each tasks}}
-        <li class="oa-task-item" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}">
+        <li class="oa-task-item" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}" data-priority="{{this.state.priority}}">
           <div class="oa-task-priority">{{priorityIcon this.state.priority}}</div>
           <div class="oa-task-content">
-            <div class="oa-task-description">{{this.section.desc}}</div>
-            <div class="oa-task-metadata">
+            <div class="oa-task-description">
+              {{this.section.desc}}
               {{#if this.date.due}}
                 <span class="oa-task-due-date">📅 {{formatDate this.date.due}}</span>
               {{/if}}
-              <span class="oa-task-path">📄 {{this.file.path}}</span>
+            </div>
+            <div class="oa-task-metadata">
+            
             </div>
           </div>
         </li>

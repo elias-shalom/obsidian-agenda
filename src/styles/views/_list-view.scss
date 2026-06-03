@@ -22,9 +22,11 @@
     align-items: center;
     
     .oa-folder-toggle {
-      display: inline-block;
-      margin-right: 6px;
-      transition: transform 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: transform 160ms ease, color 160ms ease;
       font-size: 12px;
     }
     
@@ -194,11 +196,11 @@
 
 // Estilo para el indicador de expansión/colapso
 .oa-folder-toggle {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  text-align: center;
-  transition: transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: transform 160ms ease, color 160ms ease;
 }
 
 .oa-folder-group.oa-collapsed .oa-folder-toggle {
@@ -296,5 +298,42 @@
 
 .oa-view-toggle-button {
   @include interactive-control;
+}
+
+.theme-dark {
+  .oa-task-item {
+    &[data-priority="highest"]   { border-left: 3px solid rgba(255, 100, 100, 0.95); border-top: 1px solid rgba(255, 100, 100, 0.95); border-bottom: 1px solid rgba(255, 100, 100, 0.95); 
+    border-right: 1px solid rgba(255, 100, 100, 0.95);}
+    &[data-priority="high"] { border-left: 3px solid #a06c00; border-top: 1px solid #a06c00; border-bottom: 1px solid #a06c00; border-right: 1px solid #a06c00;} // ámbar, no amarillo
+    //&[data-priority="low"] { border-left: 3px solid #3d6080; border-top: 1px solid #3d6080; border-bottom: 1px solid #3d6080; border-right: 1px solid #3d6080;}
+    //&[data-priority="lowest"] { border-left: 3px solid #4a7a50; border-top: 1px solid #4a7a50; border-bottom: 1px solid #4a7a50;  border-right: 1px solid #4a7a50; }
+  }
+}
+
+.theme-light {
+  .oa-task-item {
+    &[data-priority="highest"]   { border-left: 3px solid #b01010; border-top: 1px solid #b01010; border-bottom: 1px solid #b01010; border-right: 1px solid #b01010; }
+    &[data-priority="high"] { border-left: 3px solid rgba(255, 200, 50, 0.9); border-top: 1px solid rgba(255, 200, 50, 0.9); border-bottom: 1px solid rgba(255, 200, 50, 0.9); border-right: 1px solid rgba(255, 200, 50, 0.9); }
+    //&[data-priority="low"] { border-left: 3px solid var(--color-blue); border-top: 1px solid var(--color-blue); border-bottom: 1px solid var(--color-blue); border-right: 1px solid var(--color-blue); }
+    //&[data-priority="lowest"] { border-left: 3px solid var(--color-green); border-top: 1px solid var(--color-green); border-bottom: 1px solid var(--color-green); }
+  }
+}
+
+.oa-task-path {
+  font-size: 0.75em;
+  color: var(--text-faint);
+}
+
+.oa-task-description {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.oa-task-due-date {
+  white-space: nowrap;
+  font-size: 0.8em;
+  color: var(--text-muted);
 }
 

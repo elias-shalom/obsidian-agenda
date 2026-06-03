@@ -16,6 +16,7 @@
       <button id="oa-close-filter-panel" class="oa-close-filter-button">×</button>
     </div>
     <div class="oa-widget-checkboxes">
+      <label><input type="checkbox" data-widget="hero" checked> {{t "hero_section"}}</label>
       <label><input type="checkbox" data-widget="total-tasks" checked> {{t "total_tasks"}}</label>
       <label><input type="checkbox" data-widget="completed-tasks" checked> {{t "completed_tasks"}}</label>
       <label><input type="checkbox" data-widget="pending-tasks" checked> {{t "pending_tasks"}}</label>
@@ -41,6 +42,65 @@
       <button id="oa-reset-widget-filters" class="oa-reset-filter-button">{{t "reset"}}</button>
     </div>
   </div>
+  <!-- HERO SECTION - Decisiones rápidas -->
+  <div class="oa-hero-section" data-widget-type="hero">
+    <div class="oa-hero-grid">
+      <!-- Hoy: Completadas vs Pendientes -->
+      <div class="oa-hero-card oa-hero-card--today">
+        <div class="oa-hero-label">{{t "today_tasks"}}</div>
+        <div class="oa-hero-stats">
+          <div class="oa-hero-stat">
+            <span class="oa-hero-number oa-hero-number--done">{{todayCompletedCount}}</span>
+            <span class="oa-hero-sublabel">{{t "completed_tasks"}}</span>
+          </div>
+          <div class="oa-hero-divider">/</div>
+          <div class="oa-hero-stat">
+            <span class="oa-hero-number oa-hero-number--pending">{{todayPendingCount}}</span>
+            <span class="oa-hero-sublabel">{{t "pending_tasks"}}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Semana: Progreso con barra -->
+      <div class="oa-hero-card oa-hero-card--week">
+        <div class="oa-hero-label">{{t "completion_ratio"}}</div>
+        <div class="oa-hero-progress">
+          <div class="oa-progress-bar">
+            <div class="oa-progress-fill" style="width: {{weeklyProgressPct}}%"></div>
+          </div>
+          <div class="oa-progress-text">
+            <span class="oa-progress-stat">{{weeklyProgressDone}} / {{weeklyProgressTotal}}</span>
+            <span class="oa-progress-pct">{{weeklyProgressPct}}%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Próxima tarea crítica -->
+      <div class="oa-hero-card oa-hero-card--critical">
+        {{#if nextCriticalTask}}
+          <div class="oa-hero-label">{{t "upcoming_tasks"}}</div>
+          <div class="oa-critical-task" data-file-path="{{nextCriticalTask.file.path}}" data-line-number="{{nextCriticalTask.line.number}}">
+            <div class="oa-critical-title">{{nextCriticalTask.section.desc}}</div>
+            <div class="oa-critical-meta">
+              <span class="oa-critical-date">{{formatDate nextCriticalTask.date.due}}</span>
+              <span class="oa-critical-days {{#if nextCriticalDaysLeft}}oa-critical-days--{{#if (lt nextCriticalDaysLeft 0)}}overdue{{else if (lt nextCriticalDaysLeft 3)}}urgent{{else}}normal{{/if}}{{/if}}">
+                {{#if (lt nextCriticalDaysLeft 0)}}
+                  {{t "overdue"}}: {{multiply nextCriticalDaysLeft -1}} {{t "days_old"}}
+                {{else if (eq nextCriticalDaysLeft 0)}}
+                  {{t "due_today"}}
+                {{else}}
+                  {{nextCriticalDaysLeft}} {{t "days_old"}}
+                {{/if}}
+              </span>
+            </div>
+          </div>
+        {{else}}
+          <div class="oa-hero-empty">✓ {{t "no_upcoming_tasks"}}</div>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+
   <!-- Widget de estadísticas -->
   <div class="oa-stats-widgets">
     <div class="oa-stat-card" data-widget-type="total-tasks" title="{{t 'total_tasks_tooltip'}}">
@@ -111,7 +171,7 @@
     <div class="oa-stat-card" data-widget-type="completed-this-week" title="{{t 'completed_this_week_tooltip'}}">
       <h3>{{t "completed_this_week"}}</h3>
       <div class="oa-stat-content">
-        <span class="oa-stat-number">{{completedThisWeek}}</span>
+        <span class="oa-stat-number">{{completedSevenLastDays}}</span>
         <div class="oa-stat-icon">🗓️</div>
       </div>
     </div>
@@ -305,4 +365,6 @@
 
   </div>
 </div>
+
+
 

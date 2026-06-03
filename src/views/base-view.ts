@@ -220,6 +220,18 @@ export abstract class BaseView extends ItemView {
       return a + b;
     });
 
+    // Helpers de comparación para lógica condicional
+    Handlebars.registerHelper("lt", function(a: number, b: number): boolean {
+      return a < b;
+    });
+
+    Handlebars.registerHelper("gt", function(a: number, b: number): boolean {
+      return a > b;
+    });
+
+    Handlebars.registerHelper("eq", function(a: unknown, b: unknown): boolean {
+      return a === b;
+    });
   }
 
   /**
@@ -409,6 +421,26 @@ export abstract class BaseView extends ItemView {
         }
       });
     });
+  }
+
+  /**
+   * Agrega listener de doble clic al oa-critical-task para abrir el archivo
+   */
+  protected addCriticalTaskClickListener(container: HTMLElement): void {
+    const criticalTask = container.querySelector('.oa-critical-task');
+    if (!criticalTask) return;
+
+    criticalTask.addEventListener('dblclick', () => {
+      const filePath = criticalTask.getAttribute('data-file-path');
+      const lineNumber = criticalTask.getAttribute('data-line-number');
+
+      if (filePath) {
+        this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined).catch(console.error);
+      }
+    });
+
+    // Agregar estilo visual para indicar que es clickeable
+    criticalTask.addClass('clickable');
   }
   
   protected async openTaskFile(filePath: string, lineNumber?: number): Promise<void> {

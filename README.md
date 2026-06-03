@@ -1,194 +1,316 @@
-# Agenda Tasks 1.0.4
+# 📅 Agenda Tasks
 
-A comprehensive task management and calendar plugin for Obsidian (https://obsidian.md).
+> A comprehensive task management and calendar plugin for Obsidian
 
-Agenda Tasks transforms your vault into a powerful productivity system by providing intuitive task management interfaces and calendar views. Seamlessly integrate with your existing Obsidian notes while organizing tasks across multiple views.
+[![Release](https://img.shields.io/badge/version-1.0.5-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Obsidian](https://img.shields.io/badge/Obsidian-0.13.0+-purple.svg)](https://obsidian.md)
 
-## Features
+## Overview
 
-### General Features
+Agenda Tasks transforms your Obsidian vault into a powerful productivity system by providing intuitive task management interfaces and multiple calendar views. Seamlessly integrate with your existing Obsidian notes while organizing tasks across multiple views for maximum efficiency.
+
+**Key Benefits:**
+- 🎯 Multiple view types tailored to different workflows
+- 🔄 Real-time synchronization with your notes
+- 🏗️ Compatible with Obsidian Tasks plugin
+- 🌐 Support for 6+ languages
+- ⚙️ Highly customizable interface
+
+---
+
+## 📖 Table of Contents
+
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Task Format](#task-format-and-compatibility)
+- [Configuration](#configuration)
+- [Changelog](#changelog)
+- [Planned Features](#planned-for-future-versions)
+- [Support](#support-and-feedback)
+- [Contributing](#contributing)
+
+---
+
+## ✨ Features
+
+### 📊 Available Views
+
+#### Overview View
+- Dashboard-style task summary with key metrics
+- Statistics and progress tracking
+- Quick access to upcoming deadlines
+- Task distribution by project/folder
+- Overdue task highlighting
+- Customizable widgets
+
+#### List View
+- Customizable task listing with multiple columns
+- Advanced filtering by date, project, priority, and tags
+- Group tasks by date, folder, status, or custom attributes
+- Inline task editing
+- Collapsible task groups
+- Bulk actions for multiple tasks
+
+#### Table View
+- Spreadsheet-style task management
+- Customizable columns and layouts
+- Sortable and resizable columns
+- Quick entry and editing of task attributes
+- CSV export capabilities
+- Conditional formatting
+
+#### Calendar View
+- Multiple calendar layouts (day, week, work week, month, and year)
+- Task visualization on calendar grid
+- Mini-calendar for quick date navigation
+- Task indicators showing busy days
+- Quick task creation at specific times
+- Syncs with native Obsidian daily notes
+
+### 🔧 General Capabilities
 - ✅ Parse and track tasks from your entire vault
-- ✅ Compatible with [Obsidian Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) syntax and metadata
-- ✅ Multiple view types to manage tasks according to your workflow
+- ✅ Compatible with [Obsidian Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) syntax
 - ✅ Real-time task updates
 - ✅ Customizable interface with themes support
 - ✅ Keyboard shortcuts for common actions
-- ✅ Localization support
+- ✅ 6+ language support (English, Spanish, German, Portuguese, French, Italian)
+---
 
-### Overview View
-- ✅ Dashboard-style task summary
-- ✅ Statistics and progress tracking
-- ✅ Quick access to upcoming deadlines
-- ✅ Task distribution by project/folder
-- ✅ Overdue task highlighting
-- ✅ Customizable widgets
+## 📸 Screenshots
 
-### List View
-- ✅ Customizable task listing with multiple columns
-- ✅ Advanced filtering by date, project, priority, and tags
-- ✅ Group tasks by date, folder, status, or custom attributes
-- ✅ Inline task editing
-- ✅ Collapsible task groups
-- ✅ Bulk actions for multiple tasks
+| View | Screenshot |
+|------|-----------|
+| **Overview Dashboard** | ![Overview](screenshots/Overview.png) |
+| **List View** | ![List View](screenshots/ListView.png) |
+| **Table View** | ![Table View](screenshots/TableView.png) |
+| **Month Calendar** | ![Month View](screenshots/MonthView.png) |
+| **Week Calendar** | ![Week View](screenshots/WeekView.png) |
+| **Day View** | ![Day View](screenshots/DayView.png) |
 
-### Table View
-- ✅ Spreadsheet-style task management
-- ✅ Customizable columns and layouts
-- ✅ Sortable and resizable columns
-- ✅ Quick entry and editing of task attributes
-- ✅ CSV export capabilities
-- ✅ Conditional formatting
+---
 
-### Calendar View
-- ✅ Multiple calendar layouts (day, week, work week, and month)
-- ✅ Task visualization on calendar grid
-- ✅ Mini-calendar for quick date navigation
-- ✅ Task indicators showing busy days
-- ✅ Quick task creation at specific times
-- ✅ Syncs with native Obsidian daily notes
+| View | Screenshot |
+|------|-----------|
+| **Overview Dashboard** | ![Overview](screenshots/Overview-white.png) |
+| **List View** | ![List View](screenshots/ListView-white.png) |
+| **Table View** | ![Table View](screenshots/TableView-white.png) |
+| **Month Calendar** | ![Month View](screenshots/MonthView-white.png) |
+| **Week Calendar** | ![Week View](screenshots/WeekView-white.png) |
+| **Day View** | ![Day View](screenshots/DayView-white.png) |
 
+---
 
-## Screenshots
+## 📥 Installation
 
-Overview view
-![Overview](screenshots/Overview.png)
-
-List View
-![List View](screenshots/ListView.png)
-
-Table View
-![Table View](screenshots/TableView.png)
-
-Month View
-![Month View](screenshots/MonthView.png)
-
-Week View
-![Week View](screenshots/WeekView.png)
-
-Day View
-![Day View](screenshots/DayView.png)
-
-## Demo Videos
-
-
-### Overview View Demo
-See the [Overview screenshot](screenshots/Overview.png) for a preview of the dashboard.
-
-### List View Demo
-See the [List View screenshot](screenshots/ListView.png) for a preview of the list layout.
-
-### Table View Demo
-See the [Table View screenshot](screenshots/TableView.png) for a preview of the spreadsheet-style layout.
-
-### Calendar View Demo
-See the [Month View screenshot](screenshots/MonthView.png) and [Week View screenshot](screenshots/WeekView.png) for calendar previews.
-
-## Installation
-
-### From Obsidian Community Plugins
-1. Open Obsidian Settings
-2. Go to Community Plugins and disable Safe Mode
-3. Click Browse and search for "Agenda"
-4. Install the plugin and enable it
+### From Obsidian Community Plugins (Recommended)
+1. Open **Obsidian Settings**
+2. Navigate to **Community Plugins** and disable **Safe Mode**
+3. Click **Browse** and search for **"Agenda"**
+4. Click **Install** and then **Enable**
 
 ### Manual Installation
-1. Download the latest release from the releases page
-2. Extract the zip file to your vault's `.obsidian/plugins/` folder
-3. Ensure you have the following files in `.obsidian/plugins/obsidian-agenda/`:
+1. Download the latest release from the [releases page](https://github.com/elias-shalom/obsidian-agenda/releases)
+2. Extract the zip file to your vault's `.obsidian/plugins/obsidian-agenda/` folder
+3. Verify the following files are present:
    - `main.js`
    - `styles.css`
    - `manifest.json`
-4. Enable the plugin in Obsidian settings
+4. Enable the plugin in **Obsidian Settings → Community Plugins**
 
-## Usage
+**Requirements:**
+- Obsidian v0.13.0 or higher
+- No additional dependencies required
 
-1. Create a new Agenda view by clicking the Agenda icon in the left sidebar
-2. Choose your preferred view type (Overview, List, Table, or Calendar)
-3. Tasks from your vault will automatically appear in the selected view
-4. Use the toolbar options to filter, sort, and customize your view
+---
 
-For detailed usage instructions, please refer to the [Wiki](https://github.com/elias-shalom/obsidian-agenda/wiki).
+## 🚀 Quick Start
 
-## Task Format and Compatibility
+### Creating Your First Agenda View
+1. Click the **Agenda icon** in the left sidebar ribbon
+2. Select your preferred view type:
+   - **Overview** - Dashboard with key metrics
+   - **List** - Detailed task list
+   - **Table** - Spreadsheet view
+   - **Calendar** - Calendar visualization
+3. Your tasks will automatically populate from your vault
 
-Agenda Tasks works with tasks created using the standard Obsidian checkbox format `- [ ]` and is fully compatible with the popular [Obsidian Tasks plugin](https://github.com/obsidian-tasks-group/obsidian-tasks). It recognizes and properly handles:
+### Common Actions
+- **Filter tasks** - Use the filter panel to narrow down tasks
+- **Create task** - Use Ctrl+P or the create button
+- **Edit task** - Click any task to edit inline or in modal
+- **Sort tasks** - Click column headers to sort (List and Table views)
 
-- Due dates (📅)
-- Scheduled dates (⏳)
-- Start dates (🛫)
-- Priority markers (⏫⏬)
-- Recurring tasks (🔁)
-- Custom statuses (planned for a future version)
-- Task tags
+For comprehensive guides, visit the [Wiki](https://github.com/elias-shalom/obsidian-agenda/wiki).
 
-All metadata created with Obsidian Tasks will be properly recognized and displayed in Agenda Tasks views.
+---
 
-## Configuration
+## 📝 Task Format and Compatibility
 
-Agenda Tasks offers numerous configuration options through the settings tab:
-- Task parsing rules
-- Default view settings
-- Display preferences
-- Integration with other plugins
+Agenda Tasks works seamlessly with tasks created using the standard Obsidian checkbox format (`- [ ]`) and is fully compatible with the popular [Obsidian Tasks plugin](https://github.com/obsidian-tasks-group/obsidian-tasks).
 
-## Scope this version 1.0.4
+### Supported Metadata
 
- 1. Native task creation from OBS Agenda calendar views (add task to calendar)
- 2. Ctrl + P shortcut (Command palette added for task creation)
- 3. Task reload button
- 4. Mouse over highlight in list view
- 5. Alphabetical sorting in list view
- 6. Day line indicator in month view 
- 7. Navigate to day view from year view
+The plugin recognizes and properly handles all standard Obsidian Tasks metadata:
 
-## Scope this version 1.0.3
+| Metadata | Icon | Example |
+|----------|------|---------|
+| Due Date | 📅 | `- [ ] Task 📅 2024-12-31` |
+| Scheduled Date | ⏳ | `- [ ] Task ⏳ 2024-06-15` |
+| Start Date | 🛫 | `- [ ] Task 🛫 2024-06-01` |
+| Priority | ⏫⏬ | `- [ ] Task ⏫` |
+| Recurrence | 🔁 | `- [ ] Task 🔁 every day` |
+| Tags | `#tag` | `- [ ] Task #project #urgent` |
 
-1. Now you can configure the views you can display on header
-2. Date of today into Overview tab
-3. Week number into the header week view
+### Example Task
+```markdown
+- [ ] Complete project documentation 📅 2024-12-31 ⏫ #project #documentation
+- [ ] Review pull requests ⏳ 2024-06-15 #code-review
+- [x] Submit final report 🛫 2024-06-01 ✅
+```
 
-## Scope this version 1.0.2
-1. Calendar view year view
-2. Fix some issues 
+---
 
-## Scope this version 1.0.1
+## ⚙️ Configuration
 
-1. Enhanced compatibility with Tasks plugin dataview format
-2. Recursive/repeating tasks support (🔁)
-3. Support for mobile devices
+### View Settings
+- **Tab Visibility** - Choose which views to display in the header
+- **Default View** - Set your preferred view on plugin load
+- **Theme Integration** - Customize colors and appearance
 
-## Scope this version 1.0.0
+### Filtering & Sorting
+- **Date Filters** - Filter by today, overdue, upcoming, or custom ranges
+- **Priority Filters** - Show tasks by priority level
+- **Tag Filters** - Filter by task tags
+- **Folder Filters** - Organize by file location
 
-Version 1.0.0 of Agenda Tasks focuses on providing robust viewing and organization capabilities for your tasks while maintaining compatibility with existing Obsidian workflows:
+### Advanced Options
+- **Keyboard Shortcuts** - Customize shortcuts for common actions
+- **Widget Configuration** - Personalize dashboard widgets
+- **Display Preferences** - Adjust how tasks are displayed
 
-Included in Version 1.0.0:
+Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks**
 
-1. Multiple task visualization views (Overview, List, Table, Calendar)
-2. Full compatibility with standard Obsidian task format (- [ ])
-3. Integration with Obsidian Tasks plugin metadata (due dates, start dates, priorities, tags)
-4. Advanced filtering, sorting, and grouping capabilities
-5. Customizable display options and themes
+---
 
-Current Limitations:
+## 📋 Changelog
 
-1. Task creation and editing requires using Markdown files or the Obsidian Tasks plugin
-2. Calendar view does not support time-of-day scheduling (hours) as the Tasks plugin doesn't recognize this format
-3. View-only functionality for most task operations
+### Version 1.0.5 🎨
+- Improved loading experience with skeleton loading (replaced spinner)
+- Enhanced list view aesthetics and visual design
+- Priority distinction and highlighting in list view
+- New hero widget added to dashboard
+- Various UI/UX improvements and polish
 
-## Planned for Future Versions
+### Version 1.0.4 ✨
+- Native task creation from calendar views (add task to calendar)
+- Command palette integration (Ctrl+P shortcut for task creation)
+- Task reload button in toolbar
+- Mouse over highlight in list view
+- Alphabetical sorting in list view
+- Day line indicator in month view
+- Navigate to day view from year view
 
-1. Native task creation and editing within Agenda views
-2. Support for time-of-day task scheduling
-3. Custom status implementation
-4. Advanced calendar features with time blocks
-5. More widgets on dashboard view
+### Version 1.0.3 🎨
+- Configurable view header tabs
+- Display today's date in Overview tab
+- Week number display in header
 
-## Support and Feedback
+### Version 1.0.2 🐛
+- Calendar view year view
+- Various bug fixes and stability improvements
 
-If you encounter any issues or have suggestions for improvements, please file an issue on the [GitHub repository](https://github.com/elias-shalom/obsidian-agenda/issues).
+### Version 1.0.1 🚀
+- Enhanced compatibility with Tasks plugin dataview format
+- Recursive/repeating tasks support (🔁)
+- Mobile device support
 
-## Funding
+### Version 1.0.0 🎉
+**Included Features:**
+- Multiple task visualization views (Overview, List, Table, Calendar)
+- Full compatibility with standard Obsidian task format
+- Integration with Obsidian Tasks plugin metadata
+- Advanced filtering, sorting, and grouping capabilities
+- Customizable display options and themes
 
-If you find this plugin useful, please consider supporting its development by starring the [GitHub repository](https://github.com/elias-shalom/obsidian-agenda) and spreading the word.
+**Known Limitations (at release):**
+- Task creation and editing requires Markdown files or Obsidian Tasks plugin
+- Calendar view does not support time-of-day scheduling
+- View-only functionality for most task operations
+
+---
+
+## 🗓️ Planned for Future Versions
+
+- ⬜ Advanced task creation/editing UI
+- ⬜ Time-of-day task scheduling
+- ⬜ Custom status implementation
+- ⬜ Time blocks and scheduling
+- ⬜ Advanced dashboard widgets
+- ⬜ Integration with external calendar services
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Whether it's bug reports, feature suggestions, or code improvements:
+
+1. **Report Issues** - [GitHub Issues](https://github.com/elias-shalom/obsidian-agenda/issues)
+2. **Submit PRs** - Fork the repository and create a pull request
+3. **Improve Translations** - Help translate the plugin to more languages
+
+### Development Setup
+```bash
+# Clone the repository
+git clone https://github.com/elias-shalom/obsidian-agenda.git
+cd obsidian-agenda
+
+# Install dependencies
+npm install
+
+# Start development
+npm run dev
+
+# Build for production
+npm run build
+```
+
+---
+
+## 💬 Support and Feedback
+
+### Getting Help
+- 📖 Check the [Wiki](https://github.com/elias-shalom/obsidian-agenda/wiki)
+- 🐛 Report bugs on [GitHub Issues](https://github.com/elias-shalom/obsidian-agenda/issues)
+- 💡 Suggest features via GitHub Discussions
+
+### Feedback
+Your feedback helps us improve! Please share:
+- Feature requests
+- Bug reports
+- Usage suggestions
+- Translation improvements
+
+---
+
+## ⭐ Support Us
+
+If you find this plugin useful, please consider:
+- ⭐ **Starring** the [GitHub repository](https://github.com/elias-shalom/obsidian-agenda)
+- 📢 **Sharing** it with others
+- 💬 **Reviewing** the plugin in Obsidian Community
+- ☕ **Supporting** development (coming soon)
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+**Made with ❤️ for the Obsidian community**
 
 

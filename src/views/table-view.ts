@@ -30,6 +30,7 @@ export class TableView extends BaseView {
   }
 
   async onOpen(): Promise<void> {
+    this.showLoadingOverlay(8, true);
     this.tasks = await this.getAllTasks(this.taskManager);
 
     const uniqueFolders = [...new Set(this.tasks.map(task => task.file.root))].sort();

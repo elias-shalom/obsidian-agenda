@@ -491,11 +491,36 @@ export abstract class BaseView extends ItemView {
     // Por defecto, no hace nada
   }
 
-  protected showLoadingOverlay(): void {
+  protected showLoadingOverlay(linesCount: number = 6, hasHeader: boolean = false): void {
     const container = this.containerEl.children[1] as HTMLElement;
-    //container.style.position = "relative";
-    const overlay = container.createDiv({ cls: "agenda-loading-overlay" });
-    overlay.createDiv({ cls: "agenda-loading-spinner" });
-    overlay.createDiv({ cls: "agenda-loading-label", text: "Agenda" });
+    container.empty();
+    
+    const skeletonContainer = container.createDiv({ cls: "loading-skeleton loading-skeleton--rich" });
+
+    const toolbar = skeletonContainer.createDiv({ cls: "skeleton-toolbar" });
+    toolbar.createDiv({ cls: "skeleton-pill" });
+    toolbar.createDiv({ cls: "skeleton-pill" });
+    toolbar.createDiv({ cls: "skeleton-pill skeleton-pill--short" });
+
+    // Header opcional
+    if (hasHeader) {
+      skeletonContainer.createDiv({ cls: "skeleton-line skeleton-line--header" });
+    }
+
+    const cards = skeletonContainer.createDiv({ cls: "skeleton-cards" });
+    for (let i = 0; i < 3; i++) {
+      const card = cards.createDiv({ cls: "skeleton-card" });
+      card.createDiv({ cls: "skeleton-line skeleton-line--short" });
+      card.createDiv({ cls: "skeleton-block" });
+    }
+
+    const list = skeletonContainer.createDiv({ cls: "skeleton-list" });
+    for (let i = 0; i < linesCount; i++) {
+      const row = list.createDiv({ cls: "skeleton-row" });
+      row.createDiv({ cls: "skeleton-dot" });
+      const content = row.createDiv({ cls: "skeleton-row-content" });
+      content.createDiv({ cls: "skeleton-line" });
+      content.createDiv({ cls: "skeleton-line skeleton-line--short" });
+    }
   }
 }

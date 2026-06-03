@@ -35,7 +35,7 @@ export class OverviewView extends BaseView {
   }
 
   async onOpen(): Promise<void> {
-    this.showLoadingOverlay();
+    this.showLoadingOverlay(8, true);
 
     this.tasks = await this.getAllTasks(this.taskManager); 
 

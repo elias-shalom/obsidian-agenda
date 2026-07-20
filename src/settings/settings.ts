@@ -4,6 +4,7 @@ export interface AgendaPluginSettings {
   showListTab: boolean;
   showTableTab: boolean;
   showCalendarTab: boolean;
+  weekStartDay: number;
 }
 
 export const DEFAULT_SETTINGS: AgendaPluginSettings = {
@@ -11,4 +12,5 @@ export const DEFAULT_SETTINGS: AgendaPluginSettings = {
   showListTab: true,
   showTableTab: true,
   showCalendarTab: true,
+  weekStartDay: 1,
 };

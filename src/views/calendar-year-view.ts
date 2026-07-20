@@ -51,8 +51,8 @@ export class CalendarYearView extends CalendarView {
     for (let monthNumber = 1; monthNumber <= 12; monthNumber++) {
       const startOfMonth = DateTime.fromObject({ year, month: monthNumber }).startOf('month');
       const endOfMonth = startOfMonth.endOf('month');
-      const startDate = startOfMonth.startOf('week');
-      const endDate = endOfMonth.endOf('week');
+      let startDate = this.getStartOfWeek(startOfMonth);
+      let endDate = this.getEndOfWeek(endOfMonth);
 
       const weeks: {
         days: {

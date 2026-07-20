@@ -26,7 +26,7 @@ export abstract class BaseView extends ItemView {
     return await taskManager.getAllTasks();
   }
 
-  protected async refreshView(): Promise<void> {
+  public async refreshView(): Promise<void> {
     this._forceNextRefresh = true;
     await this.onOpen();
   }

@@ -192,5 +192,6 @@
   "save": "Salvar",
   "cancel": "Cancelar",
   "delete": "Excluir",
-  "confirm_delete": "Tem certeza de que deseja excluir esta tarefa?"
+  "confirm_delete": "Tem certeza de que deseja excluir esta tarefa?",
+  "week_start_day": "A semana começa em"
 }

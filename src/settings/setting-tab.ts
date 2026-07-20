@@ -1,6 +1,7 @@
 import AgendaPlugin from '../main';
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import { I18n } from "../core/i18n";
+import { BaseView } from '../views/base-view';
 
 export class SettingTab extends PluginSettingTab {
   plugin: AgendaPlugin;
@@ -54,6 +55,28 @@ export class SettingTab extends PluginSettingTab {
         .onChange(async (value) => {
           this.plugin.settings.showCalendarTab = value;
           await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("week_start_day"))
+      .addDropdown(drop => drop
+        .addOption('1', this.i18n.t('day_mon'))
+        .addOption('2', this.i18n.t('day_tue'))
+        .addOption('3', this.i18n.t('day_wed'))
+        .addOption('4', this.i18n.t('day_thu'))
+        .addOption('5', this.i18n.t('day_fri'))
+        .addOption('6', this.i18n.t('day_sat'))
+        .addOption('7', this.i18n.t('day_sun'))
+        .setValue(String(this.plugin.settings.weekStartDay))
+        .onChange(async (value) => {
+          this.plugin.settings.weekStartDay = Number(value);
+          await this.plugin.saveSettings();
+          const calTypes = ['calendar-month-view', 'calendar-year-view', 'calendar-week-view', 'calendar-workweek-view', 'calendar-day-view'];
+          this.plugin.app.workspace.iterateAllLeaves((leaf) => {
+            if (calTypes.includes(leaf.view.getViewType()) && leaf.view instanceof BaseView) {
+              leaf.view.refreshView().catch(console.error);
+            }
+          });
         }));
   }
 }

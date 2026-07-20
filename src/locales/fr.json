@@ -192,5 +192,6 @@
   "save": "Enregistrer",
   "cancel": "Annuler",
   "delete": "Supprimer",
-  "confirm_delete": "Êtes-vous sûr de vouloir supprimer cette tâche ?"
+  "confirm_delete": "Êtes-vous sûr de vouloir supprimer cette tâche ?",
+  "week_start_day": "La semaine commence le"
 }

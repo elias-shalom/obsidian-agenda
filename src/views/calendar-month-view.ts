@@ -35,10 +35,10 @@ export class CalendarMonthView extends CalendarView {
     const endOfMonth = this.currentDate.endOf('month');
     
     // Comienza desde el primer día de la semana que contiene el primer día del mes
-    let startDate = startOfMonth.startOf('week');
+    let startDate = this.getStartOfWeek(startOfMonth);
     
     // Termina en el último día de la semana que contiene el último día del mes
-    let endDate = endOfMonth.endOf('week');
+    let endDate = this.getEndOfWeek(endOfMonth);
     
     // Define el tipo de datos para los días
     type DayData = {

@@ -193,5 +193,7 @@
   "save": "Save",
   "cancel": "Cancel",
   "delete": "Delete",
-  "confirm_delete": "Are you sure you want to delete this task?"
+  "confirm_delete": "Are you sure you want to delete this task?",
+
+  "week_start_day": "Week starts on"
 }

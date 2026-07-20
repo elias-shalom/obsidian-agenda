@@ -309,11 +309,39 @@ export abstract class BaseView extends ItemView {
     }
   }
 
+  // @ts-ignore: Plugin de esbuild maneja los archivos .hbs
+  private static readonly TEMPLATE_LOADERS: Record<string, () => Promise<{ default: (data: ViewData) => string }>> = {
+    // @ts-ignore
+    "calendar-day-view": () => import("./templates/calendar-day-view.hbs"),
+    // @ts-ignore
+    "calendar-month-view": () => import("./templates/calendar-month-view.hbs"),
+    // @ts-ignore
+    "calendar-view": () => import("./templates/calendar-view.hbs"),
+    // @ts-ignore
+    "calendar-week-view": () => import("./templates/calendar-week-view.hbs"),
+    // @ts-ignore
+    "calendar-workweek-view": () => import("./templates/calendar-workweek-view.hbs"),
+    // @ts-ignore
+    "calendar-year-view": () => import("./templates/calendar-year-view.hbs"),
+    // @ts-ignore
+    "gantt-view": () => import("./templates/gantt-view.hbs"),
+    // @ts-ignore
+    "list-view": () => import("./templates/list-view.hbs"),
+    // @ts-ignore
+    "overview-view": () => import("./templates/overview-view.hbs"),
+    // @ts-ignore
+    "table-view": () => import("./templates/table-view.hbs"),
+    // @ts-ignore
+    "timeline-view": () => import("./templates/timeline-view.hbs"),
+  };
+
   protected async renderTemplate(container: HTMLElement, templatePath: string, data: ViewData): Promise<void> {
     try {
-      // Importar dinámicamente la plantilla Handlebars según la vista
-      // @ts-ignore: Plugin de esbuild maneja los archivos .hbs
-      const templateModule = await import(`./templates/${templatePath}.hbs`) as { default: (data: ViewData) => string };
+      const loader = BaseView.TEMPLATE_LOADERS[templatePath];
+      if (!loader) {
+        throw new Error(`Unknown template: ${templatePath}`);
+      }
+      const templateModule = await loader();
       const viewTemplate = templateModule.default;
 
       // Renderizar el HTML usando la plantilla importada

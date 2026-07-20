@@ -7,7 +7,7 @@ import obsidianmd from "eslint-plugin-obsidianmd";
 
 export default defineConfig([
   {
-    ignores: ["dist/", "documentation/", "node_modules/", "screenshots/", "**/generated/**/*"]
+    ignores: ["dist/", "documentation/", "node_modules/", "screenshots/", "**/generated/**/*", "src/esbuild.config.mjs", "src/version-bump.mjs"]
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -43,6 +43,8 @@ export default defineConfig([
         }
       ],
       "@typescript-eslint/no-explicit-any": "warn",
+      "obsidianmd/prefer-create-el": "off",
+      "obsidianmd/settings-tab/prefer-setting-definitions": "off",
     }
   },
 ]);

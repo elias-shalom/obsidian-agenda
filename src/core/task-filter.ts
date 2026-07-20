@@ -347,7 +347,7 @@ export class TaskFilter {
   private matchesAdvancedFilters(task: ITask, criteria: TaskFilterCriteria): boolean {
     // Filtros de recurrencia
     if (criteria.recurrence) {
-      const hasRecurrence = !!task.flow.recur && task.flow.recur.length > 0;
+      const hasRecurrence = !!task.flow.repeat && task.flow.repeat.length > 0;
 
       // Verificar si tiene recurrencia
       if (criteria.recurrence.has !== undefined && hasRecurrence !== criteria.recurrence.has) {
@@ -355,8 +355,8 @@ export class TaskFilter {
       }
 
       // Verificar patrón específico
-      if (criteria.recurrence.pattern && task.flow.recur) {
-        if (!task.flow.recur.includes(criteria.recurrence.pattern)) {
+      if (criteria.recurrence.pattern && task.flow.repeat) {
+        if (!task.flow.repeat.includes(criteria.recurrence.pattern)) {
           return false;
         }
       }
@@ -364,7 +364,7 @@ export class TaskFilter {
 
     // Filtros de dependencias
     if (criteria.dependencies) {
-      const hasDependencies = !!task.flow.deps && task.flow.deps.length > 0;
+      const hasDependencies = !!task.flow.dependsOn && task.flow.dependsOn.length > 0;
 
       // Verificar si tiene dependencias
       if (criteria.dependencies.has !== undefined && hasDependencies !== criteria.dependencies.has) {

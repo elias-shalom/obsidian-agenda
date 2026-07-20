@@ -301,7 +301,8 @@ If you find this plugin useful, please consider:
 - ⭐ **Starring** the [GitHub repository](https://github.com/elias-shalom/obsidian-agenda)
 - 📢 **Sharing** it with others
 - 💬 **Reviewing** the plugin in Obsidian Community
-- ☕ **Supporting** development (coming soon)
+- 🐛 **Reporting bugs** and suggesting improvements on GitHub
+- 🌍 **Contributing translations** to support more languages
 
 ---
 

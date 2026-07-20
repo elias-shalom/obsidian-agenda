@@ -197,6 +197,9 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 
 ## 📋 Changelog
 
+### Version 1.0.6
+- Fix calentar weekday
+
 ### Version 1.0.5 🎨
 - Improved loading experience with skeleton loading (replaced spinner)
 - Enhanced list view aesthetics and visual design

@@ -11,6 +11,14 @@ export class I18n {
 
   private static readonly SUPPORTED_LOCALES = ["en", "es", "de", "fr", "it", "pt"] as const;
   private static readonly DEFAULT_LOCALE = "en";
+  private static readonly LOCALE_LOADERS: Record<string, () => Promise<{ default?: Record<string, unknown> }>> = {
+    "en": () => import("../locales/en.json"),
+    "es": () => import("../locales/es.json"),
+    "de": () => import("../locales/de.json"),
+    "fr": () => import("../locales/fr.json"),
+    "it": () => import("../locales/it.json"),
+    "pt": () => import("../locales/pt.json"),
+  };
 
   async loadLanguage(): Promise<void> {
     try {
@@ -20,8 +28,8 @@ export class I18n {
         : I18n.DEFAULT_LOCALE;
 
       // Importar dinámicamente el archivo de idioma como módulo
-      // esbuild maneja los archivos .json como módulos
-      const localeModule = await import(`../locales/${language}.json`) as { default?: Record<string, unknown> };
+      const loader = I18n.LOCALE_LOADERS[language] ?? I18n.LOCALE_LOADERS[I18n.DEFAULT_LOCALE];
+      const localeModule = await loader();
       this.translations = (localeModule.default || localeModule) as Record<string, unknown>;
       this.currentLanguage = language;
     } catch (error) {

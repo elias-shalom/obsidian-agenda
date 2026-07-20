@@ -192,5 +192,6 @@
   "save": "Speichern",
   "cancel": "Abbrechen",
   "delete": "Löschen",
-  "confirm_delete": "Möchten Sie diese Aufgabe wirklich löschen?"
+  "confirm_delete": "Möchten Sie diese Aufgabe wirklich löschen?",
+  "week_start_day": "Woche beginnt am"
 }

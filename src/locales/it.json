@@ -192,5 +192,6 @@
   "save": "Salva",
   "cancel": "Annulla",
   "delete": "Elimina",
-  "confirm_delete": "Sei sicuro di voler eliminare questa attività?"
+  "confirm_delete": "Sei sicuro di voler eliminare questa attività?",
+  "week_start_day": "La settimana inizia il"
 }

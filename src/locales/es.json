@@ -192,5 +192,7 @@
   "save": "Guardar",
   "cancel": "Cancelar",
   "delete": "Eliminar",
-  "confirm_delete": "¿Estás seguro de que deseas eliminar esta tarea?"
+  "confirm_delete": "¿Estás seguro de que deseas eliminar esta tarea?",
+
+  "week_start_day": "La semana empieza el"
 }

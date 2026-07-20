@@ -91,6 +91,7 @@ export default class ObsidianAgenda extends Plugin {
       ...(typeof data.showListTab === "boolean" ? { showListTab: data.showListTab } : {}),
       ...(typeof data.showTableTab === "boolean" ? { showTableTab: data.showTableTab } : {}),
       ...(typeof data.showCalendarTab === "boolean" ? { showCalendarTab: data.showCalendarTab } : {}),
+      ...(typeof data.weekStartDay === "number" ? { weekStartDay: data.weekStartDay } : {}),
     };
   }
 

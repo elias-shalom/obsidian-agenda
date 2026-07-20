@@ -59,16 +59,25 @@ export abstract class CalendarView extends BaseView {
   /**
    * Obtiene los nombres localizados de los días de la semana
    */
+  protected getWeekStartDay(): number {
+    const plugin = this.plugin as AgendaPlugin;
+    return plugin.settings?.weekStartDay ?? 1; // 1=Lun por defecto (ISO)
+  }
+
   protected getLocalizedDayNames(): string[] {
-    return [
-      this.i18n.t('day_sun'),
-      this.i18n.t('day_mon'),
-      this.i18n.t('day_tue'),
-      this.i18n.t('day_wed'),
-      this.i18n.t('day_thu'),
-      this.i18n.t('day_fri'),
-      this.i18n.t('day_sat')
+    const allDays = [
+      { key: 'day_mon', iso: 1 },
+      { key: 'day_tue', iso: 2 },
+      { key: 'day_wed', iso: 3 },
+      { key: 'day_thu', iso: 4 },
+      { key: 'day_fri', iso: 5 },
+      { key: 'day_sat', iso: 6 },
+      { key: 'day_sun', iso: 7 },
     ];
+    const startDay = this.getWeekStartDay(); // 1–7 ISO
+    const startIndex = allDays.findIndex(d => d.iso === startDay);
+    const rotated = [...allDays.slice(startIndex), ...allDays.slice(0, startIndex)];
+    return rotated.map(d => this.i18n.t(d.key));
   }
 
   /**
@@ -323,5 +332,17 @@ export abstract class CalendarView extends BaseView {
     this.app.saveLocalStorage('oa_navigate_to_date', dateStr);
     const leaf = this.plugin.app.workspace.getActiveViewOfType(CalendarView)?.leaf;
     leaf?.setViewState({ type: 'calendar-day-view' }).catch(console.error);
+  }
+
+  // Helper para calcular el inicio de semana respetando la configuración
+  protected getStartOfWeek(date: DateTime): DateTime {
+    const startDay = this.getWeekStartDay(); // ISO: 1=Lun, 7=Dom
+    const dayOfWeek = date.weekday; // ISO: 1=Lun, 7=Dom
+    const diff = (dayOfWeek - startDay + 7) % 7;
+    return date.minus({ days: diff }).startOf('day');
+  }
+
+  protected getEndOfWeek(date: DateTime): DateTime {
+    return this.getStartOfWeek(date).plus({ days: 6 }).endOf('day');
   }
 }

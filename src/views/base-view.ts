@@ -301,7 +301,7 @@ export abstract class BaseView extends ItemView {
       
       // Crear elemento de error usando createEl de Obsidian
       const errorMessage = error instanceof Error ? error.message : String(error);
-      const errorDiv = container.createEl('div', {
+      const errorDiv = container.createDiv({
         cls: 'error',
         text: `Error al cargar la plantilla de cabecera: ${errorMessage}`
       });
@@ -360,7 +360,7 @@ export abstract class BaseView extends ItemView {
       console.error(`Error renderizando template ${templatePath}:`, error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       // Crear elemento de error usando createEl de Obsidian
-      const errorDiv = container.createEl('div', {
+      const errorDiv = container.createDiv({
         cls: 'error',
         text: `Error al cargar la plantilla: ${errorMessage}`
       });

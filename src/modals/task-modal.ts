@@ -83,7 +83,7 @@ export class TaskModal extends Modal {
       this.contentEl.appendChild(fragment);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.contentEl.createEl("div", {
+      this.contentEl.createDiv({
       cls: "error",
       text: `Error al cargar la plantilla del modal: ${message}`,
       });
@@ -161,7 +161,7 @@ export class TaskModal extends Modal {
     });
 
     fileInput?.addEventListener("blur", () => {
-      setTimeout(hideSuggestions, 150);
+      window.setTimeout(hideSuggestions, 150);
     });
 
     // Abrir select al click del botón

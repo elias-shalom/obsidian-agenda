@@ -57,8 +57,18 @@ export class TaskModal extends Modal {
   private async renderModal(modalType: string, data: Record<string, unknown>): Promise<void> {
     try {
       console.debug(`Dibuja vista: ${modalType}`); // Debugging line
-    // @ts-ignore: Plugin de esbuild maneja archivos .hbs
-      const templateModule = await import(`./templates/${modalType}.hbs`) as { default: (ctx: Record<string, unknown>) => string };
+
+      // @ts-ignore: Plugin de esbuild maneja archivos .hbs
+      const TEMPLATE_LOADERS: Record<string, () => Promise<{ default: (ctx: Record<string, unknown>) => string }>> = {
+        // @ts-ignore
+        "create-task-modal": () => import("./templates/create-task-modal.hbs"),
+      };
+
+      const loader = TEMPLATE_LOADERS[modalType];
+      if (!loader) {
+        throw new Error(`Unknown modal type: ${modalType}`);
+      }
+      const templateModule = await loader();
 
       const html = templateModule.default(data);
 

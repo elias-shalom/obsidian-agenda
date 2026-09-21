@@ -4,6 +4,7 @@
 @use "components/loading";
 @use "components/modal";
 @use "layout";
+@use "habit-common";
 @use "views/calendar-common";
 @use "views/calendar-year";
 @use "views/calendar-month";
@@ -13,4 +14,9 @@
 @use "views/list-view";
 @use "views/table-view";
 @use "views/overview-view";
+@use "views/habit-grid";
+@use "views/habit-routine";
+@use "views/habit-overview";
+@use "views/habit-weekly";
+@use "views/habit-table";
 @use './components/_flatpickr.scss';

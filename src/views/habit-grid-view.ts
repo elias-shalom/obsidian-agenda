@@ -1,0 +1,36 @@
+import { WorkspaceLeaf } from 'obsidian';
+import { HabitView } from './habit-view';
+import { AgendaPlugin } from '../types/interfaces';
+import { I18n } from '../core/i18n';
+import { TaskManager } from '../core/task-manager';
+import { HabitManager } from '../habits';
+
+export const HABIT_GRID_VIEW_TYPE = 'habit-grid-view';
+
+export class HabitGridView extends HabitView {
+  constructor(
+    leaf: WorkspaceLeaf,
+    plugin: AgendaPlugin,
+    i18n: I18n,
+    taskManager: TaskManager,
+    habitManager: HabitManager
+  ) {
+    super(leaf, plugin, i18n, taskManager, habitManager);
+  }
+
+  getViewType(): string {
+    return HABIT_GRID_VIEW_TYPE;
+  }
+
+  protected get viewSubtype(): 'grid' {
+    return 'grid';
+  }
+
+  protected get viewTitleKey(): string {
+    return 'habit_grid_title';
+  }
+
+  protected getViewData(): Record<string, unknown> {
+    return { habits: this.habits, columns: [] };
+  }
+}

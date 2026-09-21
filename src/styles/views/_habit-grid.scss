@@ -1,0 +1,185 @@
+// Habit Grid View Styles
+.oa-habit-grid {
+  display: grid;
+  grid-template-columns: 200px repeat(var(--date-columns, 21), minmax(28px, 1fr)) 80px 60px;
+  gap: 2px;
+  font-size: var(--font-smaller, 0.75rem);
+  line-height: 1.2;
+}
+
+.oa-habit-grid-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 120px);
+}
+
+.oa-habit-grid-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--background-primary);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.oa-habit-grid-row {
+  display: contents;
+}
+
+.oa-habit-grid-name {
+  position: sticky;
+  left: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  background: var(--background-primary);
+  border-right: 1px solid var(--background-modifier-border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 180px;
+}
+
+.oa-habit-grid-name .habit-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.oa-habit-grid-name .habit-color-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.oa-habit-grid-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.oa-habit-grid-cell {
+  width: 100%;
+  aspect-ratio: 1;
+  min-width: 24px;
+  max-width: 32px;
+  min-height: 24px;
+  max-height: 32px;
+  border: none;
+  border-radius: 4px;
+  background: var(--background-modifier-border);
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: transparent;
+}
+
+.oa-habit-grid-cell:hover {
+  transform: scale(1.1);
+  z-index: 2;
+  box-shadow: 0 0 0 2px var(--interactive-accent);
+}
+
+.oa-habit-grid-cell:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 1px;
+}
+
+.oa-habit-grid-cell--ticked {
+  background: var(--habit-color, var(--checkbox-color, var(--interactive-accent)));
+  color: var(--text-on-accent, white);
+}
+
+.oa-habit-grid-cell--gap {
+  background: color-mix(in srgb, var(--habit-color, var(--checkbox-color, var(--interactive-accent))) 40%, transparent);
+  color: var(--text-on-accent, white);
+}
+
+.oa-habit-grid-cell--deadline {
+  outline: 2px dashed var(--interactive-accent);
+  outline-offset: -2px;
+}
+
+.oa-habit-grid-cell--unscheduled {
+  background: var(--background-modifier-border-hover);
+  opacity: 0.4;
+  cursor: default;
+}
+
+.oa-habit-grid-cell--today {
+  box-shadow: inset 0 0 0 2px var(--text-accent, var(--interactive-accent));
+}
+
+.oa-habit-grid-streak {
+  position: sticky;
+  right: 60px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  background: var(--background-primary);
+  border-left: 1px solid var(--background-modifier-border);
+  font-weight: 600;
+  font-size: var(--font-smaller, 0.75rem);
+  white-space: nowrap;
+}
+
+.oa-habit-grid-pct {
+  position: sticky;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  background: var(--background-primary);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-smaller, 0.75rem);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.oa-habit-grid-col-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 2px;
+  background: var(--background-primary);
+  border-bottom: 1px solid var(--background-modifier-border);
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  min-width: 28px;
+}
+
+.oa-habit-grid-col-header--today {
+  color: var(--text-accent, var(--interactive-accent));
+  font-weight: 700;
+}
+
+.oa-habit-grid-col-header-day {
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oa-habit-grid-cell {
+    transition: none;
+  }
+  .oa-habit-grid-cell:hover {
+    transform: none;
+  }
+}

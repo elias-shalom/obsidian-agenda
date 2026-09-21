@@ -232,6 +232,15 @@ export abstract class BaseView extends ItemView {
     Handlebars.registerHelper("eq", function(a: unknown, b: unknown): boolean {
       return a === b;
     });
+
+    // Helper para la suma lógica de varias condiciones (subexpresión de {{#if}})
+    Handlebars.registerHelper("or", function(...values: unknown[]): boolean {
+      // El último argumento es el objeto de opciones del helper
+      if (values.length && typeof values[values.length - 1] === 'object' && values[values.length - 1] !== null) {
+        values = values.slice(0, -1);
+      }
+      return values.some(Boolean);
+    });
   }
 
   /**
@@ -270,11 +279,12 @@ export abstract class BaseView extends ItemView {
       tabs.forEach((tab) => {
         const tabId = tab.getAttribute("id");
         
-        // Verificar coincidencia exacta o si es una vista de calendario
+        // Verificar coincidencia exacta o si es una vista de calendario o de hábitos
         const isCalendarView = activeViewType.startsWith("calendar-") && tabId === "oa-calendar-view-tab";
+        const isHabitView = activeViewType.startsWith("habit-") && tabId === "oa-habit-view-tab";
         const isExactMatch = tabId === `oa-${activeViewType}-tab`;
         
-        if (isExactMatch || isCalendarView) {
+        if (isExactMatch || isCalendarView || isHabitView) {
           tab.classList.add("oa-active");
         } else {
           tab.classList.remove("oa-active");
@@ -287,9 +297,10 @@ export abstract class BaseView extends ItemView {
         const divId = buttonContainer.getAttribute("id");
         
         const isCalendarContainer = activeViewType.startsWith("calendar-") && divId === "oa-calendar-view-container";
+        const isHabitContainer = activeViewType.startsWith("habit-") && divId === "oa-habit-view-container";
         const isExactMatch = divId === `oa-${activeViewType}-container`;
         
-        if (isExactMatch || isCalendarContainer) {
+        if (isExactMatch || isCalendarContainer || isHabitContainer) {
           buttonContainer.classList.add("oa-active");
         } else {
           buttonContainer.classList.remove("oa-active");
@@ -325,6 +336,16 @@ export abstract class BaseView extends ItemView {
     "calendar-year-view": () => import("./templates/calendar-year-view.hbs"),
     // @ts-ignore
     "gantt-view": () => import("./templates/gantt-view.hbs"),
+    // @ts-ignore
+    "habit-grid-view": () => import("./templates/habit-grid-view.hbs"),
+    // @ts-ignore
+    "habit-routine-view": () => import("./templates/habit-routine-view.hbs"),
+    // @ts-ignore
+    "habit-overview-view": () => import("./templates/habit-overview-view.hbs"),
+    // @ts-ignore
+    "habit-weekly-view": () => import("./templates/habit-weekly-view.hbs"),
+    // @ts-ignore
+    "habit-table-view": () => import("./templates/habit-table-view.hbs"),
     // @ts-ignore
     "list-view": () => import("./templates/list-view.hbs"),
     // @ts-ignore
@@ -368,9 +389,9 @@ export abstract class BaseView extends ItemView {
     }
   }
 
-  protected attachEventTabs(container: HTMLElement, plugin: AgendaPlugin, leaf: WorkspaceLeaf): void {
+protected attachEventTabs(container: HTMLElement, plugin: AgendaPlugin, leaf: WorkspaceLeaf): void {
     //console.log("Agregando eventos a los botones"); // Debugging line
-  
+
     const activeViewType = this.getViewType(); // Obtiene el tipo de vista actual
     const tabs = [
       { id: "oa-overview-view-tab", view: "overview-view" },
@@ -379,14 +400,15 @@ export abstract class BaseView extends ItemView {
       { id: "oa-calendar-view-tab", view: "calendar-month-view" },
       { id: "oa-timeline-view-tab", view: "timeline-view" },
       { id: "oa-gantt-view-tab", view: "gantt-view" },
+      { id: "oa-habit-view-tab", view: this.getDefaultHabitView(plugin.settings) },
     ];
-  
+
     tabs.forEach((tab) => {
       // Excluir el botón de la vista activa
       if (tab.view === activeViewType) {
         return;
       }
-  
+
       const element = container.querySelector(`#${tab.id}`);
       element?.addEventListener("click", () => {
         plugin.viewManager.activateView(tab.view, leaf);
@@ -397,6 +419,19 @@ export abstract class BaseView extends ItemView {
     refreshBtn?.addEventListener('click', () => {
       this.refreshView().catch(console.error);
     });
+  }
+
+  /**
+   * Primera subvista de hábitos habilitada en los ajustes. Usada como destino
+   * del tab principal de hábitos cuando se hace clic en él.
+   */
+  private getDefaultHabitView(settings: AgendaPluginSettings): string {
+    if (settings.showHabitGridTab) return 'habit-grid-view';
+    if (settings.showHabitDashboardTab) return 'habit-overview-view';
+    if (settings.showHabitRoutineTab) return 'habit-routine-view';
+    if (settings.showHabitWeeklyTab) return 'habit-weekly-view';
+    if (settings.showHabitListTab) return 'habit-table-view';
+    return 'habit-grid-view';
   }
 
   // Añadir método para manejar eventos de los grupos de carpetas

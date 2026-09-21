@@ -1,8 +1,8 @@
 import { App, Plugin, PluginManifest } from "obsidian";
 import { ViewManager } from "./core/view-manager";
 import { I18n } from "./core/i18n";
-//import logger from './core/logger';
 import { TaskManager } from "./core/task-manager";
+import { HabitManager } from "./habits";
 import { SettingTab } from "./settings/setting-tab";
 import { TASK_MODAL_TYPE, ModalManager } from "./core/modal-manager";
 import { DEFAULT_SETTINGS, AgendaPluginSettings, } from "./settings/settings";
@@ -11,15 +11,17 @@ export default class ObsidianAgenda extends Plugin {
   settings: AgendaPluginSettings = DEFAULT_SETTINGS;
   private viewManager: ViewManager ;
   private i18n: I18n;
-  private taskManager: TaskManager; 
+  private taskManager: TaskManager;
+  private habitManager: HabitManager;
   public modalManager: ModalManager;
-  
+
   /// Constructor de la clase ObsidianAgendaPlugin.
   constructor(app: App, manifest: PluginManifest) {
       super(app, manifest);
       this.i18n = new I18n(app);
       this.taskManager = new TaskManager(app, this.i18n, this);
-      this.viewManager = new ViewManager(this, this.i18n, this.taskManager); // Pasar la instancia del plugin
+      this.habitManager = new HabitManager(app, () => this.settings);
+      this.viewManager = new ViewManager(this, this.i18n, this.taskManager, this.habitManager); // Pasar la instancia del plugin
       this.modalManager = new ModalManager(app, this.i18n, this.taskManager);
   }
 
@@ -92,6 +94,17 @@ export default class ObsidianAgenda extends Plugin {
       ...(typeof data.showTableTab === "boolean" ? { showTableTab: data.showTableTab } : {}),
       ...(typeof data.showCalendarTab === "boolean" ? { showCalendarTab: data.showCalendarTab } : {}),
       ...(typeof data.weekStartDay === "number" ? { weekStartDay: data.weekStartDay } : {}),
+      ...(typeof data.habitFolderPath === "string" ? { habitFolderPath: data.habitFolderPath } : {}),
+      ...(typeof data.habitDaysToShow === "number" ? { habitDaysToShow: data.habitDaysToShow } : {}),
+      ...(typeof data.habitShowStreaks === "boolean" ? { habitShowStreaks: data.habitShowStreaks } : {}),
+      ...(typeof data.habitDefaultMaxGap === "number" ? { habitDefaultMaxGap: data.habitDefaultMaxGap } : {}),
+      ...(typeof data.habitDefaultPriority === "number" ? { habitDefaultPriority: data.habitDefaultPriority } : {}),
+      ...(typeof data.habitDefaultColor === "string" ? { habitDefaultColor: data.habitDefaultColor } : {}),
+      ...(typeof data.showHabitGridTab === "boolean" ? { showHabitGridTab: data.showHabitGridTab } : {}),
+      ...(typeof data.showHabitDashboardTab === "boolean" ? { showHabitDashboardTab: data.showHabitDashboardTab } : {}),
+      ...(typeof data.showHabitRoutineTab === "boolean" ? { showHabitRoutineTab: data.showHabitRoutineTab } : {}),
+      ...(typeof data.showHabitWeeklyTab === "boolean" ? { showHabitWeeklyTab: data.showHabitWeeklyTab } : {}),
+      ...(typeof data.showHabitListTab === "boolean" ? { showHabitListTab: data.showHabitListTab } : {}),
     };
   }
 
@@ -99,7 +112,7 @@ export default class ObsidianAgenda extends Plugin {
     await this.saveData(this.settings);
   }
 
-  onunload() {
+onunload() {
     console.debug('Descargando plugin OBS Agenda');
 
     try {
@@ -108,23 +121,29 @@ export default class ObsidianAgenda extends Plugin {
         this.viewManager.unregisterViews();
         //logger.info('Vistas desregistradas correctamente');
       }
-      
+
       // Limpiar TaskManager (incluye eventos y cache)
       if (this.taskManager) {
         this.taskManager.cleanup();
         //logger.info('TaskManager limpiado correctamente');
       }
-      
+
+      // Limpiar HabitManager
+      if (this.habitManager) {
+        this.habitManager.cleanup();
+      }
+
       // Limpiar cualquier tiempo/intervalo que pueda estar activo
       // Si tu plugin utiliza setInterval o setTimeout
       // clearInterval(this.someIntervalId);
       // clearTimeout(this.someTimeoutId);
-      
+
       // Limpiar referencias
       // this.viewManager = null;
       // this.taskManager = null;
+      // this.habitManager = null;
       // this.i18n = null;
-      
+
       console.debug('Limpieza completada, plugin desactivado con éxito');
     } catch (error) {
       console.error(`Error durante la descarga del plugin: ${error instanceof Error ? error.message : String(error)}`);

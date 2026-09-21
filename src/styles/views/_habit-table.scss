@@ -1,0 +1,209 @@
+// Habit Table/List View Styles
+.oa-habit-table {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.oa-habit-table-scroll {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.oa-habit-table-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-smaller, 0.75rem);
+  min-width: 800px;
+}
+
+.oa-habit-table-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.oa-habit-table-table th {
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  background: var(--background-primary);
+  border-bottom: 2px solid var(--background-modifier-border);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease;
+}
+
+.oa-habit-table-table th:hover {
+  background: var(--background-modifier-hover);
+}
+
+.oa-habit-table-table th[aria-sort="ascending"]::after {
+  content: " ▲";
+  font-size: 0.6em;
+  margin-left: 4px;
+}
+
+.oa-habit-table-table th[aria-sort="descending"]::after {
+  content: " ▼";
+  font-size: 0.6em;
+  margin-left: 4px;
+}
+
+.oa-habit-table-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  vertical-align: middle;
+}
+
+.oa-habit-table-table tbody tr {
+  transition: background-color 0.1s ease;
+}
+
+.oa-habit-table-table tbody tr:hover {
+  background: var(--background-modifier-hover);
+}
+
+.oa-habit-table-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.oa-habit-table-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 180px;
+}
+
+.oa-habit-table-name .habit-title {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.oa-habit-table-name .habit-color-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.oa-habit-table-area {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.oa-habit-table-area-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.oa-habit-table-area-label {
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.oa-habit-table-subarea {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.oa-habit-table-frequency {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--background-modifier-border);
+  border-radius: var(--radius-s, 4px);
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.oa-habit-table-priority {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 20px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-on-accent, white);
+}
+
+.oa-habit-table-priority[data-priority="5"] { background: #d93d42; }
+.oa-habit-table-priority[data-priority="4"] { background: #ed5f00; }
+.oa-habit-table-priority[data-priority="3"] { background: #ffba1a; color: #1e1e1e; }
+.oa-habit-table-priority[data-priority="2"] { background: #0e9888; }
+.oa-habit-table-priority[data-priority="1"] { background: #9383f7; }
+
+.oa-habit-table-daytimes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.oa-habit-table-daytime {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  background: var(--background-modifier-border);
+  border-radius: var(--radius-s, 4px);
+  font-size: 0.6rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.oa-habit-table-time {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.oa-habit-table-streak {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-normal);
+}
+
+.oa-habit-table-streak--active {
+  color: var(--interactive-accent);
+}
+
+.oa-habit-table-pct {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.oa-habit-table-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  color: var(--text-muted);
+  text-align: center;
+  font-size: var(--font-smaller, 0.75rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oa-habit-table-table th,
+  .oa-habit-table-table tbody tr {
+    transition: none;
+  }
+}

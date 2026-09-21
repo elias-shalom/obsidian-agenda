@@ -5,6 +5,19 @@ export interface AgendaPluginSettings {
   showTableTab: boolean;
   showCalendarTab: boolean;
   weekStartDay: number;
+
+  // Habits settings
+  habitFolderPath: string;
+  habitDaysToShow: number;
+  habitShowStreaks: boolean;
+  habitDefaultMaxGap: number;
+  habitDefaultPriority: number;
+  habitDefaultColor: string;
+  showHabitGridTab: boolean;
+  showHabitDashboardTab: boolean;
+  showHabitRoutineTab: boolean;
+  showHabitWeeklyTab: boolean;
+  showHabitListTab: boolean;
 }
 
 export const DEFAULT_SETTINGS: AgendaPluginSettings = {
@@ -13,4 +26,16 @@ export const DEFAULT_SETTINGS: AgendaPluginSettings = {
   showTableTab: true,
   showCalendarTab: true,
   weekStartDay: 1,
+
+  habitFolderPath: "daily plan/daily routine/habit",
+  habitDaysToShow: 21,
+  habitShowStreaks: true,
+  habitDefaultMaxGap: 0,
+  habitDefaultPriority: 3,
+  habitDefaultColor: "",
+  showHabitGridTab: true,
+  showHabitDashboardTab: true,
+  showHabitRoutineTab: true,
+  showHabitWeeklyTab: true,
+  showHabitListTab: true,
 };

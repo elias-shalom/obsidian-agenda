@@ -1,0 +1,228 @@
+// Habit Weekly View Styles
+.oa-habit-weekly {
+  display: grid;
+  grid-template-columns: 200px repeat(7, minmax(44px, 1fr)) 70px 60px;
+  gap: 2px;
+  font-size: var(--font-smaller, 0.75rem);
+  line-height: 1.2;
+}
+
+.oa-habit-weekly-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 120px);
+}
+
+.oa-habit-weekly-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--background-primary);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.oa-habit-weekly-row {
+  display: contents;
+}
+
+.oa-habit-weekly-name {
+  position: sticky;
+  left: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  background: var(--background-primary);
+  border-right: 1px solid var(--background-modifier-border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 180px;
+}
+
+.oa-habit-weekly-name .habit-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.oa-habit-weekly-name .habit-color-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.oa-habit-weekly-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.oa-habit-weekly-cell {
+  width: 100%;
+  aspect-ratio: 1;
+  min-width: 36px;
+  max-width: 48px;
+  min-height: 36px;
+  max-height: 48px;
+  border: none;
+  border-radius: 6px;
+  background: var(--background-modifier-border);
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: transparent;
+}
+
+.oa-habit-weekly-cell:hover {
+  transform: scale(1.1);
+  z-index: 2;
+  box-shadow: 0 0 0 2px var(--interactive-accent);
+}
+
+.oa-habit-weekly-cell:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 1px;
+}
+
+.oa-habit-weekly-cell--ticked {
+  background: var(--habit-color, var(--checkbox-color, var(--interactive-accent)));
+  color: var(--text-on-accent, white);
+}
+
+.oa-habit-weekly-cell--gap {
+  background: color-mix(in srgb, var(--habit-color, var(--checkbox-color, var(--interactive-accent))) 40%, transparent);
+  color: var(--text-on-accent, white);
+}
+
+.oa-habit-weekly-cell--unscheduled {
+  background: var(--background-modifier-border-hover);
+  opacity: 0.3;
+  cursor: default;
+}
+
+.oa-habit-weekly-cell--unscheduled::after {
+  content: "·";
+  color: var(--text-faint);
+  font-size: 1.2rem;
+}
+
+.oa-habit-weekly-cell--today {
+  box-shadow: inset 0 0 0 2px var(--text-accent, var(--interactive-accent));
+}
+
+.oa-habit-weekly-streak {
+  position: sticky;
+  right: 60px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  background: var(--background-primary);
+  border-left: 1px solid var(--background-modifier-border);
+  font-weight: 600;
+  font-size: var(--font-smaller, 0.75rem);
+  white-space: nowrap;
+}
+
+.oa-habit-weekly-pct {
+  position: sticky;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  background: var(--background-primary);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-smaller, 0.75rem);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.oa-habit-weekly-col-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 2px;
+  background: var(--background-primary);
+  border-bottom: 1px solid var(--background-modifier-border);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  min-width: 44px;
+}
+
+.oa-habit-weekly-col-header--today {
+  color: var(--text-accent, var(--interactive-accent));
+  font-weight: 700;
+}
+
+.oa-habit-weekly-col-header-day {
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.oa-habit-weekly-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m, 6px);
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.oa-habit-weekly-nav-center {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-weight: 600;
+}
+
+.oa-habit-weekly-nav-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s, 4px);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: var(--font-smaller, 0.75rem);
+  transition: background-color 0.15s ease;
+}
+
+.oa-habit-weekly-nav-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.oa-habit-weekly-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oa-habit-weekly-cell {
+    transition: none;
+  }
+  .oa-habit-weekly-cell:hover {
+    transform: none;
+  }
+  .oa-habit-weekly-nav-btn {
+    transition: none;
+  }
+}

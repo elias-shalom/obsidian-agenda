@@ -1,0 +1,209 @@
+// Habit Overview/Dashboard View Styles
+.oa-habit-overview {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.oa-habit-overview-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.oa-habit-overview-stat {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m, 6px);
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.oa-habit-overview-stat:hover {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.oa-habit-overview-stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-normal);
+}
+
+.oa-habit-overview-stat-label {
+  font-size: var(--font-smaller, 0.75rem);
+  color: var(--text-muted);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.oa-habit-overview-stat-sublabel {
+  font-size: 0.65rem;
+  color: var(--text-faint);
+}
+
+.oa-habit-overview-stat--weighted .oa-habit-overview-stat-value {
+  color: var(--interactive-accent);
+}
+
+.oa-habit-overview-section {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m, 6px);
+  overflow: hidden;
+}
+
+.oa-habit-overview-section-header {
+  padding: 10px 12px;
+  background: var(--background-primary);
+  border-bottom: 1px solid var(--background-modifier-border);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: var(--font-smaller, 0.75rem);
+  color: var(--text-muted);
+}
+
+.oa-habit-overview-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+}
+
+.oa-habit-overview-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 28px;
+}
+
+.oa-habit-overview-bar-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 100px;
+  font-size: var(--font-smaller, 0.75rem);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.oa-habit-overview-bar-label-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.oa-habit-overview-bar-track {
+  flex: 1;
+  height: 10px;
+  background: var(--background-modifier-border);
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+}
+
+.oa-habit-overview-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+
+.oa-habit-overview-bar-value {
+  min-width: 50px;
+  text-align: right;
+  font-size: var(--font-smaller, 0.75rem);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.oa-habit-overview-history {
+  padding: 12px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.oa-habit-overview-history-title {
+  font-weight: 600;
+  font-size: var(--font-smaller, 0.75rem);
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.oa-habit-overview-history-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 80px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.oa-habit-overview-history-bar {
+  flex: 0 0 auto;
+  width: 18px;
+  border-radius: 2px 2px 0 0;
+  background: var(--interactive-accent);
+  opacity: 0.7;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.oa-habit-overview-history-bar:hover {
+  opacity: 1;
+}
+
+.oa-habit-overview-history-bar--today {
+  background: var(--text-accent, var(--interactive-accent));
+  opacity: 1;
+}
+
+.oa-habit-overview-history-bar-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s, 4px);
+  font-size: 0.65rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+  margin-bottom: 4px;
+}
+
+.oa-habit-overview-history-bar:hover .oa-habit-overview-history-bar-tooltip {
+  opacity: 1;
+}
+
+.oa-habit-overview-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  color: var(--text-muted);
+  text-align: center;
+  font-size: var(--font-smaller, 0.75rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oa-habit-overview-bar-fill,
+  .oa-habit-overview-history-bar,
+  .oa-habit-overview-stat {
+    transition: none;
+  }
+}

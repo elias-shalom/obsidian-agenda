@@ -1,0 +1,75 @@
+{{!-- Habit Routine View Template (Phase 0 - Stub) --}}
+<div class="oa-habit-toolbar">
+  <div class="oa-habit-current">
+    <h2>{{t viewLabelKey}}</h2>
+    <div class="oa-habit-routine-date">
+      <span>{{t "habit_today"}}: {{formatDate selectedDate}}</span>
+    </div>
+  </div>
+  <div class="oa-habit-nav-container">
+    <div class="oa-habit-view-selector">
+      <select id="oa-habit-view-dropdown" class="oa-habit-view-dropdown">
+        {{#if settings.showHabitGridTab}}<option value="grid" {{#eq viewSubtype "grid"}}selected{{/eq}}>{{t "habit_grid_tab"}}</option>{{/if}}
+        {{#if settings.showHabitDashboardTab}}<option value="dashboard" {{#eq viewSubtype "dashboard"}}selected{{/eq}}>{{t "habit_dashboard_tab"}}</option>{{/if}}
+        {{#if settings.showHabitRoutineTab}}<option value="routine" {{#eq viewSubtype "routine"}}selected{{/eq}}>{{t "habit_routine_tab"}}</option>{{/if}}
+        {{#if settings.showHabitWeeklyTab}}<option value="weekly" {{#eq viewSubtype "weekly"}}selected{{/eq}}>{{t "habit_weekly_tab"}}</option>{{/if}}
+        {{#if settings.showHabitListTab}}<option value="table" {{#eq viewSubtype "table"}}selected{{/eq}}>{{t "habit_list_tab"}}</option>{{/if}}
+      </select>
+    </div>
+    <div class="oa-habit-routine-nav">
+      <button class="oa-habit-routine-nav-btn" data-action="prev">{{t "previous"}}</button>
+      <button class="oa-habit-routine-today-btn" data-action="today">{{t "habit_today"}}</button>
+      <button class="oa-habit-routine-nav-btn" data-action="next">{{t "next"}}</button>
+    </div>
+  </div>
+</div>
+
+<div class="oa-habit-routine">
+  {{#each daytimes}}
+    <div class="oa-habit-routine-section">
+      <div class="oa-habit-routine-section-header">
+        <span>{{@key}}</span>
+        <div class="oa-habit-routine-section-progress">
+          <div class="oa-habit-routine-progress-bar">
+            <div class="oa-habit-routine-progress-fill" style="width: {{this.pct}}%"></div>
+          </div>
+          <span>{{this.pct}}%</span>
+        </div>
+      </div>
+      {{#each this.habits}}
+        <div class="oa-habit-routine-habit {{#unless this.scheduled}}oa-habit-routine-unscheduled{{/unless}}">
+          <button
+            class="oa-habit-routine-checkbox {{#if this.ticked}}oa-habit-routine-checkbox--checked{{/if}}"
+            data-habit-id="{{this.id}}"
+            data-date="{{../selectedDate}}"
+            aria-label="{{this.title}} {{t "habit_today"}}"
+            {{#unless this.scheduled}}disabled{{/unless}}>
+          </button>
+          <div class="oa-habit-routine-habit-info">
+            <div class="oa-habit-routine-habit-title">{{this.title}}</div>
+            <div class="oa-habit-routine-habit-meta">
+              <span class="oa-habit-routine-priority-badge" data-priority="{{this.priority}}">{{this.priority}}</span>
+              <span class="oa-habit-routine-time">{{this.time}}m</span>
+              <span class="oa-habit-routine-area-tag" style="background-color: {{this.areaColor}}">{{t (concat "habit_area_" this.area)}}</span>
+            </div>
+          </div>
+          <div class="oa-habit-routine-habit-actions">
+            <button class="oa-habit-routine-action-btn" data-action="open-note" data-habit-id="{{this.id}}">{{t "edit_task"}}</button>
+          </div>
+        </div>
+      {{/each}}
+      {{#unless this.habits.length}}
+        <div class="oa-habit-routine-empty">{{t "habit_no_habits"}}</div>
+      {{/unless}}
+    </div>
+  {{/each}}
+
+  <div class="oa-habit-routine-area-summary">
+    {{#each areaStats}}
+      <div class="oa-habit-routine-area-item">
+        <div class="oa-habit-routine-area-color" style="background-color: {{this.color}}"></div>
+        <span>{{t (concat "habit_area_" this.area)}}: {{this.pctWeighted}}% ({{this.pct}}%)</span>
+      </div>
+    {{/each}}
+  </div>
+</div>

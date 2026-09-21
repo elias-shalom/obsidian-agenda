@@ -96,6 +96,11 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 
 ## 🎯 Próximas Características (v1.1.0)
 
+[Habit Tracker 21](https://community.obsidian.md/plugins/habit-tracker-21)
+[Google Calendar](https://community.obsidian.md/plugins/google-calendar)
+[Day Planner](https://community.obsidian.md/plugins/obsidian-day-planner)
+[Timelineal](https://timelineal.com/)
+
 ### Core Tasks
 - [ ] Compatibilidad con la programación de tareas según la hora del día [vista por día (hora y día completo)]
   - [ ] Una forma de agregar la fecha desde el archivo con iconos

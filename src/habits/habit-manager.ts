@@ -36,6 +36,38 @@ export class HabitManager {
     return this.app.vault.getAbstractFileByPath(this.getHabitFolderPath()) instanceof TFolder;
   }
 
+  /** Recorre recursivamente la carpeta de hábitos y devuelve todas las notas .md encontradas */
+  private collectHabitFiles(folder: TFolder): TFile[] {
+    const results: TFile[] = [];
+
+    for (const child of folder.children) {
+      if (child instanceof TFile) {
+        if (child.extension.toLowerCase() === 'md') {
+          results.push(child);
+        }
+      } else if (child instanceof TFolder) {
+        results.push(...this.collectHabitFiles(child));
+      }
+    }
+
+    return results;
+  }
+
+  /** Nombres de las carpetas principales (raíz) del vault, usadas como opciones de área en el editor */
+  getVaultRootFolders(): string[] {
+    const names = new Set<string>(['temporal']);
+
+    for (const child of this.app.vault.getRoot().children) {
+      if (child instanceof TFolder) names.add(child.name);
+    }
+
+    for (const habit of this.habitCache.values()) {
+      names.add(habit.area);
+    }
+
+    return [...names].sort((a, b) => a.localeCompare(b));
+  }
+
   private registerEvents(): void {
     this.eventRefs.push(
       this.app.vault.on('create', (file) => {
@@ -86,11 +118,9 @@ export class HabitManager {
 
     const habits: IHabit[] = [];
 
-    for (const child of folder.children) {
-      if (!(child instanceof TFile) || child.extension.toLowerCase() !== 'md') continue;
-
-      const fm = this.app.metadataCache.getFileCache(child)?.frontmatter ?? {};
-      const habit = parseHabit(child, fm as Record<string, unknown>, this.settingsGetter());
+    for (const file of this.collectHabitFiles(folder)) {
+      const fm = this.app.metadataCache.getFileCache(file)?.frontmatter ?? {};
+      const habit = parseHabit(file, fm as Record<string, unknown>, this.settingsGetter());
       if (habit) {
         habits.push(habit);
       }

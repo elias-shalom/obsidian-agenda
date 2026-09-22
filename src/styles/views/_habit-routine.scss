@@ -117,32 +117,48 @@
 }
 
 .oa-habit-routine-checkbox {
+  box-sizing: border-box;
   width: 22px;
   height: 22px;
-  border: 2px solid var(--checkbox-color, var(--interactive-accent));
-  border-radius: 4px;
+  min-width: 22px;
+  min-height: 22px;
+  padding: 0;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 2px solid var(--background-modifier-border);
+  border-radius: 50%;
+  background: var(--background-modifier-border);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  line-height: 0;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .oa-habit-routine-checkbox:hover {
-  background: color-mix(in srgb, var(--checkbox-color, var(--interactive-accent)) 15%, transparent);
+  border-color: var(--checkbox-color, var(--interactive-accent));
+  background: var(--checkbox-color, var(--interactive-accent));
 }
 
 .oa-habit-routine-checkbox--checked {
-  background: var(--checkbox-color, var(--interactive-accent));
-  border-color: var(--checkbox-color, var(--interactive-accent));
+  background: var(--color-green, #22c55e);
+  border-color: var(--color-green, #22c55e);
+}
+
+.oa-habit-routine-checkbox--checked:hover {
+  background: var(--color-green, #22c55e);
+  border-color: var(--color-green, #22c55e);
 }
 
 .oa-habit-routine-checkbox--checked::after {
   content: "✓";
   color: var(--text-on-accent, white);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: bold;
+  line-height: 1;
 }
 
 .oa-habit-routine-habit-info {

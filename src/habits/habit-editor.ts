@@ -2,7 +2,7 @@ import { App, Modal, Notice, TFile, stringifyYaml } from 'obsidian';
 import Handlebars from 'handlebars';
 import type { I18n } from '../core/i18n';
 import type { HabitManager } from './habit-manager';
-import { HABIT_AREAS } from './habit';
+import { getAreaLabel } from './habit';
 import type { Daytime, HabitArea, IHabit } from './habit';
 
 // @ts-ignore: Plugin de esbuild maneja los archivos .hbs
@@ -101,9 +101,9 @@ export class HabitEditorModal extends Modal {
       statusLabelText: (habit?.status ?? 'active') === 'active'
         ? this.i18n.t('habit_status_active')
         : this.i18n.t('habit_status_inactive'),
-      areas: HABIT_AREAS.map(area => ({
+      areas: this.habitManager.getVaultRootFolders().map(area => ({
         value: area,
-        label: this.i18n.t(`habit_area_${area.replace(/-/g, '_')}`),
+        label: getAreaLabel(area, this.i18n),
         selected: habit ? habit.area === area : area === 'temporal',
       })),
       frequencyOptions: [

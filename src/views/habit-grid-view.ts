@@ -4,7 +4,7 @@ import { HabitView } from './habit-view';
 import { AgendaPlugin, ViewData } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { TaskManager } from '../core/task-manager';
-import { HabitManager, HABIT_AREAS } from '../habits';
+import { HabitManager } from '../habits';
 import type { Daytime, HabitArea } from '../habits';
 import { computeOccurrenceCells, computeOccurrenceStats } from '../habits/habit-streak';
 
@@ -128,11 +128,6 @@ export class HabitGridView extends HabitView {
   }
 
   private sortRecords(records: GridRowRecord[]): void {
-    const areaIndex = (area: HabitArea): number => {
-      const index = HABIT_AREAS.indexOf(area);
-      return index === -1 ? HABIT_AREAS.length : index;
-    };
-
     const daytimeIndex = (daytime: Daytime): number => {
       const index = DAYTIME_ORDER.indexOf(daytime);
       return index === -1 ? DAYTIME_ORDER.length : index;
@@ -140,7 +135,7 @@ export class HabitGridView extends HabitView {
 
     switch (this.sortBy) {
       case 'area':
-        records.sort((a, b) => areaIndex(a.area) - areaIndex(b.area) || a.title.localeCompare(b.title));
+        records.sort((a, b) => a.area.localeCompare(b.area) || a.title.localeCompare(b.title));
         break;
       case 'daytime':
         records.sort((a, b) => daytimeIndex(a.daytime) - daytimeIndex(b.daytime) || a.title.localeCompare(b.title));

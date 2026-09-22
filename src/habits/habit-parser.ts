@@ -1,58 +1,10 @@
 import type { TFile } from 'obsidian';
 import type { AgendaPluginSettings } from '../settings/settings';
-import type { Daytime, HabitArea, ICompletions, IHabit } from './habit';
+import type { Daytime, ICompletions, IHabit } from './habit';
 import { dayCompletedDates } from './habit-completions';
 
 export interface IHabitParser {
   parse(file: TFile, fm: Record<string, unknown>, settings: AgendaPluginSettings): IHabit | null;
-}
-
-const AREA_ALIASES: Record<string, HabitArea> = {
-  'daily-plan': 'daily-plan',
-  'daily plan': 'daily-plan',
-  'dailyplan': 'daily-plan',
-  emotional: 'emotional',
-  emotion: 'emotional',
-  mind: 'emotional',
-  financial: 'financial',
-  finance: 'financial',
-  money: 'financial',
-  intellectual: 'intellectual',
-  brain: 'intellectual',
-  learning: 'intellectual',
-  knowledge: 'intellectual',
-  physical: 'physical',
-  fitness: 'physical',
-  health: 'physical',
-  professional: 'professional',
-  work: 'professional',
-  career: 'professional',
-  recreational: 'recreational',
-  fun: 'recreational',
-  leisure: 'recreational',
-  relationship: 'relationship',
-  relationships: 'relationship',
-  social: 'relationship',
-  spiritual: 'spiritual',
-  mindfulness: 'spiritual',
-  wellness: 'spiritual',
-  temporal: 'temporal',
-  misc: 'temporal',
-  other: 'temporal',
-  general: 'temporal',
-};
-
-function normalizeArea(value: unknown): HabitArea {
-  const raw = String(value ?? 'temporal').trim().toLowerCase();
-  if (!raw) return 'temporal';
-
-  const normalized = raw.replace(/[_\s]+/g, '-').replace(/-+/g, '-');
-  if (normalized in AREA_ALIASES) {
-    return AREA_ALIASES[normalized];
-  }
-
-  const fallback = normalized.replace(/[^a-z-]/g, '');
-  return AREA_ALIASES[fallback] ?? 'temporal';
 }
 
 function normalizePriority(value: unknown): number {
@@ -197,6 +149,8 @@ export function parseHabit(file: TFile, fm: Record<string, unknown>, settings: A
     return null;
   }
 
+  const area = String(fm.area ?? '').trim() || 'temporal';
+
   const title = String(fm.title ?? fm.name ?? file.basename ?? 'Habit').trim() || file.basename || 'Habit';
   const maxGapValue = Number(fm.maxGap ?? settings.habitDefaultMaxGap);
   const daytimes = normalizeDaytimes(fm.daytime ?? fm.daytimes ?? ['morning']);
@@ -217,7 +171,7 @@ export function parseHabit(file: TFile, fm: Record<string, unknown>, settings: A
     title,
     description: String(fm.description ?? '').trim(),
     time: Number(fm.time ?? 0),
-    area: normalizeArea(fm.area),
+    area,
     subArea: String(fm.subArea ?? '').trim(),
     frequencySet: normalizeFrequencySet(fm.frequency),
     priority: normalizePriority(fm.priority ?? settings.habitDefaultPriority),

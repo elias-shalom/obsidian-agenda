@@ -241,6 +241,13 @@ export abstract class BaseView extends ItemView {
       }
       return values.some(Boolean);
     });
+
+    // Helper para concatenar strings (útil para construir claves i18n dinámicas)
+    Handlebars.registerHelper("concat", function(...values: unknown[]): string {
+      // El último argumento es el objeto de opciones del helper
+      const parts = values.slice(0, -1);
+      return parts.map(part => (part === null || part === undefined) ? '' : String(part)).join('');
+    });
   }
 
   /**

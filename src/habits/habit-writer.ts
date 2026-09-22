@@ -1,12 +1,23 @@
-import type { TFile, App } from 'obsidian';
-import type { IHabit } from './habit';
+import type { App, TFile } from 'obsidian';
 
-// Placeholder - implemented in Phase 1
 export async function toggleEntry(
-  _app: App,
-  _file: TFile,
-  _date: string,
-  _entries: Set<string>
+  app: App,
+  file: TFile,
+  date: string,
+  entries: Set<string>
 ): Promise<void> {
-  // No-op in Phase 0
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return;
+  }
+
+  const next = new Set(entries);
+  if (next.has(date)) {
+    next.delete(date);
+  } else {
+    next.add(date);
+  }
+
+  await app.fileManager.processFrontMatter(file, (frontmatter) => {
+    frontmatter.entries = [...next].sort();
+  });
 }

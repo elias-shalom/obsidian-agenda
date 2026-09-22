@@ -1,4 +1,4 @@
-import { App, Plugin, PluginManifest } from "obsidian";
+import { App, Plugin, PluginManifest, Notice } from "obsidian";
 import { ViewManager } from "./core/view-manager";
 import { I18n } from "./core/i18n";
 import { TaskManager } from "./core/task-manager";
@@ -20,7 +20,7 @@ export default class ObsidianAgenda extends Plugin {
       super(app, manifest);
       this.i18n = new I18n(app);
       this.taskManager = new TaskManager(app, this.i18n, this);
-      this.habitManager = new HabitManager(app, () => this.settings);
+      this.habitManager = new HabitManager(app, () => this.settings, this.i18n);
       this.viewManager = new ViewManager(this, this.i18n, this.taskManager, this.habitManager); // Pasar la instancia del plugin
       this.modalManager = new ModalManager(app, this.i18n, this.taskManager);
   }
@@ -64,6 +64,27 @@ export default class ObsidianAgenda extends Plugin {
         callback: () => {
           this.modalManager.openModal(TASK_MODAL_TYPE);
         }
+      });
+
+      // Comandos del Habit Creator
+      this.addCommand({
+        id: "oa-habit-new",
+        name: this.i18n.t("habit_new_habit"),
+        callback: () => this.habitManager.openEditor(),
+      });
+
+      this.addCommand({
+        id: "oa-habit-edit",
+        name: this.i18n.t("habit_edit_habit"),
+        callback: () => {
+          const file = this.app.workspace.getActiveFile();
+          const habit = file ? this.habitManager.getHabit(file) : null;
+          if (habit) {
+            this.habitManager.openEditor(habit);
+          } else {
+            new Notice(this.i18n.t("habit_edit_habit"));
+          }
+        },
       });
 
       // Registrar eventos

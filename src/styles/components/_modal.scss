@@ -48,6 +48,8 @@
 
 .oa-form-input,
 .oa-form-select {
+  width: 100%;
+  box-sizing: border-box;
   padding: 0.6rem 0.8rem;
   border: 1px solid var(--background-modifier-border);
   border-radius: 4px;
@@ -65,6 +67,25 @@
 
   &::placeholder {
     color: var(--text-faint);
+  }
+}
+
+.oa-form-select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  height: auto !important;
+  min-height: 2.6rem !important;
+  line-height: 1.4 !important; // evita que la opción seleccionada se recorte verticalmente
+  padding: 0.5rem 2.2rem 0.5rem 0.8rem !important;
+  font-size: 0.85rem;
+  text-overflow: ellipsis;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%23888888' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+
+  option {
+    font-size: 0.85rem;
   }
 }
 

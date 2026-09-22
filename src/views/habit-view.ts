@@ -56,8 +56,18 @@ export abstract class HabitView extends BaseView {
   async onOpen(): Promise<void> {
     this.showLoadingOverlay(6, true);
     this.habits = this.habitManager.getHabits();
+    document.addEventListener('obsidian-agenda:habits-refresh', this.handleHabitsRefresh);
     await this.refreshHabitView();
   }
+
+  async onClose(): Promise<void> {
+    document.removeEventListener('obsidian-agenda:habits-refresh', this.handleHabitsRefresh);
+  }
+
+  private handleHabitsRefresh = (): void => {
+    this.habits = this.habitManager.getHabits();
+    this.refreshHabitView().catch(console.error);
+  };
 
   /**
    * Combina los datos específicos de cada vista con los campos comunes
@@ -98,6 +108,11 @@ export abstract class HabitView extends BaseView {
         this.switchToViewType(viewDropdown.value as HabitViewSubtype);
       });
     }
+
+    const newHabitBtn = container.querySelector('#oa-habit-new-btn');
+    newHabitBtn?.addEventListener('click', () => {
+      this.habitManager.openEditor();
+    });
   }
 
   private getViewIdForSubtype(subtype: HabitViewSubtype): string {

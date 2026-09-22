@@ -5,6 +5,8 @@ import { parseHabit } from './habit-parser';
 import { computeDashboard } from './habit-stats';
 import { dayCompletedDates, toggle } from './habit-completions';
 import { toggleOccurrence as writeToggleOccurrence } from './habit-writer';
+import { HabitEditorModal } from './habit-editor';
+import type { I18n } from '../core/i18n';
 
 export class HabitManager {
   private habitCache = new Map<string, IHabit>();
@@ -12,7 +14,8 @@ export class HabitManager {
 
   constructor(
     private app: App,
-    private settingsGetter: () => AgendaPluginSettings
+    private settingsGetter: () => AgendaPluginSettings,
+    private i18n: I18n
   ) {
     this.registerEvents();
     this.refreshCache();
@@ -126,6 +129,11 @@ export class HabitManager {
 
   computeDashboard() {
     return computeDashboard(this.getHabits());
+  }
+
+  /** Abre el modal de crear/editar hábito (crear si no se pasa hábito) */
+  openEditor(habit?: IHabit): void {
+    new HabitEditorModal(this.app, this, this.i18n, habit).open();
   }
 
   cleanup(): void {

@@ -30,7 +30,7 @@ La fuente de datos es una **ruta configurable** dentro del vault donde viven las
 
 ## Contexto actual (cómo funciona hoy)
 
-- **Definición de hábitos**: cada hábito es una nota `.md` en `daily plan/daily routine/habit/` con frontmatter (`name`, `description`, `time`, `area`, `daytime`, `status`, `entries`). Se crean desde [[habit gen]] usando las plantillas `config/templates/habit.md` y `habitaux.md`.
+- **Definición de hábitos**: cada hábito es una nota `.md` en `daily plan/daily routine/habit/` con frontmatter (`name`, `description`, `time`, `area`, `daytime`, `status`, `entries`). Se crean desde [[habit gen]] usando las plantillas `config/templates/habit.md` y `habitaux.md`. El `daytime` puede repetirse (un hábito aparece varias veces al día); el tracking por ocurrencia del plugin usará `completions` manteniendo `entries` como espejo.
 - **Notas diarias**: la plantilla `config/templates/daily routine.md` (Templater) genera notas en `daily plan/daily routine/habit tracker/YYYY-MM-DD.md` con toggles `<habito>-<area>-<daytime>` (meta-bind), barras de progreso y cálculos `pb*` (por daytime, por área y global `pbdaily`).
 - **Visualización actual**: 
   - Code blocks `habittracker` (plugin **Habit Tracker 21**) en [[habit tracker]] — grid de filas=habit/columnas=días.
@@ -43,15 +43,16 @@ Añadir al plugin **obsidian-agenda** un módulo `src/habits/` con:
 
 | Vista | Descripción |
 |---|---|
-| **Grid (estilo Habit Tracker 21)** | Filas = hábitos, columnas = días (`daysToShow`, defecto 21). Click en celda marca/desmarca el día. Rachas con `maxGap`. |
-| **Rutina diaria** | Estado de hoy (y navegable) organizado por `daytime`, solo hábitos programados ese día, ordenados por prioridad, con porcentajes. |
+| **Grid (estilo Habit Tracker 21)** | Filas = hábitos (o una fila por `daytime` en multi-daytime), columnas = días (`daysToShow`, defecto 21). Click en celda: toggle directo. Rachas fusionadas en píldora, con tolerancia `maxGap`; orden configurable (alfabético/área/daytime/prioridad/racha/%). |
+| **Rutina diaria** | Estado de hoy (y navegable) organizado por `daytime`, solo hábitos programados ese día, ordenados por prioridad, con porcentajes (cumplimiento por **ocurrencia**). |
 | **Dashboard / Overview** | Métricas: cumplimiento de hoy (crudo y **ponderado por prioridad**), rachas, % por las 10 áreas y por daytime, mini-historial. |
 | **Semanal** | Matriz hábito × día de la semana (días no programados atenuados). |
 | **Lista / Tabla** | Catálogo con área (enum + `subArea`), frecuencia, prioridad, daytime, tiempo y rachas. |
+| **Habit Creator** | **Modal** para **crear/editar** hábitos (nota nueva o actualización de frontmatter) con toda la metadata. |
 
-La vista **Grid** se basa en la referencia de código abierto **Habit Tracker 21** (`github.com/zincplusplus/habit-tracker`, MIT) replicando su comportamiento en el stack del plugin (TypeScript + Handlebars + luxon + SCSS).
+La vista **Grid** se basa en la referencia de código abierto **Habit Tracker 21** (`github.com/zincplusplus/habit-tracker`, MIT) replicando su comportamiento en el stack del plugin (TypeScript + Handlebars + luxon + SCSS). Además, un **Habit Creator** (modal) permite crear y editar hábitos sin salir del plugin.
 
-**Metadata extendida** en las notas de hábito (ver [[Modelo de datos]]): `area` (enum de 10 slugs inglés, etiquetas locales vía i18n), `subArea` (detalle opcional), `frequency` (`everyday`/`workweek`/`weekend`/días), `priority` (1–5).
+**Metadata extendida** en las notas de hábito (ver [[Modelo de datos]]): `area` (enum de 10 slugs inglés, etiquetas locales vía i18n), `subArea` (detalle opcional), `frequency` (`everyday`/`workweek`/`weekend`/días), `priority` (1–5), `daytime` y **`completions`** (mapa `fecha → [daytimes]`, seguimiento por ocurrencia); `entries` queda como **espejo HT21** autosincronizado.
 
 ## Mapa de documentos
 

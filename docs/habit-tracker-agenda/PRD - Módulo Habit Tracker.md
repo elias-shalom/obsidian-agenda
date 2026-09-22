@@ -25,8 +25,9 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 
 1. Lean las **notas de hábito** desde una **ruta configurable** del vault.
 2. Muestren el **estado, historial, rachas y progreso** de cada hábito (por `daytime` y por `area`).
-3. Permitan **marcar/desmarcar** hábitos de forma **interactiva** (escribiendo en el vault) directamente desde la vista.
+3. Permitan **marcar/desmarcar** hábitos de forma **interactiva** (escribiendo en el vault) directamente desde la vista, con precisión de **ocurrencia** (`daytime`).
 4. Se integren al patrón de UI existente del plugin (tabs, header, i18n, temas, móvil).
+5. Permitan **crear y editar hábitos** desde el plugin (Habit Creator, modal).
 
 ## 2. Alcance
 
@@ -40,7 +41,8 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
   - **Dashboard / Overview** de hábitos.
   - **Semanal** (matriz hábito × día).
   - **Lista / Tabla** de hábitos.
-- [x] Interactividad: click en celda/toggle → escribir/eliminar fecha en `entries` de la nota del hábito.
+- [x] **Habit Creator**: modal para **crear y editar** hábitos (nota nueva en la ruta / actualización de frontmatter), con validación y preservación de `completions`.
+- [x] Interactividad: click en celda → toggle directo por ocurrencia; hábitos multi-daytime se muestran como **una fila por daytime** (no popover); escribe `completions` y sincroniza el espejo `entries`.
 - [x] Cálculo de **rachas** con tolerancia `maxGap` (portado de HT21).
 - [x] Refresco reactivo ante cambios en el vault (create/modify/delete/rename dentro de la ruta) y a medianoche.
 - [x] Soporte **i18n** en los 6 idiomas actuales del plugin.
@@ -50,7 +52,6 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 ### 2.2 Fuera de alcance (fases posteriores)
 
 - [ ] Escritura en las **notas diarias de seguimiento** (`habit tracker/YYYY-MM-DD.md`, toggles meta-bind y `pb*`) — se documenta como mejora futura.
-- [ ] Generación de hábitos desde la vista (crear nota nueva).
 - [ ] Vista heatmap estilo GitHub / Heatmap Tracker (se omite; la grid cumple el rol de historial visual).
 - [ ] Sincronización bidireccional con calificaciones parciales (p. ej. intensidad 0–100 por día) vía deslizador.
 - [ ] Notas de revisión (diaria/semanal/mensual) automáticas.
@@ -63,7 +64,7 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 | # | Historia de usuario | Criterio de aceptación |
 |---|---|---|
 | US-1 | Como usuario, quiero ver de un vistazo en qué días cumplí cada hábito | La vista **Grid** muestra una fila por hábito y una columna por día; las celdas cumplidas se distinguen visualmente. |
-| US-2 | Como usuario, quiero marcar o desmarcar un hábito del día con un clic | Un click en una celda del grid agrega/elimina la fecha en `entries` de la nota del hábito y la UI se actualiza. |
+| US-2 | Como usuario, quiero marcar o desmarcar un hábito del día con un clic | Un click en una celda del grid actualiza directamente esa **ocurrencia**: si el hábito tiene varias `daytime`, aparece como **filas separadas** (`Hábito (daytime)`) y cada una se marca con un clic simple. |
 | US-3 | Como usuario, quiero conocer mi racha y si voy a perderla | El grid muestra el contador de racha al final de cada secuencia y un indicador de "fecha límite para mantener la racha" cuando `maxGap` lo permite. |
 | US-4 | Como usuario, quiero ver mi cumplimiento de hoy | La vista **Rutina diaria** muestra los hábitos de hoy organizados por `daytime` y por `area` con porcentaje de avance. |
 | US-5 | Como usuario, quiero métricas globales | El **Dashboard** muestra cumplimiento de hoy, racha actual, racha máxima, % por área y % por daytime. |
@@ -74,6 +75,9 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 | US-10 | Como usuario, quiero definir en qué días de la semana se realiza cada hábito | Algunos hábitos son diarios, otros solo entre semana o fines de semana; el campo `frequency` (de la nota) controla que en la **Rutina** solo aparezcan los programados para ese día y que los días no programados **no rompan la racha** en el grid. |
 | US-11 | Como usuario, quiero que los hábitos importantes tengan más peso | El campo `priority` (1–5) pondera el % de cumplimiento del día (`Σ done.priority / Σ scheduled.priority`) y ordena la **Rutina** por importancia. |
 | US-12 | Como usuario, quiero agrupar por áreas estándar | El `area` se limita a 10 áreas (`daily-plan…temporal`) con etiquetas locales; `subArea` conserva el detalle (`feed`, `clean`, …). El dashboard agrupa por estas 10 áreas. |
+| US-13 | Como usuario, quiero crear y editar mis hábitos desde el plugin | Un **modal** permite crear (nota nueva en la ruta) y editar (frontmatter) un hábito: name, etiqueta, description, time, área (10), subÁrea, frecuencia, prioridad (1–5), daytime (multi), status, maxGap y color; se preservan `completions`. |
+| US-14 | Como usuario, quiero marcar solo las ocurrencias que hice | En un hábito multi-daytime, el grid muestra **una fila por `daytime`** (`morning`/`afternoon`/…) para marcarlas de forma independiente; `entries` solo refleja los días con **todas** las ocurrencias. |
+| US-15 | Como usuario, quiero que un día parcial no me rompa la racha | Marcar 1 de 3 ocurrencias no completa el día (`entries`/racha del hábito agregado en Dashboard), pero **no corta** la racha; en la Grid, cada ocurrencia lleva su propia racha independiente. |
 
 ## 4. Requerimientos funcionales
 
@@ -94,18 +98,20 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 
 ### RF-3 Modelo de hábito
 
-- Campos HT21: `title` (etiqueta, fallback = basename), `color` (color de celda), `maxGap` (tolerancia), `entries` (array ISO `YYYY-MM-DD`, la **única** fuente de "habit completado el día X").
+- Campos HT21 (se mantienen **top-level**, ver ADR-007): `title` (etiqueta, fallback = basename), `color` (color de celda), `maxGap` (tolerancia), `entries` (**espejo** day-level autosincronizado desde `completions`).
+- Campos propios del seguimiento: `completions = { "YYYY-MM-DD": [daytime, ...] }` — **fuente canónica** por ocurrencia; `dayCompleted` = "todas las daytimes hechas" ([[Modelo de datos]] §2.7).
 - Campos propios (ver [[Modelo de datos]] §2): `description`, `time` (min), `area` (**enum de 10**, slug inglés + etiqueta i18n), `subArea` (opcional), `frequency` (días programados, token/lista), `priority` (1–5, default 3), `daytime[]`, `status`, `related`.
-- Normalización (ver [[Modelo de datos]] §5.1): `entries` ordenada ascendente; fechas inválidas ignoradas; duplicados eliminados; `area` slugificada; `frequency` → `Set<number>` ISO; `priority` clamp 1–5.
-- **Día no programado** de un hábito es neutro en stats/racha (no rompe racha) — definido en ADR-005.
+- Normalización (ver [[Modelo de datos]] §5.1): `completions` validada (claves ISO; daytimes contra `habit.daytime`), `entries` **derivada** de `completions`; fechas inválidas ignoradas; duplicados eliminados; `area` slugificada; `frequency` → `Set<number>` ISO; `priority` clamp 1–5.
+- **Día no programado** de un hábito es neutro en stats/racha (no rompe racha) — definido en ADR-005. **Día parcial** tampoco rompe (ADR-008).
 
-### RF-4 Interacción de escritura (write-back)
+### RF-4 Interacción de escritura (write-back por ocurrencia)
 
-- Click en celda vacía → agrega `YYYY-MM-DD` a `entries`.
-- Click en celda marcada → elimina la fecha de `entries`.
-- La escritura usa `app.fileManager.processFrontMatter(file, fm => ...)` y **no** toca el resto del frontmatter.
+- **Hábito de una sola daytime**: click en celda vacía → marca esa ocurrencia; click en marcada → la desmarca (toggle directo).
+- **Hábito multi-daytime**: se muestra como **una fila por `daytime`** (`Hábito (morning)`, `Hábito (afternoon)`, …); cada fila es un toggle directo sobre su propia ocurrencia, sin popover (ver [[Especificación de vistas]] §1.3).
+- La escritura usa `app.fileManager.processFrontMatter` y actualiza **`completions` + re-deriva `entries`** (espejo HT21) en la misma transacción; **no** toca el resto del frontmatter.
 - La UI actualiza de forma optimista y se reconcilia con el evento `modify` (guardia contra bucles).
-- El toggle se permite siempre (también en días no programados); el efecto en stats queda definido por `isScheduled`.
+- El toggle se permite siempre (también en días no programados); el efecto en stats queda definido por `isScheduled` y `dayCompleted`.
+- **Migración legacy**: al primer write de una nota con `entries` y sin `completions`, se migra (`completions[date] = todas las daytimes`) y se reescriben ambos campos.
 
 ### RF-5 Refresco reactivo
 
@@ -117,8 +123,19 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 ### RF-6 Métricas por prioridad
 
 - `pctWeighted` diario/área/daytime = `Σ done.priority / Σ scheduled.priority`.
-- Denominatorios siempre sobre hábitos **programados** ese día.
+- Denominadores siempre sobre hábitos **programados** ese día.
 - La **Rutina** ordena por `priority` desc; el **Dashboard** muestra ponderado (+ crudo opcional).
+
+### RF-7 Habit Creator (crear/editar hábitos)
+
+- **Modal reutilizable** (`HabitEditorModal`): crea o edita una nota de hábito. Se abre desde:
+  - Comandos **"Nuevo hábito"** y **"Editar hábito"**.
+  - Botón **`+`** en el header de las vistas de hábitos.
+  - Doble-clic en una fila de la vista **Lista/Tabla** (abre el modal en modo edición).
+- **Campos del formulario**: name (basename), etiqueta (`title`), `description`, `time` (min), `area` (dropdown de las **10 áreas** del enum), `subArea` (texto), `frequency` (select `everyday/workweek/weekend` o multi-check de días), `priority` (1–5), `daytime` (multi-check `wake up/morning/afternoon/evening`), `status` (active/inactive), `maxGap` (0–30), `color` (color picker).
+- **Crear**: valida `name` (sanitizado para filename, **único** en la ruta), genera el frontmatter inicial (defaults `frequency: everyday`, `priority: 3`, `status: active`), crea la nota en `habitFolderPath` y aplica opcionalmente la plantilla `habit.md` en el cuerpo.
+- **Editar**: `processFrontMatter` sobre la nota existente; **preserva `completions` y `entries`**; si cambia el basename → `app.fileManager.rename`. `title` se descarta si coincide con el basename.
+- Al guardar, `HabitManager` invalida el cache y las vistas se refrescan (se reutiliza el flujo de `modify`/refresco global).
 
 ## 5. Requerimientos no funcionales
 
@@ -142,11 +159,12 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 6. Todas las cadenas están traducidas en los 6 idiomas (incluye 10 etiquetas de área y tokens de frecuencia); sin claves sin traducir en consola.
 7. `npm run build` y `npm run lint` pasan sin errores.
 8. El plugin sigue funcionando si la ruta no existe (mensaje claro, sin crash).
+9. En un hábito con 2+ daytimes, la Grid muestra una fila por cada `daytime`; marcar una sola fila NO completa el día agregado del hábito — `entries` solo contiene la fecha cuando **todas** las filas/ocurrencias quedan marcadas.
+10. Crear un hábito desde el modal genera la nota en la ruta configurada con su frontmatter completo; editar preserva `completions`.
 
 ## 7. Fuera de alcance explicado
 
-- La **escritura en notas diarias de seguimiento** se deja fuera porque la fuente única v1 es `entries`. Documentado en [[Modelo de datos]] (ADR-002).
-- La **granularidad por daytime en `entries`** no se implementa en v1 (ADR-001); la rutina muestra el estado del día completo. La precisión por horario queda como mejora.
+- La **escritura en las notas diarias de seguimiento** (`habit tracker/YYYY-MM-DD.md`, toggles meta-bind y `pb*`) se mantiene fuera; la **única fuente v1** es `completions` (+ espejo `entries`) en la nota del hábito (ADR-001/002).
 - El **heatmap mensual** se reemplaza por la **grid** (más accionable y alineada a la referencia HT21).
 - El destino final de los hábitos `misc` (`clima`, `power nap`, `wake up time`) dentro del enum de áreas queda **pendiente de decisión** (candidatos `temporal`/`daily-plan`, ADR-004) y se resuelve en la migración de datos, no bloquea el desarrollo.
 

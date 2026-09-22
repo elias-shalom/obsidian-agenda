@@ -29,11 +29,13 @@ Se agrega un módulo autocontenido `src/habits/` (data layer + engine de stats) 
 src/
 ├─ habits/
 │  ├─ habit-manager.ts        # carga, cache, eventos de refresco
-│  ├─ habit.ts                # tipos IHabit, IHabitCell, stats (modelo)
-│  ├─ habit-parser.ts         # frontmatter -> IHabit (resiliente)
+│  ├─ habit.ts                # tipos IHabit, IHabitCell, completions (modelo)
+│  ├─ habit-parser.ts         # frontmatter -> IHabit (resiliente, migración legacy)
 │  ├─ habit-streak.ts         # algoritmo de rachas (portado de HT21)
 │  ├─ habit-stats.ts          # agregados área/daytime/rango
-│  └─ habit-writer.ts         # toggle de entries (write-back)
+│  ├─ habit-completions.ts    # helpers puros de ocurrencias (dayCompleted, toggle, espejo)
+│  ├─ habit-writer.ts         # write-back de completions + sync de entries
+│  └─ habit-editor.ts         # HabitEditorModal (crear/editar hábitos)
 ├─ views/
 │  ├─ habit-grid-view.ts      # Vista Grid (HT21)  + habit-grid-view.hbs
 │  ├─ habit-routine-view.ts   # Rutina diaria      + habit-routine-view.hbs
@@ -53,7 +55,8 @@ export class HabitManager {
 
   getHabits(): IHabit[]                    // lista activa desde habitFolderPath
   getHabit(file: TFile): IHabit | null
-  toggle(date: string): Promise<void>      // togglea en el hábito que corresponda
+  toggleOccurrence(file: TFile, date: string, daytime: Daytime): Promise<void>  // swap en completions + sync entries
+  openEditor(habit?: IHabit): void         // abre HabitEditorModal (crear si habit nulo)
   computeDashboard(): HabitDashboardData
   // internos: watchPath, onVaultCreate/Delete/Rename/Modify
 }
@@ -88,17 +91,31 @@ Portar la lógica del bloque `renderedDates` de `Habit.svelte` de HT21 a TS puro
 
 Recomendación: extraer `differenceInCalendarDays` con luxon: `b.startOf('day').diff(a.startOf('day'), 'days').days`.
 
-### 2.4 `habit-writer.ts` — toggle
+### 2.4 `habit-completions.ts` + `habit-writer.ts` — ocurrencias y write-back
+
+`habit-completions.ts` (lógica **pura**, testeable):
+
+```
+dayCompleted(habit, date): boolean            // todas las daytimes en completions[date]
+occurrencesFor(habit, date): IOccurrence[]    // { daytime, done }[] usado por la Vista Rutina (no por la Grid)
+toggle(completions, habit, date, daytime)     // swap de ocurrencia; limpia arrays vacíos
+dayCompletedDates(completions, habit): string[]  // fechas "día completo" -> espejo entries
+```
+
+`habit-writer.ts` (write-back): persiste `completions` y **re-deriva `entries` (espejo HT21)** en una sola `processFrontMatter`:
 
 ```ts
-async function toggleEntry(app: App, file: TFile, date: string, entries: Set<string>): Promise<void> {
-  const next = new Set(entries);
-  next.has(date) ? next.delete(date) : next.add(date);
+async function toggleOccurrence(app: App, file: TFile, h: IHabit, date: string, daytime: Daytime) {
+  const completions = toggle(h.completions, h, date, daytime);
   await app.fileManager.processFrontMatter(file, (fm) => {
-    fm["entries"] = [...next].sort();
+    fm["completions"] = completions;
+    fm["entries"] = dayCompletedDates(completions, h).sort();
   });
 }
 ```
+
+- **Migración legacy**: al primer write de una nota con `entries` y sin `completions`, `toggle()` parte de `completions` sintetizado (fechas → todas las daytimes) y la escritura persiste ambos campos ([[Modelo de datos]] §5.1/5.2).
+- `HabitManager.toggleOccurrence(file, date, daytime)` resuelve el `IHabit` del cache, llama a `toggle()` y luego a este writer.
 
 ### 2.5 Eventos
 
@@ -114,6 +131,7 @@ async function toggleEntry(app: App, file: TFile, date: string, entries: Set<str
 - `frequencyToSet(fm.frequency): Set<number>` — `everyday→{1..7}`, `workweek→{1..5}`, `weekend→{6,7}`, lista de nombres→números; tokens inválidos dentro de una lista se ignoran; lista vacía o campo ausente → `{1..7}` (ver ADR-005).
 - `clampPriority(fm.priority): number` — `parseInt` + clamp `1..5`; `NaN` → `3`.
 - `subArea` se lee como string opcional (por defecto `""`).
+- `parseCompletions(fm.completions, daytimes): ICompletions` — objeto → mapa validado (claves ISO, valores filtrados contra `daytimes`, sin duplicados); si es inválido → `{}`. **Fallback legacy**: si no hay `completions` pero sí `entries`, sintetiza `{ [date]: [...daytimes] }` (migración, §2.4).
 - Todas las funciones devuelven valores validados; nunca lanzan (resiliencia §8).
 
 ## 3. Fábrica de vistas (patrón existente)
@@ -155,6 +173,18 @@ async function toggleEntry(app: App, file: TFile, date: string, entries: Set<str
 | Dashboard | `habit-overview-view` | `oa-habit-overview-view-tab` | `chart-column` |
 | Semanal | `habit-weekly-view` | `oa-habit-weekly-view-tab` | `calendar-range` |
 | Lista/Tabla | `habit-table-view` | `oa-habit-table-view-tab` | `table` |
+
+### 3.3 Modal Habit Editor (crear/editar)
+
+`src/habits/habit-editor.ts` exporta `HabitEditorModal extends obsidian.Modal` (no es una vista; se monta sobre el workspace):
+
+- API: `new HabitEditorModal(plugin, habitManager, i18n, habit?: IHabit).open()`.
+- Formulario: name, title, description, time, area (dropdown enum 10), subArea, frequency (select/lista), priority (1–5), daytime (multi-check), status, maxGap (0–30), color (picker) — spec en [[Especificación de vistas]] §9.
+- **Crear** → `app.vault.create` de `name.md` en `habitFolderPath` con el frontmatter (+ plantilla `habit.md` opcional).
+- **Editar** → `processFrontMatter` preservando `completions`/`entries`; si cambia el basename → `app.fileManager.rename`.
+- Validación: unicidad de nombre en la ruta, clamps numéricos, confirmación de borrado.
+- Al guardar → emite `obsidian-agenda:habits-refresh`.
+- Disparadores: comandos (`oa-habit-new`, `oa-habit-edit`), botón `+` del header de hábitos, doble-clic en la Lista.
 
 ## 4. Configuración (`settings`)
 
@@ -209,6 +239,13 @@ habit_freq_everyday / habit_freq_workweek / habit_freq_weekend
 habit_freq_monday / habit_freq_tuesday / habit_freq_wednesday / habit_freq_thursday
 habit_freq_friday / habit_freq_saturday / habit_freq_sunday
 habit_not_scheduled_today / habit_unscheduled               // "no programado" / atenuado
+habit_new_habit / habit_edit_habit / habit_save / habit_cancel / habit_delete
+habit_field_name / habit_field_title / habit_field_description / habit_field_time
+habit_field_area / habit_field_sub_area / habit_field_frequency / habit_field_priority
+habit_field_daytime / habit_field_status / habit_field_max_gap / habit_field_color
+habit_name_required / habit_name_exists / habit_dt_required / habit_created / habit_updated
+habit_mark_all / habit_clear_day / habit_partial / habit_partial_tooltip
+habit_occurrences / habit_routine_partial_note
 ```
 
 Regla: ninguna cadena visible hardcodeada; todo vía `i18n.t(key)` (helper `{{t "key"}}` en Handlebars).
@@ -216,7 +253,8 @@ Regla: ninguna cadena visible hardcodeada; todo vía `i18n.t(key)` (helper `{{t 
 ## 6. Estilos (SCSS)
 
 - Nuevos archivos en `src/styles/views/`, importados en `styles.scss`:
-  - `_habit-grid.scss`     → `.oa-habit-grid` (columnas `--date-columns`, celdas `--habit-bg-ticked`).
+  - `_habit-grid.scss`     → `.oa-habit-grid` (columnas `--date-columns`, filas por ocurrencia, celdas fusionadas en píldora `--run-*`).
+  - `_habit-form.scss`     → `.oa-habit-form` (modal Habit Editor: grid de campos, validación inline).
   - `_habit-routine.scss`  → `.oa-habit-routine` (tablas por daytime/área + barras de progreso).
   - `_habit-overview.scss` → `.oa-habit-overview` (widgets tipo dashboard, reutiliza `.oa-stat-card`).
   - `_habit-weekly.scss`   → `.oa-habit-weekly`.
@@ -238,6 +276,12 @@ this.viewManager.registerViews();
 
 // limpieza en onunload
 this.habitManager.cleanup();
+
+// comandos Habit Creator (modal, §3.3)
+this.addCommand({ id: "oa-habit-new", name: this.i18n.t("habit_new_habit"),
+  callback: () => this.habitManager.openEditor() });
+this.addCommand({ id: "oa-habit-edit", name: this.i18n.t("habit_edit_habit"),
+  callback: () => { const habit = /* hábito activo/del foco */; if (habit) this.habitManager.openEditor(habit); } });
 ```
 
 ## 8. Manejo de errores y estados
@@ -245,14 +289,18 @@ this.habitManager.cleanup();
 - Ruta inexistente → la vista muestra `habit_no_habits_at '{habitFolderPath}'` (patrón `fatalError` de HT21).
 - Frontmatter corrupto → se omite el hábito con log `console.warn` (debug).
 - Campo `area`/`frequency`/`priority` inválido → normalización silenciosa a defaults (`temporal` / `everyday` / `3`), ver §2.6 y [[Modelo de datos]] §7.
-- Sin hábitos → estado vacío con instrucción: crear nota en la ruta o ir a [[habit gen]].
+- Sin hábitos → estado vacío con instrucción: crear nota en la ruta, usar el **Habit Creator** (`+`/comando) o ir a [[habit gen]].
 - Errores de escritura (readonly, sync pendiente) → `Notice` con mensaje i18n.
+- Errores de edición (nombre duplicado/ilegal, nota readonly) → validación inline del modal + `Notice` i18n (§3.3).
 
 ## 9. Checklist de integración
 
 - [ ] `src/habits/*` compila sin dependencias nuevas (solo `obsidian` + `luxon` ya presentes).
 - [ ] Vistas registradas y exportadas; `TEMPLATE_LOADERS` actualizado.
-- [ ] Tabs renderizan y navedición entre vistas funciona (incluye `activateView`).
+- [ ] Tabs renderizan y navegación entre vistas funciona (incluye `activateView`).
+- [ ] Comandos "Nuevo/Editar hábito" registrados y botón `+` en el header de hábitos.
+- [ ] Modal Habit Editor crea/edita notas sin romper `completions`/`entries` (migración legacy incluida).
+- [x] Grid multi-daytime resuelto con **una fila por ocurrencia** (sin popover).
 - [ ] i18n completo en 6 idiomas (sin warnings de key).
 - [ ] SCSS importado; namespace `oa-habit-`.
 - [ ] `npm run build` y `npm run lint` en verde.

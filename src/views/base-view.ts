@@ -229,7 +229,11 @@ export abstract class BaseView extends ItemView {
       return a > b;
     });
 
-    Handlebars.registerHelper("eq", function(a: unknown, b: unknown): boolean {
+    Handlebars.registerHelper("eq", function(this: unknown, a: unknown, b: unknown, options?: Handlebars.HelperOptions) {
+      // Soporta tanto uso inline ({{eq a b}}) como de bloque ({{#eq a b}}...{{/eq}})
+      if (options && typeof options.fn === 'function') {
+        return a === b ? options.fn(this) : options.inverse(this);
+      }
       return a === b;
     });
 

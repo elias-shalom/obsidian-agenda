@@ -1,9 +1,10 @@
 import { App, EventRef, TFile, TFolder } from 'obsidian';
 import type { AgendaPluginSettings } from '../settings/settings';
-import type { IHabit } from './habit';
+import type { Daytime, IHabit } from './habit';
 import { parseHabit } from './habit-parser';
 import { computeDashboard } from './habit-stats';
-import { toggleEntry } from './habit-writer';
+import { dayCompletedDates, toggle } from './habit-completions';
+import { toggleOccurrence as writeToggleOccurrence } from './habit-writer';
 
 export class HabitManager {
   private habitCache = new Map<string, IHabit>();
@@ -20,6 +21,16 @@ export class HabitManager {
   private getHabitFolderPath(): string {
     const folder = this.settingsGetter().habitFolderPath ?? 'daily plan/daily routine/habit';
     return folder.trim() || 'daily plan/daily routine/habit';
+  }
+
+  /** Ruta de la carpeta de hábitos configurada (uso público para las vistas) */
+  getFolderPath(): string {
+    return this.getHabitFolderPath();
+  }
+
+  /** Indica si la carpeta de hábitos configurada existe en el vault */
+  folderExists(): boolean {
+    return this.app.vault.getAbstractFileByPath(this.getHabitFolderPath()) instanceof TFolder;
   }
 
   private registerEvents(): void {
@@ -102,22 +113,15 @@ export class HabitManager {
     return habit;
   }
 
-  async toggle(date: string): Promise<void> {
-    const file = this.app.workspace.getActiveFile();
-    if (!file) return;
-
+  async toggleOccurrence(file: TFile, date: string, daytime: Daytime): Promise<void> {
     const habit = this.getHabit(file);
     if (!habit) return;
 
-    const nextEntries = new Set(habit.entries);
-    if (nextEntries.has(date)) {
-      nextEntries.delete(date);
-    } else {
-      nextEntries.add(date);
-    }
+    const nextCompletions = toggle(habit.completions, habit, date, daytime);
+    const nextEntries = new Set(dayCompletedDates(nextCompletions, habit));
 
-    await toggleEntry(this.app, file, date, habit.entries);
-    this.habitCache.set(file.path, { ...habit, entries: nextEntries });
+    await writeToggleOccurrence(this.app, file, habit, date, daytime);
+    this.habitCache.set(file.path, { ...habit, completions: nextCompletions, entries: nextEntries });
   }
 
   computeDashboard() {

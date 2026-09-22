@@ -1,6 +1,7 @@
 import type { TFile } from 'obsidian';
 import type { AgendaPluginSettings } from '../settings/settings';
-import type { Daytime, HabitArea, IHabit } from './habit';
+import type { Daytime, HabitArea, ICompletions, IHabit } from './habit';
+import { dayCompletedDates } from './habit-completions';
 
 export interface IHabitParser {
   parse(file: TFile, fm: Record<string, unknown>, settings: AgendaPluginSettings): IHabit | null;
@@ -60,7 +61,7 @@ function normalizePriority(value: unknown): number {
   return Math.min(5, Math.max(1, Math.round(parsed)));
 }
 
-function normalizeEntries(value: unknown): Set<string> {
+function normalizeEntries(value: unknown): string[] {
   const rawList: unknown[] = Array.isArray(value)
     ? value
     : typeof value === 'string'
@@ -77,7 +78,33 @@ function normalizeEntries(value: unknown): Set<string> {
     }
   }
 
-  return entries;
+  return [...entries];
+}
+
+/** Valida fm.completions contra las daytimes del hábito; inválido -> {} */
+function parseCompletions(value: unknown, daytimes: Daytime[]): ICompletions {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+
+  const result: ICompletions = {};
+
+  for (const [date, raw] of Object.entries(value as Record<string, unknown>)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+
+    const rawList = Array.isArray(raw) ? raw : [];
+    const done = new Set<Daytime>();
+
+    for (const item of rawList) {
+      const key = String(item ?? '').trim().toLowerCase();
+      const match = daytimes.find(dt => dt.toLowerCase() === key);
+      if (match) done.add(match);
+    }
+
+    if (done.size > 0) {
+      result[date] = daytimes.filter(dt => done.has(dt));
+    }
+  }
+
+  return result;
 }
 
 function normalizeFrequencySet(value: unknown): Set<number> {
@@ -172,6 +199,17 @@ export function parseHabit(file: TFile, fm: Record<string, unknown>, settings: A
 
   const title = String(fm.title ?? fm.name ?? file.basename ?? 'Habit').trim() || file.basename || 'Habit';
   const maxGapValue = Number(fm.maxGap ?? settings.habitDefaultMaxGap);
+  const daytimes = normalizeDaytimes(fm.daytime ?? fm.daytimes ?? ['morning']);
+
+  let completions = parseCompletions(fm.completions, daytimes);
+
+  // Migración legacy: nota con `entries` y sin `completions` válidas -> sintetizar día completo
+  if (Object.keys(completions).length === 0) {
+    const legacyEntries = normalizeEntries(fm.entries);
+    if (legacyEntries.length > 0) {
+      completions = Object.fromEntries(legacyEntries.map(date => [date, [...daytimes]]));
+    }
+  }
 
   return {
     file,
@@ -183,13 +221,14 @@ export function parseHabit(file: TFile, fm: Record<string, unknown>, settings: A
     subArea: String(fm.subArea ?? '').trim(),
     frequencySet: normalizeFrequencySet(fm.frequency),
     priority: normalizePriority(fm.priority ?? settings.habitDefaultPriority),
-    daytimes: normalizeDaytimes(fm.daytime ?? fm.daytimes ?? ['morning']),
+    daytimes,
     color: String(fm.color ?? settings.habitDefaultColor ?? '').trim(),
     maxGap: Number.isFinite(maxGapValue) ? Math.max(0, Math.round(maxGapValue)) : 0,
     status: status || 'active',
-    entries: normalizeEntries(fm.entries),
+    completions,
+    entries: new Set(dayCompletedDates(completions, { daytimes })),
   };
 }
 
 export type { AgendaPluginSettings } from '../settings/settings';
-export type { IHabit, HabitArea, Daytime, FrequencyToken, WeekdayName } from './habit';
+export type { IHabit, HabitArea, Daytime, FrequencyToken, WeekdayName, ICompletions } from './habit';

@@ -263,5 +263,16 @@
   "habit_freq_saturday": "Saturday",
   "habit_freq_sunday": "Sunday",
   "habit_not_scheduled_today": "Not scheduled today",
-  "habit_unscheduled": "Unscheduled"
+  "habit_unscheduled": "Unscheduled",
+  "habit_daytime_wake_up": "Wake up",
+  "habit_daytime_morning": "Morning",
+  "habit_daytime_afternoon": "Afternoon",
+  "habit_daytime_evening": "Evening",
+  "habit_daytime_night": "Night",
+  "habit_sort_alphabetical": "Alphabetical",
+  "habit_sort_area": "By area",
+  "habit_sort_daytime": "By daytime",
+  "habit_sort_priority": "By priority",
+  "habit_sort_streak": "By streak",
+  "habit_sort_pct": "By completion %"
 }

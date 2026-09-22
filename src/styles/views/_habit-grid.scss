@@ -1,10 +1,15 @@
 // Habit Grid View Styles
+$habit-grid-cell-size: 22px;
+
 .oa-habit-grid {
   display: grid;
-  grid-template-columns: 200px repeat(var(--date-columns, 21), minmax(28px, 1fr)) 80px 60px;
-  gap: 2px;
+  grid-template-columns: 200px repeat(var(--date-columns, 21), #{$habit-grid-cell-size}) 80px 60px;
+  gap: 1px 3px;
   font-size: var(--font-smaller, 0.75rem);
   line-height: 1.2;
+  background-color: var(--background-primary);
+  padding-top: 2px;
+  padding-bottom: 2px;
 }
 
 .oa-habit-grid-scroll {
@@ -14,11 +19,7 @@
 }
 
 .oa-habit-grid-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--background-primary);
-  border-bottom: 1px solid var(--background-modifier-border);
+  display: contents;
 }
 
 .oa-habit-grid-row {
@@ -31,7 +32,7 @@
   z-index: 5;
   display: flex;
   align-items: center;
-  padding: 4px 8px;
+  padding: 2px 8px;
   background: var(--background-primary);
   border-right: 1px solid var(--background-modifier-border);
   white-space: nowrap;
@@ -43,6 +44,8 @@
 .oa-habit-grid-name .habit-title {
   flex: 1;
   min-width: 0;
+  color: var(--text-accent, var(--interactive-accent));
+  font-weight: 500;
 }
 
 .oa-habit-grid-name .habit-color-indicator {
@@ -60,23 +63,64 @@
 }
 
 .oa-habit-grid-cell {
-  width: 100%;
-  aspect-ratio: 1;
-  min-width: 24px;
-  max-width: 32px;
-  min-height: 24px;
-  max-height: 32px;
+  width: $habit-grid-cell-size;
+  height: $habit-grid-cell-size;
+  align-self: center;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
   border: none;
-  border-radius: 4px;
-  background: var(--background-modifier-border);
+  border-radius: 0;
+  background-color: transparent !important;
   cursor: pointer;
+  position: relative;
   transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 600;
-  color: transparent;
+}
+
+// Opción E: sin líneas divisorias; el sombreado de fila alterna guía la lectura horizontal.
+.oa-habit-grid-row--alt .oa-habit-grid-name,
+.oa-habit-grid-row--alt .oa-habit-grid-streak,
+.oa-habit-grid-row--alt .oa-habit-grid-pct {
+  background-color: color-mix(in srgb, var(--background-secondary) 30%, var(--background-primary));
+}
+
+.oa-habit-grid-row--alt .oa-habit-grid-cell:not(.oa-habit-grid-cell--ticked):not(.oa-habit-grid-cell--gap) {
+  background-color: color-mix(in srgb, var(--background-secondary) 30%, var(--background-primary)) !important;
+}
+
+.oa-habit-grid-cell-count {
+  color: #ffffff !important;
+  font-size: 0.6rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+// Puentes que fusionan visualmente celdas consecutivas de la misma racha (cubren el gap del grid)
+.oa-habit-grid-cell--run-middle::before,
+.oa-habit-grid-cell--run-end::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -3px;
+  width: 3px;
+  background-color: inherit;
+}
+
+.oa-habit-grid-cell--run-start::after,
+.oa-habit-grid-cell--run-middle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -3px;
+  width: 3px;
+  background-color: inherit;
 }
 
 .oa-habit-grid-cell:hover {
@@ -91,13 +135,27 @@
 }
 
 .oa-habit-grid-cell--ticked {
-  background: var(--habit-color, var(--checkbox-color, var(--interactive-accent)));
-  color: var(--text-on-accent, white);
+  background-color: var(--habit-color, var(--checkbox-color, var(--interactive-accent, #7c3aed))) !important;
 }
 
 .oa-habit-grid-cell--gap {
-  background: color-mix(in srgb, var(--habit-color, var(--checkbox-color, var(--interactive-accent))) 40%, transparent);
-  color: var(--text-on-accent, white);
+  background-color: color-mix(in srgb, var(--habit-color, var(--checkbox-color, var(--interactive-accent, #7c3aed))) 40%, transparent) !important;
+}
+
+.oa-habit-grid-cell--run-single {
+  border-radius: 50%;
+}
+
+.oa-habit-grid-cell--run-start {
+  border-radius: 999px 0 0 999px;
+}
+
+.oa-habit-grid-cell--run-middle {
+  border-radius: 0;
+}
+
+.oa-habit-grid-cell--run-end {
+  border-radius: 0 999px 999px 0;
 }
 
 .oa-habit-grid-cell--deadline {
@@ -106,8 +164,8 @@
 }
 
 .oa-habit-grid-cell--unscheduled {
-  background: var(--background-modifier-border-hover);
-  opacity: 0.4;
+  background: transparent !important;
+  opacity: 0.3;
   cursor: default;
 }
 
@@ -161,7 +219,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-muted);
-  min-width: 28px;
+  min-width: 22px;
 }
 
 .oa-habit-grid-col-header--today {
@@ -182,4 +240,29 @@
   .oa-habit-grid-cell:hover {
     transform: none;
   }
+}
+
+.oa-habit-grid-nav {
+  display: flex;
+  gap: 8px;
+
+  button {
+    background-color: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    color: var(--text-normal);
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background-color: var(--background-modifier-hover);
+    }
+  }
+}
+
+.oa-habit-grid-range {
+  font-size: var(--font-smaller, 0.75rem);
+  color: var(--text-muted);
+  white-space: nowrap;
 }

@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon';
 import type { IHabit, IHabitDayStat, HabitDashboardData } from './habit';
-import { isScheduled } from './habit';
+import { dayCompleted, isScheduled } from './habit';
 import { computeStats } from './habit-streak';
 
 function toIsoDate(date: DateTime): string {
@@ -25,7 +25,7 @@ export function computeAreaStats(
     totals[area].scheduled += 1;
     totals[area].weightTotal += habit.priority;
 
-    if (habit.entries.has(toIsoDate(date))) {
+    if (dayCompleted(habit, toIsoDate(date))) {
       totals[area].done += 1;
       totals[area].weightDone += habit.priority;
     }
@@ -60,7 +60,7 @@ export function computeDaytimeStats(
       totals[daytime].scheduled += 1;
       totals[daytime].weightTotal += habit.priority;
 
-      if (habit.entries.has(toIsoDate(date))) {
+      if (dayCompleted(habit, toIsoDate(date))) {
         totals[daytime].done += 1;
         totals[daytime].weightDone += habit.priority;
       }
@@ -97,7 +97,7 @@ export function computeHistory30d(habits: IHabit[]): IHabitDayStat[] {
       total += 1;
       weightTotal += habit.priority;
 
-      if (habit.entries.has(iso)) {
+      if (dayCompleted(habit, iso)) {
         done += 1;
         weightDone += habit.priority;
       }
@@ -132,7 +132,7 @@ export function computeDashboard(habits: IHabit[]): HabitDashboardData {
     todayTotal += 1;
     weightTotal += habit.priority;
 
-    if (habit.entries.has(isoToday)) {
+    if (dayCompleted(habit, isoToday)) {
       todayDone += 1;
       weightDone += habit.priority;
     }

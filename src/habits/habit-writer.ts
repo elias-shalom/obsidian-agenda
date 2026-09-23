@@ -17,7 +17,7 @@ export async function toggleOccurrence(
   const nextCompletions = toggle(habit.completions, habit, date, daytime);
   const nextEntries = dayCompletedDates(nextCompletions, habit).sort();
 
-  await app.fileManager.processFrontMatter(file, (frontmatter) => {
+  await app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
     frontmatter.completions = nextCompletions;
     frontmatter.entries = nextEntries;
   });

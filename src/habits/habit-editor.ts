@@ -391,7 +391,7 @@ export class HabitEditorModal extends Modal {
       throw new Error(this.i18n.t('habit_name_exists'));
     }
 
-    await this.app.fileManager.processFrontMatter(habit.file, (fm) => {
+    await this.app.fileManager.processFrontMatter(habit.file, (fm: Record<string, unknown>) => {
       fm.name = values.name;
       fm.description = values.description;
       fm.time = values.time;

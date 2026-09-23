@@ -117,6 +117,49 @@ export function computeHistory30d(habits: IHabit[]): IHabitDayStat[] {
   return result;
 }
 
+/** Historial día a día para todo un año calendario (para el heatmap global tipo GitHub) */
+export function computeYearHistory(habits: IHabit[], year: number): IHabitDayStat[] {
+  const start = DateTime.local(year, 1, 1);
+  const end = DateTime.local(year, 12, 31);
+  const result: IHabitDayStat[] = [];
+
+  let date = start;
+  while (date <= end) {
+    const iso = toIsoDate(date);
+
+    let done = 0;
+    let total = 0;
+    let weightDone = 0;
+    let weightTotal = 0;
+
+    for (const habit of habits) {
+      if (!isScheduled(habit, date)) continue;
+
+      total += 1;
+      weightTotal += habit.priority;
+
+      if (dayCompleted(habit, iso)) {
+        done += 1;
+        weightDone += habit.priority;
+      }
+    }
+
+    result.push({
+      date: iso,
+      done,
+      total,
+      pct: total === 0 ? 0 : done / total,
+      weightDone,
+      weightTotal,
+      pctWeighted: weightTotal === 0 ? 0 : weightDone / weightTotal,
+    });
+
+    date = date.plus({ days: 1 });
+  }
+
+  return result;
+}
+
 export function computeDashboard(habits: IHabit[]): HabitDashboardData {
   const today = DateTime.local();
   const isoToday = toIsoDate(today);

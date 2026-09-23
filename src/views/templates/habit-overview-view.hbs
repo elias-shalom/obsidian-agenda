@@ -35,53 +35,102 @@
     </div>
   </div>
 
-  <div class="oa-habit-overview-section">
-    <div class="oa-habit-overview-section-header">{{t "habit_by_area"}}</div>
-    <div class="oa-habit-overview-bars">
-      {{#each byArea}}
-        <div class="oa-habit-overview-bar-row">
-          <div class="oa-habit-overview-bar-label">
-            <div class="oa-habit-overview-bar-label-color" style="background-color: {{this.color}}"></div>
-            <span>{{this.label}}</span>
+  <div class="oa-habit-overview-columns">
+    <div class="oa-habit-overview-section">
+      <div class="oa-habit-overview-section-header">{{t "habit_by_area"}}</div>
+      <div class="oa-habit-overview-bars">
+        {{#each byArea}}
+          <div class="oa-habit-overview-bar-row">
+            <div class="oa-habit-overview-bar-label">
+              <div class="oa-habit-overview-bar-label-color" style="background-color: {{this.color}}"></div>
+              <span>{{this.label}}</span>
+            </div>
+            <div class="oa-habit-overview-bar-track">
+              <div class="oa-habit-overview-bar-fill" style="width: {{this.weighted}}%; background-color: {{this.color}}"></div>
+            </div>
+            <div class="oa-habit-overview-bar-value">{{this.weighted}}%</div>
           </div>
-          <div class="oa-habit-overview-bar-track">
-            <div class="oa-habit-overview-bar-fill" style="width: {{this.weighted}}%; background-color: {{this.color}}"></div>
-          </div>
-          <div class="oa-habit-overview-bar-value">{{this.weighted}}%</div>
-        </div>
-      {{/each}}
+        {{/each}}
+      </div>
     </div>
-  </div>
 
-  <div class="oa-habit-overview-section">
-    <div class="oa-habit-overview-section-header">{{t "habit_by_daytime"}}</div>
-    <div class="oa-habit-overview-bars">
-      {{#each byDaytime}}
-        <div class="oa-habit-overview-bar-row">
-          <div class="oa-habit-overview-bar-label">
-            <span>{{this.label}}</span>
+    <div class="oa-habit-overview-section">
+      <div class="oa-habit-overview-section-header">{{t "habit_by_daytime"}}</div>
+      <div class="oa-habit-overview-bars">
+        {{#each byDaytime}}
+          <div class="oa-habit-overview-bar-row">
+            <div class="oa-habit-overview-bar-label">
+              <span>{{this.label}}</span>
+            </div>
+            <div class="oa-habit-overview-bar-track">
+              <div class="oa-habit-overview-bar-fill" style="width: {{this.weighted}}%"></div>
+            </div>
+            <div class="oa-habit-overview-bar-value">{{this.weighted}}%</div>
           </div>
-          <div class="oa-habit-overview-bar-track">
-            <div class="oa-habit-overview-bar-fill" style="width: {{this.weighted}}%"></div>
-          </div>
-          <div class="oa-habit-overview-bar-value">{{this.weighted}}%</div>
-        </div>
-      {{/each}}
+        {{/each}}
+      </div>
     </div>
   </div>
 
   <div class="oa-habit-overview-section">
     <div class="oa-habit-overview-history">
       <div class="oa-habit-overview-history-title">{{t "habit_completed_today"}} (30d)</div>
-      <div class="oa-habit-overview-history-bars">
-        {{#each history30d}}
-          <div
-            class="oa-habit-overview-history-bar {{#if this.isToday}}oa-habit-overview-history-bar--today{{/if}}"
-            style="height: {{this.pctWeighted}}%"
-            data-tooltip="{{this.date}}: {{this.pctWeighted}}%">
-            <div class="oa-habit-overview-history-bar-tooltip">{{this.date}}: {{this.pctWeighted}}%</div>
+      <div class="oa-habit-overview-history-chart">
+        <div class="oa-habit-overview-history-yaxis">
+          <span>100%</span>
+          <span>50%</span>
+          <span>0%</span>
+        </div>
+        <div class="oa-habit-overview-history-body">
+          <div class="oa-habit-overview-history-bars">
+            {{#each history30d}}
+              <div
+                class="oa-habit-overview-history-bar {{#if this.isToday}}oa-habit-overview-history-bar--today{{/if}}"
+                style="height: {{this.pctWeighted}}%"
+                data-tooltip="{{this.date}}: {{this.pctWeighted}}%">
+                <div class="oa-habit-overview-history-bar-tooltip">{{this.date}}: {{this.pctWeighted}}%</div>
+              </div>
+            {{/each}}
           </div>
-        {{/each}}
+          <div class="oa-habit-overview-history-xaxis">
+            <span>{{historyStartLabel}}</span>
+            <span>{{historyMidLabel}}</span>
+            <span>{{historyEndLabel}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="oa-habit-overview-section">
+    <div class="oa-habit-heatmap">
+      <div class="oa-habit-heatmap-header">
+        <button class="oa-habit-heatmap-prev" aria-label="{{t 'previous'}}">
+          <span class="icon">◀</span>
+        </button>
+        <span class="oa-habit-heatmap-title">{{t "habit_year_heatmap_title"}} · {{heatmapYear}}</span>
+        <button class="oa-habit-heatmap-next" aria-label="{{t 'next'}}">
+          <span class="icon">▶</span>
+        </button>
+      </div>
+      <div class="oa-habit-heatmap-scroll">
+        <div class="oa-habit-heatmap-grid" style="--heatmap-columns: {{heatmapColumns}}">
+          {{#each heatmapWeekdayLabels}}
+            <span class="oa-habit-heatmap-weekday-label" style="grid-row: {{add @index 2}}">{{this}}</span>
+          {{/each}}
+          {{#each heatmapMonthLabels}}
+            <span class="oa-habit-heatmap-month-label" style="grid-column: {{this.column}}">{{this.label}}</span>
+          {{/each}}
+          {{#each heatmapCells}}
+            <div
+              class="oa-habit-heatmap-cell {{#if this.isToday}}oa-habit-heatmap-cell--today{{/if}} {{#unless this.inYear}}oa-habit-heatmap-cell--empty{{/unless}}"
+              style="grid-column: {{this.column}}; grid-row: {{this.row}}"
+              data-level="{{this.level}}"
+              {{#if this.inYear}}data-tooltip="{{this.date}}: {{this.pct}}%"{{/if}}>
+              {{#if this.inYear}}<div class="oa-habit-heatmap-cell-tooltip">{{this.date}}: {{this.pct}}%</div>{{/if}}
+            </div>
+          {{/each}}
+        </div>
       </div>
     </div>
   </div>

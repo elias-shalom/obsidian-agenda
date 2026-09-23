@@ -1,0 +1,131 @@
+{{!-- src/habits/templates/habit-editor-modal.hbs --}}
+<div class="oa-habit-form__wrapper">
+  <div class="oa-habit-form__header">
+    <h1 class="oa-habit-form__title">{{heading}}</h1>
+  </div>
+
+  <form id="oa-habit-form" class="oa-habit-form">
+    <div class="oa-form-group">
+      <label class="oa-form-label" for="oa-habit-name">{{t "habit_field_name"}}<span class="oa-form-required">*</span></label>
+      <input id="oa-habit-name" type="text" class="oa-form-input" value="{{name}}" required />
+    </div>
+
+    <div class="oa-form-group">
+      <label class="oa-form-label" for="oa-habit-description">{{t "habit_field_description"}}</label>
+      <textarea id="oa-habit-description" class="oa-form-input oa-form-textarea">{{description}}</textarea>
+    </div>
+
+    <div class="oa-habit-form__row oa-habit-form__row--time">
+      <div class="oa-form-group oa-form-group--dial">
+        <label class="oa-form-label">{{t "habit_field_time"}}</label>
+        <div
+          class="oa-time-dial"
+          id="oa-habit-time-dial"
+          tabindex="0"
+          role="slider"
+          aria-label="{{t 'habit_field_time'}}"
+          aria-valuemin="0"
+          aria-valuemax="{{timeDialMax}}"
+          aria-valuenow="{{time}}"
+        >
+          <svg viewBox="0 0 120 120" class="oa-time-dial-svg">
+            <circle class="oa-time-dial-track" cx="60" cy="60" r="52"></circle>
+            <circle class="oa-time-dial-progress" id="oa-habit-time-dial-arc" cx="60" cy="60" r="52"></circle>
+          </svg>
+          <div class="oa-time-dial-thumb" id="oa-habit-time-dial-thumb"></div>
+          <div class="oa-time-dial-center">
+            <span id="oa-habit-time-dial-value" class="oa-time-dial-value">{{time}}</span>
+            <span class="oa-time-dial-unit">{{t "habit_time_unit_minutes"}}</span>
+          </div>
+        </div>
+        <input type="hidden" id="oa-habit-time" value="{{time}}" />
+      </div>
+
+      <div class="oa-habit-form__col">
+        <div class="oa-form-group">
+          <label class="oa-form-label" for="oa-habit-priority">{{t "habit_field_priority"}}</label>
+          <div class="oa-priority-slider">
+            <input type="range" id="oa-habit-priority" class="oa-priority-slider-input" min="1" max="5" step="1" value="{{priority}}" />
+            <span id="oa-habit-priority-value" class="oa-priority-slider-value">{{priority}}</span>
+          </div>
+        </div>
+        <div class="oa-form-group">
+          <label class="oa-form-label" for="oa-habit-status">{{t "habit_field_status"}}</label>
+          <label class="oa-switch">
+            <input type="checkbox" id="oa-habit-status" {{#if statusActive}}checked{{/if}} />
+            <span class="oa-switch-track"><span class="oa-switch-thumb"></span></span>
+            <span id="oa-habit-status-label" class="oa-switch-text">{{statusLabelText}}</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="oa-habit-form__row">
+      <div class="oa-form-group">
+        <label class="oa-form-label" for="oa-habit-area">{{t "habit_field_area"}}</label>
+        <select id="oa-habit-area" class="oa-form-select">
+          {{#each areas}}
+            <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+          {{/each}}
+        </select>
+      </div>
+      <div class="oa-form-group">
+        <label class="oa-form-label" for="oa-habit-sub-area">{{t "habit_field_sub_area"}}</label>
+        <input id="oa-habit-sub-area" type="text" class="oa-form-input" value="{{subArea}}" />
+      </div>
+    </div>
+
+    <div class="oa-form-group">
+      <label class="oa-form-label" for="oa-habit-frequency">{{t "habit_field_frequency"}}</label>
+      <select id="oa-habit-frequency" class="oa-form-select">
+        {{#each frequencyOptions}}
+          <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+        {{/each}}
+      </select>
+      <div class="oa-habit-form-weekdays {{#unless isCustomFrequency}}oa-hidden{{/unless}}">
+        {{#each weekdays}}
+          <label class="oa-habit-form-weekday">
+            <input type="checkbox" id="oa-habit-freq-{{this.key}}" {{#if this.checked}}checked{{/if}} />
+            {{this.label}}
+          </label>
+        {{/each}}
+      </div>
+    </div>
+
+    <div class="oa-form-group">
+      <label class="oa-form-label">{{t "habit_field_daytime"}}</label>
+      <div class="oa-habit-form-daytimes">
+        {{#each daytimes}}
+          <label class="oa-habit-form-daytime">
+            <input type="checkbox" id="oa-habit-daytime-{{this.slug}}" {{#if this.checked}}checked{{/if}} />
+            {{this.label}}
+          </label>
+        {{/each}}
+      </div>
+    </div>
+
+    <div class="oa-habit-form__row">
+      <div class="oa-form-group">
+        <label class="oa-form-label" for="oa-habit-max-gap">{{t "habit_field_max_gap"}}</label>
+        <div class="oa-priority-slider">
+          <input type="range" id="oa-habit-max-gap" class="oa-priority-slider-input" min="0" max="14" step="1" value="{{maxGap}}" />
+          <span id="oa-habit-max-gap-value" class="oa-priority-slider-value">{{maxGap}}</span>
+        </div>
+      </div>
+      <div class="oa-form-group">
+        <label class="oa-form-label" for="oa-habit-color">{{t "habit_field_color"}}</label>
+        <input id="oa-habit-color" type="color" class="oa-form-input oa-habit-form-color" value="{{color}}" data-has-color="{{#if color}}true{{else}}false{{/if}}" />
+      </div>
+    </div>
+
+    <div id="oa-habit-form-error" class="oa-habit-form-error"></div>
+
+    <div class="oa-habit-form__actions">
+      <button type="submit" class="oa-btn oa-btn--primary">{{t "save"}}</button>
+      <button type="button" id="oa-habit-cancel" class="oa-btn oa-btn--secondary">{{t "cancel"}}</button>
+      {{#if isEdit}}
+        <button type="button" id="oa-habit-delete" class="oa-btn oa-btn--danger">{{t "delete"}}</button>
+      {{/if}}
+    </div>
+  </form>
+</div>

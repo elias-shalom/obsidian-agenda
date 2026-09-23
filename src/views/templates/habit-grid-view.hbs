@@ -1,0 +1,84 @@
+<div class="oa-habit-toolbar">
+  <div class="oa-habit-current">
+    <h2>{{t viewLabelKey}}</h2>
+    <span class="oa-habit-grid-range">{{windowLabel}}</span>
+    <button id="oa-habit-new-btn" type="button" class="oa-habit-new-btn" aria-label="{{t 'habit_new_habit'}}" title="{{t 'habit_new_habit'}}">+</button>
+  </div>
+  <div class="oa-habit-nav-container">
+    <div class="oa-habit-view-selector">
+      <select id="oa-habit-grid-sort" class="oa-habit-view-dropdown">
+        <option value="alphabetical" {{#eq sortBy "alphabetical"}}selected{{/eq}}>{{t "habit_sort_alphabetical"}}</option>
+        <option value="area" {{#eq sortBy "area"}}selected{{/eq}}>{{t "habit_sort_area"}}</option>
+        <option value="daytime" {{#eq sortBy "daytime"}}selected{{/eq}}>{{t "habit_sort_daytime"}}</option>
+        <option value="priority" {{#eq sortBy "priority"}}selected{{/eq}}>{{t "habit_sort_priority"}}</option>
+        <option value="streak" {{#eq sortBy "streak"}}selected{{/eq}}>{{t "habit_sort_streak"}}</option>
+        <option value="pct" {{#eq sortBy "pct"}}selected{{/eq}}>{{t "habit_sort_pct"}}</option>
+      </select>
+    </div>
+    <div class="oa-habit-grid-nav">
+      <button class="oa-habit-grid-prev" aria-label="{{t 'previous'}}">
+        <span class="icon">◀</span>
+      </button>
+      <button class="oa-habit-grid-next" aria-label="{{t 'next'}}">
+        <span class="icon">▶</span>
+      </button>
+    </div>
+    <div class="oa-habit-view-selector">
+      <select id="oa-habit-view-dropdown" class="oa-habit-view-dropdown">        
+        {{#if settings.showHabitDashboardTab}}<option value="dashboard" {{#eq viewSubtype "dashboard"}}selected{{/eq}}>{{t "habit_dashboard_tab"}}</option>{{/if}}
+        {{#if settings.showHabitRoutineTab}}<option value="routine" {{#eq viewSubtype "routine"}}selected{{/eq}}>{{t "habit_routine_tab"}}</option>{{/if}}
+        {{#if settings.showHabitWeeklyTab}}<option value="weekly" {{#eq viewSubtype "weekly"}}selected{{/eq}}>{{t "habit_weekly_tab"}}</option>{{/if}}
+        {{#if settings.showHabitGridTab}}<option value="grid" {{#eq viewSubtype "grid"}}selected{{/eq}}>{{t "habit_grid_tab"}}</option>{{/if}}
+        {{#if settings.showHabitListTab}}<option value="table" {{#eq viewSubtype "table"}}selected{{/eq}}>{{t "habit_list_tab"}}</option>{{/if}}
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="oa-habit-grid-scroll">
+  <div class="oa-habit-grid" style="--date-columns: {{columns.length}}">
+    <div class="oa-habit-grid-header">
+      <div class="oa-habit-grid-col-header">{{t "habit_grid_title"}}</div>
+      {{#each columns}}
+        <div class="oa-habit-grid-col-header {{#if this.actual}}oa-habit-grid-col-header--today{{/if}}" title="{{this.label}}">
+          <span class="oa-habit-grid-col-header-day">{{this.day}}</span>
+        </div>
+      {{/each}}
+      <div class="oa-habit-grid-col-header">{{t "habit_streak"}}</div>
+      <div class="oa-habit-grid-col-header">{{t "habit_pct_weighted"}}</div>
+    </div>
+    {{#each habits}}
+      <div class="oa-habit-grid-row{{#if this.alt}} oa-habit-grid-row--alt{{/if}}"{{#if this.color}} style="--habit-color: {{this.color}}"{{/if}}>
+        <div class="oa-habit-grid-name">
+          {{#if this.color}}
+            <div class="habit-color-indicator" style="background-color: {{this.color}}"></div>
+          {{/if}}
+          <a href="#" class="habit-title oa-habit-grid-name-link" data-habit-id="{{this.id}}" title="{{this.title}}">{{this.title}}</a>
+        </div>
+        {{#each this.cells}}
+          <button
+            class="oa-habit-grid-cell
+              {{~#if this.ticked}} oa-habit-grid-cell--ticked{{/if}}
+              {{~#if this.gap}} oa-habit-grid-cell--gap{{/if}}
+              {{~#if this.deadline}} oa-habit-grid-cell--deadline{{/if}}
+              {{~#unless this.scheduled}} oa-habit-grid-cell--unscheduled{{/unless}}
+              {{~#if this.actual}} oa-habit-grid-cell--today{{/if}}
+              {{~#if this.runSingle}} oa-habit-grid-cell--run-single{{/if}}
+              {{~#if this.runStart}} oa-habit-grid-cell--run-start{{/if}}
+              {{~#if this.runMiddle}} oa-habit-grid-cell--run-middle{{/if}}
+              {{~#if this.runEnd}} oa-habit-grid-cell--run-end{{/if~}}"
+            data-date="{{this.date}}"
+            data-habit-id="{{../id}}"
+            aria-label="{{../title}} {{this.date}}"
+            {{#if this.deadline}}title="{{t 'habit_streak_deadline_tooltip'}}"{{/if}}
+            {{#unless this.scheduled}}disabled{{/unless}}>{{~#if this.runEnd}}{{#if (gt this.streakCount 1)}}<span class="oa-habit-grid-cell-count">{{this.streakCount}}</span>{{/if}}{{/if~}}</button>
+        {{/each}}
+        <div class="oa-habit-grid-streak">{{#if this.streak}}🔥 {{this.streak}}{{else}}–{{/if}}</div>
+        <div class="oa-habit-grid-pct">{{this.pct}}%</div>
+      </div>
+    {{/each}}
+  </div>
+</div>
+{{#unless habits.length}}
+  <div class="oa-habit-routine-empty">{{emptyMessage}}</div>
+{{/unless}}

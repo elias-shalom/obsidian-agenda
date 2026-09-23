@@ -94,7 +94,18 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [x] Nuevo hero widget en el dashboard
 - [x] Mejoras generales de UI/UX
 
-## 🎯 Próximas Características (v1.1.0)
+## 🎯 Características (v1.1.0)
+
+### Task Management Views
+- [x] Habit tracker (módulo completo: Grid, Rutina, Dashboard/Overview, Semanal y Lista/Tabla, más el Habit Creator para crear/editar hábitos — ver [[habit-tracker-agenda/README]])
+- [x] Rutina diaria (vista Rutina, con orden y agrupado configurables por daytime/área)
+- [x] Visualización de rachas de hábitos (píldoras/racha en Grid y Semanal, heatmap anual en el Dashboard de hábitos)
+
+## 🎯 Próximas Características (v1.1.1)
+
+[Google Calendar](https://community.obsidian.md/plugins/google-calendar)
+[Day Planner](https://community.obsidian.md/plugins/obsidian-day-planner)
+[Timelineal](https://timelineal.com/)
 
 ### Core Tasks
 - [ ] Compatibilidad con la programación de tareas según la hora del día [vista por día (hora y día completo)]
@@ -111,10 +122,6 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 ### Calendar Enhancements
 - [ ] Calendario Drag and drop de tareas cambiando las fechas
 - [ ] Agregar date picker navegable por niveles (año → mes → día), abierto desde el encabezado del calendario, que al confirmar/seleccionar lleve la vista a la fecha elegida de forma inmediata.
-
-### Task Management Views
-- [ ] Habit tracker
-- [ ] Rutina diaria
 
 ### 🐛 Correcciones Pendientes
 - [ ] Ancho de las filas de la tabla en la vista tablas
@@ -153,7 +160,6 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [ ] Analíticas de progreso y métricas
 - [ ] Retrospectivas automáticas
 - [ ] Seguimiento de objetivos y OKRs
-- [ ] Visualización de rachas de hábitos
 
 ## 🔗 Integraciones y Características Avanzadas (v3.x)
 

@@ -78,5 +78,126 @@ export class SettingTab extends PluginSettingTab {
             }
           });
         }));
+
+    new Setting(containerEl).setName(this.i18n.t("habit_settings")).setHeading();
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("habit_folder_path"))
+      .setDesc(this.i18n.t("habit_folder_path_desc"))
+      .addText(text => text
+        .setPlaceholder("daily plan/daily routine/habit")
+        .setValue(this.plugin.settings.habitFolderPath)
+        .onChange(async (value) => {
+          this.plugin.settings.habitFolderPath = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("habit_days_to_show"))
+      .addSlider(slider => slider
+        .setLimits(7, 90, 1)
+        .setValue(this.plugin.settings.habitDaysToShow)
+        .setDynamicTooltip()
+        .onChange(async (value) => {
+          this.plugin.settings.habitDaysToShow = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("habit_show_streaks"))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.habitShowStreaks)
+        .onChange(async (value) => {
+          this.plugin.settings.habitShowStreaks = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("habit_max_gap"))
+      .addSlider(slider => slider
+        .setLimits(0, 30, 1)
+        .setValue(this.plugin.settings.habitDefaultMaxGap)
+        .setDynamicTooltip()
+        .onChange(async (value) => {
+          this.plugin.settings.habitDefaultMaxGap = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("habit_default_priority"))
+      .addSlider(slider => slider
+        .setLimits(1, 5, 1)
+        .setValue(this.plugin.settings.habitDefaultPriority)
+        .setDynamicTooltip()
+        .onChange(async (value) => {
+          this.plugin.settings.habitDefaultPriority = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("habit_default_color"))
+      .setDesc(this.i18n.t("habit_default_color_desc"))
+      .addText(text => text
+        .setPlaceholder(this.i18n.t("habit_default_color_placeholder"))
+        .setValue(this.plugin.settings.habitDefaultColor)
+        .onChange(async (value) => {
+          this.plugin.settings.habitDefaultColor = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl).setName(this.i18n.t("habit_tab_visibility")).setHeading();
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("show_habit_grid_tab"))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.showHabitGridTab)
+        .onChange(async (value) => {
+          this.plugin.settings.showHabitGridTab = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("show_habit_dashboard_tab"))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.showHabitDashboardTab)
+        .onChange(async (value) => {
+          this.plugin.settings.showHabitDashboardTab = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("show_habit_routine_tab"))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.showHabitRoutineTab)
+        .onChange(async (value) => {
+          this.plugin.settings.showHabitRoutineTab = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("show_habit_weekly_tab"))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.showHabitWeeklyTab)
+        .onChange(async (value) => {
+          this.plugin.settings.showHabitWeeklyTab = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("show_habit_list_tab"))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.showHabitListTab)
+        .onChange(async (value) => {
+          this.plugin.settings.showHabitListTab = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .addButton(btn => btn
+        .setButtonText(this.i18n.t("habit_refresh"))
+        .setCta()
+        .onClick(() => {
+          document.dispatchEvent(new CustomEvent('obsidian-agenda:habits-refresh'));
+        }));
   }
 }

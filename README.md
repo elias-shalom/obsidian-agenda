@@ -2,7 +2,7 @@
 
 > A comprehensive task management and calendar plugin for Obsidian
 
-[![Release](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
+[![Release](https://img.shields.io/badge/version-1.1.1-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Obsidian](https://img.shields.io/badge/Obsidian-0.13.0+-purple.svg)](https://obsidian.md)
 
@@ -221,6 +221,11 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 ---
 
 ## 📋 Changelog
+
+### Version 1.1.1 🔧
+- Settings tab now implements the Obsidian 1.13+ declarative settings API (`getSettingDefinitions()`), so plugin settings are findable via the global settings search on newer Obsidian versions; the legacy `display()` implementation is kept for older versions
+- Distinct workspace tab icons per main view (Overview, List, Table, Calendar, Habits) instead of a shared icon
+- Various type-safety and lint cleanups across the Habit Tracker module (no unnecessary type assertions, no unsafe `any` access)
 
 ### Version 1.1.0 🌱
 - New **Habit Tracker** module with 5 dedicated views: Grid, Daily Routine, Dashboard, Weekly and Table

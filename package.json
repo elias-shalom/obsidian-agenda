@@ -1,6 +1,6 @@
 {
 	"name": "agenda-tasks",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "Agenda provide intuitive task management interfaces and calendar views. Seamlessly integrate with your existing notes while organizing tasks across multiple views.",
 	"main": "main.js",
 	"scripts": {
@@ -27,7 +27,7 @@
 		"globals": "^17.0.0",
 		"handlebars-loader": "^1.7.3",
 		"jiti": "^2.6.1",
-		"obsidian": "latest",
+		"obsidian": "^1.13.1",
 		"tslib": "2.8.1",
 		"typescript": "5.8.3",
 		"typescript-eslint": "^8.53.0"

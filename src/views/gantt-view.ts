@@ -24,7 +24,7 @@ export class GanttView extends BaseView {
   }
 
   getIcon(): string {
-    return 'calendar-check';
+    return 'calendar-days';
   }
 
   async onOpen(): Promise<void> {

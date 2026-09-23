@@ -31,7 +31,7 @@ export class OverviewView extends BaseView {
   }
 
   getIcon(): string {
-    return 'calendar-check';
+    return 'layout-dashboard';
   }
 
   async onOpen(): Promise<void> {

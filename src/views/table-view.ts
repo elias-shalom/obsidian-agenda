@@ -26,7 +26,7 @@ export class TableView extends BaseView {
   }
 
   getIcon(): string {
-    return 'calendar-check';
+    return 'table';
   }
 
   async onOpen(): Promise<void> {

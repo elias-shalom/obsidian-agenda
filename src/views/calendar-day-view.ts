@@ -26,10 +26,6 @@ export class CalendarDayView extends CalendarView {
     return this.i18n.t("day_view_title");
   }
 
-  getIcon(): string {
-    return 'calendar-check';
-  }
-
   async onOpen(): Promise<void> {
     const savedDate = this.app.loadLocalStorage('oa_navigate_to_date') as string | null;
     if (savedDate) {

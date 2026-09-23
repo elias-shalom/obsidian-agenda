@@ -100,11 +100,11 @@ tags:
 
 ## Fase 7 — Cierre
 
-- [ ] i18n audit formal (sin keys sueltas). En la práctica cada feature nueva añadió sus claves a los 6 locales de forma consistente, incluyendo etiquetas de áreas conocidas, tokens de frecuencia, prioridad, editor, daytime, y las nuevas opciones de orden/agrupado y el heatmap anual — pero no se ha hecho una auditoría formal de claves huérfanas.
-- [ ] Migración de notas de hábito al nuevo esquema — **cambio de enfoque**: ya no aplica migrar `area` a un enum cerrado (es texto libre); sigue pendiente decidir si ofrecer una migración/organización asistida de notas legado.
-- [ ] `docs/todo.md` actualizado (desmarcar tareas de v1.1.0 según estado).
-- [ ] Changelog/MANIFEST bump si corresponde.
-- [ ] Prueba de escritura en vault real (hacer toggle en un hábito de prueba y revertir) — todo lo verificado en esta sesión fue vía `npm run build`, no en un vault real.
+- [x] i18n audit formal: los 6 locales (`en/es/de/fr/it/pt`) tienen exactamente el mismo conjunto de 290 claves (sin huérfanas ni faltantes entre sí). De paso se detectaron y corrigieron 3 claves usadas en código pero ausentes en **todos** los locales (`no_invalid_tasks`, `no_old_tasks`, `no_project_tasks`, en `overview-view.hbs` — bug pre-existente no relacionado con Habit Tracker, corregido igualmente). Quedan 54 claves definidas pero no referenciadas en código (no investigado a fondo, prioridad baja).
+- [ ] Migración de notas de hábito al nuevo esquema — **ya no aplica** migrar `area` a un enum cerrado (es texto libre); sigue pendiente decidir si ofrecer una migración/organización asistida de notas legado.
+- [x] `docs/todo.md` actualizado: "Habit tracker" y "Rutina diaria" marcados como hechos (v1.1.0); "Visualización de rachas de hábitos" marcado como hecho (v2.x-v3.x).
+- [x] Changelog/MANIFEST bump: versión `1.1.0` en `package.json`/`manifest.json`/`versions.json` (mismo `minAppVersion: 1.8.7`). De paso se corrigió un bug en `version-bump.mjs` (rutas relativas `../manifest.json`/`../versions.json` apuntaban fuera del repo porque el script corre con cwd = raíz del paquete, no `src/`).
+- [ ] Prueba de escritura en vault real (hacer toggle en un hábito de prueba y revertir) — **pendiente, requiere verificación manual**: no hay un `test-vault` en este workspace ni forma de automatizar la escritura real sobre un vault de Obsidian desde aquí; todo lo verificado en esta sesión fue vía `npm run build`.
 
 ## Riesgos y mitigaciones
 

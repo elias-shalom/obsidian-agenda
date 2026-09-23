@@ -2,7 +2,7 @@
 
 > A comprehensive task management and calendar plugin for Obsidian
 
-[![Release](https://img.shields.io/badge/version-1.0.5-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
+[![Release](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Obsidian](https://img.shields.io/badge/Obsidian-0.13.0+-purple.svg)](https://obsidian.md)
 
@@ -70,10 +70,19 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 - Quick task creation at specific times
 - Syncs with native Obsidian daily notes
 
+#### Habit Tracker (new in 1.1.0)
+- **Habit Grid** - GitHub-style day-by-day grid with a merged streak "pill", per-occurrence rows for multi-daytime habits, and a configurable sort order
+- **Daily Routine** - Today's habits grouped by daytime or by area (toggle), with weighted progress bars and quick actions to open the note or edit the habit
+- **Habit Dashboard** - Today's raw/weighted completion, current and best streaks, side-by-side breakdowns by area and daytime, a 30-day history chart, and a GitHub-style yearly heatmap you can navigate by year (this is now the default habit view)
+- **Weekly view** - 7-day matrix sharing the same visual language as the Grid (pills, circles, sorting)
+- **Habit Table/List** - Sortable catalog of all habits with area, sub-area, frequency, priority, daytime, time and streak columns
+- **Habit Creator** - A modal to create and edit habits: a circular time dial, priority/max-gap sliders, an active/inactive switch, and an area combobox suggested from your vault's root folders (free-form, not a fixed list)
+
 ### 🔧 General Capabilities
 - ✅ Parse and track tasks from your entire vault
 - ✅ Compatible with [Obsidian Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) syntax
 - ✅ Real-time task updates
+- ✅ Built-in Habit Tracker module (Grid, Routine, Dashboard, Weekly and Table views, plus a habit creator/editor)
 - ✅ Customizable interface with themes support
 - ✅ Keyboard shortcuts for common actions
 - ✅ 6+ language support (English, Spanish, German, Portuguese, French, Italian)
@@ -89,6 +98,15 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 | **Month Calendar** | ![Month View](screenshots/MonthView.png) |
 | **Week Calendar** | ![Week View](screenshots/WeekView.png) |
 | **Day View** | ![Day View](screenshots/DayView.png) |
+
+---
+
+| View | Screenshot |
+|------|-----------|
+| **Habit Dashboard** | ![Habit Dashboard](screenshots/HabitDashboard.png) |
+| **Daily Routine** | ![Daily Routine](screenshots/HabitRoutine.png) |
+| **Habit Grid** | ![Habit Grid](screenshots/HabitGrid.png) |
+| **Habit List** | ![Habit List](screenshots/HabitList.png) |
 
 ---
 
@@ -191,11 +209,27 @@ The plugin recognizes and properly handles all standard Obsidian Tasks metadata:
 - **Widget Configuration** - Personalize dashboard widgets
 - **Display Preferences** - Adjust how tasks are displayed
 
+### Habit Tracker Settings
+- **Habit Folder Path** - Vault folder scanned (recursively) for habit notes
+- **Days to Show** - Number of columns/days rendered in the Grid and history charts
+- **Show Streaks** - Toggle streak indicators and counts
+- **Default Max Gap** - Default tolerance (in days) before a streak breaks
+- **Tab Visibility** - Show/hide each habit view (Grid, Routine, Dashboard, Weekly, Table) independently
+
 Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks**
 
 ---
 
 ## 📋 Changelog
+
+### Version 1.1.0 🌱
+- New **Habit Tracker** module with 5 dedicated views: Grid, Daily Routine, Dashboard, Weekly and Table
+- **Habit Creator** modal to create/edit habits (circular time dial, priority/max-gap sliders, status switch, color picker)
+- Habit **area** is a free-form field with vault-folder suggestions (no fixed category list)
+- Configurable sort order (alphabetical, area, daytime, priority, streak, %) across Grid, Weekly and Routine
+- Routine view can group habits by daytime or by area
+- Dashboard now shows side-by-side area/daytime breakdowns, a 30-day history chart with axis legends, and a new GitHub-style yearly heatmap; it's the new default habit view
+- Streaks rendered as merged "pill" runs on the Grid and Weekly views
 
 ### Version 1.0.6
 - Fix calentar weekday

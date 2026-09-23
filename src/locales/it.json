@@ -179,6 +179,8 @@
   "title_priority": "Priorità",
   "new_task": "Nuova attività",
   "edit_task": "Modifica attività",
+  "edit_file": "Modifica file",
+  "open_file": "Apri file",
   "description_required": "La descrizione è obbligatoria",
   "task_created": "Attività creata",
   "task_description_placeholder": "Scrivi una descrizione per la tua attività (es: 'Fare la spesa')",

@@ -179,6 +179,8 @@
   },
   "new_task": "New task",
   "edit_task": "Edit task",
+  "edit_file": "Edit file",
+  "open_file": "Open file",
   "description_required": "Description is required",
   "task_created": "Task created",
   "task_description_placeholder": "Write a description for your task (e.g., 'Buy groceries')",

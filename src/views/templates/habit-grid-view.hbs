@@ -6,15 +6,6 @@
   </div>
   <div class="oa-habit-nav-container">
     <div class="oa-habit-view-selector">
-      <select id="oa-habit-view-dropdown" class="oa-habit-view-dropdown">
-        {{#if settings.showHabitGridTab}}<option value="grid" {{#eq viewSubtype "grid"}}selected{{/eq}}>{{t "habit_grid_tab"}}</option>{{/if}}
-        {{#if settings.showHabitDashboardTab}}<option value="dashboard" {{#eq viewSubtype "dashboard"}}selected{{/eq}}>{{t "habit_dashboard_tab"}}</option>{{/if}}
-        {{#if settings.showHabitRoutineTab}}<option value="routine" {{#eq viewSubtype "routine"}}selected{{/eq}}>{{t "habit_routine_tab"}}</option>{{/if}}
-        {{#if settings.showHabitWeeklyTab}}<option value="weekly" {{#eq viewSubtype "weekly"}}selected{{/eq}}>{{t "habit_weekly_tab"}}</option>{{/if}}
-        {{#if settings.showHabitListTab}}<option value="table" {{#eq viewSubtype "table"}}selected{{/eq}}>{{t "habit_list_tab"}}</option>{{/if}}
-      </select>
-    </div>
-    <div class="oa-habit-view-selector">
       <select id="oa-habit-grid-sort" class="oa-habit-view-dropdown">
         <option value="alphabetical" {{#eq sortBy "alphabetical"}}selected{{/eq}}>{{t "habit_sort_alphabetical"}}</option>
         <option value="area" {{#eq sortBy "area"}}selected{{/eq}}>{{t "habit_sort_area"}}</option>
@@ -31,6 +22,15 @@
       <button class="oa-habit-grid-next" aria-label="{{t 'next'}}">
         <span class="icon">▶</span>
       </button>
+    </div>
+    <div class="oa-habit-view-selector">
+      <select id="oa-habit-view-dropdown" class="oa-habit-view-dropdown">        
+        {{#if settings.showHabitDashboardTab}}<option value="dashboard" {{#eq viewSubtype "dashboard"}}selected{{/eq}}>{{t "habit_dashboard_tab"}}</option>{{/if}}
+        {{#if settings.showHabitRoutineTab}}<option value="routine" {{#eq viewSubtype "routine"}}selected{{/eq}}>{{t "habit_routine_tab"}}</option>{{/if}}
+        {{#if settings.showHabitWeeklyTab}}<option value="weekly" {{#eq viewSubtype "weekly"}}selected{{/eq}}>{{t "habit_weekly_tab"}}</option>{{/if}}
+        {{#if settings.showHabitGridTab}}<option value="grid" {{#eq viewSubtype "grid"}}selected{{/eq}}>{{t "habit_grid_tab"}}</option>{{/if}}
+        {{#if settings.showHabitListTab}}<option value="table" {{#eq viewSubtype "table"}}selected{{/eq}}>{{t "habit_list_tab"}}</option>{{/if}}
+      </select>
     </div>
   </div>
 </div>
@@ -53,7 +53,7 @@
           {{#if this.color}}
             <div class="habit-color-indicator" style="background-color: {{this.color}}"></div>
           {{/if}}
-          <span class="habit-title" title="{{this.title}}">{{this.title}}</span>
+          <a href="#" class="habit-title oa-habit-grid-name-link" data-habit-id="{{this.id}}" title="{{this.title}}">{{this.title}}</a>
         </div>
         {{#each this.cells}}
           <button

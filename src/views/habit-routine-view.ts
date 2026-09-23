@@ -268,6 +268,14 @@ export class HabitRoutineView extends HabitView {
         if (habit) this.openTaskFile(habit.file.path);
       });
     });
+
+    container.querySelectorAll<HTMLButtonElement>('[data-action="edit-habit"]').forEach(button => {
+      button.addEventListener('click', () => {
+        const rowId = button.getAttribute('data-habit-id');
+        const habit = this.findHabitByRowId(rowId);
+        if (habit) this.habitManager.openEditor(habit);
+      });
+    });
   }
 
   private findHabitByRowId(rowId: string | null) {

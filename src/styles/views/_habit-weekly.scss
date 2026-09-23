@@ -55,6 +55,23 @@ $habit-weekly-pill-cap-inset: 3px;
   font-weight: 500;
 }
 
+.oa-habit-weekly-name-link {
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--interactive-accent);
+    outline-offset: 1px;
+  }
+}
+
 .oa-habit-weekly-name .habit-color-indicator {
   width: 10px;
   height: 10px;

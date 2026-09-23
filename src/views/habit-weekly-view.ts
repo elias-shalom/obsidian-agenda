@@ -185,6 +185,22 @@ export class HabitWeeklyView extends HabitView {
         this.toggleHabitEntry(rowId, date).catch(console.error);
       });
     });
+
+    container.querySelectorAll<HTMLAnchorElement>('.oa-habit-weekly-name-link').forEach(link => {
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        const rowId = link.getAttribute('data-habit-id');
+        const habit = this.findHabitByRowId(rowId);
+        if (habit) this.habitManager.openEditor(habit);
+      });
+    });
+  }
+
+  private findHabitByRowId(rowId: string | null) {
+    if (!rowId) return null;
+    const separatorIndex = rowId.lastIndexOf(ROW_ID_SEPARATOR);
+    const habitPath = separatorIndex === -1 ? rowId : rowId.slice(0, separatorIndex);
+    return this.habits.find(item => item.file.path === habitPath) ?? null;
   }
 
   private async toggleHabitEntry(rowId: string, date: string): Promise<void> {

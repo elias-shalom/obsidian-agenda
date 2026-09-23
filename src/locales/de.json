@@ -179,6 +179,8 @@
   "title_priority": "Priorität",
   "new_task": "Neue Aufgabe",
   "edit_task": "Aufgabe bearbeiten",
+  "edit_file": "Datei bearbeiten",
+  "open_file": "Datei öffnen",
   "description_required": "Beschreibung ist erforderlich",
   "task_created": "Aufgabe erstellt",
   "task_description_placeholder": "Beschreibung für die Aufgabe eingeben (z.B. 'Lebensmittel kaufen')",

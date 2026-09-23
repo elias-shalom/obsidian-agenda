@@ -179,6 +179,8 @@
   "title_priority": "Prioridad",
   "new_task": "Nueva tarea",
   "edit_task": "Editar tarea",
+  "edit_file": "Editar archivo",
+  "open_file": "Abrir archivo",
   "description_required": "La descripción es obligatoria",
   "task_created": "Tarea creada",
   "task_description_placeholder": "Escribe una descripción para tu tarea (ej: 'Comprar víveres')",

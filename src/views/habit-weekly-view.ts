@@ -165,7 +165,7 @@ export class HabitWeeklyView extends HabitView {
       this.refreshHabitView().catch(console.error);
     });
 
-    const sortSelect = container.querySelector('#oa-habit-weekly-sort') as HTMLSelectElement | null;
+    const sortSelect = container.querySelector<HTMLSelectElement>('#oa-habit-weekly-sort');
     sortSelect?.addEventListener('change', () => {
       const value = sortSelect.value as WeeklySortMode;
       if ((SORT_MODES as readonly string[]).includes(value)) {

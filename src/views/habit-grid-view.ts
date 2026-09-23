@@ -171,7 +171,7 @@ export class HabitGridView extends HabitView {
       this.refreshHabitView().catch(console.error);
     });
 
-    const sortSelect = container.querySelector('#oa-habit-grid-sort') as HTMLSelectElement | null;
+    const sortSelect = container.querySelector<HTMLSelectElement>('#oa-habit-grid-sort');
     sortSelect?.addEventListener('change', () => {
       const value = sortSelect.value as GridSortMode;
       if ((SORT_MODES as readonly string[]).includes(value)) {

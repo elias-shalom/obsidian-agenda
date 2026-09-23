@@ -314,7 +314,7 @@ export class HabitEditorModal extends Modal {
     const maxGap = Math.max(0, Number(get<HTMLInputElement>('oa-habit-max-gap')?.value ?? 0) || 0);
     const color = get<HTMLInputElement>('oa-habit-color')?.value.trim() ?? '';
     const status = get<HTMLInputElement>('oa-habit-status')?.checked ? 'active' : 'inactive';
-    const area = (get<HTMLSelectElement>('oa-habit-area')?.value ?? 'temporal') as HabitArea;
+    const area = get<HTMLSelectElement>('oa-habit-area')?.value ?? 'temporal';
     const subArea = get<HTMLInputElement>('oa-habit-sub-area')?.value.trim() ?? '';
     const frequencyMode = get<HTMLSelectElement>('oa-habit-frequency')?.value ?? 'everyday';
 

@@ -135,7 +135,7 @@ export abstract class BaseView extends ItemView {
       if (dateInput && typeof dateInput === 'object' && 'toJSDate' in dateInput) {
         date = dateInput.toJSDate();
       } else {
-        date = new Date(dateInput as string | number | Date);
+        date = new Date(dateInput);
       }
       return DateTime.fromJSDate(date).startOf('day').toJSDate();
     } catch (error) {

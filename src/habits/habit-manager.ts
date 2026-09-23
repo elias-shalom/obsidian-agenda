@@ -120,7 +120,7 @@ export class HabitManager {
 
     for (const file of this.collectHabitFiles(folder)) {
       const fm = this.app.metadataCache.getFileCache(file)?.frontmatter ?? {};
-      const habit = parseHabit(file, fm as Record<string, unknown>, this.settingsGetter());
+      const habit = parseHabit(file, fm, this.settingsGetter());
       if (habit) {
         habits.push(habit);
       }
@@ -139,7 +139,7 @@ export class HabitManager {
     if (cached) return cached;
 
     const fm = this.app.metadataCache.getFileCache(file)?.frontmatter ?? {};
-    const habit = parseHabit(file, fm as Record<string, unknown>, this.settingsGetter());
+    const habit = parseHabit(file, fm, this.settingsGetter());
     if (!habit) return null;
 
     this.habitCache.set(file.path, habit);

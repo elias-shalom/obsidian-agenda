@@ -24,10 +24,10 @@ export class ViewManager {
     this.plugin.registerView(CALENDAR_YEAR_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarYearView(leaf, this.plugin, this.i18n, this.taskManager));
     this.plugin.registerView(CALENDAR_MONTH_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarMonthView(leaf, this.plugin, this.i18n, this.taskManager));
     this.plugin.registerView(CALENDAR_WEEK_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarWeekView(leaf, this.plugin, this.i18n, this.taskManager));
-    this.plugin.registerView(CALENDAR_WORK_WEEK_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarWorkWeekView(leaf, this.plugin as AgendaPlugin, this.i18n, this.taskManager));
-    this.plugin.registerView(CALENDAR_DAY_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarDayView(leaf, this.plugin as AgendaPlugin, this.i18n, this.taskManager));
+    this.plugin.registerView(CALENDAR_WORK_WEEK_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarWorkWeekView(leaf, this.plugin, this.i18n, this.taskManager));
+    this.plugin.registerView(CALENDAR_DAY_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CalendarDayView(leaf, this.plugin, this.i18n, this.taskManager));
     this.plugin.registerView(LIST_VIEW_TYPE, (leaf: WorkspaceLeaf) => new ListView(leaf, this.plugin as AgendaPlugin, this.i18n, this.taskManager));
-    this.plugin.registerView(TABLE_VIEW_TYPE, (leaf: WorkspaceLeaf) => new TableView(leaf, this.plugin as AgendaPlugin, this.i18n, this.taskManager));
+    this.plugin.registerView(TABLE_VIEW_TYPE, (leaf: WorkspaceLeaf) => new TableView(leaf, this.plugin, this.i18n, this.taskManager));
 
     // Habit views
     this.plugin.registerView(HABIT_GRID_VIEW_TYPE, (leaf: WorkspaceLeaf) => new HabitGridView(leaf, this.plugin as AgendaPlugin, this.i18n, this.taskManager, this.habitManager));

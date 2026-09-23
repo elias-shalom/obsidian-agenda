@@ -23,10 +23,6 @@ export class CalendarWorkWeekView extends CalendarView {
     return this.i18n.t("week_view_title");
   }
 
-  getIcon(): string {
-    return 'calendar-check';
-  }
-
  /**
    * Genera datos para la vista mensual del calendario
    */

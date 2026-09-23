@@ -162,7 +162,7 @@ export class HabitRoutineView extends HabitView {
       nonEmptySections[key] = section;
     }
 
-    const areaStats = (Object.keys(areaTotals) as HabitArea[]).map(area => {
+    const areaStats = Object.keys(areaTotals).map(area => {
       const totals = areaTotals[area]!;
       return {
         area,
@@ -231,7 +231,7 @@ export class HabitRoutineView extends HabitView {
       this.refreshHabitView().catch(console.error);
     });
 
-    const sortSelect = container.querySelector('#oa-habit-routine-sort') as HTMLSelectElement | null;
+    const sortSelect = container.querySelector<HTMLSelectElement>('#oa-habit-routine-sort');
     sortSelect?.addEventListener('change', () => {
       const value = sortSelect.value as RoutineSortMode;
       if ((SORT_MODES as readonly string[]).includes(value)) {
@@ -240,7 +240,7 @@ export class HabitRoutineView extends HabitView {
       }
     });
 
-    const groupSelect = container.querySelector('#oa-habit-routine-group') as HTMLSelectElement | null;
+    const groupSelect = container.querySelector<HTMLSelectElement>('#oa-habit-routine-group');
     groupSelect?.addEventListener('change', () => {
       const value = groupSelect.value as RoutineGroupMode;
       if ((GROUP_MODES as readonly string[]).includes(value)) {

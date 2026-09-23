@@ -28,7 +28,7 @@ export abstract class CalendarView extends BaseView {
   }
 
   getIcon(): string {
-    return 'calendar-check';
+    return 'calendar-days';
   }
 
   async onOpen(): Promise<void> {

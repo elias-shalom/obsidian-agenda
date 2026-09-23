@@ -22,10 +22,6 @@ export class CalendarYearView extends CalendarView {
     return this.i18n.t("year_view_title");
   }
 
-  getIcon(): string {
-    return 'calendar-check';
-  }
-
   protected generateViewData(): YearViewData {
     const year = this.currentDate.year;
     const today = DateTime.now();

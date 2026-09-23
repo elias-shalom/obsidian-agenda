@@ -212,7 +212,7 @@ export class HabitEditorModal extends Modal {
       const max = Number(slider.max) || 100;
       const value = Number(slider.value) || min;
       const percent = ((value - min) / (max - min)) * 100;
-      slider.style.setProperty('--oa-priority-percent', `${percent}%`);
+      slider.setCssProps({ '--oa-priority-percent': `${percent}%` });
       if (valueEl) valueEl.textContent = String(value);
     };
     slider.addEventListener('input', update);
@@ -222,8 +222,7 @@ export class HabitEditorModal extends Modal {
   /** Resuelve el color de acento activo del tema a un hex válido para <input type="color"> */
   private resolveAccentColorHex(): string {
     const probe = this.contentEl.ownerDocument.createElement('span');
-    probe.style.color = 'var(--interactive-accent)';
-    probe.style.display = 'none';
+    probe.setCssStyles({ color: 'var(--interactive-accent)', display: 'none' });
     this.contentEl.ownerDocument.body.appendChild(probe);
     const rgb = getComputedStyle(probe).color;
     probe.remove();
@@ -245,7 +244,7 @@ export class HabitEditorModal extends Modal {
 
     const radius = 52;
     const circumference = 2 * Math.PI * radius;
-    arc.style.strokeDasharray = `${circumference}`;
+    arc.setCssStyles({ strokeDasharray: `${circumference}` });
 
     let currentValue = Number(hiddenInput.value) || 0;
 
@@ -255,9 +254,11 @@ export class HabitEditorModal extends Modal {
       const angleDeg = percent * 360 - 90;
       const angleRad = angleDeg * (Math.PI / 180);
 
-      arc.style.strokeDashoffset = `${circumference * (1 - percent)}`;
-      thumb.style.left = `${((60 + radius * Math.cos(angleRad)) / 120) * 100}%`;
-      thumb.style.top = `${((60 + radius * Math.sin(angleRad)) / 120) * 100}%`;
+      arc.setCssStyles({ strokeDashoffset: `${circumference * (1 - percent)}` });
+      thumb.setCssStyles({
+        left: `${((60 + radius * Math.cos(angleRad)) / 120) * 100}%`,
+        top: `${((60 + radius * Math.sin(angleRad)) / 120) * 100}%`
+      });
       if (valueLabel) valueLabel.textContent = String(currentValue);
       hiddenInput.value = String(currentValue);
       dial.setAttribute('aria-valuenow', String(currentValue));
@@ -313,7 +314,7 @@ export class HabitEditorModal extends Modal {
     const maxGap = Math.max(0, Number(get<HTMLInputElement>('oa-habit-max-gap')?.value ?? 0) || 0);
     const color = get<HTMLInputElement>('oa-habit-color')?.value.trim() ?? '';
     const status = get<HTMLInputElement>('oa-habit-status')?.checked ? 'active' : 'inactive';
-    const area = (get<HTMLSelectElement>('oa-habit-area')?.value ?? 'temporal') as HabitArea;
+    const area = get<HTMLSelectElement>('oa-habit-area')?.value ?? 'temporal';
     const subArea = get<HTMLInputElement>('oa-habit-sub-area')?.value.trim() ?? '';
     const frequencyMode = get<HTMLSelectElement>('oa-habit-frequency')?.value ?? 'everyday';
 
@@ -390,7 +391,7 @@ export class HabitEditorModal extends Modal {
       throw new Error(this.i18n.t('habit_name_exists'));
     }
 
-    await this.app.fileManager.processFrontMatter(habit.file, (fm) => {
+    await this.app.fileManager.processFrontMatter(habit.file, (fm: Record<string, unknown>) => {
       fm.name = values.name;
       fm.description = values.description;
       fm.time = values.time;

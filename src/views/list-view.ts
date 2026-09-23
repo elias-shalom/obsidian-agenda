@@ -25,7 +25,7 @@ export class ListView extends BaseView {
   }
 
   getIcon(): string {
-    return 'calendar-check';
+    return 'list-todo';
   }
 
   /**

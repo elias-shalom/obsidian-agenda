@@ -79,7 +79,7 @@ export function getAreaLabel(area: string, i18n: { t(key: string): string }): st
 /** @deprecated usar HABIT_AREA_COLORS/getAreaColor + HABIT_AREA_TEXT_COLORS/getAreaTextColor según necesidad */
 export const HABIT_AREA_TEXT_COLORS: Record<string, string> = Object.fromEntries(
   HABIT_AREAS.map(area => [area, getContrastTextColor(HABIT_AREA_COLORS[area])])
-) as Record<string, string>;
+);
 
 export type Daytime = "wake up" | "morning" | "afternoon" | "evening" | "night";
 export type FrequencyToken = "everyday" | "workweek" | "weekend";

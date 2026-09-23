@@ -50,7 +50,7 @@ export abstract class HabitView extends BaseView {
   }
 
   getIcon(): string {
-    return 'list-checks';
+    return 'circle-check';
   }
 
   async onOpen(): Promise<void> {

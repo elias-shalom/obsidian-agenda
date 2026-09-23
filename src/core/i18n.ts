@@ -30,7 +30,7 @@ export class I18n {
       // Importar dinámicamente el archivo de idioma como módulo
       const loader = I18n.LOCALE_LOADERS[language] ?? I18n.LOCALE_LOADERS[I18n.DEFAULT_LOCALE];
       const localeModule = await loader();
-      this.translations = (localeModule.default || localeModule) as Record<string, unknown>;
+      this.translations = localeModule.default || localeModule;
       this.currentLanguage = language;
     } catch (error) {
       console.error("Error loading translations:", error);

@@ -134,8 +134,8 @@ export class TaskSorter {
             let dueDate: Date | null = null;
             if (typeof task.date.due === 'string') {
               dueDate = new Date(task.date.due);
-            } else if (typeof (task.date.due as unknown as DateTime).toJSDate === 'function') {
-              dueDate = (task.date.due as unknown as DateTime).toJSDate();
+            } else if (typeof task.date.due.toJSDate === 'function') {
+              dueDate = task.date.due.toJSDate();
             } else if (task.date.due instanceof Date) {
               dueDate = task.date.due;
             }

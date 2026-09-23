@@ -114,6 +114,7 @@
 .oa-habit-overview-bar-fill {
   height: 100%;
   border-radius: 5px;
+  background: var(--interactive-accent); // por defecto para las barras de daytime (sin color propio)
   transition: width 0.4s ease;
 }
 

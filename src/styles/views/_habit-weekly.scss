@@ -1,24 +1,33 @@
-// Habit Weekly View Styles
+// Habit Weekly View Styles — mismo look and feel que la Grid (_habit-grid.scss)
+$habit-weekly-cell-size: 22px;
+$habit-weekly-pill-height: 14px;
+$habit-weekly-circle-size: 16px;
+$habit-weekly-pill-cap-inset: 3px;
+
 .oa-habit-weekly {
   display: grid;
-  grid-template-columns: 200px repeat(7, minmax(44px, 1fr)) 70px 60px;
-  gap: 2px;
-  font-size: var(--font-smaller, 0.75rem);
+  grid-template-columns: 200px repeat(7, #{$habit-weekly-cell-size}) 80px 60px;
+  gap: 1px 3px;
+  font-size: 0.85rem;
   line-height: 1.2;
+  background-color: var(--background-primary);
+  padding-top: 2px;
+  padding-bottom: 2px;
 }
 
 .oa-habit-weekly-scroll {
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 12px;
   overflow-x: auto;
   overflow-y: auto;
   max-height: calc(100vh - 120px);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m, 8px);
 }
 
 .oa-habit-weekly-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--background-primary);
-  border-bottom: 1px solid var(--background-modifier-border);
+  display: contents;
 }
 
 .oa-habit-weekly-row {
@@ -31,9 +40,8 @@
   z-index: 5;
   display: flex;
   align-items: center;
-  padding: 4px 8px;
+  padding: 2px 8px;
   background: var(--background-primary);
-  border-right: 1px solid var(--background-modifier-border);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -43,6 +51,8 @@
 .oa-habit-weekly-name .habit-title {
   flex: 1;
   min-width: 0;
+  color: var(--text-accent, var(--interactive-accent));
+  font-weight: 500;
 }
 
 .oa-habit-weekly-name .habit-color-indicator {
@@ -60,29 +70,63 @@
 }
 
 .oa-habit-weekly-cell {
-  width: 100%;
-  aspect-ratio: 1;
-  min-width: 36px;
-  max-width: 48px;
-  min-height: 36px;
-  max-height: 48px;
+  width: $habit-weekly-cell-size;
+  height: $habit-weekly-cell-size;
+  align-self: center;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
   border: none;
-  border-radius: 6px;
-  background: var(--background-modifier-border);
+  border-radius: 0;
+  background-color: transparent !important;
   cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  position: relative;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.7rem;
   font-weight: 600;
-  color: transparent;
+}
+
+// Opción E: sin líneas divisorias; el sombreado de fila alterna guía la lectura horizontal.
+.oa-habit-weekly-row--alt .oa-habit-weekly-name,
+.oa-habit-weekly-row--alt .oa-habit-weekly-streak,
+.oa-habit-weekly-row--alt .oa-habit-weekly-pct {
+  background-color: color-mix(in srgb, var(--background-secondary) 30%, var(--background-primary));
+}
+
+.oa-habit-weekly-row--alt .oa-habit-weekly-cell {
+  background-color: color-mix(in srgb, var(--background-secondary) 30%, var(--background-primary)) !important;
+}
+
+.oa-habit-weekly-cell-count {
+  position: relative;
+  z-index: 1;
+  color: #ffffff !important;
+  font-size: 0.7rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+// La píldora es más delgada que la celda: se dibuja centrada verticalmente en un ::after,
+// y se extiende hacia el borde contiguo (izq/der) para fusionarse con la racha vecina.
+.oa-habit-weekly-cell::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: $habit-weekly-pill-height;
+  transform: translateY(-50%);
+  background-color: transparent;
+  pointer-events: none;
 }
 
 .oa-habit-weekly-cell:hover {
   transform: scale(1.1);
   z-index: 2;
-  box-shadow: 0 0 0 2px var(--interactive-accent);
+  box-shadow: inset 0 0 0 2px var(--interactive-accent);
 }
 
 .oa-habit-weekly-cell:focus-visible {
@@ -90,26 +134,49 @@
   outline-offset: 1px;
 }
 
-.oa-habit-weekly-cell--ticked {
-  background: var(--habit-color, var(--checkbox-color, var(--interactive-accent)));
-  color: var(--text-on-accent, white);
+.oa-habit-weekly-cell--ticked::after {
+  background-color: var(--habit-color, var(--checkbox-color, var(--interactive-accent, #7c3aed)));
 }
 
-.oa-habit-weekly-cell--gap {
-  background: color-mix(in srgb, var(--habit-color, var(--checkbox-color, var(--interactive-accent))) 40%, transparent);
-  color: var(--text-on-accent, white);
+.oa-habit-weekly-cell--gap::after {
+  background-color: color-mix(in srgb, var(--habit-color, var(--checkbox-color, var(--interactive-accent, #7c3aed))) 40%, transparent);
+}
+
+.oa-habit-weekly-cell--run-single::after {
+  left: 50%;
+  right: auto;
+  width: $habit-weekly-circle-size;
+  height: $habit-weekly-circle-size;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+}
+
+.oa-habit-weekly-cell--run-start::after {
+  left: $habit-weekly-pill-cap-inset;
+  right: -3px;
+  border-radius: 999px 0 0 999px;
+}
+
+.oa-habit-weekly-cell--run-middle::after {
+  left: -3px;
+  right: -3px;
+  border-radius: 0;
+}
+
+.oa-habit-weekly-cell--run-end::after {
+  left: -3px;
+  right: $habit-weekly-pill-cap-inset;
+  border-radius: 0 999px 999px 0;
+}
+
+.oa-habit-weekly-cell--deadline {
+  outline: 2px dashed var(--habit-color, var(--checkbox-color, var(--interactive-accent)));
+  outline-offset: -2px;
 }
 
 .oa-habit-weekly-cell--unscheduled {
-  background: var(--background-modifier-border-hover);
   opacity: 0.3;
   cursor: default;
-}
-
-.oa-habit-weekly-cell--unscheduled::after {
-  content: "·";
-  color: var(--text-faint);
-  font-size: 1.2rem;
 }
 
 .oa-habit-weekly-cell--today {
@@ -125,9 +192,8 @@
   justify-content: center;
   padding: 2px 6px;
   background: var(--background-primary);
-  border-left: 1px solid var(--background-modifier-border);
   font-weight: 600;
-  font-size: var(--font-smaller, 0.75rem);
+  font-size: 0.85rem;
   white-space: nowrap;
 }
 
@@ -141,7 +207,7 @@
   padding: 2px 6px;
   background: var(--background-primary);
   font-variant-numeric: tabular-nums;
-  font-size: var(--font-smaller, 0.75rem);
+  font-size: 0.85rem;
   color: var(--text-muted);
   white-space: nowrap;
 }
@@ -154,15 +220,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 6px 2px;
+  padding: 4px 2px;
   background: var(--background-primary);
   border-bottom: 1px solid var(--background-modifier-border);
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
   color: var(--text-muted);
-  min-width: 44px;
+  min-width: 22px;
 }
 
 .oa-habit-weekly-col-header--today {
@@ -171,48 +237,36 @@
 }
 
 .oa-habit-weekly-col-header-day {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
   line-height: 1;
+  letter-spacing: normal;
+  text-align: center;
 }
 
 .oa-habit-weekly-nav {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background: var(--background-secondary);
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-m, 6px);
-  margin-bottom: 8px;
-  flex-shrink: 0;
+  gap: 8px;
+
+  button {
+    background-color: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    color: var(--text-normal);
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background-color: var(--background-modifier-hover);
+    }
+  }
 }
 
-.oa-habit-weekly-nav-center {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-weight: 600;
-}
-
-.oa-habit-weekly-nav-btn {
-  padding: 4px 10px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-s, 4px);
-  background: var(--background-primary);
-  color: var(--text-normal);
-  cursor: pointer;
+.oa-habit-weekly-range {
   font-size: var(--font-smaller, 0.75rem);
-  transition: background-color 0.15s ease;
-}
-
-.oa-habit-weekly-nav-btn:hover {
-  background: var(--background-modifier-hover);
-}
-
-.oa-habit-weekly-nav-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -221,8 +275,5 @@
   }
   .oa-habit-weekly-cell:hover {
     transform: none;
-  }
-  .oa-habit-weekly-nav-btn {
-    transition: none;
   }
 }

@@ -58,22 +58,20 @@
         {{#each this.cells}}
           <button
             class="oa-habit-grid-cell
-              {{#if this.ticked}}oa-habit-grid-cell--ticked{{/if}}
-              {{#if this.gap}}oa-habit-grid-cell--gap{{/if}}
-              {{#if this.deadline}}oa-habit-grid-cell--deadline{{/if}}
-              {{#unless this.scheduled}}oa-habit-grid-cell--unscheduled{{/unless}}
-              {{#if this.actual}}oa-habit-grid-cell--today{{/if}}
-              {{#if this.runSingle}}oa-habit-grid-cell--run-single{{/if}}
-              {{#if this.runStart}}oa-habit-grid-cell--run-start{{/if}}
-              {{#if this.runMiddle}}oa-habit-grid-cell--run-middle{{/if}}
-              {{#if this.runEnd}}oa-habit-grid-cell--run-end{{/if}}"
+              {{~#if this.ticked}} oa-habit-grid-cell--ticked{{/if}}
+              {{~#if this.gap}} oa-habit-grid-cell--gap{{/if}}
+              {{~#if this.deadline}} oa-habit-grid-cell--deadline{{/if}}
+              {{~#unless this.scheduled}} oa-habit-grid-cell--unscheduled{{/unless}}
+              {{~#if this.actual}} oa-habit-grid-cell--today{{/if}}
+              {{~#if this.runSingle}} oa-habit-grid-cell--run-single{{/if}}
+              {{~#if this.runStart}} oa-habit-grid-cell--run-start{{/if}}
+              {{~#if this.runMiddle}} oa-habit-grid-cell--run-middle{{/if}}
+              {{~#if this.runEnd}} oa-habit-grid-cell--run-end{{/if~}}"
             data-date="{{this.date}}"
             data-habit-id="{{../id}}"
             aria-label="{{../title}} {{this.date}}"
             {{#if this.deadline}}title="{{t 'habit_streak_deadline_tooltip'}}"{{/if}}
-            {{#unless this.scheduled}}disabled{{/unless}}>
-            {{#if this.runEnd}}{{#if (gt this.streakCount 1)}}<span class="oa-habit-grid-cell-count">{{this.streakCount}}</span>{{/if}}{{/if}}
-          </button>
+            {{#unless this.scheduled}}disabled{{/unless}}>{{~#if this.runEnd}}{{#if (gt this.streakCount 1)}}<span class="oa-habit-grid-cell-count">{{this.streakCount}}</span>{{/if}}{{/if~}}</button>
         {{/each}}
         <div class="oa-habit-grid-streak">{{#if this.streak}}🔥 {{this.streak}}{{else}}–{{/if}}</div>
         <div class="oa-habit-grid-pct">{{this.pct}}%</div>

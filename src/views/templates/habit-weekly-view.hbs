@@ -1,7 +1,9 @@
-{{!-- Habit Weekly View Template (Phase 0 - Stub) --}}
+{{!-- Habit Weekly View Template --}}
 <div class="oa-habit-toolbar">
   <div class="oa-habit-current">
     <h2>{{t viewLabelKey}}</h2>
+    <span class="oa-habit-weekly-range">{{formatDate weekStart}} - {{formatDate weekEnd}}</span>
+    <button id="oa-habit-new-btn" type="button" class="oa-habit-new-btn" aria-label="{{t 'habit_new_habit'}}" title="{{t 'habit_new_habit'}}">+</button>
   </div>
   <div class="oa-habit-nav-container">
     <div class="oa-habit-view-selector">
@@ -13,12 +15,23 @@
         {{#if settings.showHabitListTab}}<option value="table" {{#eq viewSubtype "table"}}selected{{/eq}}>{{t "habit_list_tab"}}</option>{{/if}}
       </select>
     </div>
+    <div class="oa-habit-view-selector">
+      <select id="oa-habit-weekly-sort" class="oa-habit-view-dropdown">
+        <option value="alphabetical" {{#eq sortBy "alphabetical"}}selected{{/eq}}>{{t "habit_sort_alphabetical"}}</option>
+        <option value="area" {{#eq sortBy "area"}}selected{{/eq}}>{{t "habit_sort_area"}}</option>
+        <option value="daytime" {{#eq sortBy "daytime"}}selected{{/eq}}>{{t "habit_sort_daytime"}}</option>
+        <option value="priority" {{#eq sortBy "priority"}}selected{{/eq}}>{{t "habit_sort_priority"}}</option>
+        <option value="streak" {{#eq sortBy "streak"}}selected{{/eq}}>{{t "habit_sort_streak"}}</option>
+        <option value="pct" {{#eq sortBy "pct"}}selected{{/eq}}>{{t "habit_sort_pct"}}</option>
+      </select>
+    </div>
     <div class="oa-habit-weekly-nav">
-      <button class="oa-habit-weekly-nav-btn" data-action="prev">{{t "previous"}}</button>
-      <div class="oa-habit-weekly-nav-center">
-        <span>{{formatDate weekStart}} - {{formatDate weekEnd}}</span>
-      </div>
-      <button class="oa-habit-weekly-nav-btn" data-action="next">{{t "next"}}</button>
+      <button class="oa-habit-weekly-nav-btn" data-action="prev" aria-label="{{t 'previous'}}">
+        <span class="icon">◀</span>
+      </button>
+      <button class="oa-habit-weekly-nav-btn" data-action="next" aria-label="{{t 'next'}}">
+        <span class="icon">▶</span>
+      </button>
     </div>
   </div>
 </div>
@@ -36,7 +49,7 @@
       <div class="oa-habit-weekly-col-header">{{t "habit_pct_weighted"}}</div>
     </div>
     {{#each habits}}
-      <div class="oa-habit-weekly-row">
+      <div class="oa-habit-weekly-row{{#if this.alt}} oa-habit-weekly-row--alt{{/if}}"{{#if this.color}} style="--habit-color: {{this.color}}"{{/if}}>
         <div class="oa-habit-weekly-name">
           {{#if this.color}}
             <div class="habit-color-indicator" style="background-color: {{this.color}}"></div>
@@ -46,22 +59,27 @@
         {{#each this.cells}}
           <button
             class="oa-habit-weekly-cell
-              {{#if this.ticked}}oa-habit-weekly-cell--ticked{{/if}}
-              {{#if this.gap}}oa-habit-weekly-cell--gap{{/if}}
-              {{#unless this.scheduled}}oa-habit-weekly-cell--unscheduled{{/unless}}
-              {{#if ../today}}oa-habit-weekly-cell--today{{/if}}"
+              {{~#if this.ticked}} oa-habit-weekly-cell--ticked{{/if}}
+              {{~#if this.gap}} oa-habit-weekly-cell--gap{{/if}}
+              {{~#if this.deadline}} oa-habit-weekly-cell--deadline{{/if}}
+              {{~#unless this.scheduled}} oa-habit-weekly-cell--unscheduled{{/unless}}
+              {{~#if this.actual}} oa-habit-weekly-cell--today{{/if}}
+              {{~#if this.runSingle}} oa-habit-weekly-cell--run-single{{/if}}
+              {{~#if this.runStart}} oa-habit-weekly-cell--run-start{{/if}}
+              {{~#if this.runMiddle}} oa-habit-weekly-cell--run-middle{{/if}}
+              {{~#if this.runEnd}} oa-habit-weekly-cell--run-end{{/if~}}"
             data-date="{{this.date}}"
-            data-habit-id="{{../this.id}}"
-            aria-label="{{../this.title}} {{this.date}}"
-            {{#unless this.scheduled}}disabled{{/unless}}>
-          </button>
+            data-habit-id="{{../id}}"
+            aria-label="{{../title}} {{this.date}}"
+            {{#if this.deadline}}title="{{t 'habit_streak_deadline_tooltip'}}"{{/if}}
+            {{#unless this.scheduled}}disabled{{/unless}}>{{~#if this.runEnd}}{{#if (gt this.streakCount 1)}}<span class="oa-habit-weekly-cell-count">{{this.streakCount}}</span>{{/if}}{{/if~}}</button>
         {{/each}}
-        <div class="oa-habit-weekly-streak">{{this.streak}}</div>
+        <div class="oa-habit-weekly-streak">{{#if this.streak}}🔥 {{this.streak}}{{else}}–{{/if}}</div>
         <div class="oa-habit-weekly-pct">{{this.pct}}%</div>
       </div>
     {{/each}}
   </div>
 </div>
 {{#unless habits.length}}
-  <div class="oa-habit-routine-empty">{{t "habit_no_habits"}}</div>
+  <div class="oa-habit-routine-empty">{{emptyMessage}}</div>
 {{/unless}}

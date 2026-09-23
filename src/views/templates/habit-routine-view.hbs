@@ -17,6 +17,22 @@
         {{#if settings.showHabitListTab}}<option value="table" {{#eq viewSubtype "table"}}selected{{/eq}}>{{t "habit_list_tab"}}</option>{{/if}}
       </select>
     </div>
+    <div class="oa-habit-view-selector">
+      <select id="oa-habit-routine-sort" class="oa-habit-view-dropdown">
+        <option value="alphabetical" {{#eq sortBy "alphabetical"}}selected{{/eq}}>{{t "habit_sort_alphabetical"}}</option>
+        <option value="area" {{#eq sortBy "area"}}selected{{/eq}}>{{t "habit_sort_area"}}</option>
+        <option value="daytime" {{#eq sortBy "daytime"}}selected{{/eq}}>{{t "habit_sort_daytime"}}</option>
+        <option value="priority" {{#eq sortBy "priority"}}selected{{/eq}}>{{t "habit_sort_priority"}}</option>
+        <option value="streak" {{#eq sortBy "streak"}}selected{{/eq}}>{{t "habit_sort_streak"}}</option>
+        <option value="pct" {{#eq sortBy "pct"}}selected{{/eq}}>{{t "habit_sort_pct"}}</option>
+      </select>
+    </div>
+    <div class="oa-habit-view-selector">
+      <select id="oa-habit-routine-group" class="oa-habit-view-dropdown">
+        <option value="daytime" {{#eq groupBy "daytime"}}selected{{/eq}}>{{t "habit_sort_daytime"}}</option>
+        <option value="area" {{#eq groupBy "area"}}selected{{/eq}}>{{t "habit_sort_area"}}</option>
+      </select>
+    </div>
     <div class="oa-habit-routine-nav">
       <button class="oa-habit-routine-nav-btn" data-action="prev">{{t "previous"}}</button>
       <button class="oa-habit-routine-today-btn" data-action="today">{{t "habit_today"}}</button>
@@ -30,7 +46,12 @@
   {{#each daytimes}}
     <div class="oa-habit-routine-section">
       <div class="oa-habit-routine-section-header">
-        <span>{{this.label}}</span>
+        <div class="oa-habit-routine-section-title">
+          {{#if this.color}}
+            <div class="oa-habit-routine-section-color" style="background-color: {{this.color}}"></div>
+          {{/if}}
+          <span>{{this.label}}</span>
+        </div>
         <div class="oa-habit-routine-section-progress">
           <div class="oa-habit-routine-progress-bar">
             <div class="oa-habit-routine-progress-fill" style="width: {{this.pct}}%"></div>
@@ -51,7 +72,12 @@
             <div class="oa-habit-routine-habit-meta">
               <span class="oa-habit-routine-priority-badge" data-priority="{{this.priority}}">{{this.priority}}</span>
               <span class="oa-habit-routine-time">{{this.time}}m</span>
-              <span class="oa-habit-routine-area-tag" style="background-color: {{this.areaColor}}; color: {{this.areaTextColor}}">{{this.areaLabel}}</span>
+              {{#unless (eq @root.groupBy "area")}}
+                <span class="oa-habit-routine-area-tag" style="background-color: {{this.areaColor}}; color: {{this.areaTextColor}}">{{this.areaLabel}}</span>
+              {{/unless}}
+              {{#unless (eq @root.groupBy "daytime")}}
+                <span class="oa-habit-routine-daytime-tag">{{this.daytimeLabel}}</span>
+              {{/unless}}
             </div>
           </div>
           <div class="oa-habit-routine-habit-actions">

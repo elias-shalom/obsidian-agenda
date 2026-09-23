@@ -7,7 +7,7 @@ import { HabitManager, IHabit } from '../habits';
 
 export type HabitViewSubtype = 'grid' | 'dashboard' | 'routine' | 'weekly' | 'table';
 
-export const HABIT_DEFAULT_VIEW_TYPE = 'habit-grid-view';
+export const HABIT_DEFAULT_VIEW_TYPE = 'habit-overview-view';
 
 /**
  * Clase base para las vistas de hábitos.

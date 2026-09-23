@@ -1,7 +1,8 @@
-{{!-- Habit Overview/Dashboard View Template (Phase 0 - Stub) --}}
+{{!-- Habit Overview/Dashboard View Template --}}
 <div class="oa-habit-toolbar">
   <div class="oa-habit-current">
     <h2>{{t viewLabelKey}}</h2>
+    <button id="oa-habit-new-btn" type="button" class="oa-habit-new-btn" aria-label="{{t 'habit_new_habit'}}" title="{{t 'habit_new_habit'}}">+</button>
   </div>
   <div class="oa-habit-nav-container">
     <div class="oa-habit-view-selector">
@@ -41,7 +42,7 @@
         <div class="oa-habit-overview-bar-row">
           <div class="oa-habit-overview-bar-label">
             <div class="oa-habit-overview-bar-label-color" style="background-color: {{this.color}}"></div>
-            <span>{{t (concat "habit_area_" @key)}}</span>
+            <span>{{this.label}}</span>
           </div>
           <div class="oa-habit-overview-bar-track">
             <div class="oa-habit-overview-bar-fill" style="width: {{this.weighted}}%; background-color: {{this.color}}"></div>
@@ -58,7 +59,7 @@
       {{#each byDaytime}}
         <div class="oa-habit-overview-bar-row">
           <div class="oa-habit-overview-bar-label">
-            <span>{{t @key}}</span>
+            <span>{{this.label}}</span>
           </div>
           <div class="oa-habit-overview-bar-track">
             <div class="oa-habit-overview-bar-fill" style="width: {{this.weighted}}%"></div>

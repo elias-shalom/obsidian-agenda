@@ -1,7 +1,8 @@
-{{!-- Habit Table/List View Template (Phase 0 - Stub) --}}
+{{!-- Habit Table/List View Template --}}
 <div class="oa-habit-toolbar">
   <div class="oa-habit-current">
     <h2>{{t viewLabelKey}}</h2>
+    <button id="oa-habit-new-btn" type="button" class="oa-habit-new-btn" aria-label="{{t 'habit_new_habit'}}" title="{{t 'habit_new_habit'}}">+</button>
   </div>
   <div class="oa-habit-nav-container">
     <div class="oa-habit-view-selector">
@@ -21,7 +22,7 @@
     <table class="oa-habit-table-table">
       <thead>
         <tr>
-          <th data-sort="title">{{t "task"}}</th>
+          <th data-sort="title">{{t "habit_field_name"}}</th>
           <th data-sort="area">{{t "habit_area"}}</th>
           <th data-sort="subArea">{{t "habit_sub_area"}}</th>
           <th data-sort="frequency">{{t "habit_frequency"}}</th>
@@ -36,30 +37,38 @@
         {{#each habits}}
         <tr data-habit-id="{{this.id}}">
           <td class="oa-habit-table-name">
-            {{#if this.color}}
-              <div class="habit-color-indicator" style="background-color: {{this.color}}"></div>
-            {{/if}}
-            <span class="habit-title" title="{{this.title}}">{{this.title}}</span>
+            <span class="oa-habit-table-name-inner">
+              {{#if this.color}}
+                <div class="habit-color-indicator" style="background-color: {{this.color}}"></div>
+              {{/if}}
+              <span class="habit-title" title="{{this.title}}">{{this.title}}</span>
+            </span>
           </td>
           <td class="oa-habit-table-area">
-            {{#if this.areaColor}}
-              <div class="oa-habit-table-area-color" style="background-color: {{this.areaColor}}"></div>
-            {{/if}}
-            <span class="oa-habit-table-area-label">{{t (concat "habit_area_" this.area)}}</span>
+            <span class="oa-habit-table-area-inner">
+              {{#if this.areaColor}}
+                <div class="oa-habit-table-area-color" style="background-color: {{this.areaColor}}"></div>
+              {{/if}}
+              <span class="oa-habit-table-area-label">{{this.areaLabel}}</span>
+            </span>
+          </td>
+          <td class="oa-habit-table-subarea-cell">
             {{#if this.subArea}}
               <span class="oa-habit-table-subarea">{{this.subArea}}</span>
             {{/if}}
           </td>
           <td>
-            <span class="oa-habit-table-frequency">{{t (concat "habit_freq_" this.frequency)}}</span>
+            <span class="oa-habit-table-frequency">{{this.frequency}}</span>
           </td>
           <td>
             <span class="oa-habit-table-priority" data-priority="{{this.priority}}">{{this.priority}}</span>
           </td>
           <td class="oa-habit-table-daytimes">
-            {{#each this.daytimes}}
-              <span class="oa-habit-table-daytime">{{t this}}</span>
-            {{/each}}
+            <span class="oa-habit-table-daytimes-inner">
+              {{#each this.daytimes}}
+                <span class="oa-habit-table-daytime">{{this}}</span>
+              {{/each}}
+            </span>
           </td>
           <td class="oa-habit-table-time">{{this.time}}m</td>
           <td class="oa-habit-table-streak {{#if this.streak}}oa-habit-table-streak--active{{/if}}">{{this.streak}}</td>
@@ -70,6 +79,6 @@
     </table>
   </div>
   {{#unless habits.length}}
-    <div class="oa-habit-table-empty">{{t "habit_no_habits"}}</div>
+    <div class="oa-habit-table-empty">{{emptyMessage}}</div>
   {{/unless}}
 </div>

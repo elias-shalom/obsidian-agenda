@@ -437,12 +437,12 @@ protected attachEventTabs(container: HTMLElement, plugin: AgendaPlugin, leaf: Wo
    * del tab principal de hábitos cuando se hace clic en él.
    */
   private getDefaultHabitView(settings: AgendaPluginSettings): string {
-    if (settings.showHabitGridTab) return 'habit-grid-view';
     if (settings.showHabitDashboardTab) return 'habit-overview-view';
+    if (settings.showHabitGridTab) return 'habit-grid-view';
     if (settings.showHabitRoutineTab) return 'habit-routine-view';
     if (settings.showHabitWeeklyTab) return 'habit-weekly-view';
     if (settings.showHabitListTab) return 'habit-table-view';
-    return 'habit-grid-view';
+    return 'habit-overview-view';
   }
 
   // Añadir método para manejar eventos de los grupos de carpetas

@@ -63,6 +63,7 @@
 }
 
 .oa-habit-table-table tbody tr {
+  cursor: pointer;
   transition: background-color 0.1s ease;
 }
 
@@ -75,10 +76,14 @@
 }
 
 .oa-habit-table-name {
-  display: flex;
+  min-width: 180px;
+  white-space: nowrap;
+}
+
+.oa-habit-table-name-inner {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-width: 180px;
 }
 
 .oa-habit-table-name .habit-title {
@@ -96,10 +101,13 @@
 }
 
 .oa-habit-table-area {
-  display: flex;
+  white-space: nowrap;
+}
+
+.oa-habit-table-area-inner {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  white-space: nowrap;
 }
 
 .oa-habit-table-area-color {
@@ -151,7 +159,7 @@
 .oa-habit-table-priority[data-priority="2"] { background: #0e9888; }
 .oa-habit-table-priority[data-priority="1"] { background: #9383f7; }
 
-.oa-habit-table-daytimes {
+.oa-habit-table-daytimes-inner {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;

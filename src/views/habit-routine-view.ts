@@ -6,11 +6,16 @@ import { I18n } from '../core/i18n';
 import { TaskManager } from '../core/task-manager';
 import { HabitManager, isScheduled, getAreaColor, getAreaTextColor, getAreaLabel } from '../habits';
 import type { Daytime, HabitArea } from '../habits';
+import { computeOccurrenceCells, computeOccurrenceStats } from '../habits/habit-streak';
 
 export const HABIT_ROUTINE_VIEW_TYPE = 'habit-routine-view';
 
 const ROW_ID_SEPARATOR = '::';
 const DAYTIME_ORDER: Daytime[] = ['wake up', 'morning', 'afternoon', 'evening', 'night'];
+const SORT_MODES = ['alphabetical', 'area', 'daytime', 'priority', 'streak', 'pct'] as const;
+type RoutineSortMode = typeof SORT_MODES[number];
+const GROUP_MODES = ['daytime', 'area'] as const;
+type RoutineGroupMode = typeof GROUP_MODES[number];
 
 function daytimeLabelKey(daytime: Daytime): string {
   return `habit_daytime_${daytime.replace(/\s+/g, '_')}`;
@@ -21,16 +26,21 @@ interface RoutineHabitRow {
   title: string;
   priority: number;
   time: number;
+  daytime: Daytime;
+  daytimeLabel: string;
   area: HabitArea;
   areaLabel: string;
   areaColor: string;
   areaTextColor: string;
+  streak: number;
+  pct: number;
   ticked: boolean;
   scheduled: boolean;
 }
 
 interface RoutineSection {
   label: string;
+  color: string | null;
   pct: number;
   pctWeighted: number;
   habits: RoutineHabitRow[];
@@ -38,6 +48,8 @@ interface RoutineSection {
 
 export class HabitRoutineView extends HabitView {
   private selectedDate: DateTime = DateTime.local();
+  private sortBy: RoutineSortMode = 'priority';
+  private groupBy: RoutineGroupMode = 'daytime';
 
   constructor(
     leaf: WorkspaceLeaf,
@@ -64,12 +76,20 @@ export class HabitRoutineView extends HabitView {
   protected getViewData(): Record<string, unknown> {
     const dateIso = this.selectedDate.toISODate() ?? '';
 
-    const sections: Partial<Record<Daytime, RoutineSection>> = {};
-    for (const daytime of DAYTIME_ORDER) {
-      sections[daytime] = { label: this.i18n.t(daytimeLabelKey(daytime)), pct: 0, pctWeighted: 0, habits: [] };
+    const sections = new Map<string, RoutineSection>();
+    if (this.groupBy === 'daytime') {
+      for (const daytime of DAYTIME_ORDER) {
+        sections.set(daytime, { label: this.i18n.t(daytimeLabelKey(daytime)), color: null, pct: 0, pctWeighted: 0, habits: [] });
+      }
     }
 
     const areaTotals: Partial<Record<HabitArea, { done: number; scheduled: number; weightDone: number; weightTotal: number }>> = {};
+
+    const daysToShow = Math.max(1, this.plugin.settings.habitDaysToShow || 21);
+    const windowDates: DateTime[] = [];
+    for (let offset = daysToShow - 1; offset >= 0; offset -= 1) {
+      windowDates.push(this.selectedDate.minus({ days: offset }));
+    }
 
     for (const habit of this.habits) {
       if (!isScheduled(habit, this.selectedDate)) continue;
@@ -77,20 +97,35 @@ export class HabitRoutineView extends HabitView {
       const doneToday = habit.completions[dateIso] ?? [];
 
       for (const daytime of habit.daytimes) {
-        const section = sections[daytime];
-        if (!section) continue;
+        const groupKey = this.groupBy === 'area' ? habit.area : daytime;
+
+        let section = sections.get(groupKey);
+        if (!section) {
+          section = this.groupBy === 'area'
+            ? { label: getAreaLabel(habit.area, this.i18n), color: getAreaColor(habit.area), pct: 0, pctWeighted: 0, habits: [] }
+            : { label: this.i18n.t(daytimeLabelKey(daytime)), color: null, pct: 0, pctWeighted: 0, habits: [] };
+          sections.set(groupKey, section);
+        }
 
         const ticked = doneToday.includes(daytime);
+        const cells = computeOccurrenceCells(habit, daytime, windowDates, habit.maxGap, this.plugin.settings.habitShowStreaks);
+        const scheduledCells = cells.filter(cell => cell.scheduled);
+        const doneCount = scheduledCells.filter(cell => cell.ticked).length;
+        const pct = scheduledCells.length === 0 ? 0 : Math.round((doneCount / scheduledCells.length) * 100);
 
         section.habits.push({
           id: `${habit.file.path}${ROW_ID_SEPARATOR}${daytime}`,
           title: habit.title,
           priority: habit.priority,
           time: habit.time,
+          daytime,
+          daytimeLabel: this.i18n.t(daytimeLabelKey(daytime)),
           area: habit.area,
           areaLabel: getAreaLabel(habit.area, this.i18n),
           areaColor: getAreaColor(habit.area),
           areaTextColor: getAreaTextColor(habit.area),
+          streak: computeOccurrenceStats(habit, daytime).current,
+          pct,
           ticked,
           scheduled: true,
         });
@@ -106,12 +141,16 @@ export class HabitRoutineView extends HabitView {
       }
     }
 
+    const orderedKeys = this.groupBy === 'daytime'
+      ? DAYTIME_ORDER.filter(daytime => sections.has(daytime))
+      : [...sections.keys()].sort((a, b) => sections.get(a)!.label.localeCompare(sections.get(b)!.label));
+
     const nonEmptySections: Record<string, RoutineSection> = {};
-    for (const daytime of DAYTIME_ORDER) {
-      const section = sections[daytime];
+    for (const key of orderedKeys) {
+      const section = sections.get(key);
       if (!section || section.habits.length === 0) continue;
 
-      section.habits.sort((a, b) => b.priority - a.priority || a.title.localeCompare(b.title));
+      this.sortRows(section.habits);
 
       const done = section.habits.filter(row => row.ticked).length;
       const weightTotal = section.habits.reduce((sum, row) => sum + row.priority, 0);
@@ -120,7 +159,7 @@ export class HabitRoutineView extends HabitView {
       section.pct = Math.round((done / section.habits.length) * 100);
       section.pctWeighted = weightTotal === 0 ? 0 : Math.round((weightDone / weightTotal) * 100);
 
-      nonEmptySections[daytime] = section;
+      nonEmptySections[key] = section;
     }
 
     const areaStats = (Object.keys(areaTotals) as HabitArea[]).map(area => {
@@ -139,8 +178,39 @@ export class HabitRoutineView extends HabitView {
       selectedDate: dateIso,
       isToday: dateIso === DateTime.local().toISODate(),
       hasHabits: Object.keys(nonEmptySections).length > 0,
+      sortBy: this.sortBy,
+      groupBy: this.groupBy,
       areaStats,
     };
+  }
+
+  private sortRows(rows: RoutineHabitRow[]): void {
+    const daytimeIndex = (daytime: Daytime): number => {
+      const index = DAYTIME_ORDER.indexOf(daytime);
+      return index === -1 ? DAYTIME_ORDER.length : index;
+    };
+
+    switch (this.sortBy) {
+      case 'area':
+        rows.sort((a, b) => a.areaLabel.localeCompare(b.areaLabel) || a.title.localeCompare(b.title));
+        break;
+      case 'daytime':
+        rows.sort((a, b) => daytimeIndex(a.daytime) - daytimeIndex(b.daytime) || a.title.localeCompare(b.title));
+        break;
+      case 'priority':
+        rows.sort((a, b) => b.priority - a.priority || a.title.localeCompare(b.title));
+        break;
+      case 'streak':
+        rows.sort((a, b) => b.streak - a.streak || a.title.localeCompare(b.title));
+        break;
+      case 'pct':
+        rows.sort((a, b) => b.pct - a.pct || a.title.localeCompare(b.title));
+        break;
+      case 'alphabetical':
+      default:
+        rows.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+    }
   }
 
   protected setupViewSpecificEventListeners(container: HTMLElement, data: ViewData): void {
@@ -159,6 +229,24 @@ export class HabitRoutineView extends HabitView {
     container.querySelector('[data-action="today"]')?.addEventListener('click', () => {
       this.selectedDate = DateTime.local();
       this.refreshHabitView().catch(console.error);
+    });
+
+    const sortSelect = container.querySelector('#oa-habit-routine-sort') as HTMLSelectElement | null;
+    sortSelect?.addEventListener('change', () => {
+      const value = sortSelect.value as RoutineSortMode;
+      if ((SORT_MODES as readonly string[]).includes(value)) {
+        this.sortBy = value;
+        this.refreshHabitView().catch(console.error);
+      }
+    });
+
+    const groupSelect = container.querySelector('#oa-habit-routine-group') as HTMLSelectElement | null;
+    groupSelect?.addEventListener('change', () => {
+      const value = groupSelect.value as RoutineGroupMode;
+      if ((GROUP_MODES as readonly string[]).includes(value)) {
+        this.groupBy = value;
+        this.refreshHabitView().catch(console.error);
+      }
     });
 
     container.querySelectorAll<HTMLButtonElement>('.oa-habit-routine-checkbox:not([disabled])').forEach(button => {

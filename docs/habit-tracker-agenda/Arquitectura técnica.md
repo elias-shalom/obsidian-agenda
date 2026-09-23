@@ -127,7 +127,7 @@ async function toggleOccurrence(app: App, file: TFile, h: IHabit, date: string, 
 
 ### 2.6 Normalización (`habit-parser.ts`)
 
-- `slugifyArea(raw): HabitArea` — `toLowerCase`, espacios→`-`, alias (`intelectual`→`intellectual`); validar contra `HABIT_AREAS`; fallback `temporal` + `console.warn`.
+- **`area`**: ya **no se normaliza ni valida** contra un enum. `parseHabit` toma `String(fm.area ?? '').trim() || 'temporal'` tal cual; cualquier string es válido (revisado, ver ADR-004 en [[Modelo de datos]]).
 - `frequencyToSet(fm.frequency): Set<number>` — `everyday→{1..7}`, `workweek→{1..5}`, `weekend→{6,7}`, lista de nombres→números; tokens inválidos dentro de una lista se ignoran; lista vacía o campo ausente → `{1..7}` (ver ADR-005).
 - `clampPriority(fm.priority): number` — `parseInt` + clamp `1..5`; `NaN` → `3`.
 - `subArea` se lee como string opcional (por defecto `""`).
@@ -179,9 +179,9 @@ async function toggleOccurrence(app: App, file: TFile, h: IHabit, date: string, 
 `src/habits/habit-editor.ts` exporta `HabitEditorModal extends obsidian.Modal` (no es una vista; se monta sobre el workspace):
 
 - API: `new HabitEditorModal(plugin, habitManager, i18n, habit?: IHabit).open()`.
-- Formulario: name, title, description, time, area (dropdown enum 10), subArea, frequency (select/lista), priority (1–5), daytime (multi-check), status, maxGap (0–30), color (picker) — spec en [[Especificación de vistas]] §9.
-- **Crear** → `app.vault.create` de `name.md` en `habitFolderPath` con el frontmatter (+ plantilla `habit.md` opcional).
-- **Editar** → `processFrontMatter` preservando `completions`/`entries`; si cambia el basename → `app.fileManager.rename`.
+- Formulario: name, description, time (dial circular), area (dropdown **poblado dinámicamente** con `HabitManager.getVaultRootFolders()` + áreas ya usadas — ya no es un enum fijo de 10, ver ADR-004 en [[Modelo de datos]]), subArea, frequency (select/lista), priority (slider 1–5), daytime (multi-check), status (switch), maxGap (slider 0–14), color (picker, default = `--interactive-accent` del tema) — spec en [[Especificación de vistas]] §9.
+- **Crear** → `app.vault.create` de `name.md` en `habitFolderPath` con el frontmatter (incluye `area` como string libre; plantilla `habit.md` en el cuerpo **pendiente**, no implementada).
+- **Editar** → `processFrontMatter` preservando `completions`/`entries`; si cambia el basename → `app.fileManager.renameFile`. Elegir un área distinta **solo** reescribe `frontmatter.area`, no mueve el archivo de carpeta.
 - Validación: unicidad de nombre en la ruta, clamps numéricos, confirmación de borrado.
 - Al guardar → emite `obsidian-agenda:habits-refresh`.
 - Disparadores: comandos (`oa-habit-new`, `oa-habit-edit`), botón `+` del header de hábitos, doble-clic en la Lista.
@@ -234,21 +234,29 @@ habit_priority / habit_frequency / habit_sub_area / habit_habits_total
 habit_completed_today_weighted / habit_pct_weighted        // "Cumplimiento (ponderado)"
 habit_area_daily_plan / habit_area_emotional / habit_area_financial / habit_area_intellectual
 habit_area_physical / habit_area_professional / habit_area_recreational / habit_area_relationship
-habit_area_spiritual / habit_area_temporal                 // etiquetas de las 10 áreas
+habit_area_spiritual / habit_area_temporal                 // etiquetas de las 10 áreas "conocidas"
+                                                             // (getAreaLabel usa el valor crudo como fallback
+                                                             // para cualquier otra área que no tenga clave)
 habit_freq_everyday / habit_freq_workweek / habit_freq_weekend
 habit_freq_monday / habit_freq_tuesday / habit_freq_wednesday / habit_freq_thursday
 habit_freq_friday / habit_freq_saturday / habit_freq_sunday
+habit_freq_custom
 habit_not_scheduled_today / habit_unscheduled               // "no programado" / atenuado
 habit_new_habit / habit_edit_habit / habit_save / habit_cancel / habit_delete
-habit_field_name / habit_field_title / habit_field_description / habit_field_time
+habit_field_name / habit_field_description / habit_field_time
 habit_field_area / habit_field_sub_area / habit_field_frequency / habit_field_priority
 habit_field_daytime / habit_field_status / habit_field_max_gap / habit_field_color
-habit_name_required / habit_name_exists / habit_dt_required / habit_created / habit_updated
-habit_mark_all / habit_clear_day / habit_partial / habit_partial_tooltip
-habit_occurrences / habit_routine_partial_note
+habit_time_unit_minutes
+habit_name_required / habit_name_exists / habit_daytime_required / habit_created / habit_updated
+habit_delete_confirm / habit_status_active / habit_status_inactive
+habit_sort_alphabetical / habit_sort_area / habit_sort_daytime / habit_sort_priority
+habit_sort_streak / habit_sort_pct                          // opciones del combobox de orden
+                                                             // (presente en Grid, Weekly y Routine)
+habit_year_heatmap_title                                    // título del heatmap anual del Dashboard
+open_file / edit_task / edit_file                           // botones "abrir nota" / "editar hábito"
 ```
 
-Regla: ninguna cadena visible hardcodeada; todo vía `i18n.t(key)` (helper `{{t "key"}}` en Handlebars).
+Regla: ninguna cadena visible hardcodeada; todo vía `i18n.t(key)` (helper `{{t "key"}}` en Handlebars). El campo `habit_field_title` fue **eliminado** (se quitó el campo "Título/etiqueta" del editor por ser redundante con `name`).
 
 ## 6. Estilos (SCSS)
 

@@ -57,7 +57,7 @@ Rol: historial interactivo por día, equivalente al plugin Habit Tracker 21, int
 | Acción | Resultado |
 |---|---|
 | Click celda (cualquier fila) | Toggle directo de esa ocurrencia (la `daytime` específica de la fila) → actualiza `completions` y re-deriva `entries` ([[Modelo de datos]] §5.2). |
-| Click en nombre | (Doble-clic según configuración) abre la nota del hábito. |
+| Click en nombre | Abre el **Habit Editor** (`HabitManager.openEditor(habit)`) precargado con los datos de ese hábito — el nombre se renderiza como un link (`<a href="#">` con `preventDefault`), no como texto plano. |
 | "Hoy" vacío | Celdas de hoy con outline destacado cuando es el día actual (cheked → resaltado). |
 | `maxGap > 0` | Los huecos dentro de racha se pintan (gap); el día fantasma tras el final de la racha recibe `deadline`. |
 | Día no programado | `scheduled: false` → celda `--oa-unscheduled`; el click es **permitido** (actualiza `completions`) pero **no afecta** stats ni racha (ADR-005). |
@@ -88,7 +88,7 @@ Rol: historial interactivo por día, equivalente al plugin Habit Tracker 21, int
 
 ### 1.5 CSS mínimo
 
-`.oa-habit-grid` → scroll horizontal (`.oa-habit-grid-scroll`), primera columna sticky, celdas de tamaño fijo (`$habit-grid-cell-size`), estados `--oa-ticked`, `--oa-gap`, `--oa-deadline`, `--oa-unscheduled`. Las rachas consecutivas se fusionan visualmente en una "píldora" redondeada usando `--run-single/start/middle/end` (derivados de `streakStart`/`streakEnd`/`streakCount`), con el conteo mostrado solo al final de cada racha de 2+ días. Filas alternas reciben un sombreado sutil (`--alt`) en vez de líneas divisorias. No se requiere `_habit-popover.scss`.
+`.oa-habit-grid` → scroll horizontal (`.oa-habit-grid-scroll`, con marco/borde redondeado propio y separación respecto al toolbar), primera columna sticky, celdas de tamaño fijo (`$habit-grid-cell-size`), estados `--oa-ticked`, `--oa-gap`, `--oa-deadline`, `--oa-unscheduled`. Las rachas consecutivas se fusionan visualmente en una **píldora delgada** (dibujada en un `::after` centrado verticalmente dentro de la celda, no ocupando toda su altura) usando `--run-single/start/middle/end` (derivados de `streakStart`/`streakEnd`/`streakCount`); un día suelto (`run-single`) se renderiza como un **círculo** (más grande que el grosor de la píldora), con el conteo mostrado solo al final de cada racha de 2+ días. El color del outline `--oa-deadline` usa la variable `--habit-color` de la fila (no un color fijo del tema). Filas alternas reciben un sombreado sutil (`--alt`) en vez de líneas divisorias. No se requiere `_habit-popover.scss`.
 
 ## 2. Vista Rutina diaria
 
@@ -112,10 +112,10 @@ Rol: ver hoy (o el día navegado) organizado por `daytime` y `area`, con barras 
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-- **Secciones**: por `daytime` (wake up, morning, afternoon, evening) en el orden de [[daily routine]].
-- **Solo hábitos programados ese día**: `frequency` filtra qué aparece (ADR-005). Los hábitos con un `daytime` cuyo día no les corresponde pueden listarse al final con nota "(no programado hoy)" de forma opcional/plegable.
-- **Orden**: `priority` **desc** dentro de cada sección; indicador `[prioridad]` junto al checkbox.
-- **Li/checkbox**: cada hábito con su checkbox interactivo (toggle por **ocurrencia** — en la rutina el hábito ya aparece expandido por su `daytime`, así que cada checkbox es una ocurrencia concreta) y botón de apertura de nota.
+- **Secciones**: por `daytime` (wake up, morning, afternoon, evening, night) **o por área**, según el selector "Agrupar por" del toolbar (`groupBy`, default `daytime`) — no está fijo al `daytime` como en el diseño original. Cuando se agrupa por área, el encabezado de sección muestra el color del área y cada fila oculta el tag de área (redundante) mostrando en su lugar un tag de `daytime`.
+- **Solo hábitos programados ese día**: `frequency` filtra qué aparece (ADR-005). No se implementó el listado plegable de "no programado hoy" (queda fuera del filtro directamente).
+- **Orden dentro de cada sección**: configurable desde el selector "Ordenar por" del toolbar — alfabético, por área, por daytime, por prioridad (default), por racha o por % de cumplimiento (mismo combobox que Grid/Weekly). `racha`/`%` se calculan por ocurrencia sobre una ventana de `habitDaysToShow` días (mismo mecanismo que la Grid).
+- **Li/checkbox**: cada hábito con su checkbox interactivo (toggle por **ocurrencia**) y dos botones: **"Open file"** (abre la nota) y **"Edit habit"** (abre el Habit Editor precargado).
 - **Barra de progreso**: `pct` (crudo) con tooltip del **ponderado** `Σ done.priority / Σ scheduled.priority` por daytime y por área (clase `oa-progress-bar`). Se usa `dayCompleted` (día completo); un día **parcial** muestra nota "en progreso" sin sumar ni romper (ADR-008).
 - **Navegación**: flechas `◀ ▶` y botón "Hoy" (dentro de una ventana navegable del día).
 - **Estado vacío**: si el día no tiene hábitos activos → texto `habit_no_habits`.
@@ -124,24 +124,26 @@ Rol: ver hoy (o el día navegado) organizado por `daytime` y `area`, con barras 
 
 **TYPE**: `habit-overview-view` · **Tab**: `oa-habit-overview-view-tab` · **Icon**: `chart-column`
 
-Rol: métricas globales agregadas.
+Rol: métricas globales agregadas. **Es la vista inicial por defecto** al abrir la pestaña de Hábitos (antes era la Grid; ver `getDefaultHabitView()` en `base-view.ts`).
 
 ### 3.1 Contenido
 
 ```
 ┌ Dashboard Hábitos ───────────────────────────────────────────────────┐
 │ {hoy crudo}  {hoy ponderado}  {racha actual}  {racha máx}  {hábitos}│
-│ ── Por área ──  ▨▨▨▨ 75% p100% ·  ▨▨▨ 30% p28%  ...                  │
-│ ── Por daytime ──  Wake 80% | Morning 50% | Evening 40%             │
-│ ── Cumplimiento últimos 30 días (ponderado) ── barra por día ─────  │
+│ ── Por área ──────────────┐  ┌── Por daytime ──────────────        │
+│ ▨▨▨▨ 75% p100% ·  ▨▨▨ 30% p28%│  Wake 80% | Morning 50% | Evening 40%│
+│ (lado a lado, grid responsive) └──────────────────────────────      │
+│ ── Cumplimiento últimos 30 días (ponderado) ── con eje X/Y ───────  │
+│ ── Heatmap anual global (estilo GitHub) ◀ 2026 ▶ ─────────────────  │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
 - Cards: cumplimiento de hoy **crudo** (`pbdaily` equivalente) y **ponderado** (`pctWeighted`), racha actual global (máximo entre hábitos), racha máxima, número de hábitos.
-- Por área: % (crudo y ponderado) de hábitos **programados** cumplidos hoy agrupados por el **enum de 10 áreas** (etiquetas localizadas; `subArea` solo como detalle en la Lista).
-- Por daytime: idem con `daytime`.
-- Grafo de 30 días: barra por día con el **% ponderado** (`IHabitDayStat.pctWeighted`, ver [[Modelo de datos]] §3). Sin librerías; barras CSS sobre `oa-highlight-view` existente o el patrón de `task-highlights`.
-- Datos: `HabitManager.computeDashboard()`.
+- **Por área** y **Por daytime**: dos secciones lado a lado (`.oa-habit-overview-columns`, CSS Grid `auto-fit minmax(220px,1fr)`, se apilan en paneles angostos). Área ya **no** es el enum de 10 valores: cada barra usa `getAreaLabel`/`getAreaColor` (string libre con fallback determinístico, ver [[Modelo de datos]] §2.4); `subArea` solo como detalle en la Lista.
+- **Gráfico de 30 días**: barra por día con el **% ponderado** (`IHabitDayStat.pctWeighted`). Incluye **leyendas**: eje Y (`100%`/`50%`/`0%`) y eje X (fecha de inicio, punto medio y fin del rango), además del tooltip por barra con fecha+%.
+- **Heatmap anual global** (nuevo, no estaba en el diseño original): cuadrícula estilo GitHub, una columna por semana (domingo arriba/sábado abajo), etiquetas de mes y de día de semana, navegable por año (`◀ AÑO ▶`), 5 niveles de color según `pctWeighted` del día (`computeYearHistory(habits, year)` en `habit-stats.ts`), con el día actual resaltado y tooltip por celda.
+- Datos: `HabitManager.computeDashboard()` + `computeYearHistory()`.
 
 ## 4. Vista Semanal
 
@@ -174,10 +176,10 @@ Rol: catálogo de hábitos con metadata y stats.
 └────────┴─────────────┴─────────┴────────────┴──────┴────────────┴────────┴───────┴─────┘
 ```
 
-- **Área**: etiqueta localizada del enum (10 áreas); `SubÁrea` detalle opcional.
+- **Área**: `getAreaLabel(area, i18n)` — traduce si coincide con un área conocida, si no muestra el string crudo (ya no es un enum cerrado); `SubÁrea` en columna propia.
 - **Frecuencia / Prio**: tokens humanos de `frequency` y `priority 1–5` (sortable por prioridad).
 - Sortable por columna (prioridad por defecto desc).
-- Click en fila abre la nota (hover con `--interactive-hover`).
+- Click en fila abre la nota; doble-clic abre el Habit Editor.
 
 ## 6. Interacciones comunes (todas las vistas)
 
@@ -199,24 +201,27 @@ Rol: catálogo de hábitos con metadata y stats.
 - No añadir dependencias nuevas; `luxon` ya está en el plugin.
 - Nunca mutar `completions`/`entries` fuera de `app.fileManager.processFrontMatter` (el writer actualiza ambos en una transacción, [[Modelo de datos]] §5.2).
 - Mantener el idioma del header (`formatDate`) alineado (helper `{{formatDate ...}}` existente) y los nombres de daytimes traducibles si aplica (v1: se muestran como están en frontmatter, con mapeo i18n opcional).
-- Helpers Handlebars nuevos: `{{habitAreaLabel area}}` (etiqueta localizada del enum), `{{frequencyLabel set}}` (`everyday`/`workweek`/`weekend`/lista), `{{priorityBadge p}}`.
+- Helpers Handlebars nuevos: `{{habitAreaLabel area}}` (etiqueta localizada si coincide con un área conocida, si no el string crudo), `{{frequencyLabel set}}` (`everyday`/`workweek`/`weekend`/lista), `{{priorityBadge p}}`.
 
 ## 9. Modal Habit Editor (crear / editar hábito)
 
-**Componente**: `HabitEditorModal` (extiende `Modal` de Obsidian) · disparo: comandos "Nuevo/Editar hábito", botón `+` del header de hábitos, doble-clic en la Lista.
+**Componente**: `HabitEditorModal` (extiende `Modal` de Obsidian) · disparo: comandos "Nuevo/Editar hábito", botón `+` del header de hábitos, click en el nombre (Grid/Weekly) o doble-clic en fila (Lista/Tabla) o botón "Edit habit" (Rutina).
 
-### 9.1 Wireframe
+> **Revisado respecto al diseño original**: se quitó el campo "Título/etiqueta" (redundante con `name`); `time` es un dial circular (no un input numérico); `priority` y `maxGap` son sliders (no steppers); `status` es un switch (no un select); `color` tiene como valor por defecto el acento del tema (`--interactive-accent`) en vez de negro; `area` es un `<select>` **poblado dinámicamente** con las carpetas raíz del vault + áreas ya usadas, no un enum fijo.
+
+### 9.1 Wireframe (actual)
 
 ```
 ┌ Habit Editor ───────────────────────────────────────────────┐
 │ Nombre *        [ ______________ ]   (slug: higiene-dental) │
-│ Etiqueta        [ ______________ ]   (title, opcional)      │
 │ Descripción     [ ______________ ]                          │
-│ Tiempo (min)    [ 5 ]   Prioridad [ 1..5 ]  Status [ ⚙ ]   │
-│ Área            [ Physical ▼ ]   SubÁrea [ feed ]           │
+│ ┌ Tiempo (dial) ┐   Prioridad  [ ●───── ] 1..5              │
+│ │   ⏱ 15 min    │   Status     [ ⚪──⚫ ] Activo             │
+│ └───────────────┘                                           │
+│ Área            [ physical ▼ ]   SubÁrea [ feed ]           │
 │ Frecuencia      [ everyday ▼ ] / [lu][ma][mi][ju][vi][sá][do]│
 │ Daytimes        [x] wake up [x] morning [ ] afternoon [ ]   │
-│ HT21            Color [ ■ ]  MaxGap [ 2 ]                   │
+│ MaxGap [ ●───── ] 0..14        Color [ ■ ] (default = tema) │
 │ [ Guardar ]  [ Cancelar ]   (edición: [ Eliminar ])         │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -226,15 +231,17 @@ Rol: catálogo de hábitos con metadata y stats.
 | Campo | Regla |
 |---|---|
 | name | Obligatorio; sanitiza a filename (slug), valida **unicidad** en `habitFolderPath` al crear. |
-| title / etiqueta | Opcional; si coincide con el basename se omite al guardar. |
-| area | Dropdown de las **10 áreas** del enum (etiquetas i18n, valor = slug). |
+| area | `<select>` poblado con `HabitManager.getVaultRootFolders()` (carpetas raíz reales del vault) + cualquier área ya usada por hábitos existentes. Elegir una opción **solo** escribe el string en `frontmatter.area`; no mueve la nota de carpeta. Cualquier texto es válido (ya no hay validación contra un enum). |
 | frequency | Select (`everyday/workweek/weekend`) o multi-check de 7 días. |
-| priority | Stepper/slider 1–5, default 3. |
-| daytime | Multi-check (`wake up`, `morning`, `afternoon`, `evening`); multi permitido; si queda vacío se asume `morning` con aviso. |
-| maxGap / color | Grupo HT21 (top-level, ADR-007): stepper 0–30 y color picker. |
-| Crear | Crea `name.md` en `habitFolderPath` con el frontmatter (defaults `frequency: everyday`, `priority: 3`, `status: active`); aplica opcionalmente la plantilla `habit.md` en el cuerpo. |
-| Editar | `processFrontMatter` (preserva `completions` y `entries`); si cambia el basename, `fileManager.rename` conservando el historial. |
-| Eliminar | Solo edición, con `confirm`; borra la nota. |
+| time | Dial circular (SVG, arco de progreso + thumb draggable), rango 0–120 min. |
+| priority | Slider 1–5, default 3. |
+| status | Switch (activo/inactivo), no un select. |
+| daytime | Multi-check (`wake up`, `morning`, `afternoon`, `evening`, `night`); multi permitido; si queda vacío se asume `morning` con aviso. |
+| maxGap | Slider 0–14. |
+| color | Color picker; si la nota no trae color, el valor por defecto mostrado es el acento del tema resuelto en tiempo real (`getComputedStyle` sobre `--interactive-accent`), no negro. |
+| Crear | Crea `name.md` en `habitFolderPath` con el frontmatter (defaults `frequency: everyday`, `priority: 3`, `status: active`); **la plantilla `habit.md` opcional en el cuerpo no está implementada** (pendiente). |
+| Editar | `processFrontMatter` (preserva `completions` y `entries`); si cambia el basename, `fileManager.renameFile` conservando enlaces. |
+| Eliminar | Solo edición, con confirmación de dos clics; borra la nota. |
 
-- Validación inline (campo en rojo + tooltip) y `Notice` en errores de escritura (readonly/sync).
+- Validación inline (mensaje de error bajo el formulario) y `Notice` en errores de escritura (nombre duplicado, etc.).
 - Guardar exitoso → emite `obsidian-agenda:habits-refresh` y cierra el modal.

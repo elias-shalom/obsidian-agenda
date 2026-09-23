@@ -74,8 +74,8 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 | US-9 | Como usuario, quiero abrir la nota de un hábito desde la vista | Doble-clic en el nombre del hábito abre su nota `.md`. |
 | US-10 | Como usuario, quiero definir en qué días de la semana se realiza cada hábito | Algunos hábitos son diarios, otros solo entre semana o fines de semana; el campo `frequency` (de la nota) controla que en la **Rutina** solo aparezcan los programados para ese día y que los días no programados **no rompan la racha** en el grid. |
 | US-11 | Como usuario, quiero que los hábitos importantes tengan más peso | El campo `priority` (1–5) pondera el % de cumplimiento del día (`Σ done.priority / Σ scheduled.priority`) y ordena la **Rutina** por importancia. |
-| US-12 | Como usuario, quiero agrupar por áreas estándar | El `area` se limita a 10 áreas (`daily-plan…temporal`) con etiquetas locales; `subArea` conserva el detalle (`feed`, `clean`, …). El dashboard agrupa por estas 10 áreas. |
-| US-13 | Como usuario, quiero crear y editar mis hábitos desde el plugin | Un **modal** permite crear (nota nueva en la ruta) y editar (frontmatter) un hábito: name, etiqueta, description, time, área (10), subÁrea, frecuencia, prioridad (1–5), daytime (multi), status, maxGap y color; se preservan `completions`. |
+| US-12 | Como usuario, quiero agrupar por áreas de mi vault | `area` es un **string libre** tomado del frontmatter (ya no un enum cerrado); el combobox del editor sugiere las **carpetas raíz del vault** + áreas ya usadas. Colores/etiquetas tienen fallback determinístico para áreas sin traducción conocida. `subArea` conserva el detalle (`feed`, `clean`, …). El dashboard agrupa por estas áreas (lado a lado con "por daytime"). |
+| US-13 | Como usuario, quiero crear y editar mis hábitos desde el plugin | Un **modal** permite crear (nota nueva en la ruta) y editar (frontmatter) un hábito: name, description, time (dial), área (string libre sugerido por carpetas del vault), subÁrea, frecuencia, prioridad (slider 1–5), daytime (multi), status (switch), maxGap (slider) y color (default = acento del tema); se preservan `completions`. |
 | US-14 | Como usuario, quiero marcar solo las ocurrencias que hice | En un hábito multi-daytime, el grid muestra **una fila por `daytime`** (`morning`/`afternoon`/…) para marcarlas de forma independiente; `entries` solo refleja los días con **todas** las ocurrencias. |
 | US-15 | Como usuario, quiero que un día parcial no me rompa la racha | Marcar 1 de 3 ocurrencias no completa el día (`entries`/racha del hábito agregado en Dashboard), pero **no corta** la racha; en la Grid, cada ocurrencia lleva su propia racha independiente. |
 
@@ -92,7 +92,7 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 ### RF-2 Carga de datos
 
 - El plugin resuelve la ruta configurada contra el vault (`app.vault.getAbstractFileByPath`).
-- Si es una **carpeta**: se leen solo los `.md` directos (se ignoran subcarpetas), ordenados alfabéticamente por basename.
+- Si es una **carpeta**: se leen los `.md` de forma **recursiva** (incluye subcarpetas), ordenados alfabéticamente por basename.
 - Si es un **archivo**: se trata como un único hábito (compatibilidad con rutas a nota individual).
 - Si la ruta no existe: estado de error visible ("No habits found at 'ruta'"), sin romper el plugin.
 
@@ -100,8 +100,8 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 
 - Campos HT21 (se mantienen **top-level**, ver ADR-007): `title` (etiqueta, fallback = basename), `color` (color de celda), `maxGap` (tolerancia), `entries` (**espejo** day-level autosincronizado desde `completions`).
 - Campos propios del seguimiento: `completions = { "YYYY-MM-DD": [daytime, ...] }` — **fuente canónica** por ocurrencia; `dayCompleted` = "todas las daytimes hechas" ([[Modelo de datos]] §2.7).
-- Campos propios (ver [[Modelo de datos]] §2): `description`, `time` (min), `area` (**enum de 10**, slug inglés + etiqueta i18n), `subArea` (opcional), `frequency` (días programados, token/lista), `priority` (1–5, default 3), `daytime[]`, `status`, `related`.
-- Normalización (ver [[Modelo de datos]] §5.1): `completions` validada (claves ISO; daytimes contra `habit.daytime`), `entries` **derivada** de `completions`; fechas inválidas ignoradas; duplicados eliminados; `area` slugificada; `frequency` → `Set<number>` ISO; `priority` clamp 1–5.
+- Campos propios (ver [[Modelo de datos]] §2): `description`, `time` (min), `area` (**string libre** desde frontmatter, fallback `temporal`; ya no es un enum validado), `subArea` (opcional), `frequency` (días programados, token/lista), `priority` (1–5, default 3), `daytime[]`, `status`, `related`.
+- Normalización (ver [[Modelo de datos]] §5.1): `completions` validada (claves ISO; daytimes contra `habit.daytime`), `entries` **derivada** de `completions`; fechas inválidas ignoradas; duplicados eliminados; `area` **ya no se slugifica/valida** (se usa tal cual); `frequency` → `Set<number>` ISO; `priority` clamp 1–5.
 - **Día no programado** de un hábito es neutro en stats/racha (no rompe racha) — definido en ADR-005. **Día parcial** tampoco rompe (ADR-008).
 
 ### RF-4 Interacción de escritura (write-back por ocurrencia)
@@ -117,7 +117,7 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 
 - Suscripción a eventos `vault.on('create' | 'delete' | 'rename')` filtrando por la ruta vigilada.
 - Suscripción a `vault.on('modify')` para recargar la nota cambiada.
-- Recarga a medianoche (para que "hoy" se actualice solo).
+- **Pendiente**: recarga automática a medianoche (para que "hoy" se actualice sin interacción) — no implementada; hoy el refresco ocurre por eventos de vault o el evento global manual.
 - Evento global `obsidian-agenda:habits-refresh` para refresco desde settings.
 
 ### RF-6 Métricas por prioridad
@@ -132,9 +132,9 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
   - Comandos **"Nuevo hábito"** y **"Editar hábito"**.
   - Botón **`+`** en el header de las vistas de hábitos.
   - Doble-clic en una fila de la vista **Lista/Tabla** (abre el modal en modo edición).
-- **Campos del formulario**: name (basename), etiqueta (`title`), `description`, `time` (min), `area` (dropdown de las **10 áreas** del enum), `subArea` (texto), `frequency` (select `everyday/workweek/weekend` o multi-check de días), `priority` (1–5), `daytime` (multi-check `wake up/morning/afternoon/evening`), `status` (active/inactive), `maxGap` (0–30), `color` (color picker).
-- **Crear**: valida `name` (sanitizado para filename, **único** en la ruta), genera el frontmatter inicial (defaults `frequency: everyday`, `priority: 3`, `status: active`), crea la nota en `habitFolderPath` y aplica opcionalmente la plantilla `habit.md` en el cuerpo.
-- **Editar**: `processFrontMatter` sobre la nota existente; **preserva `completions` y `entries`**; si cambia el basename → `app.fileManager.rename`. `title` se descarta si coincide con el basename.
+- **Campos del formulario**: name (basename), `description`, `time` (dial circular, min), `area` (`<select>` poblado con carpetas raíz del vault + áreas usadas, texto libre), `subArea` (texto), `frequency` (select `everyday/workweek/weekend` o multi-check de días), `priority` (slider 1–5), `daytime` (multi-check `wake up/morning/afternoon/evening/night`), `status` (switch activo/inactivo), `maxGap` (slider 0–14), `color` (color picker, default = acento del tema).
+- **Crear**: valida `name` (sanitizado para filename, **único** en la ruta), genera el frontmatter inicial (defaults `frequency: everyday`, `priority: 3`, `status: active`), crea la nota en `habitFolderPath`. **La plantilla `habit.md` opcional en el cuerpo no está implementada** (pendiente).
+- **Editar**: `processFrontMatter` sobre la nota existente; **preserva `completions` y `entries`**; si cambia el basename → `app.fileManager.renameFile`.
 - Al guardar, `HabitManager` invalida el cache y las vistas se refrescan (se reutiliza el flujo de `modify`/refresco global).
 
 ## 5. Requerimientos no funcionales
@@ -156,7 +156,7 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 3. Un hábito con `frequency: workweek` NO pierde la racha por no marcar sábado/domingo; esos días se ven atenuados.
 4. Al editar/renombrar/borrar una nota dentro de la carpeta, las vistas se actualizan sin reabrir el plugin.
 5. El % de cumplimiento de hoy del dashboard coincide con `Σ done.priority / Σ scheduled.priority` (y se muestra también el crudo).
-6. Todas las cadenas están traducidas en los 6 idiomas (incluye 10 etiquetas de área y tokens de frecuencia); sin claves sin traducir en consola.
+6. Todas las cadenas están traducidas en los 6 idiomas (incluye etiquetas de las áreas conocidas, tokens de frecuencia, opciones de orden/agrupado); sin claves sin traducir en consola.
 7. `npm run build` y `npm run lint` pasan sin errores.
 8. El plugin sigue funcionando si la ruta no existe (mensaje claro, sin crash).
 9. En un hábito con 2+ daytimes, la Grid muestra una fila por cada `daytime`; marcar una sola fila NO completa el día agregado del hábito — `entries` solo contiene la fecha cuando **todas** las filas/ocurrencias quedan marcadas.
@@ -165,8 +165,8 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 ## 7. Fuera de alcance explicado
 
 - La **escritura en las notas diarias de seguimiento** (`habit tracker/YYYY-MM-DD.md`, toggles meta-bind y `pb*`) se mantiene fuera; la **única fuente v1** es `completions` (+ espejo `entries`) en la nota del hábito (ADR-001/002).
-- El **heatmap mensual** se reemplaza por la **grid** (más accionable y alineada a la referencia HT21).
-- El destino final de los hábitos `misc` (`clima`, `power nap`, `wake up time`) dentro del enum de áreas queda **pendiente de decisión** (candidatos `temporal`/`daily-plan`, ADR-004) y se resuelve en la migración de datos, no bloquea el desarrollo.
+- El **heatmap mensual** se reemplaza por la **grid** para el seguimiento diario; adicionalmente el Dashboard incorpora un **heatmap anual global** estilo GitHub (agregado, no estaba en el alcance original).
+- **Ya no aplica**: la decisión sobre el destino de los hábitos `misc` dentro de un enum de áreas — el área es texto libre, así que `area: misc` es simplemente un valor más (ver ADR-004 revisado en [[Modelo de datos]]).
 
 ## 8. Referencias
 

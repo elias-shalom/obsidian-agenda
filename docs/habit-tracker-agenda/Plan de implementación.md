@@ -23,34 +23,36 @@ tags:
 
 ## Fase 0 — Preparación raíz (sin lógica)
 
-- [ ] `src/habits/` creado con barrel `index.ts`.
-- [ ] Tipos y enums en `src/habits/habit.ts` (interfaces del [[Modelo de datos]] §3, incluye `HabitArea`, `frequencySet`, `priority`).
-- [ ] Extender `AgendaPluginSettings` + defaults ([[Arquitectura técnica]] §4).
-- [ ] Claves de i18n en los **6** locales (`en`, `es`, `de`, `fr`, `it`, `pt`).
-- [ ] Ficheros SCSS `_habit-grid.scss`, `_habit-routine.scss`, `_habit-overview.scss`, `_habit-weekly.scss`, `_habit-table.scss` creados (vacíos o con el namespace base) e importados en `styles.scss`.
+- [x] `src/habits/` creado con barrel `index.ts`.
+- [x] Tipos y enums en `src/habits/habit.ts` (interfaces del [[Modelo de datos]] §3, incluye `frequencySet`, `priority`; `HabitArea` es ahora `string`, ver §2.4 revisado).
+- [x] Extender `AgendaPluginSettings` + defaults ([[Arquitectura técnica]] §4).
+- [x] Claves de i18n en los **6** locales (`en`, `es`, `de`, `fr`, `it`, `pt`).
+- [x] Ficheros SCSS `_habit-grid.scss`, `_habit-routine.scss`, `_habit-overview.scss`, `_habit-weekly.scss`, `_habit-table.scss` creados e importados en `styles.scss` (+ `_habit-form.scss` para el editor, no previsto originalmente).
 
 **Verificar**: `npm run build`, `npm run lint`.
 
 ## Fase 1 — Data layer + motor de rachas (sin UI)
 
-- [ ] `habit-parser.ts`: lee `metadataCache`/`vault.read`, valida `completions` (+ **migración legacy `entries`** → `completions` sintética), resuelve `maxGap`/`color`/`title`, filtra activos, resiliencia (casos del §7 Modelo de datos).
-- [ ] **Normalización de nuevos campos**: `slugifyArea` (enum `HabitArea`, alias, fallback), `frequencyToSet` (tokens/nombres → `Set<number>` ISO), `clampPriority` (1–5, default 3), `subArea`, `parseCompletions` ([[Arquitectura técnica]] §2.6).
-- [ ] `habit-streak.ts`: port TS del bloque `renderedDates` de HT21 → `computeCells` + `computeStats`, **con `isScheduled`** (los días no programados son neutrales; racha salta esos días) y **`dayCompleted`** (días parciales neutrales, ADR-008).
-- [ ] `habit-stats.ts`: stats por área/daytime y ventanas (7/21/30 días) y `computeDashboard` con `pctWeighted` (`Σ done.priority / Σ scheduled.priority`).
-- [ ] `habit-completions.ts` (helpers puros: `dayCompleted`, `occurrencesFor`, `toggle`, `dayCompletedDates`) + `habit-writer.ts` (write-back que persiste `completions` y **re-deriva `entries`**).
-- [ ] `habit-manager.ts`: cache + eventos vault (`create/delete/rename/modify`) + timer de medianoche + evento de refresco global + `openEditor`.
-- [ ] Tests unitarios (si la configuración del repo lo permite) para `habit-streak` con fixtures de HT21 (incluye casos `gap`, deadline, DST) **y frecuencia/ocurrencias** (`workweek` no rompe racha el fin de semana; toggle en día no programado no cuenta; `dayCompleted` con multi-daytime; día parcial no rompe racha; migración legacy).
+- [x] `habit-parser.ts`: lee `metadataCache`/`vault.read`, valida `completions` (+ **migración legacy `entries`** → `completions` sintética), resuelve `maxGap`/`color`/`title`, filtra activos, resiliencia (casos del §7 Modelo de datos).
+- [x] **Normalización de campos**: `frequencyToSet` (tokens/nombres → `Set<number>` ISO), `clampPriority` (1–5, default 3), `subArea`, `parseCompletions` ([[Arquitectura técnica]] §2.6). **`area` ya no se normaliza/valida** (string libre, fallback `temporal`) — cambio respecto al plan original.
+- [x] `habit-streak.ts`: port TS del bloque `renderedDates` de HT21 → `computeCells` + `computeStats` (+ `computeOccurrenceCells`/`computeOccurrenceStats` para filas por ocurrencia), **con `isScheduled`** (los días no programados son neutrales; racha salta esos días) y **`dayCompleted`** (días parciales neutrales, ADR-008).
+- [x] `habit-stats.ts`: stats por área/daytime y ventanas (30 días + `computeYearHistory` para el heatmap anual, no previsto originalmente) y `computeDashboard` con `pctWeighted` (`Σ done.priority / Σ scheduled.priority`).
+- [x] `habit-completions.ts` (helpers puros: `dayCompleted`, `occurrencesFor`, `toggle`, `dayCompletedDates`) + `habit-writer.ts` (write-back que persiste `completions` y **re-deriva `entries`**).
+- [x] `habit-manager.ts`: cache + eventos vault (`create/delete/rename/modify`) + evento de refresco global + `openEditor` + `getVaultRootFolders()` (sugerencias de área).
+- [ ] **Timer de medianoche** — sigue sin implementarse; el refresco depende de eventos de vault o del evento global manual.
+- [ ] Tests unitarios — siguen sin existir en el repo.
 
-**Verificar**: `npm run build`; script de humo en `test-vault` (reabrir plugin, log de `getHabits()`).
+**Verificar**: `npm run build`; validado en esta sesión repetidamente, sin script de humo formal en `test-vault`.
 
 ## Fase 2 — Habit Creator (modal de crear/editar)
 
-- [ ] `habit-editor.ts`: `HabitEditorModal` (`obsidian.Modal`) con formulario completo (name, title, description, time, area, subArea, frequency, priority, daytime, status, maxGap, color) — spec [[Especificación de vistas]] §9.
-- [ ] **Crear**: `app.vault.create` de `name.md` en `habitFolderPath` (defaults `frequency: everyday`, `priority: 3`, `status: active`); aplica opcionalmente la plantilla `habit.md`.
-- [ ] **Editar**: `processFrontMatter` preservando `completions`/`entries`; `fileManager.rename` si cambia el basename; borrado con confirmación.
-- [ ] Validación (unicidad de nombre, clamps) + `Notice` de errores; `obsidian-agenda:habits-refresh` al guardar.
-- [ ] Disparadores: comandos `oa-habit-new`/`oa-habit-edit`, botón `+` en el header de hábitos, doble-clic en la Lista.
-- [ ] SCSS `_habit-form.scss`.
+- [x] `habit-editor.ts`: `HabitEditorModal` con formulario (name, description, time **[dial circular]**, area **[select dinámico de carpetas]**, subArea, frequency, priority **[slider]**, daytime, status **[switch]**, maxGap **[slider]**, color **[default = acento del tema]**) — más rico que el spec original; sin campo `title` (se quitó por redundante con `name`).
+- [x] **Crear**: `app.vault.create` de `name.md` en `habitFolderPath` (defaults `frequency: everyday`, `priority: 3`, `status: active`).
+- [ ] Plantilla `habit.md` opcional en el cuerpo — no implementada.
+- [x] **Editar**: `processFrontMatter` preservando `completions`/`entries`; `fileManager.renameFile` si cambia el basename; borrado con confirmación de dos clics.
+- [x] Validación (unicidad de nombre, clamps) + `Notice` de errores; `obsidian-agenda:habits-refresh` al guardar.
+- [x] Disparadores: comandos `oa-habit-new`/`oa-habit-edit`, botón `+` en el header (las 5 vistas), click en el nombre (Grid/Weekly), doble-clic en fila (Lista/Tabla), botón "Edit habit" (Rutina).
+- [x] SCSS `_habit-form.scss`.
 
 **Verificar**: crear y editar un hábito de prueba en el test vault; los cambios se reflejan en el grid tras refresco.
 
@@ -61,9 +63,10 @@ tags:
 - [x] **Multi-daytime resuelto con una fila por ocurrencia** (`Hábito (daytime)`), en vez de popover: cada fila calcula su propia racha/celdas con `computeOccurrenceCells`/`computeOccurrenceStats` y togglea directo, sin UI adicional.
 - [x] Celdas **no programadas** (`--oa-unscheduled`) habilitadas con `scheduled:false` (toggle permitido, no afecta stats).
 - [x] Navegación de ventana de días (`◀ ▶`), tooltips, streak y deadline, col % (sobre días programados).
-- [x] Rachas consecutivas fusionadas visualmente en una **píldora** redondeada (`--run-single/start/middle/end`), con el conteo mostrado al final de cada racha de 2+ días.
+- [x] Rachas consecutivas fusionadas visualmente en una **píldora delgada** (`--run-single/start/middle/end`), con círculo más grande para días sueltos, conteo mostrado al final de cada racha de 2+ días; color de `deadline` ligado a `--habit-color`.
 - [x] Orden configurable de filas: alfabético, área, daytime, prioridad, racha, % de cumplimiento (selector en el toolbar).
-- [x] SCSS `_habit-grid.scss` completo (sticky col, scroll horizontal, estados `--oa-ticked/gap/deadline/unscheduled`, fusión de píldoras, sombreado de fila alterna).
+- [x] Nombre del hábito como link que abre el Habit Editor precargado.
+- [x] SCSS `_habit-grid.scss` completo (sticky col, scroll horizontal, marco/borde propio, estados `--oa-ticked/gap/deadline/unscheduled`, fusión de píldoras, sombreado de fila alterna).
 - [x] Empty states y ruta inexistente.
 - [ ] ~~Celdas parciales (`--oa-partial`, `◐`)~~ — **ya no aplica**: al mostrar una fila por ocurrencia, no existe estado intermedio dentro de una fila.
 
@@ -71,35 +74,37 @@ tags:
 
 ## Fase 4 — Vista Rutina diaria
 
-- [ ] `habit-routine-view.hbs/.ts`: secciones por daytime, **solo hábitos programados ese día**, **orden por `priority` desc** + badge, checkboxes interactivos (**toggle por ocurrencia** — cada fila ya está expandida por su daytime), navegación de día, barras de progreso por daytime y área (crudo + tooltip ponderado); día parcial muestra "en progreso" (ADR-008).
-- [ ] SCSS `_habit-routine.scss`.
-- [ ] Integración del `pb`/% y del **% ponderado** sobre el día seleccionado.
+- [x] `habit-routine-view.hbs/.ts`: secciones por daytime **o por área** (selector "Agrupar por", no previsto originalmente), **solo hábitos programados ese día**, orden configurable (mismo combobox que Grid: alfabético/área/daytime/**prioridad [default]**/racha/%) + badge, checkboxes interactivos (**toggle por ocurrencia**), navegación de día, barras de progreso por daytime y área (crudo + tooltip ponderado); día parcial muestra "en progreso" (ADR-008).
+- [x] SCSS `_habit-routine.scss`.
+- [x] Integración del `pb`/% y del **% ponderado** sobre el día seleccionado.
+- [x] Botones "Open file" (abre nota) y "Edit habit" (abre el Habit Editor) — no previsto originalmente.
 
 **Verificar**: togglar desde la rutina y ver el cambio reflejado en el grid y en la nota.
 
 ## Fase 5 — Dashboard / Overview
 
-- [ ] `habit-overview-view.hbs/.ts`: cards (hoy crudo + **hoy ponderado**, rachas globales, nº hábitos), % ponderado por **enum de áreas** y por daytime, barras ponderadas de 30 días.
-- [ ] SCSS `_habit-overview.scss` (reusar widget cards).
+- [x] `habit-overview-view.hbs/.ts`: cards (hoy crudo + **hoy ponderado**, rachas globales, nº hábitos), % ponderado por **área** (string libre, ya no enum) y por daytime — mostrados **lado a lado**; barras ponderadas de 30 días **con leyendas de eje X/Y**; **heatmap anual global estilo GitHub** navegable por año (no previsto originalmente).
+- [x] SCSS `_habit-overview.scss` (reusar widget cards).
+- [x] Es la **vista inicial por defecto** de la pestaña de Hábitos (antes era la Grid).
 
 **Verificar**: valores coherentes con un día marcado a mano.
 
 ## Fase 6 — Semanal + Lista/Tabla
 
-- [ ] `habit-weekly-view` (matriz 7 días, reutiliza celdas/filas por ocurrencia de la Grid; días no programados → `·`).
-- [ ] `habit-table-view` (sortable incl. prioridad/frecuencia, clicks abren nota — y doble-clic el **Habit Editor**, columna Área localizada + SubÁrea).
-- [ ] SCSS correspondientes.
-- [ ] Comando/ribbon opcionales.
+- [x] `habit-weekly-view` (matriz 7 días, reutiliza celdas/filas por ocurrencia de la Grid; días no programados → `·`; mismo look and feel visual que la Grid — píldora delgada, círculo, sombreado alterno, marco; combobox de orden; nombre como link al editor).
+- [x] `habit-table-view` (sortable por columna incl. prioridad/frecuencia/racha/%30d, clicks abren nota — y doble-clic el **Habit Editor**, columna Área con label/color dinámico + SubÁrea en columna propia).
+- [x] SCSS correspondientes.
+- [ ] Comando/ribbon opcionales — no agregados.
 
 **Verificar**: `npm run build`, `npm run lint`, smoke de todas las tabs en desktop y sidebar (tema claro/oscuro).
 
 ## Fase 7 — Cierre
 
-- [ ] i18n audit (sin keys sueltas; incluye 10 áreas + tokens frecuencia + prioridad + **editor** + etiquetas de daytime + opciones de orden).
-- [ ] Migración de notas de hábito al nuevo esquema (`area` enum + `subArea` + `frequency` + `priority` + **`entries`→`completions`/espejo**) — pendiente de decisión del destino de `misc` (ADR-004).
+- [ ] i18n audit formal (sin keys sueltas). En la práctica cada feature nueva añadió sus claves a los 6 locales de forma consistente, incluyendo etiquetas de áreas conocidas, tokens de frecuencia, prioridad, editor, daytime, y las nuevas opciones de orden/agrupado y el heatmap anual — pero no se ha hecho una auditoría formal de claves huérfanas.
+- [ ] Migración de notas de hábito al nuevo esquema — **cambio de enfoque**: ya no aplica migrar `area` a un enum cerrado (es texto libre); sigue pendiente decidir si ofrecer una migración/organización asistida de notas legado.
 - [ ] `docs/todo.md` actualizado (desmarcar tareas de v1.1.0 según estado).
 - [ ] Changelog/MANIFEST bump si corresponde.
-- [ ] Prueba de escritura en vault real (hacer toggle en un hábito de prueba y revertir).
+- [ ] Prueba de escritura en vault real (hacer toggle en un hábito de prueba y revertir) — todo lo verificado en esta sesión fue vía `npm run build`, no en un vault real.
 
 ## Riesgos y mitigaciones
 
@@ -114,7 +119,7 @@ tags:
 | `frequency` no reflejado en rachas/% (inconsistencia) | `isScheduled` centralizado en el modelo; tests específicos (workweek/weekend). |
 | Zona horaria al computar el weekday | `DateTime.local()` con `weekday` ISO; nunca UTC. |
 | Multi-daytime con muchas filas alarga la Grid | Aceptado: cada ocurrencia es una fila real, más legible que un popover; el orden por área/daytime ayuda a agrupar visualmente. |
-| Hábitos `misc` sin migrar | No bloquea: el parser asigna fallback (`temporal`) con warn; migración formal pendiente (ADR-004). |
+| Áreas sin taxonomía cerrada generan nombres inconsistentes | Mitigado parcialmente: el combobox del editor sugiere las carpetas raíz del vault + áreas ya usadas; colores/etiquetas tienen fallback determinístico para cualquier string. |
 | Cambios de vault concurrentes (sync) | Ignorar errores de `cache` estaleado + re-intento único tras `modify`. Listener `offref` limpio en `onunload`. |
 
 ## Orden de commits sugerido

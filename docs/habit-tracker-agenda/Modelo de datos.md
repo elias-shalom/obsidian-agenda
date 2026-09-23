@@ -34,7 +34,7 @@ La **única fuente de verdad** v1 son las **notas de hábito** (`*.md`) dentro d
 name: agua
 description: hidratar al despertar
 time: 5
-area: physical            # enum de 10 áreas — ver §2.4
+area: physical            # string libre; ver §2.4 (ya no es un enum fijo)
 subArea: feed             # opcional; conserva la subcategoría antigua
 frequency: everyday       # everyday | workweek | weekend | [monday, ...] — ver §2.5
 priority: 4               # 1..5, default 3 — ver §2.6
@@ -69,7 +69,7 @@ completions:                # fuente canónica por ocurrencia (§2.7)
 | `name` | string | vault | Nombre lógico (== basename normalmente) | No |
 | `description` | string | vault | Descripción / notas de enlace | No |
 | `time` | number | vault | Minutos estimados | No |
-| `area` | enum (10) | vault | Área de vida (slug inglés) — §2.4 | Sí (fallback: derivada o `temporal`) |
+| `area` | string | vault | Área de vida, texto libre — §2.4 | No (fallback: `temporal`) |
 | `subArea` | string | vault | Subcategoría opcional (p. ej. `feed`, `skill - language`) — §2.4 | No |
 | `frequency` | token/lista | vault | Días de la semana programados — §2.5 | No (default `everyday`) |
 | `priority` | number (1–5) | vault | Importancia del hábito — §2.6 | No (default `3`) |
@@ -85,32 +85,21 @@ completions:                # fuente canónica por ocurrencia (§2.7)
 - Formato: arreglo de strings ISO `YYYY-MM-DD` (sin hora, zona local), **ordenado ascendente**, sin duplicados; fechas inválidas se ignoran al parsear.
 - En notas **legacy** (con `entries` y sin `completions`) se usa como fuente temporal para sintetizar `completions` (§5.1) y migrar sin perder rachas.
 
-### 2.4 Enumeración de áreas (`area`)
+### 2.4 Área (`area`) — string libre, no enum
 
-Los 10 slugs (en inglés, canon) son:
+> **Cambio respecto a la v1 original**: el área **ya no es un enum fijo de 10 valores validados**. `IHabit.area` es simplemente el valor crudo (recortado) de `frontmatter.area`; si la nota no trae `area` (o viene vacío) se usa el fallback `'temporal'`. El parser **no** normaliza alias (`intelectual`→`intellectual`, etc.) ni valida contra una lista — cualquier string es válido.
 
-| Slug | Área (etiqueta i18n) | Color sugerido | Habitos actuales del vault |
-|---|---|---|---|
-| `daily-plan` | Plan diario | `#b660e0` | (ver `misc`, pendiente) |
-| `emotional` | Emocional | `#d93d42` | — |
-| `financial` | Financiera | `#ed5f00` | — |
-| `intellectual` | Intelectual | `#ffba1a` | `intelectual - skill - language`, `intelectual - art` |
-| `physical` | Física | `#00b499` | `physical - feed`, `physical - clean`, `physical - training` |
-| `professional` | Profesional | `#0e9888` | `work time` |
-| `recreational` | Recreativa | `#0880ea` | — |
-| `relationship` | Relacional | `#3a5ccc` | `couple`, `dog time`, `relatives` |
-| `spiritual` | Espiritual | `#553ed0` | `pray time`, `write the day` |
-| `temporal` | Temporal | `#9383f7` (propuesta) | (`misc` → candidato, pendiente) |
+**Color y etiqueta** (`src/habits/habit.ts`):
+- `HABIT_AREA_COLORS`: paleta curada `hsl(...)` para los 10 nombres "conocidos" (los mismos slugs históricos: `daily-plan`, `emotional`, `financial`, `intellectual`, `physical`, `professional`, `recreational`, `relationship`, `spiritual`, `temporal"`), todos con el mismo tono/saturación/luminosidad (solo cambia el matiz) para verse armonizados.
+- `getAreaColor(area)`: devuelve el color curado si el nombre coincide (case-sensitive con el slug); si no, genera un `hsl(hue, 62%, 55%)` determinístico por hash del string — mismo área siempre da el mismo color, sin necesidad de registrarlo.
+- `getAreaLabel(area, i18n)`: intenta traducir `habit_area_<slug>` (slug = `area` en minúsculas, espacios/símbolos → `_`); si la clave no existe, se muestra el `area` tal cual (el nombre de la carpeta/valor de frontmatter).
+- `getAreaTextColor(area)`: color de texto (claro/oscuro) calculado por brillo percibido (YIQ) sobre `getAreaColor(area)`, para que la letra sea legible sobre cualquier color de fondo generado.
 
-**Reglas**:
-- Los **slugs se guardan en inglés** en YAML; las **etiquetas visibles** salen del i18n (`habit_area_daily_plan`, ...). Los colores se reusan en grid/rutina/dashboard.
-- La **`subArea` opcional** conserva la granularidad antigua sin perder agrupación por el enum: `area: physical` + `subArea: feed` (antes `physical - feed`).
-- **Migración de notas actuales**:
-  - `physical - feed/clean/training` → `area: physical`, `subArea: feed/clean/training`.
-  - `intelectual - skill - language` / `intelectual - art` → `area: intellectual`, `subArea: skill - language` / `art`.
-  - `relationship`, `spiritual`, `professional` → se mantienen.
-  - `misc` (`clima`, `power nap`, `wake up time`) → **decisión pendiente**: candidatos `temporal` o `daily-plan` (ver ADR-004).
-- Un `area` con valor desconocido: el parser lo **deriva** (normaliza espacios→guiones y acentos), si es irreconocible cae a `temporal` y se loguea un warn.
+**Combobox de área en el Habit Editor**: `HabitManager.getVaultRootFolders()` lista las **carpetas raíz reales del vault** (`app.vault.getRoot().children`, filtradas a carpetas) — igual mecanismo que usan `list-view`/`table-view` con `TasksFile.root` para tareas — más cualquier valor de `area` ya usado por hábitos existentes (para no perder la selección al editar uno con un valor atípico). Elegir una opción **solo** escribe el string en `frontmatter.area`; **no mueve la nota de carpeta**.
+
+**Áreas usadas actualmente en el vault** (referencia, no una lista cerrada): `daily-plan`, `emotional`, `financial`, `intellectual`, `physical`, `professional`, `recreational`, `relationship`, `spiritual`, `temporal` — y cualquier otro nombre que el usuario decida escribir (p. ej. los nombres de sus carpetas raíz tipo PARA: `config`, etc.).
+
+La **`subArea` opcional** se mantiene igual: texto libre complementario (`area: physical` + `subArea: feed`).
 
 ### 2.5 Frecuencia (`frequency`)
 
@@ -174,10 +163,10 @@ completions:
 // src/habits/habit.ts
 export type Daytime = "wake up" | "morning" | "afternoon" | "evening" | "night";
 
-export type HabitArea =
-  | "daily-plan" | "emotional" | "financial" | "intellectual" | "physical"
-  | "professional" | "recreational" | "relationship" | "spiritual" | "temporal";
+/** El área ya no es un enum fijo: es el string crudo de frontmatter.area (fallback 'temporal') */
+export type HabitArea = string;
 
+/** Áreas "conocidas" (compatibilidad con la paleta curada / i18n); no limita qué valores son válidos */
 export const HABIT_AREAS: readonly HabitArea[] = [
   "daily-plan", "emotional", "financial", "intellectual", "physical",
   "professional", "recreational", "relationship", "spiritual", "temporal",
@@ -201,7 +190,7 @@ export interface IHabit {
   title: string;          // frontmatter.title || basename
   description: string;
   time: number;           // minutos
-  area: HabitArea;        // slug del enum (§2.4)
+  area: HabitArea;        // string libre desde frontmatter.area, fallback 'temporal' (§2.4)
   subArea: string;        // "" si no hay
   frequencySet: Set<number>; // ISO weekdays 1=Mon..7=Sun (§2.5)
   priority: number;       // 1..5 (resuelto ?? 3) (§2.6)
@@ -359,11 +348,13 @@ await app.fileManager.processFrontMatter(file, (fm) => {
 - Resolución de color de un hábito: `fm.color` → `userSettings.color` (por tracker) → `settings.habitDefaultColor` → variable de tema `--interactive-accent` / `--checkbox-color`.
 - Validar con técnica `isValidCSSColor` (crear elemento, asignar `style.color`, comprobar que no quede vacío).
 
-### ADR-004 — Áreas estándar y `subArea`
+### ADR-004 — Área como string libre (revisado, ya no es enum)
 
-- **Decisión**: `area` se fija como **enum de 10 slugs en inglés** (`daily-plan…temporal`); etiquetas visibles **vía i18n**; `subArea` opcional preserva la granularidad antigua (`area: physical` + `subArea: feed`).
-- **Racional**: agrupar/filtrar/colorear de forma estable en el código y en todas las vistas, sin perder la información fina ya existente.
-- **Pendiente**: los hábitos `misc` (`clima`, `power nap`, `wake up time`) deben migrar a un área del enum. Candidatos: `temporal` (se hacen "según el tiempo disponible") o `daily-plan` (organización del día). Se decide en la migración de datos.
+- **Decisión original (v1)**: `area` se fijaba como **enum de 10 slugs en inglés** (`daily-plan…temporal`) validado por el parser.
+- **Decisión revisada (implementación actual)**: `area` es el **string libre** que traiga `frontmatter.area` (fallback `'temporal'` si falta). El parser **ya no valida ni normaliza alias** contra una lista cerrada. El combobox del Habit Editor sugiere valores tomados de las **carpetas raíz del vault** (`HabitManager.getVaultRootFolders()`) más las áreas ya usadas, pero cualquier texto es aceptado.
+- **Racional del cambio**: el enum fijo obligaba a decidir de antemano una taxonomía cerrada (bloqueando casos como `misc`) y no se adaptaba a la organización real (carpetas tipo PARA) de cada vault. Con string libre + color/etiqueta con fallback determinístico (`getAreaColor`/`getAreaLabel`, ADR-003-bis) se mantiene la consistencia visual sin imponer una lista cerrada.
+- **`subArea`** se mantiene igual: texto libre complementario (`area: physical` + `subArea: feed`).
+- **Ya no aplica**: la migración forzosa de hábitos `misc` a un slug del enum — un `area: misc` es simplemente un área más, sin decisión pendiente.
 
 ### ADR-005 — Frecuencia como días programados
 

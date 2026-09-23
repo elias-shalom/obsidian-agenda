@@ -101,7 +101,16 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [x] Rutina diaria (vista Rutina, con orden y agrupado configurables por daytime/área)
 - [x] Visualización de rachas de hábitos (píldoras/racha en Grid y Semanal, heatmap anual en el Dashboard de hábitos)
 
-## 🎯 Próximas Características (v1.1.1)
+## 🎯 Características (v1.1.1)
+
+### UX Improvements
+- [x] Configuración de settings adaptada a la API declarativa de Obsidian 1.13+ (`getSettingDefinitions()`), visible en el buscador global de ajustes en versiones nuevas; se mantiene `display()` como fallback en versiones anteriores a 1.13.0
+- [x] Icono propio por cada tab principal (Overview, List, Table, Calendar, Habits) en el tab de Obsidian, en vez de un icono compartido
+
+### Core Tasks
+- [x] Limpieza de type-safety y lint en el módulo de Habit Tracker (sin aserciones de tipo innecesarias, sin accesos inseguros a `any`)
+
+## 🎯 Próximas Características (v1.1.2)
 
 [Google Calendar](https://community.obsidian.md/plugins/google-calendar)
 [Day Planner](https://community.obsidian.md/plugins/obsidian-day-planner)

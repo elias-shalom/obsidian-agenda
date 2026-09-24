@@ -69,10 +69,20 @@
           {{/each}}
         </select>
       </div>
-      <div class="oa-form-group">
-        <label class="oa-form-label" for="oa-habit-sub-area">{{t "habit_field_sub_area"}}</label>
-        <input id="oa-habit-sub-area" type="text" class="oa-form-input" value="{{subArea}}" />
-      </div>
+    </div>
+
+    <div class="oa-form-group oa-file-picker-group">
+      <label class="oa-form-label" for="oa-habit-related-file">{{t "habit_field_related_file"}}</label>
+      <input
+        id="oa-habit-related-file"
+        type="text"
+        class="oa-form-input"
+        value="{{relatedFile}}"
+        placeholder="{{t 'habit_related_file_placeholder'}}"
+        autocomplete="off"
+      />
+      <ul id="oa-habit-related-file-suggestions" class="oa-file-suggestions oa-hidden"></ul>
+      <span id="oa-habit-related-file-hint" class="oa-file-hint"></span>
     </div>
 
     <div class="oa-form-group">
@@ -82,7 +92,7 @@
           <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
         {{/each}}
       </select>
-      <div class="oa-habit-form-weekdays {{#unless isCustomFrequency}}oa-hidden{{/unless}}">
+      <div class="oa-habit-form-weekdays">
         {{#each weekdays}}
           <label class="oa-habit-form-weekday">
             <input type="checkbox" id="oa-habit-freq-{{this.key}}" {{#if this.checked}}checked{{/if}} />

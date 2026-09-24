@@ -2,7 +2,7 @@
 
 > A comprehensive task management and calendar plugin for Obsidian
 
-[![Release](https://img.shields.io/badge/version-1.1.1-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
+[![Release](https://img.shields.io/badge/version-1.1.2-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Obsidian](https://img.shields.io/badge/Obsidian-0.13.0+-purple.svg)](https://obsidian.md)
 
@@ -75,7 +75,7 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 - **Daily Routine** - Today's habits grouped by daytime or by area (toggle), with weighted progress bars and quick actions to open the note or edit the habit
 - **Habit Dashboard** - Today's raw/weighted completion, current and best streaks, side-by-side breakdowns by area and daytime, a 30-day history chart, and a GitHub-style yearly heatmap you can navigate by year (this is now the default habit view)
 - **Weekly view** - 7-day matrix sharing the same visual language as the Grid (pills, circles, sorting)
-- **Habit Table/List** - Sortable catalog of all habits with area, sub-area, frequency, priority, daytime, time and streak columns
+- **Habit Table/List** - Sortable catalog of all habits with area, related-file link, frequency, priority, daytime, time and streak columns
 - **Habit Creator** - A modal to create and edit habits: a circular time dial, priority/max-gap sliders, an active/inactive switch, and an area combobox suggested from your vault's root folders (free-form, not a fixed list)
 
 ### 🔧 General Capabilities
@@ -221,6 +221,14 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 ---
 
 ## 📋 Changelog
+
+### Version 1.1.2 🎯
+- Habit **`subArea`** replaced by **`relatedFile`**: link a supporting note to a habit (wikilink-aware), with the same file picker/autocomplete UX as the task modal; openable from the Table (🔗 column) and Routine views
+- Habit Editor: frequency dropdown and weekday checkboxes are now two-way synced (picking a preset checks the matching days; checking days updates the dropdown to the matching preset or "Custom"); blocks saving with zero days selected
+- Habit Editor: Daytime and weekday checkboxes now lay out in a fixed 3-per-row grid
+- Grid/Weekly views: unscheduled days sandwiched inside an active streak now render as a thin connecting line instead of breaking the pill; a habit completed on a day that's since been removed from its frequency now shows a distinct "conflict" marker (circle with red diagonal) instead of silently fading away
+- Grid/Weekly views: fixed a brief flash of the wrong pill shape during the optimistic toggle-then-refresh window
+- Table view now includes inactive habits with a read-only Active/Inactive column, and only responds to double-click (single click no longer opens anything)
 
 ### Version 1.1.1 🔧
 - Settings tab now implements the Obsidian 1.13+ declarative settings API (`getSettingDefinitions()`), so plugin settings are findable via the global settings search on newer Obsidian versions; the legacy `display()` implementation is kept for older versions

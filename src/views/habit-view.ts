@@ -55,7 +55,7 @@ export abstract class HabitView extends BaseView {
 
   async onOpen(): Promise<void> {
     this.showLoadingOverlay(6, true);
-    this.habits = this.habitManager.getHabits();
+    this.habits = this.loadHabits();
     document.addEventListener('obsidian-agenda:habits-refresh', this.handleHabitsRefresh);
     await this.refreshHabitView();
   }
@@ -64,8 +64,13 @@ export abstract class HabitView extends BaseView {
     document.removeEventListener('obsidian-agenda:habits-refresh', this.handleHabitsRefresh);
   }
 
+  /** Fuente de hábitos para esta vista; las subclases pueden sobreescribirla (p. ej. Tabla incluye inactivos) */
+  protected loadHabits(): IHabit[] {
+    return this.habitManager.getHabits();
+  }
+
   private handleHabitsRefresh = (): void => {
-    this.habits = this.habitManager.getHabits();
+    this.habits = this.loadHabits();
     this.refreshHabitView().catch(console.error);
   };
 

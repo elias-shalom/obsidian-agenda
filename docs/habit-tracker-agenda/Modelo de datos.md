@@ -35,7 +35,6 @@ name: agua
 description: hidratar al despertar
 time: 5
 area: physical            # string libre; ver §2.4 (ya no es un enum fijo)
-subArea: feed             # opcional; conserva la subcategoría antigua
 frequency: everyday       # everyday | workweek | weekend | [monday, ...] — ver §2.5
 priority: 4               # 1..5, default 3 — ver §2.6
 daytime:
@@ -44,7 +43,7 @@ type: routine
 type_group: knowledge
 archetype: athlete
 status: active
-related: "[[habit gen]]"
+relatedFile: "[[habit gen]]"  # opcional; wikilink a una nota de apoyo — ver §2.4-bis
 created: 2025-07-06
 entries:                    # espejo HT21 day-level — fecha presente ⇔ día completo (§2.3)
   - 2026-07-12
@@ -70,12 +69,11 @@ completions:                # fuente canónica por ocurrencia (§2.7)
 | `description` | string | vault | Descripción / notas de enlace | No |
 | `time` | number | vault | Minutos estimados | No |
 | `area` | string | vault | Área de vida, texto libre — §2.4 | No (fallback: `temporal`) |
-| `subArea` | string | vault | Subcategoría opcional (p. ej. `feed`, `skill - language`) — §2.4 | No |
+| `relatedFile` | string | vault | Wikilink (o link inline) a una nota de apoyo del hábito — §2.4-bis | No |
 | `frequency` | token/lista | vault | Días de la semana programados — §2.5 | No (default `everyday`) |
 | `priority` | number (1–5) | vault | Importancia del hábito — §2.6 | No (default `3`) |
 | `daytime` | string[] | vault | `wake up / morning / afternoon / evening` | No |
 | `status` | string | vault | `active / ...` (se filtran inactivos) | No |
-| `related` | string \| string[] | vault | Wikilinks | No |
 | `created` | string | vault | Fecha de creación | No |
 
 ### 2.3 Formato de `entries` (espejo HT21 day-level)
@@ -99,7 +97,14 @@ completions:                # fuente canónica por ocurrencia (§2.7)
 
 **Áreas usadas actualmente en el vault** (referencia, no una lista cerrada): `daily-plan`, `emotional`, `financial`, `intellectual`, `physical`, `professional`, `recreational`, `relationship`, `spiritual`, `temporal` — y cualquier otro nombre que el usuario decida escribir (p. ej. los nombres de sus carpetas raíz tipo PARA: `config`, etc.).
 
-La **`subArea` opcional** se mantiene igual: texto libre complementario (`area: physical` + `subArea: feed`).
+### 2.4-bis Archivo relacionado (`relatedFile`)
+
+- **Reemplaza a `subArea`** (eliminado): en vez de una subcategoría de texto libre, cada hábito puede enlazar **una nota de apoyo real del vault** (material de referencia, guías, checklists, etc.).
+- Se guarda como **wikilink** (`[[Nota]]`) o **link inline** (`[Nota](Nota.md)`) según la preferencia de formato de link del usuario — generado con `app.fileManager.generateMarkdownLink(file, sourcePath)`, nunca como ruta cruda.
+- Al ser un link real de Obsidian, **sobrevive a renombrados/movimientos** de la nota relacionada (Obsidian actualiza el link solo) y aparece en "Linked mentions"/backlinks y en el grafo — a diferencia de una ruta de texto plano.
+- Resolución: `HabitManager.resolveRelatedFile(habit)` lee `metadataCache.getFileCache(habit.file).frontmatterLinks` (clave `relatedFile`) y resuelve con `getFirstLinkpathDest`; si el cache de links de frontmatter no está disponible, hace fallback manual (extrae el linktext de `[[...]]`/`[...](...)` o ruta cruda).
+- **Habit Editor**: campo de ancho completo con el mismo picker que el modal de tareas (`oa-file-picker-group` + lista de sugerencias + hint), reutilizando los estilos globales de `_modal.scss`. El hint avisa si la nota aún no existe (sin implicar que se creará sola).
+- **Se muestra/abre** desde la vista Tabla (columna 🔗 "Relacionado") y desde la vista Rutina (botón de acción adicional, solo si el hábito tiene uno configurado).
 
 ### 2.5 Frecuencia (`frequency`)
 
@@ -191,7 +196,7 @@ export interface IHabit {
   description: string;
   time: number;           // minutos
   area: HabitArea;        // string libre desde frontmatter.area, fallback 'temporal' (§2.4)
-  subArea: string;        // "" si no hay
+  relatedFile: string;    // "" si no hay; wikilink/link inline a una nota de apoyo (§2.4-bis)
   frequencySet: Set<number>; // ISO weekdays 1=Mon..7=Sun (§2.5)
   priority: number;       // 1..5 (resuelto ?? 3) (§2.6)
   daytimes: Daytime[];
@@ -353,7 +358,7 @@ await app.fileManager.processFrontMatter(file, (fm) => {
 - **Decisión original (v1)**: `area` se fijaba como **enum de 10 slugs en inglés** (`daily-plan…temporal`) validado por el parser.
 - **Decisión revisada (implementación actual)**: `area` es el **string libre** que traiga `frontmatter.area` (fallback `'temporal'` si falta). El parser **ya no valida ni normaliza alias** contra una lista cerrada. El combobox del Habit Editor sugiere valores tomados de las **carpetas raíz del vault** (`HabitManager.getVaultRootFolders()`) más las áreas ya usadas, pero cualquier texto es aceptado.
 - **Racional del cambio**: el enum fijo obligaba a decidir de antemano una taxonomía cerrada (bloqueando casos como `misc`) y no se adaptaba a la organización real (carpetas tipo PARA) de cada vault. Con string libre + color/etiqueta con fallback determinístico (`getAreaColor`/`getAreaLabel`, ADR-003-bis) se mantiene la consistencia visual sin imponer una lista cerrada.
-- **`subArea`** se mantiene igual: texto libre complementario (`area: physical` + `subArea: feed`).
+- **`subArea` fue eliminado y reemplazado por `relatedFile`** (§2.4-bis): en vez de una subcategoría de texto libre, el hábito enlaza una nota real del vault como wikilink — el campo `related` (wikilink) que este documento planeaba originalmente quedó implementado bajo el nombre `relatedFile`.
 - **Ya no aplica**: la migración forzosa de hábitos `misc` a un slug del enum — un `area: misc` es simplemente un área más, sin decisión pendiente.
 
 ### ADR-005 — Frecuencia como días programados

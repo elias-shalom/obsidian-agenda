@@ -47,12 +47,12 @@ Añadir al plugin **obsidian-agenda** un módulo `src/habits/` con:
 | **Rutina diaria** | Estado de hoy (y navegable) organizado por `daytime`, solo hábitos programados ese día, ordenados por prioridad, con porcentajes (cumplimiento por **ocurrencia**). |
 | **Dashboard / Overview** | Métricas: cumplimiento de hoy (crudo y **ponderado por prioridad**), rachas, % por área (string libre, ya no un enum cerrado) y por daytime lado a lado, mini-historial de 30 días con leyendas, y heatmap anual global estilo GitHub. **Es la vista inicial por defecto**. |
 | **Semanal** | Matriz hábito × día de la semana (días no programados atenuados). |
-| **Lista / Tabla** | Catálogo con área (string libre + `subArea`), frecuencia, prioridad, daytime, tiempo y rachas. |
+| **Lista / Tabla** | Catálogo con área (string libre), enlace a archivo relacionado, frecuencia, prioridad, daytime, tiempo y rachas. |
 | **Habit Creator** | **Modal** para **crear/editar** hábitos (nota nueva o actualización de frontmatter) con toda la metadata. |
 
 La vista **Grid** se basa en la referencia de código abierto **Habit Tracker 21** (`github.com/zincplusplus/habit-tracker`, MIT) replicando su comportamiento en el stack del plugin (TypeScript + Handlebars + luxon + SCSS). Además, un **Habit Creator** (modal) permite crear y editar hábitos sin salir del plugin.
 
-**Metadata extendida** en las notas de hábito (ver [[Modelo de datos]]): `area` (string libre desde frontmatter, ya no un enum cerrado; el editor sugiere las carpetas raíz del vault), `subArea` (detalle opcional), `frequency` (`everyday`/`workweek`/`weekend`/días), `priority` (1–5), `daytime` y **`completions`** (mapa `fecha → [daytimes]`, seguimiento por ocurrencia); `entries` queda como **espejo HT21** autosincronizado.
+**Metadata extendida** en las notas de hábito (ver [[Modelo de datos]]): `area` (string libre desde frontmatter, ya no un enum cerrado; el editor sugiere las carpetas raíz del vault), `relatedFile` (wikilink opcional a una nota de apoyo, abrible desde Tabla y Rutina), `frequency` (`everyday`/`workweek`/`weekend`/días), `priority` (1–5), `daytime` y **`completions`** (mapa `fecha → [daytimes]`, seguimiento por ocurrencia); `entries` queda como **espejo HT21** autosincronizado.
 
 ## Mapa de documentos
 

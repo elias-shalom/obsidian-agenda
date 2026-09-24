@@ -6,7 +6,7 @@ import { I18n } from '../core/i18n';
 import { TaskManager } from '../core/task-manager';
 import { HabitManager } from '../habits';
 import type { Daytime, HabitArea } from '../habits';
-import { computeOccurrenceCells, computeOccurrenceStats } from '../habits/habit-streak';
+import { computeOccurrenceCells, computeOccurrenceStats, computeUnscheduledBridges } from '../habits/habit-streak';
 
 export const HABIT_WEEKLY_VIEW_TYPE = 'habit-weekly-view';
 
@@ -78,6 +78,7 @@ export class HabitWeeklyView extends HabitView {
 
       for (const daytime of daytimes) {
         const cells = computeOccurrenceCells(habit, daytime, dates, habit.maxGap, this.plugin.settings.habitShowStreaks);
+        const bridges = computeUnscheduledBridges(cells);
         const scheduledCells = cells.filter(cell => cell.scheduled);
         const doneCount = scheduledCells.filter(cell => cell.ticked).length;
         const pct = scheduledCells.length === 0 ? 0 : Math.round((doneCount / scheduledCells.length) * 100);
@@ -92,11 +93,14 @@ export class HabitWeeklyView extends HabitView {
           area: habit.area,
           priority: habit.priority,
           daytime,
-          cells: cells.map(cell => {
-            const isRun = cell.ticked || cell.gap;
+          cells: cells.map((cell, index) => {
+            const isRun = cell.scheduled && (cell.ticked || cell.gap);
             return {
               ...cell,
               actual: cell.date === todayIso,
+              bridge: bridges[index],
+              // Marcado como hecho pero fuera de la frecuencia actual (se cambió la config después de completarlo)
+              unscheduledTicked: !cell.scheduled && cell.ticked,
               runSingle: isRun && cell.streakStart && cell.streakEnd,
               runStart: isRun && cell.streakStart && !cell.streakEnd,
               runMiddle: isRun && !cell.streakStart && !cell.streakEnd,

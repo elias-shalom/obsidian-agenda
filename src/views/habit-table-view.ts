@@ -30,13 +30,14 @@ interface TableRow {
   color: string;
   areaLabel: string;
   areaColor: string;
-  subArea: string;
+  hasRelatedFile: boolean;
   frequency: string;
   priority: number;
   daytimes: string[];
   time: number;
   streak: number;
   pct30d: number;
+  active: boolean;
 }
 
 export class HabitTableView extends HabitView {
@@ -63,6 +64,11 @@ export class HabitTableView extends HabitView {
 
   protected get viewTitleKey(): string {
     return 'habit_list_title';
+  }
+
+  /** A diferencia de las demás vistas de hábitos, la Tabla también muestra los inactivos */
+  protected loadHabits(): IHabit[] {
+    return this.habitManager.getAllHabits();
   }
 
   private frequencyLabel(habit: IHabit): string {
@@ -101,7 +107,6 @@ export class HabitTableView extends HabitView {
       switch (this.sortKey) {
         case 'title': cmp = a.title.localeCompare(b.title); break;
         case 'area': cmp = a.areaLabel.localeCompare(b.areaLabel); break;
-        case 'subArea': cmp = a.subArea.localeCompare(b.subArea); break;
         case 'frequency': cmp = a.frequency.localeCompare(b.frequency); break;
         case 'daytimes': cmp = a.daytimes.join(',').localeCompare(b.daytimes.join(',')); break;
         case 'time': cmp = a.time - b.time; break;
@@ -123,13 +128,14 @@ export class HabitTableView extends HabitView {
       color: habit.color,
       areaLabel: getAreaLabel(habit.area, this.i18n),
       areaColor: getAreaColor(habit.area),
-      subArea: habit.subArea,
+      hasRelatedFile: !!habit.relatedFile,
       frequency: this.frequencyLabel(habit),
       priority: habit.priority,
       daytimes: habit.daytimes.map(daytime => this.i18n.t(daytimeLabelKey(daytime))),
       time: habit.time,
       streak: computeStats(habit).current,
       pct30d: this.pct30d(habit),
+      active: habit.status !== 'inactive',
     }));
 
     this.sortRows(rows);
@@ -149,7 +155,7 @@ export class HabitTableView extends HabitView {
       this.sortDesc = !this.sortDesc;
     } else {
       this.sortKey = key;
-      this.sortDesc = key !== 'title' && key !== 'area' && key !== 'subArea' && key !== 'frequency' && key !== 'daytimes';
+      this.sortDesc = key !== 'title' && key !== 'area' && key !== 'frequency' && key !== 'daytimes';
     }
   }
 
@@ -171,14 +177,20 @@ export class HabitTableView extends HabitView {
       const habitPath = row.getAttribute('data-habit-id');
       if (!habitPath) return;
 
-      row.addEventListener('click', () => {
-        this.openTaskFile(habitPath);
-      });
-
-      row.addEventListener('dblclick', (event) => {
-        event.stopPropagation();
+      row.addEventListener('dblclick', () => {
         const habit = this.habits.find(item => item.file.path === habitPath);
         if (habit) this.habitManager.openEditor(habit);
+      });
+    });
+
+    container.querySelectorAll<HTMLButtonElement>('[data-action="open-related"]').forEach(button => {
+      button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const habitPath = button.getAttribute('data-habit-id');
+        const habit = this.habits.find(item => item.file.path === habitPath);
+        if (!habit) return;
+        const target = this.habitManager.resolveRelatedFile(habit);
+        if (target) this.openTaskFile(target.path).catch(console.error);
       });
     });
   }

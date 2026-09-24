@@ -102,7 +102,7 @@ export interface IHabit {
   description: string;
   time: number;
   area: HabitArea;
-  subArea: string;
+  relatedFile: string;
   frequencySet: Set<number>;
   priority: number;
   daytimes: Daytime[];

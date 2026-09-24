@@ -68,6 +68,31 @@ export class HabitManager {
     return [...names].sort((a, b) => a.localeCompare(b));
   }
 
+  /** Resuelve el archivo relacionado de un hábito (wikilink o link inline) al TFile real, o null si no se encuentra */
+  resolveRelatedFile(habit: IHabit): TFile | null {
+    const raw = habit.relatedFile.trim();
+    if (!raw) return null;
+
+    const cache = this.app.metadataCache.getFileCache(habit.file);
+    const linkCache = cache?.frontmatterLinks?.find(link => link.key === 'relatedFile');
+
+    let linktext = linkCache?.link;
+    if (!linktext) {
+      const inlineMatch = raw.match(/^\[.*?\]\((.*?)\)$/);
+      if (inlineMatch) {
+        try { linktext = decodeURIComponent(inlineMatch[1]); } catch { linktext = inlineMatch[1]; }
+      } else {
+        linktext = raw.replace(/^\[\[|\]\]$/g, '').split('|')[0].split('#')[0];
+      }
+    }
+
+    const dest = this.app.metadataCache.getFirstLinkpathDest(linktext, habit.file.path);
+    if (dest) return dest;
+
+    const fallback = this.app.vault.getAbstractFileByPath(linktext);
+    return fallback instanceof TFile ? fallback : null;
+  }
+
   private registerEvents(): void {
     this.eventRefs.push(
       this.app.vault.on('create', (file) => {
@@ -129,7 +154,14 @@ export class HabitManager {
     this.habitCache = new Map(habits.map(habit => [habit.file.path, habit]));
   }
 
+  /** Hábitos activos (usado por Grid/Weekly/Routine/Dashboard) */
   getHabits(): IHabit[] {
+    this.refreshCache();
+    return [...this.habitCache.values()].filter(habit => habit.status !== 'inactive').sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /** Todos los hábitos, incluidos los inactivos (usado por la vista Tabla/Lista) */
+  getAllHabits(): IHabit[] {
     this.refreshCache();
     return [...this.habitCache.values()].sort((a, b) => a.name.localeCompare(b.name));
   }

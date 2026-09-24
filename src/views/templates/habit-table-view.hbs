@@ -24,18 +24,19 @@
         <tr>
           <th data-sort="title">{{t "habit_field_name"}}</th>
           <th data-sort="area">{{t "habit_area"}}</th>
-          <th data-sort="subArea">{{t "habit_sub_area"}}</th>
+          <th>{{t "habit_related_file"}}</th>
           <th data-sort="frequency">{{t "habit_frequency"}}</th>
           <th data-sort="priority">{{t "habit_priority"}}</th>
           <th data-sort="daytimes">{{t "habit_daytime"}}</th>
           <th data-sort="time">{{t "estimated_time"}}</th>
           <th data-sort="streak">{{t "habit_streak"}}</th>
           <th data-sort="pct30d">{{t "habit_completed_today"}} (30d)</th>
+          <th>{{t "habit_field_status"}}</th>
         </tr>
       </thead>
       <tbody>
         {{#each habits}}
-        <tr data-habit-id="{{this.id}}">
+        <tr data-habit-id="{{this.id}}" class="{{#unless this.active}}oa-habit-table-row--inactive{{/unless}}">
           <td class="oa-habit-table-name">
             <span class="oa-habit-table-name-inner">
               {{#if this.color}}
@@ -52,9 +53,9 @@
               <span class="oa-habit-table-area-label">{{this.areaLabel}}</span>
             </span>
           </td>
-          <td class="oa-habit-table-subarea-cell">
-            {{#if this.subArea}}
-              <span class="oa-habit-table-subarea">{{this.subArea}}</span>
+          <td class="oa-habit-table-related-cell">
+            {{#if this.hasRelatedFile}}
+              <button type="button" class="oa-habit-table-related-btn" data-action="open-related" data-habit-id="{{this.id}}" title="{{t 'habit_open_related_file'}}" aria-label="{{t 'habit_open_related_file'}}">🔗</button>
             {{/if}}
           </td>
           <td>
@@ -73,6 +74,12 @@
           <td class="oa-habit-table-time">{{this.time}}m</td>
           <td class="oa-habit-table-streak {{#if this.streak}}oa-habit-table-streak--active{{/if}}">{{this.streak}}</td>
           <td class="oa-habit-table-pct">{{this.pct30d}}%</td>
+          <td class="oa-habit-table-status">
+            <label class="oa-switch oa-switch--compact oa-switch--readonly">
+              <input type="checkbox" disabled {{#if this.active}}checked{{/if}} />
+              <span class="oa-switch-track"><span class="oa-switch-thumb"></span></span>
+            </label>
+          </td>
         </tr>
         {{/each}}
       </tbody>

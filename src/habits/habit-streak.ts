@@ -352,3 +352,22 @@ export function computeOccurrenceStats(habit: IHabit, daytime: Daytime): IHabitS
     lastDate: dates[dates.length - 1] ?? null,
   };
 }
+
+/** Días no programados que quedan encerrados entre dos celdas de una misma racha (ticked/gap a ambos lados) */
+export function computeUnscheduledBridges(cells: Pick<IHabitCell, 'scheduled' | 'ticked' | 'gap'>[]): boolean[] {
+  return cells.map((cell, index) => {
+    if (cell.scheduled) return false;
+
+    let previous: Pick<IHabitCell, 'scheduled' | 'ticked' | 'gap'> | null = null;
+    for (let i = index - 1; i >= 0; i -= 1) {
+      if (cells[i].scheduled) { previous = cells[i]; break; }
+    }
+
+    let next: Pick<IHabitCell, 'scheduled' | 'ticked' | 'gap'> | null = null;
+    for (let i = index + 1; i < cells.length; i += 1) {
+      if (cells[i].scheduled) { next = cells[i]; break; }
+    }
+
+    return !!previous && !!next && (previous.ticked || previous.gap) && (next.ticked || next.gap);
+  });
+}

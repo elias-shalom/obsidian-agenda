@@ -75,6 +75,38 @@
   border-bottom: none;
 }
 
+.oa-habit-table-row--inactive {
+  opacity: 0.55;
+}
+
+.oa-habit-table-status {
+  text-align: center;
+}
+
+// Variante compacta de .oa-switch (_habit-form.scss) para encajar en el alto de una fila de tabla.
+.oa-switch--compact {
+  padding: 0;
+
+  .oa-switch-track {
+    width: 28px;
+    height: 16px;
+  }
+
+  .oa-switch-thumb {
+    width: 12px;
+    height: 12px;
+  }
+
+  input[type="checkbox"]:checked + .oa-switch-track .oa-switch-thumb {
+    transform: translateX(12px);
+  }
+}
+
+.oa-switch--readonly {
+  cursor: default;
+  pointer-events: none;
+}
+
 .oa-habit-table-name {
   min-width: 180px;
   white-space: nowrap;

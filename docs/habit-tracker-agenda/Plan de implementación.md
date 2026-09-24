@@ -92,7 +92,7 @@ tags:
 ## Fase 6 — Semanal + Lista/Tabla
 
 - [x] `habit-weekly-view` (matriz 7 días, reutiliza celdas/filas por ocurrencia de la Grid; días no programados → `·`; mismo look and feel visual que la Grid — píldora delgada, círculo, sombreado alterno, marco; combobox de orden; nombre como link al editor).
-- [x] `habit-table-view` (sortable por columna incl. prioridad/frecuencia/racha/%30d, clicks abren nota — y doble-clic el **Habit Editor**, columna Área con label/color dinámico + SubÁrea en columna propia).
+- [x] `habit-table-view` (sortable por columna incl. prioridad/frecuencia/racha/%30d, doble-clic abre el **Habit Editor** — el clic simple no hace nada, columna Área con label/color dinámico + columna "Relacionado" con link a la nota de apoyo).
 - [x] SCSS correspondientes.
 - [ ] Comando/ribbon opcionales — no agregados.
 

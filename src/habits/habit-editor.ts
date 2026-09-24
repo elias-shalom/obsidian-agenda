@@ -21,6 +21,11 @@ const WEEKDAY_OPTIONS: { key: string; iso: number }[] = [
   { key: 'saturday', iso: 6 },
   { key: 'sunday', iso: 7 },
 ];
+const FREQUENCY_PRESETS: Record<'everyday' | 'workweek' | 'weekend', number[]> = {
+  everyday: [1, 2, 3, 4, 5, 6, 7],
+  workweek: [1, 2, 3, 4, 5],
+  weekend: [6, 7],
+};
 
 function daytimeLabelKey(daytime: Daytime): string {
   return `habit_daytime_${daytime.replace(/\s+/g, '_')}`;
@@ -112,11 +117,12 @@ export class HabitEditorModal extends Modal {
         { value: 'weekend', label: this.i18n.t('habit_freq_weekend'), selected: frequencyMode === 'weekend' },
         { value: 'custom', label: this.i18n.t('habit_freq_custom'), selected: frequencyMode === 'custom' },
       ],
-      isCustomFrequency: frequencyMode === 'custom',
       weekdays: WEEKDAY_OPTIONS.map(({ key, iso }) => ({
         key,
         label: this.i18n.t(`habit_freq_${key}`),
-        checked: habit ? habit.frequencySet.has(iso) : false,
+        checked: habit
+          ? habit.frequencySet.has(iso)
+          : (FREQUENCY_PRESETS[frequencyMode as keyof typeof FREQUENCY_PRESETS]?.includes(iso) ?? false),
       })),
       daytimes: DAYTIME_OPTIONS.map(daytime => ({
         value: daytime,
@@ -141,16 +147,11 @@ export class HabitEditorModal extends Modal {
 
   private attachListeners(): void {
     const form = this.contentEl.querySelector<HTMLFormElement>('#oa-habit-form');
-    const frequencySelect = this.contentEl.querySelector<HTMLSelectElement>('#oa-habit-frequency');
-    const customDaysGroup = this.contentEl.querySelector<HTMLElement>('.oa-habit-form-weekdays');
     const cancelButton = this.contentEl.querySelector<HTMLButtonElement>('#oa-habit-cancel');
     const deleteButton = this.contentEl.querySelector<HTMLButtonElement>('#oa-habit-delete');
     const errorEl = this.contentEl.querySelector<HTMLElement>('#oa-habit-form-error');
 
-    frequencySelect?.addEventListener('change', () => {
-      const isCustom = frequencySelect.value === 'custom';
-      customDaysGroup?.toggleClass('oa-hidden', !isCustom);
-    });
+    this.attachFrequencySync();
 
     const statusCheckbox = this.contentEl.querySelector<HTMLInputElement>('#oa-habit-status');
     const statusLabel = this.contentEl.querySelector<HTMLElement>('#oa-habit-status-label');
@@ -219,6 +220,45 @@ export class HabitEditorModal extends Modal {
     };
     slider.addEventListener('input', update);
     update();
+  }
+
+  /** Sincroniza en ambas direcciones el combo de frecuencia y los checkboxes de días */
+  private attachFrequencySync(): void {
+    const select = this.contentEl.querySelector<HTMLSelectElement>('#oa-habit-frequency');
+    if (!select) return;
+
+    const checkboxes = WEEKDAY_OPTIONS.map(({ key, iso }) => ({
+      iso,
+      input: this.contentEl.querySelector<HTMLInputElement>(`#oa-habit-freq-${key}`),
+    }));
+
+    const applyPreset = (mode: string) => {
+      const days = FREQUENCY_PRESETS[mode as keyof typeof FREQUENCY_PRESETS];
+      if (!days) return;
+      checkboxes.forEach(({ iso, input }) => {
+        if (input) input.checked = days.includes(iso);
+      });
+    };
+
+    const computeModeFromCheckboxes = (): 'everyday' | 'workweek' | 'weekend' | 'custom' => {
+      const checked = checkboxes.filter(({ input }) => input?.checked).map(({ iso }) => iso).sort();
+      const matches = (days: number[]) => checked.length === days.length && days.every(day => checked.includes(day));
+
+      if (matches(FREQUENCY_PRESETS.everyday)) return 'everyday';
+      if (matches(FREQUENCY_PRESETS.workweek)) return 'workweek';
+      if (matches(FREQUENCY_PRESETS.weekend)) return 'weekend';
+      return 'custom';
+    };
+
+    select.addEventListener('change', () => {
+      if (select.value !== 'custom') applyPreset(select.value);
+    });
+
+    checkboxes.forEach(({ input }) => {
+      input?.addEventListener('change', () => {
+        select.value = computeModeFromCheckboxes();
+      });
+    });
   }
 
   /** Resuelve el color de acento activo del tema a un hex válido para <input type="color"> */
@@ -421,6 +461,10 @@ export class HabitEditorModal extends Modal {
 
     if (!values.name) {
       throw new Error(this.i18n.t('habit_name_required'));
+    }
+
+    if (Array.isArray(values.frequency) && values.frequency.length === 0) {
+      throw new Error(this.i18n.t('habit_frequency_required'));
     }
 
     if (values.daytimes.length === 0) {

@@ -31,11 +31,12 @@
           <th data-sort="time">{{t "estimated_time"}}</th>
           <th data-sort="streak">{{t "habit_streak"}}</th>
           <th data-sort="pct30d">{{t "habit_completed_today"}} (30d)</th>
+          <th>{{t "habit_field_status"}}</th>
         </tr>
       </thead>
       <tbody>
         {{#each habits}}
-        <tr data-habit-id="{{this.id}}">
+        <tr data-habit-id="{{this.id}}" class="{{#unless this.active}}oa-habit-table-row--inactive{{/unless}}">
           <td class="oa-habit-table-name">
             <span class="oa-habit-table-name-inner">
               {{#if this.color}}
@@ -73,6 +74,12 @@
           <td class="oa-habit-table-time">{{this.time}}m</td>
           <td class="oa-habit-table-streak {{#if this.streak}}oa-habit-table-streak--active{{/if}}">{{this.streak}}</td>
           <td class="oa-habit-table-pct">{{this.pct30d}}%</td>
+          <td class="oa-habit-table-status">
+            <label class="oa-switch oa-switch--compact oa-switch--readonly">
+              <input type="checkbox" disabled {{#if this.active}}checked{{/if}} />
+              <span class="oa-switch-track"><span class="oa-switch-thumb"></span></span>
+            </label>
+          </td>
         </tr>
         {{/each}}
       </tbody>

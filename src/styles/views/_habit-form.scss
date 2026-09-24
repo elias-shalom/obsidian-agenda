@@ -56,8 +56,8 @@
 
 .oa-habit-form-weekdays,
 .oa-habit-form-daytimes {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.6rem;
   margin-top: 0.5rem;
 }

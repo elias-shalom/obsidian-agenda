@@ -179,7 +179,7 @@ Rol: catálogo de hábitos con metadata y stats.
 - **Área**: `getAreaLabel(area, i18n)` — traduce si coincide con un área conocida, si no muestra el string crudo (ya no es un enum cerrado); `SubÁrea` en columna propia.
 - **Frecuencia / Prio**: tokens humanos de `frequency` y `priority 1–5` (sortable por prioridad).
 - Sortable por columna (prioridad por defecto desc).
-- Click en fila abre la nota; doble-clic abre el Habit Editor.
+- Doble-clic en fila abre el Habit Editor (el clic simple ya no hace nada).
 
 ## 6. Interacciones comunes (todas las vistas)
 

@@ -63,6 +63,8 @@
               {{~#if this.gap}} oa-habit-weekly-cell--gap{{/if}}
               {{~#if this.deadline}} oa-habit-weekly-cell--deadline{{/if}}
               {{~#unless this.scheduled}} oa-habit-weekly-cell--unscheduled{{/unless}}
+              {{~#if this.bridge}} oa-habit-weekly-cell--bridge{{/if}}
+              {{~#if this.unscheduledTicked}} oa-habit-weekly-cell--unscheduled-ticked{{/if}}
               {{~#if this.actual}} oa-habit-weekly-cell--today{{/if}}
               {{~#if this.runSingle}} oa-habit-weekly-cell--run-single{{/if}}
               {{~#if this.runStart}} oa-habit-weekly-cell--run-start{{/if}}

@@ -143,11 +143,8 @@ function normalizeDaytimes(value: unknown): Daytime[] {
 }
 
 export function parseHabit(file: TFile, fm: Record<string, unknown>, settings: AgendaPluginSettings): IHabit | null {
-  const status = String(fm.status ?? 'active').trim().toLowerCase();
-
-  if (status === 'inactive' || status === 'archived' || status === 'disabled') {
-    return null;
-  }
+  const rawStatus = String(fm.status ?? 'active').trim().toLowerCase();
+  const status = rawStatus === 'inactive' || rawStatus === 'archived' || rawStatus === 'disabled' ? 'inactive' : 'active';
 
   const area = String(fm.area ?? '').trim() || 'temporal';
 
@@ -178,7 +175,7 @@ export function parseHabit(file: TFile, fm: Record<string, unknown>, settings: A
     daytimes,
     color: String(fm.color ?? settings.habitDefaultColor ?? '').trim(),
     maxGap: Number.isFinite(maxGapValue) ? Math.max(0, Math.round(maxGapValue)) : 0,
-    status: status || 'active',
+    status,
     completions,
     entries: new Set(dayCompletedDates(completions, { daytimes })),
   };

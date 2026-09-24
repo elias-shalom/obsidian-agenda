@@ -37,6 +37,7 @@ interface TableRow {
   time: number;
   streak: number;
   pct30d: number;
+  active: boolean;
 }
 
 export class HabitTableView extends HabitView {
@@ -63,6 +64,11 @@ export class HabitTableView extends HabitView {
 
   protected get viewTitleKey(): string {
     return 'habit_list_title';
+  }
+
+  /** A diferencia de las demás vistas de hábitos, la Tabla también muestra los inactivos */
+  protected loadHabits(): IHabit[] {
+    return this.habitManager.getAllHabits();
   }
 
   private frequencyLabel(habit: IHabit): string {
@@ -129,6 +135,7 @@ export class HabitTableView extends HabitView {
       time: habit.time,
       streak: computeStats(habit).current,
       pct30d: this.pct30d(habit),
+      active: habit.status !== 'inactive',
     }));
 
     this.sortRows(rows);
@@ -170,12 +177,7 @@ export class HabitTableView extends HabitView {
       const habitPath = row.getAttribute('data-habit-id');
       if (!habitPath) return;
 
-      row.addEventListener('click', () => {
-        this.openTaskFile(habitPath).catch(console.error);
-      });
-
-      row.addEventListener('dblclick', (event) => {
-        event.stopPropagation();
+      row.addEventListener('dblclick', () => {
         const habit = this.habits.find(item => item.file.path === habitPath);
         if (habit) this.habitManager.openEditor(habit);
       });

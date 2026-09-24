@@ -92,7 +92,7 @@
           <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
         {{/each}}
       </select>
-      <div class="oa-habit-form-weekdays {{#unless isCustomFrequency}}oa-hidden{{/unless}}">
+      <div class="oa-habit-form-weekdays">
         {{#each weekdays}}
           <label class="oa-habit-form-weekday">
             <input type="checkbox" id="oa-habit-freq-{{this.key}}" {{#if this.checked}}checked{{/if}} />

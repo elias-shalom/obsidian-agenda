@@ -154,7 +154,14 @@ export class HabitManager {
     this.habitCache = new Map(habits.map(habit => [habit.file.path, habit]));
   }
 
+  /** Hábitos activos (usado por Grid/Weekly/Routine/Dashboard) */
   getHabits(): IHabit[] {
+    this.refreshCache();
+    return [...this.habitCache.values()].filter(habit => habit.status !== 'inactive').sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /** Todos los hábitos, incluidos los inactivos (usado por la vista Tabla/Lista) */
+  getAllHabits(): IHabit[] {
     this.refreshCache();
     return [...this.habitCache.values()].sort((a, b) => a.name.localeCompare(b.name));
   }

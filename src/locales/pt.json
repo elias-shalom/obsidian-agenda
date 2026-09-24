@@ -298,6 +298,7 @@
   "habit_name_required": "O nome é obrigatório",
   "habit_name_exists": "Já existe um hábito com esse nome",
   "habit_daytime_required": "Selecione ao menos um período; será usado 'manhã' por padrão",
+  "habit_frequency_required": "Selecione ao menos um dia",
   "habit_created": "Hábito criado",
   "habit_updated": "Hábito atualizado",
   "habit_delete_confirm": "Clique novamente para confirmar a exclusão",

@@ -298,6 +298,7 @@
   "habit_name_required": "Il nome è obbligatorio",
   "habit_name_exists": "Esiste già un'abitudine con questo nome",
   "habit_daytime_required": "Seleziona almeno un momento; verrà usato 'mattina' come predefinito",
+  "habit_frequency_required": "Seleziona almeno un giorno",
   "habit_created": "Abitudine creata",
   "habit_updated": "Abitudine aggiornata",
   "habit_delete_confirm": "Clicca di nuovo per confermare l'eliminazione",

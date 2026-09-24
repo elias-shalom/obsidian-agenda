@@ -298,6 +298,7 @@
   "habit_name_required": "Name ist erforderlich",
   "habit_name_exists": "Eine Gewohnheit mit diesem Namen existiert bereits",
   "habit_daytime_required": "Wähle mindestens eine Tageszeit; Standard ist Morgen",
+  "habit_frequency_required": "Wähle mindestens einen Tag",
   "habit_created": "Gewohnheit erstellt",
   "habit_updated": "Gewohnheit aktualisiert",
   "habit_delete_confirm": "Erneut klicken, um das Löschen zu bestätigen",

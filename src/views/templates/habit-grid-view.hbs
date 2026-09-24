@@ -62,6 +62,8 @@
               {{~#if this.gap}} oa-habit-grid-cell--gap{{/if}}
               {{~#if this.deadline}} oa-habit-grid-cell--deadline{{/if}}
               {{~#unless this.scheduled}} oa-habit-grid-cell--unscheduled{{/unless}}
+              {{~#if this.bridge}} oa-habit-grid-cell--bridge{{/if}}
+              {{~#if this.unscheduledTicked}} oa-habit-grid-cell--unscheduled-ticked{{/if}}
               {{~#if this.actual}} oa-habit-grid-cell--today{{/if}}
               {{~#if this.runSingle}} oa-habit-grid-cell--run-single{{/if}}
               {{~#if this.runStart}} oa-habit-grid-cell--run-start{{/if}}

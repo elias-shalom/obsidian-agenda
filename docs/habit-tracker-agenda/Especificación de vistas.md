@@ -140,7 +140,7 @@ Rol: métricas globales agregadas. **Es la vista inicial por defecto** al abrir 
 ```
 
 - Cards: cumplimiento de hoy **crudo** (`pbdaily` equivalente) y **ponderado** (`pctWeighted`), racha actual global (máximo entre hábitos), racha máxima, número de hábitos.
-- **Por área** y **Por daytime**: dos secciones lado a lado (`.oa-habit-overview-columns`, CSS Grid `auto-fit minmax(220px,1fr)`, se apilan en paneles angostos). Área ya **no** es el enum de 10 valores: cada barra usa `getAreaLabel`/`getAreaColor` (string libre con fallback determinístico, ver [[Modelo de datos]] §2.4); `subArea` solo como detalle en la Lista.
+- **Por área** y **Por daytime**: dos secciones lado a lado (`.oa-habit-overview-columns`, CSS Grid `auto-fit minmax(220px,1fr)`, se apilan en paneles angostos). Área ya **no** es el enum de 10 valores: cada barra usa `getAreaLabel`/`getAreaColor` (string libre con fallback determinístico, ver [[Modelo de datos]] §2.4).
 - **Gráfico de 30 días**: barra por día con el **% ponderado** (`IHabitDayStat.pctWeighted`). Incluye **leyendas**: eje Y (`100%`/`50%`/`0%`) y eje X (fecha de inicio, punto medio y fin del rango), además del tooltip por barra con fecha+%.
 - **Heatmap anual global** (nuevo, no estaba en el diseño original): cuadrícula estilo GitHub, una columna por semana (domingo arriba/sábado abajo), etiquetas de mes y de día de semana, navegable por año (`◀ AÑO ▶`), 5 niveles de color según `pctWeighted` del día (`computeYearHistory(habits, year)` en `habit-stats.ts`), con el día actual resaltado y tooltip por celda.
 - Datos: `HabitManager.computeDashboard()` + `computeYearHistory()`.

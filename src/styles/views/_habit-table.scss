@@ -122,10 +122,24 @@
   text-transform: capitalize;
 }
 
-.oa-habit-table-subarea {
-  font-size: 0.7rem;
+.oa-habit-table-related-cell {
+  text-align: center;
+}
+
+.oa-habit-table-related-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
   color: var(--text-muted);
-  font-style: italic;
+
+  &:hover {
+    color: var(--interactive-accent);
+    background-color: var(--background-modifier-hover);
+  }
 }
 
 .oa-habit-table-frequency {

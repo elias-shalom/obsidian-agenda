@@ -39,7 +39,7 @@ interface HabitFormValues {
   color: string;
   status: string;
   area: HabitArea;
-  subArea: string;
+  relatedFile: string;
   frequency: unknown;
   daytimes: Daytime[];
 }
@@ -96,7 +96,7 @@ export class HabitEditorModal extends Modal {
       priority: habit?.priority ?? 3,
       maxGap: habit?.maxGap ?? 0,
       color: habit?.color ?? '',
-      subArea: habit?.subArea ?? '',
+      relatedFile: habit?.relatedFile ?? '',
       statusActive: (habit?.status ?? 'active') === 'active',
       statusLabelText: (habit?.status ?? 'active') === 'active'
         ? this.i18n.t('habit_status_active')
@@ -165,6 +165,8 @@ export class HabitEditorModal extends Modal {
     this.wireRangeSlider('oa-habit-priority', 'oa-habit-priority-value');
     this.wireRangeSlider('oa-habit-max-gap', 'oa-habit-max-gap-value');
 
+    this.attachRelatedFileField();
+
     const colorInput = this.contentEl.querySelector<HTMLInputElement>('#oa-habit-color');
     if (colorInput && colorInput.dataset.hasColor !== 'true') {
       colorInput.value = this.resolveAccentColorHex();
@@ -232,6 +234,88 @@ export class HabitEditorModal extends Modal {
 
     const [r, g, b] = match.map(Number);
     return `#${[r, g, b].map(n => n.toString(16).padStart(2, '0')).join('')}`;
+  }
+
+  /** Extrae el linktext de un wikilink `[[Nota|Alias]]`, un link inline `[Texto](Nota.md)` o una ruta cruda */
+  private resolveLinktext(raw: string): string {
+    const inlineMatch = raw.match(/^\[.*?\]\((.*?)\)$/);
+    if (inlineMatch) {
+      try { return decodeURIComponent(inlineMatch[1]); } catch { return inlineMatch[1]; }
+    }
+    return raw.replace(/^\[\[|\]\]$/g, '').split('|')[0].split('#')[0];
+  }
+
+  /** Autocompletado + hint del campo "Archivo relacionado", replicando el picker del modal de tareas */
+  private attachRelatedFileField(): void {
+    const input = this.contentEl.querySelector<HTMLInputElement>('#oa-habit-related-file');
+    const suggestionsList = this.contentEl.querySelector<HTMLUListElement>('#oa-habit-related-file-suggestions');
+    const hintEl = this.contentEl.querySelector<HTMLElement>('#oa-habit-related-file-hint');
+    if (!input) return;
+
+    const markdownFiles = this.app.vault.getMarkdownFiles();
+
+    const hideSuggestions = () => {
+      suggestionsList?.addClass('oa-hidden');
+    };
+
+    const updateHint = (raw: string) => {
+      if (!hintEl) return;
+      const value = raw.trim();
+      if (!value) {
+        hintEl.textContent = '';
+        hintEl.className = 'oa-file-hint';
+        return;
+      }
+
+      const linktext = this.resolveLinktext(value);
+      const sourcePath = this.habit?.file.path ?? '';
+      const resolved = this.app.metadataCache.getFirstLinkpathDest(linktext, sourcePath)
+        ?? this.app.vault.getAbstractFileByPath(linktext);
+      hintEl.textContent = resolved ? '' : this.i18n.t('habit_related_file_hint_missing');
+      hintEl.className = resolved ? 'oa-file-hint' : 'oa-file-hint oa-file-hint--new';
+    };
+
+    const showSuggestions = (query: string) => {
+      if (!suggestionsList) return;
+      suggestionsList.innerHTML = '';
+
+      if (!query) { hideSuggestions(); return; }
+
+      const parts = query.toLowerCase().split('/');
+      const matches = markdownFiles
+        .filter(f => parts.every(part => f.path.toLowerCase().includes(part)))
+        .slice(0, 10);
+
+      if (matches.length === 0) { hideSuggestions(); return; }
+
+      matches.forEach(file => {
+        const li = this.contentEl.ownerDocument.createElement('li');
+        li.className = 'oa-file-suggestion-item';
+        li.textContent = file.path;
+        li.addEventListener('mousedown', (event) => {
+          event.preventDefault();
+          const sourcePath = this.habit?.file.path ?? `${this.habitManager.getFolderPath()}/untitled.md`;
+          input.value = this.app.fileManager.generateMarkdownLink(file, sourcePath);
+          hideSuggestions();
+          updateHint(input.value);
+        });
+        suggestionsList.appendChild(li);
+      });
+
+      suggestionsList.removeClass('oa-hidden');
+    };
+
+    input.addEventListener('input', () => {
+      const query = input.value.trim();
+      showSuggestions(query);
+      updateHint(query);
+    });
+
+    input.addEventListener('blur', () => {
+      window.setTimeout(hideSuggestions, 150);
+    });
+
+    updateHint(input.value);
   }
 
   private attachTimeDial(): void {
@@ -315,7 +399,7 @@ export class HabitEditorModal extends Modal {
     const color = get<HTMLInputElement>('oa-habit-color')?.value.trim() ?? '';
     const status = get<HTMLInputElement>('oa-habit-status')?.checked ? 'active' : 'inactive';
     const area = get<HTMLSelectElement>('oa-habit-area')?.value ?? 'temporal';
-    const subArea = get<HTMLInputElement>('oa-habit-sub-area')?.value.trim() ?? '';
+    const relatedFile = get<HTMLInputElement>('oa-habit-related-file')?.value.trim() ?? '';
     const frequencyMode = get<HTMLSelectElement>('oa-habit-frequency')?.value ?? 'everyday';
 
     let frequency: unknown = frequencyMode;
@@ -329,7 +413,7 @@ export class HabitEditorModal extends Modal {
       form.querySelector<HTMLInputElement>(`#oa-habit-daytime-${daytime.replace(/\s+/g, '_')}`)?.checked
     );
 
-    return { name, description, time, priority, maxGap, color, status, area, subArea, frequency, daytimes };
+    return { name, description, time, priority, maxGap, color, status, area, relatedFile, frequency, daytimes };
   }
 
   private async handleSubmit(form: HTMLFormElement): Promise<void> {
@@ -374,7 +458,7 @@ export class HabitEditorModal extends Modal {
       maxGap: values.maxGap,
     };
 
-    if (values.subArea) frontmatter.subArea = values.subArea;
+    if (values.relatedFile) frontmatter.relatedFile = values.relatedFile;
     if (values.color) frontmatter.color = values.color;
 
     const content = `---\n${stringifyYaml(frontmatter)}---\n`;
@@ -396,10 +480,10 @@ export class HabitEditorModal extends Modal {
       fm.description = values.description;
       fm.time = values.time;
       fm.area = values.area;
-      if (values.subArea) {
-        fm.subArea = values.subArea;
+      if (values.relatedFile) {
+        fm.relatedFile = values.relatedFile;
       } else {
-        delete fm.subArea;
+        delete fm.relatedFile;
       }
       fm.frequency = values.frequency;
       fm.priority = values.priority;

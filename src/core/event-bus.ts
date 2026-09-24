@@ -34,9 +34,9 @@ export class EventBus {
 }
 
 export const EVENTS = {
-  TASKS_UPDATED: 'tasks:updated',
-  TASK_ADDED: 'task:added',
-  TASK_MODIFIED: 'task:modified',
-  TASK_DELETED: 'task:deleted',
-  FOLDERS_UPDATED: 'folders:updated'
+  TASKS_UPDATED: 'tasks:updated' as const,
+  TASK_ADDED: 'task:added' as const,
+  TASK_MODIFIED: 'task:modified' as const,
+  TASK_DELETED: 'task:deleted' as const,
+  FOLDERS_UPDATED: 'folders:updated' as const,
 };

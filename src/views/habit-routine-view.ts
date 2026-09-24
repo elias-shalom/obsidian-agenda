@@ -36,6 +36,7 @@ interface RoutineHabitRow {
   pct: number;
   ticked: boolean;
   scheduled: boolean;
+  hasRelatedFile: boolean;
 }
 
 interface RoutineSection {
@@ -128,6 +129,7 @@ export class HabitRoutineView extends HabitView {
           pct,
           ticked,
           scheduled: true,
+          hasRelatedFile: !!habit.relatedFile,
         });
 
         const totals = areaTotals[habit.area] ?? { done: 0, scheduled: 0, weightDone: 0, weightTotal: 0 };
@@ -265,7 +267,7 @@ export class HabitRoutineView extends HabitView {
       button.addEventListener('click', () => {
         const rowId = button.getAttribute('data-habit-id');
         const habit = this.findHabitByRowId(rowId);
-        if (habit) this.openTaskFile(habit.file.path);
+        if (habit) this.openTaskFile(habit.file.path).catch(console.error);
       });
     });
 
@@ -274,6 +276,16 @@ export class HabitRoutineView extends HabitView {
         const rowId = button.getAttribute('data-habit-id');
         const habit = this.findHabitByRowId(rowId);
         if (habit) this.habitManager.openEditor(habit);
+      });
+    });
+
+    container.querySelectorAll<HTMLButtonElement>('[data-action="open-related"]').forEach(button => {
+      button.addEventListener('click', () => {
+        const rowId = button.getAttribute('data-habit-id');
+        const habit = this.findHabitByRowId(rowId);
+        if (!habit) return;
+        const target = this.habitManager.resolveRelatedFile(habit);
+        if (target) this.openTaskFile(target.path).catch(console.error);
       });
     });
   }

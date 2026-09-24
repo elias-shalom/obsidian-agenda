@@ -75,7 +75,7 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 - **Daily Routine** - Today's habits grouped by daytime or by area (toggle), with weighted progress bars and quick actions to open the note or edit the habit
 - **Habit Dashboard** - Today's raw/weighted completion, current and best streaks, side-by-side breakdowns by area and daytime, a 30-day history chart, and a GitHub-style yearly heatmap you can navigate by year (this is now the default habit view)
 - **Weekly view** - 7-day matrix sharing the same visual language as the Grid (pills, circles, sorting)
-- **Habit Table/List** - Sortable catalog of all habits with area, sub-area, frequency, priority, daytime, time and streak columns
+- **Habit Table/List** - Sortable catalog of all habits with area, related-file link, frequency, priority, daytime, time and streak columns
 - **Habit Creator** - A modal to create and edit habits: a circular time dial, priority/max-gap sliders, an active/inactive switch, and an area combobox suggested from your vault's root folders (free-form, not a fixed list)
 
 ### 🔧 General Capabilities

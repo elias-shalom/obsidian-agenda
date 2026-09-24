@@ -34,7 +34,7 @@ tags:
 ## Fase 1 — Data layer + motor de rachas (sin UI)
 
 - [x] `habit-parser.ts`: lee `metadataCache`/`vault.read`, valida `completions` (+ **migración legacy `entries`** → `completions` sintética), resuelve `maxGap`/`color`/`title`, filtra activos, resiliencia (casos del §7 Modelo de datos).
-- [x] **Normalización de campos**: `frequencyToSet` (tokens/nombres → `Set<number>` ISO), `clampPriority` (1–5, default 3), `subArea`, `parseCompletions` ([[Arquitectura técnica]] §2.6). **`area` ya no se normaliza/valida** (string libre, fallback `temporal`) — cambio respecto al plan original.
+- [x] **Normalización de campos**: `frequencyToSet` (tokens/nombres → `Set<number>` ISO), `clampPriority` (1–5, default 3), `relatedFile` (wikilink/link inline a nota de apoyo, reemplazó a `subArea`), `parseCompletions` ([[Arquitectura técnica]] §2.6). **`area` ya no se normaliza/valida** (string libre, fallback `temporal`) — cambio respecto al plan original.
 - [x] `habit-streak.ts`: port TS del bloque `renderedDates` de HT21 → `computeCells` + `computeStats` (+ `computeOccurrenceCells`/`computeOccurrenceStats` para filas por ocurrencia), **con `isScheduled`** (los días no programados son neutrales; racha salta esos días) y **`dayCompleted`** (días parciales neutrales, ADR-008).
 - [x] `habit-stats.ts`: stats por área/daytime y ventanas (30 días + `computeYearHistory` para el heatmap anual, no previsto originalmente) y `computeDashboard` con `pctWeighted` (`Σ done.priority / Σ scheduled.priority`).
 - [x] `habit-completions.ts` (helpers puros: `dayCompleted`, `occurrencesFor`, `toggle`, `dayCompletedDates`) + `habit-writer.ts` (write-back que persiste `completions` y **re-deriva `entries`**).
@@ -46,7 +46,7 @@ tags:
 
 ## Fase 2 — Habit Creator (modal de crear/editar)
 
-- [x] `habit-editor.ts`: `HabitEditorModal` con formulario (name, description, time **[dial circular]**, area **[select dinámico de carpetas]**, subArea, frequency, priority **[slider]**, daytime, status **[switch]**, maxGap **[slider]**, color **[default = acento del tema]**) — más rico que el spec original; sin campo `title` (se quitó por redundante con `name`).
+- [x] `habit-editor.ts`: `HabitEditorModal` con formulario (name, description, time **[dial circular]**, area **[select dinámico de carpetas]**, relatedFile **[picker de archivo con autocompletado, igual al modal de tareas; guarda wikilink]**, frequency, priority **[slider]**, daytime, status **[switch]**, maxGap **[slider]**, color **[default = acento del tema]**) — más rico que el spec original; sin campo `title` (se quitó por redundante con `name`); `subArea` fue reemplazado por `relatedFile`.
 - [x] **Crear**: `app.vault.create` de `name.md` en `habitFolderPath` (defaults `frequency: everyday`, `priority: 3`, `status: active`).
 - [ ] Plantilla `habit.md` opcional en el cuerpo — no implementada.
 - [x] **Editar**: `processFrontMatter` preservando `completions`/`entries`; `fileManager.renameFile` si cambia el basename; borrado con confirmación de dos clics.

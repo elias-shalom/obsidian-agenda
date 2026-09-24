@@ -172,7 +172,7 @@ export function parseHabit(file: TFile, fm: Record<string, unknown>, settings: A
     description: String(fm.description ?? '').trim(),
     time: Number(fm.time ?? 0),
     area,
-    subArea: String(fm.subArea ?? '').trim(),
+    relatedFile: String(fm.relatedFile ?? '').trim(),
     frequencySet: normalizeFrequencySet(fm.frequency),
     priority: normalizePriority(fm.priority ?? settings.habitDefaultPriority),
     daytimes,

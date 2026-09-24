@@ -130,7 +130,7 @@ async function toggleOccurrence(app: App, file: TFile, h: IHabit, date: string, 
 - **`area`**: ya **no se normaliza ni valida** contra un enum. `parseHabit` toma `String(fm.area ?? '').trim() || 'temporal'` tal cual; cualquier string es válido (revisado, ver ADR-004 en [[Modelo de datos]]).
 - `frequencyToSet(fm.frequency): Set<number>` — `everyday→{1..7}`, `workweek→{1..5}`, `weekend→{6,7}`, lista de nombres→números; tokens inválidos dentro de una lista se ignoran; lista vacía o campo ausente → `{1..7}` (ver ADR-005).
 - `clampPriority(fm.priority): number` — `parseInt` + clamp `1..5`; `NaN` → `3`.
-- `subArea` se lee como string opcional (por defecto `""`).
+- `relatedFile` se lee como string opcional (por defecto `""`); reemplaza a `subArea` (eliminado) — guarda un wikilink/link inline a una nota de apoyo, resuelto vía `HabitManager.resolveRelatedFile()` (ver §2.4-bis en [[Modelo de datos]]).
 - `parseCompletions(fm.completions, daytimes): ICompletions` — objeto → mapa validado (claves ISO, valores filtrados contra `daytimes`, sin duplicados); si es inválido → `{}`. **Fallback legacy**: si no hay `completions` pero sí `entries`, sintetiza `{ [date]: [...daytimes] }` (migración, §2.4).
 - Todas las funciones devuelven valores validados; nunca lanzan (resiliencia §8).
 
@@ -179,7 +179,7 @@ async function toggleOccurrence(app: App, file: TFile, h: IHabit, date: string, 
 `src/habits/habit-editor.ts` exporta `HabitEditorModal extends obsidian.Modal` (no es una vista; se monta sobre el workspace):
 
 - API: `new HabitEditorModal(plugin, habitManager, i18n, habit?: IHabit).open()`.
-- Formulario: name, description, time (dial circular), area (dropdown **poblado dinámicamente** con `HabitManager.getVaultRootFolders()` + áreas ya usadas — ya no es un enum fijo de 10, ver ADR-004 en [[Modelo de datos]]), subArea, frequency (select/lista), priority (slider 1–5), daytime (multi-check), status (switch), maxGap (slider 0–14), color (picker, default = `--interactive-accent` del tema) — spec en [[Especificación de vistas]] §9.
+- Formulario: name, description, time (dial circular), area (dropdown **poblado dinámicamente** con `HabitManager.getVaultRootFolders()` + áreas ya usadas — ya no es un enum fijo de 10, ver ADR-004 en [[Modelo de datos]]), relatedFile (picker de archivo con autocompletado, idéntico al del modal de tareas — guarda un wikilink, ver §2.4-bis en [[Modelo de datos]]), frequency (select/lista), priority (slider 1–5), daytime (multi-check), status (switch), maxGap (slider 0–14), color (picker, default = `--interactive-accent` del tema) — spec en [[Especificación de vistas]] §9.
 - **Crear** → `app.vault.create` de `name.md` en `habitFolderPath` con el frontmatter (incluye `area` como string libre; plantilla `habit.md` en el cuerpo **pendiente**, no implementada).
 - **Editar** → `processFrontMatter` preservando `completions`/`entries`; si cambia el basename → `app.fileManager.renameFile`. Elegir un área distinta **solo** reescribe `frontmatter.area`, no mueve el archivo de carpeta.
 - Validación: unicidad de nombre en la ruta, clamps numéricos, confirmación de borrado.
@@ -230,7 +230,7 @@ habit_no_habits / habit_no_habits_at / habit_today / habit_streak
 habit_streak_deadline_tooltip / habit_days_to_show / habit_folder_path
 habit_show_streaks / habit_max_gap / habit_tab_visibility / habit_area / habit_daytime
 habit_completed_today / habit_current_streak / habit_best_streak / habit_by_area / habit_by_daytime
-habit_priority / habit_frequency / habit_sub_area / habit_habits_total
+habit_priority / habit_frequency / habit_related_file / habit_habits_total
 habit_completed_today_weighted / habit_pct_weighted        // "Cumplimiento (ponderado)"
 habit_area_daily_plan / habit_area_emotional / habit_area_financial / habit_area_intellectual
 habit_area_physical / habit_area_professional / habit_area_recreational / habit_area_relationship
@@ -244,7 +244,7 @@ habit_freq_custom
 habit_not_scheduled_today / habit_unscheduled               // "no programado" / atenuado
 habit_new_habit / habit_edit_habit / habit_save / habit_cancel / habit_delete
 habit_field_name / habit_field_description / habit_field_time
-habit_field_area / habit_field_sub_area / habit_field_frequency / habit_field_priority
+habit_field_area / habit_field_related_file / habit_field_frequency / habit_field_priority
 habit_field_daytime / habit_field_status / habit_field_max_gap / habit_field_color
 habit_time_unit_minutes
 habit_name_required / habit_name_exists / habit_daytime_required / habit_created / habit_updated

@@ -34,7 +34,7 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 ### 2.1 Dentro de alcance (v1)
 
 - [x] Ruta configurable de la carpeta de hábitos (`habitFolderPath`).
-- [x] Lectura de notas de hábito y su frontmatter (`title/color/maxGap/entries` + `name/description/time/area/subArea/frequency/priority/daytime/status`).
+- [x] Lectura de notas de hábito y su frontmatter (`title/color/maxGap/entries` + `name/description/time/area/relatedFile/frequency/priority/daytime/status`).
 - [x] Vistas:
   - **Grid** (estilo Habit Tracker 21) — principal.
   - **Rutina diaria**.
@@ -74,7 +74,7 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 | US-9 | Como usuario, quiero abrir la nota de un hábito desde la vista | Doble-clic en el nombre del hábito abre su nota `.md`. |
 | US-10 | Como usuario, quiero definir en qué días de la semana se realiza cada hábito | Algunos hábitos son diarios, otros solo entre semana o fines de semana; el campo `frequency` (de la nota) controla que en la **Rutina** solo aparezcan los programados para ese día y que los días no programados **no rompan la racha** en el grid. |
 | US-11 | Como usuario, quiero que los hábitos importantes tengan más peso | El campo `priority` (1–5) pondera el % de cumplimiento del día (`Σ done.priority / Σ scheduled.priority`) y ordena la **Rutina** por importancia. |
-| US-12 | Como usuario, quiero agrupar por áreas de mi vault | `area` es un **string libre** tomado del frontmatter (ya no un enum cerrado); el combobox del editor sugiere las **carpetas raíz del vault** + áreas ya usadas. Colores/etiquetas tienen fallback determinístico para áreas sin traducción conocida. `subArea` conserva el detalle (`feed`, `clean`, …). El dashboard agrupa por estas áreas (lado a lado con "por daytime"). |
+| US-12 | Como usuario, quiero agrupar por áreas de mi vault | `area` es un **string libre** tomado del frontmatter (ya no un enum cerrado); el combobox del editor sugiere las **carpetas raíz del vault** + áreas ya usadas. Colores/etiquetas tienen fallback determinístico para áreas sin traducción conocida. El dashboard agrupa por estas áreas (lado a lado con "por daytime"). |
 | US-13 | Como usuario, quiero crear y editar mis hábitos desde el plugin | Un **modal** permite crear (nota nueva en la ruta) y editar (frontmatter) un hábito: name, description, time (dial), área (string libre sugerido por carpetas del vault), subÁrea, frecuencia, prioridad (slider 1–5), daytime (multi), status (switch), maxGap (slider) y color (default = acento del tema); se preservan `completions`. |
 | US-14 | Como usuario, quiero marcar solo las ocurrencias que hice | En un hábito multi-daytime, el grid muestra **una fila por `daytime`** (`morning`/`afternoon`/…) para marcarlas de forma independiente; `entries` solo refleja los días con **todas** las ocurrencias. |
 | US-15 | Como usuario, quiero que un día parcial no me rompa la racha | Marcar 1 de 3 ocurrencias no completa el día (`entries`/racha del hábito agregado en Dashboard), pero **no corta** la racha; en la Grid, cada ocurrencia lleva su propia racha independiente. |
@@ -100,7 +100,7 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 
 - Campos HT21 (se mantienen **top-level**, ver ADR-007): `title` (etiqueta, fallback = basename), `color` (color de celda), `maxGap` (tolerancia), `entries` (**espejo** day-level autosincronizado desde `completions`).
 - Campos propios del seguimiento: `completions = { "YYYY-MM-DD": [daytime, ...] }` — **fuente canónica** por ocurrencia; `dayCompleted` = "todas las daytimes hechas" ([[Modelo de datos]] §2.7).
-- Campos propios (ver [[Modelo de datos]] §2): `description`, `time` (min), `area` (**string libre** desde frontmatter, fallback `temporal`; ya no es un enum validado), `subArea` (opcional), `frequency` (días programados, token/lista), `priority` (1–5, default 3), `daytime[]`, `status`, `related`.
+- Campos propios (ver [[Modelo de datos]] §2): `description`, `time` (min), `area` (**string libre** desde frontmatter, fallback `temporal`; ya no es un enum validado), `relatedFile` (wikilink opcional a una nota de apoyo, ver §2.4-bis), `frequency` (días programados, token/lista), `priority` (1–5, default 3), `daytime[]`, `status`.
 - Normalización (ver [[Modelo de datos]] §5.1): `completions` validada (claves ISO; daytimes contra `habit.daytime`), `entries` **derivada** de `completions`; fechas inválidas ignoradas; duplicados eliminados; `area` **ya no se slugifica/valida** (se usa tal cual); `frequency` → `Set<number>` ISO; `priority` clamp 1–5.
 - **Día no programado** de un hábito es neutro en stats/racha (no rompe racha) — definido en ADR-005. **Día parcial** tampoco rompe (ADR-008).
 
@@ -132,7 +132,7 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
   - Comandos **"Nuevo hábito"** y **"Editar hábito"**.
   - Botón **`+`** en el header de las vistas de hábitos.
   - Doble-clic en una fila de la vista **Lista/Tabla** (abre el modal en modo edición).
-- **Campos del formulario**: name (basename), `description`, `time` (dial circular, min), `area` (`<select>` poblado con carpetas raíz del vault + áreas usadas, texto libre), `subArea` (texto), `frequency` (select `everyday/workweek/weekend` o multi-check de días), `priority` (slider 1–5), `daytime` (multi-check `wake up/morning/afternoon/evening/night`), `status` (switch activo/inactivo), `maxGap` (slider 0–14), `color` (color picker, default = acento del tema).
+- **Campos del formulario**: name (basename), `description`, `time` (dial circular, min), `area` (`<select>` poblado con carpetas raíz del vault + áreas usadas, texto libre), `relatedFile` (picker de archivo con autocompletado y wikilink, idéntico al del modal de tareas), `frequency` (select `everyday/workweek/weekend` o multi-check de días), `priority` (slider 1–5), `daytime` (multi-check `wake up/morning/afternoon/evening/night`), `status` (switch activo/inactivo), `maxGap` (slider 0–14), `color` (color picker, default = acento del tema).
 - **Crear**: valida `name` (sanitizado para filename, **único** en la ruta), genera el frontmatter inicial (defaults `frequency: everyday`, `priority: 3`, `status: active`), crea la nota en `habitFolderPath`. **La plantilla `habit.md` opcional en el cuerpo no está implementada** (pendiente).
 - **Editar**: `processFrontMatter` sobre la nota existente; **preserva `completions` y `entries`**; si cambia el basename → `app.fileManager.renameFile`.
 - Al guardar, `HabitManager` invalida el cache y las vistas se refrescan (se reutiliza el flujo de `modify`/refresco global).

@@ -24,7 +24,7 @@
         <tr>
           <th data-sort="title">{{t "habit_field_name"}}</th>
           <th data-sort="area">{{t "habit_area"}}</th>
-          <th data-sort="subArea">{{t "habit_sub_area"}}</th>
+          <th>{{t "habit_related_file"}}</th>
           <th data-sort="frequency">{{t "habit_frequency"}}</th>
           <th data-sort="priority">{{t "habit_priority"}}</th>
           <th data-sort="daytimes">{{t "habit_daytime"}}</th>
@@ -52,9 +52,9 @@
               <span class="oa-habit-table-area-label">{{this.areaLabel}}</span>
             </span>
           </td>
-          <td class="oa-habit-table-subarea-cell">
-            {{#if this.subArea}}
-              <span class="oa-habit-table-subarea">{{this.subArea}}</span>
+          <td class="oa-habit-table-related-cell">
+            {{#if this.hasRelatedFile}}
+              <button type="button" class="oa-habit-table-related-btn" data-action="open-related" data-habit-id="{{this.id}}" title="{{t 'habit_open_related_file'}}" aria-label="{{t 'habit_open_related_file'}}">🔗</button>
             {{/if}}
           </td>
           <td>

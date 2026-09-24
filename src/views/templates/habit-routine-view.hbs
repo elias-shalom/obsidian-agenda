@@ -82,6 +82,9 @@
           </div>
           <div class="oa-habit-routine-habit-actions">
             <button class="oa-habit-routine-action-btn" data-action="open-note" data-habit-id="{{this.id}}">{{t "open_file"}}</button>
+            {{#if this.hasRelatedFile}}
+              <button class="oa-habit-routine-action-btn" data-action="open-related" data-habit-id="{{this.id}}">{{t "habit_open_related_file"}}</button>
+            {{/if}}
             <button class="oa-habit-routine-action-btn" data-action="edit-habit" data-habit-id="{{this.id}}">{{t "habit_edit_habit"}}</button>
           </div>
         </div>

@@ -43,7 +43,8 @@ type: routine
 type_group: knowledge
 archetype: athlete
 status: active
-relatedFile: "[[habit gen]]"  # opcional; wikilink a una nota de apoyo — ver §2.4-bis
+related:                         # opcional; varios wikilinks a notas de apoyo — ver §2.4-bis
+  - "[[habit gen]]"
 created: 2025-07-06
 entries:                    # espejo HT21 day-level — fecha presente ⇔ día completo (§2.3)
   - 2026-07-12
@@ -69,7 +70,7 @@ completions:                # fuente canónica por ocurrencia (§2.7)
 | `description` | string | vault | Descripción / notas de enlace | No |
 | `time` | number | vault | Minutos estimados | No |
 | `area` | string | vault | Área de vida, texto libre — §2.4 | No (fallback: `temporal`) |
-| `relatedFile` | string | vault | Wikilink (o link inline) a una nota de apoyo del hábito — §2.4-bis | No |
+| `related` | string[] | vault | Wikilinks (o links inline) a notas de apoyo del hábito — §2.4-bis | No |
 | `frequency` | token/lista | vault | Días de la semana programados — §2.5 | No (default `everyday`) |
 | `priority` | number (1–5) | vault | Importancia del hábito — §2.6 | No (default `3`) |
 | `daytime` | string[] | vault | `wake up / morning / afternoon / evening` | No |
@@ -97,13 +98,13 @@ completions:                # fuente canónica por ocurrencia (§2.7)
 
 **Áreas usadas actualmente en el vault** (referencia, no una lista cerrada): `daily-plan`, `emotional`, `financial`, `intellectual`, `physical`, `professional`, `recreational`, `relationship`, `spiritual`, `temporal` — y cualquier otro nombre que el usuario decida escribir (p. ej. los nombres de sus carpetas raíz tipo PARA: `config`, etc.).
 
-### 2.4-bis Archivo relacionado (`relatedFile`)
+### 2.4-bis Archivos relacionados (`related`)
 
 - **Reemplaza a `subArea`** (eliminado): en vez de una subcategoría de texto libre, cada hábito puede enlazar **una nota de apoyo real del vault** (material de referencia, guías, checklists, etc.).
 - Se guarda como **wikilink** (`[[Nota]]`) o **link inline** (`[Nota](Nota.md)`) según la preferencia de formato de link del usuario — generado con `app.fileManager.generateMarkdownLink(file, sourcePath)`, nunca como ruta cruda.
 - Al ser un link real de Obsidian, **sobrevive a renombrados/movimientos** de la nota relacionada (Obsidian actualiza el link solo) y aparece en "Linked mentions"/backlinks y en el grafo — a diferencia de una ruta de texto plano.
 - Resolución: `HabitManager.resolveRelatedFile(habit)` lee `metadataCache.getFileCache(habit.file).frontmatterLinks` (clave `relatedFile`) y resuelve con `getFirstLinkpathDest`; si el cache de links de frontmatter no está disponible, hace fallback manual (extrae el linktext de `[[...]]`/`[...](...)` o ruta cruda).
-- **Habit Editor**: campo de ancho completo con el mismo picker que el modal de tareas (`oa-file-picker-group` + lista de sugerencias + hint), reutilizando los estilos globales de `_modal.scss`. El hint avisa si la nota aún no existe (sin implicar que se creará sola).
+- **Habit Editor**: campo de ancho completo con el mismo picker que el modal de tareas (`oa-file-picker-group` + lista de sugerencias + hint), reutilizando los estilos globales de `_modal.scss`. Cada wikilink ocupa una línea y el picker agrega enlaces sin reemplazar los existentes. El hint avisa si alguna nota aún no existe (sin implicar que se creará sola).
 - **Se muestra/abre** desde la vista Tabla (columna 🔗 "Relacionado") y desde la vista Rutina (botón de acción adicional, solo si el hábito tiene uno configurado).
 
 ### 2.5 Frecuencia (`frequency`)

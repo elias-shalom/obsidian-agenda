@@ -32,6 +32,7 @@ interface RoutineHabitRow {
   areaLabel: string;
   areaColor: string;
   areaTextColor: string;
+  subArea: string;
   streak: number;
   pct: number;
   ticked: boolean;
@@ -125,6 +126,7 @@ export class HabitRoutineView extends HabitView {
           areaLabel: getAreaLabel(habit.area, this.i18n),
           areaColor: getAreaColor(habit.area),
           areaTextColor: getAreaTextColor(habit.area),
+          subArea: habit.subArea,
           streak: computeOccurrenceStats(habit, daytime).current,
           pct,
           ticked,

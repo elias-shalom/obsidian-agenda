@@ -11,6 +11,7 @@ import type { I18n } from '../core/i18n';
 export class HabitManager {
   private habitCache = new Map<string, IHabit>();
   private readonly eventRefs: EventRef[] = [];
+  private readonly descriptionCache = new Map<string, string>();
 
   constructor(
     private app: App,
@@ -18,7 +19,7 @@ export class HabitManager {
     private i18n: I18n
   ) {
     this.registerEvents();
-    this.refreshCache();
+    void this.refreshCache();
   }
 
   private getHabitFolderPath(): string {
@@ -29,6 +30,11 @@ export class HabitManager {
   /** Ruta de la carpeta de hábitos configurada (uso público para las vistas) */
   getFolderPath(): string {
     return this.getHabitFolderPath();
+  }
+
+  /** Settings actuales del plugin (uso público para el editor de hábitos) */
+  getSettings(): AgendaPluginSettings {
+    return this.settingsGetter();
   }
 
   /** Indica si la carpeta de hábitos configurada existe en el vault */
@@ -68,13 +74,32 @@ export class HabitManager {
     return [...names].sort((a, b) => a.localeCompare(b));
   }
 
+  /** Subcarpetas de 2º y 3er nivel bajo la carpeta raíz del área dada, para el combobox de sub-área */
+  getSubAreaOptions(area: string): string[] {
+    const root = this.app.vault.getRoot().children.find(
+      (child): child is TFolder => child instanceof TFolder && child.name === area
+    );
+    if (!root) return [];
+
+    const options: string[] = [];
+    for (const level1 of root.children) {
+      if (!(level1 instanceof TFolder)) continue;
+      options.push(level1.name);
+      for (const level2 of level1.children) {
+        if (level2 instanceof TFolder) options.push(`${level1.name}/${level2.name}`);
+      }
+    }
+
+    return options.sort((a, b) => a.localeCompare(b));
+  }
+
   /** Resuelve el archivo relacionado de un hábito (wikilink o link inline) al TFile real, o null si no se encuentra */
   resolveRelatedFile(habit: IHabit): TFile | null {
-    const raw = habit.relatedFile.trim();
+    const raw = habit.related[0] ?? habit.relatedFile.trim();
     if (!raw) return null;
 
     const cache = this.app.metadataCache.getFileCache(habit.file);
-    const linkCache = cache?.frontmatterLinks?.find(link => link.key === 'relatedFile');
+    const linkCache = cache?.frontmatterLinks?.find(link => link.key === 'related');
 
     let linktext = linkCache?.link;
     if (!linktext) {
@@ -98,7 +123,7 @@ export class HabitManager {
       this.app.vault.on('create', (file) => {
         if (file instanceof TFile && file.extension === 'md') {
           this.habitCache.delete(file.path);
-          this.refreshCache();
+          void this.refreshCache();
         }
       })
     );
@@ -107,7 +132,7 @@ export class HabitManager {
       this.app.vault.on('modify', (file) => {
         if (file instanceof TFile && file.extension === 'md') {
           this.habitCache.delete(file.path);
-          this.refreshCache();
+          void this.refreshCache();
         }
       })
     );
@@ -116,7 +141,7 @@ export class HabitManager {
       this.app.vault.on('delete', (file) => {
         if (file instanceof TFile && file.extension === 'md') {
           this.habitCache.delete(file.path);
-          this.refreshCache();
+          void this.refreshCache();
         }
       })
     );
@@ -126,13 +151,13 @@ export class HabitManager {
         if (file instanceof TFile && file.extension === 'md') {
           this.habitCache.delete(oldPath);
           this.habitCache.delete(file.path);
-          this.refreshCache();
+          void this.refreshCache();
         }
       })
     );
   }
 
-  private refreshCache(): void {
+  private async refreshCache(): Promise<void> {
     const folderPath = this.getHabitFolderPath();
     const folder = this.app.vault.getAbstractFileByPath(folderPath);
 
@@ -145,7 +170,10 @@ export class HabitManager {
 
     for (const file of this.collectHabitFiles(folder)) {
       const fm = this.app.metadataCache.getFileCache(file)?.frontmatter ?? {};
-      const habit = parseHabit(file, fm, this.settingsGetter());
+      const content = await this.app.vault.cachedRead(file);
+      const bodyDescription = content.replace(/^---[\s\S]*?---\s*/, '').trim();
+      this.descriptionCache.set(file.path, bodyDescription);
+      const habit = parseHabit(file, fm, this.settingsGetter(), bodyDescription);
       if (habit) {
         habits.push(habit);
       }
@@ -154,15 +182,18 @@ export class HabitManager {
     this.habitCache = new Map(habits.map(habit => [habit.file.path, habit]));
   }
 
+  /** Fuerza una reconstrucción completa de la caché y espera a que termine (uso público tras crear/editar/borrar un hábito) */
+  async refreshHabits(): Promise<void> {
+    await this.refreshCache();
+  }
+
   /** Hábitos activos (usado por Grid/Weekly/Routine/Dashboard) */
   getHabits(): IHabit[] {
-    this.refreshCache();
     return [...this.habitCache.values()].filter(habit => habit.status !== 'inactive').sort((a, b) => a.name.localeCompare(b.name));
   }
 
   /** Todos los hábitos, incluidos los inactivos (usado por la vista Tabla/Lista) */
   getAllHabits(): IHabit[] {
-    this.refreshCache();
     return [...this.habitCache.values()].sort((a, b) => a.name.localeCompare(b.name));
   }
 
@@ -171,7 +202,7 @@ export class HabitManager {
     if (cached) return cached;
 
     const fm = this.app.metadataCache.getFileCache(file)?.frontmatter ?? {};
-    const habit = parseHabit(file, fm, this.settingsGetter());
+    const habit = parseHabit(file, fm, this.settingsGetter(), this.descriptionCache.get(file.path));
     if (!habit) return null;
 
     this.habitCache.set(file.path, habit);
@@ -204,5 +235,6 @@ export class HabitManager {
     }
     this.eventRefs.length = 0;
     this.habitCache.clear();
+    this.descriptionCache.clear();
   }
 }

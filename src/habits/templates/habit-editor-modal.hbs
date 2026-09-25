@@ -69,6 +69,16 @@
           {{/each}}
         </select>
       </div>
+      {{#if showSubArea}}
+        <div class="oa-form-group">
+          <label class="oa-form-label" for="oa-habit-sub-area">{{t "habit_field_sub_area"}}</label>
+          <select id="oa-habit-sub-area" class="oa-form-select">
+            {{#each subAreaOptions}}
+              <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+            {{/each}}
+          </select>
+        </div>
+      {{/if}}
     </div>
 
     <div class="oa-form-group oa-file-picker-group">
@@ -77,12 +87,19 @@
         id="oa-habit-related-file"
         type="text"
         class="oa-form-input"
-        value="{{relatedFile}}"
         placeholder="{{t 'habit_related_file_placeholder'}}"
         autocomplete="off"
       />
       <ul id="oa-habit-related-file-suggestions" class="oa-file-suggestions oa-hidden"></ul>
       <span id="oa-habit-related-file-hint" class="oa-file-hint"></span>
+      <div id="oa-habit-related-file-chips" class="oa-related-chips">
+        {{#each relatedFiles}}
+          <span class="oa-related-chip" data-link="{{this}}">
+            <span class="oa-related-chip__label">{{this}}</span>
+            <button type="button" class="oa-related-chip__remove" aria-label="{{t 'habit_related_file_remove'}}">&times;</button>
+          </span>
+        {{/each}}
+      </div>
     </div>
 
     <div class="oa-form-group">

@@ -52,6 +52,11 @@
               {{/if}}
               <span class="oa-habit-table-area-label">{{this.areaLabel}}</span>
             </span>
+            {{#if ../settings.showHabitSubAreaField}}
+              {{#if this.subArea}}
+                <div class="oa-habit-table-area-sub">{{this.subArea}}</div>
+              {{/if}}
+            {{/if}}
           </td>
           <td class="oa-habit-table-related-cell">
             {{#if this.hasRelatedFile}}

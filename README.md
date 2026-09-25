@@ -2,9 +2,11 @@
 
 > A comprehensive task management and calendar plugin for Obsidian
 
-[![Release](https://img.shields.io/badge/version-1.1.2-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
+[![Release](https://img.shields.io/badge/version-1.1.3-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Obsidian](https://img.shields.io/badge/Obsidian-0.13.0+-purple.svg)](https://obsidian.md)
+
+> 🆕 **What's New in v1.1.3** — Optional sub-area field for habits (hidden by default), multiple related files as removable wikilink chips, and a fix for a race condition that made an edited habit briefly disappear from the Routine/List views. [See details](#news) · [Full changelog](#changelog).
 
 ## Overview
 
@@ -21,6 +23,7 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 
 ## 📖 Table of Contents
 
+- [News](#news)
 - [Features](#features)
 - [Screenshots](#screenshots)
 - [Installation](#installation)
@@ -31,6 +34,19 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 - [Planned Features](#planned-for-future-versions)
 - [Support](#support-and-feedback)
 - [Contributing](#contributing)
+
+---
+
+## 🆕 News
+
+### v1.1.3 (latest)
+- New optional **sub-area** field for habits: a combobox populated from the 2nd/3rd-level subfolders of the chosen area (e.g. `body/salud`), hidden by default — enable it in settings; shown below the area in the List and Routine views
+- Habit **related files** (formerly a single `relatedFile`) is now a multi-value field: add wikilinks one by one from the Habit Editor and remove them individually as chips
+- Habit **description** now lives in the note body instead of the frontmatter
+- Fixed a bug where editing or deleting a habit made it briefly disappear from the Routine/List views until a manual reload
+- Habit List view now sorts by name by default
+
+See the [full changelog](#changelog) below for older versions.
 
 ---
 
@@ -221,6 +237,14 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 ---
 
 ## 📋 Changelog
+
+### Version 1.1.3 🧩
+- New optional **sub-area** field for habits: a combobox populated from the 2nd/3rd-level subfolders of the chosen area (e.g. `body/salud`), hidden by default via a new setting — shown below the area in the List and Routine views when enabled
+- Habit **related files**: replaced the single `relatedFile` picker with a multi-value field — add wikilinks one by one and remove them individually as removable chips
+- Habit **description** is now stored in the note body instead of the frontmatter (with backward compatibility for existing notes)
+- Habit List view now sorts by name by default (was priority)
+- Fixed a race condition where editing or deleting a habit made it briefly disappear from the Routine/List views until a manual reload
+- Fixed a settings-loading bug where new habit settings could silently reset to their default on every reload
 
 ### Version 1.1.2 🎯
 - Habit **`subArea`** replaced by **`relatedFile`**: link a supporting note to a habit (wikilink-aware), with the same file picker/autocomplete UX as the task modal; openable from the Table (🔗 column) and Routine views

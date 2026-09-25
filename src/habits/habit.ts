@@ -102,6 +102,9 @@ export interface IHabit {
   description: string;
   time: number;
   area: HabitArea;
+  subArea: string;
+  related: string[];
+  /** Primer enlace relacionado, conservado para las vistas actuales. */
   relatedFile: string;
   frequencySet: Set<number>;
   priority: number;

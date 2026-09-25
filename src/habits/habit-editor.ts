@@ -44,7 +44,8 @@ interface HabitFormValues {
   color: string;
   status: string;
   area: HabitArea;
-  relatedFile: string;
+  subArea: string;
+  relatedFiles: string[];
   frequency: unknown;
   daytimes: Daytime[];
 }
@@ -83,6 +84,20 @@ export class HabitEditorModal extends Modal {
     return 'custom';
   }
 
+  /** Opciones del combobox de sub-área: subcarpetas de 2º/3er nivel del área + opción vacía + valor legado si ya no existe como carpeta */
+  private buildSubAreaOptions(area: string, selectedValue: string): { value: string; label: string; selected: boolean }[] {
+    const options = this.habitManager.getSubAreaOptions(area);
+    if (selectedValue && !options.includes(selectedValue)) {
+      options.push(selectedValue);
+      options.sort((a, b) => a.localeCompare(b));
+    }
+
+    return [
+      { value: '', label: this.i18n.t('habit_sub_area_none'), selected: !selectedValue },
+      ...options.map(value => ({ value, label: value, selected: value === selectedValue })),
+    ];
+  }
+
   private async render(): Promise<void> {
     const { contentEl } = this;
     contentEl.empty();
@@ -101,7 +116,7 @@ export class HabitEditorModal extends Modal {
       priority: habit?.priority ?? 3,
       maxGap: habit?.maxGap ?? 0,
       color: habit?.color ?? '',
-      relatedFile: habit?.relatedFile ?? '',
+      relatedFiles: habit?.related ?? [],
       statusActive: (habit?.status ?? 'active') === 'active',
       statusLabelText: (habit?.status ?? 'active') === 'active'
         ? this.i18n.t('habit_status_active')
@@ -111,6 +126,8 @@ export class HabitEditorModal extends Modal {
         label: getAreaLabel(area, this.i18n),
         selected: habit ? habit.area === area : area === 'temporal',
       })),
+      showSubArea: this.habitManager.getSettings().showHabitSubAreaField,
+      subAreaOptions: this.buildSubAreaOptions(habit?.area ?? 'temporal', habit?.subArea ?? ''),
       frequencyOptions: [
         { value: 'everyday', label: this.i18n.t('habit_freq_everyday'), selected: frequencyMode === 'everyday' },
         { value: 'workweek', label: this.i18n.t('habit_freq_workweek'), selected: frequencyMode === 'workweek' },
@@ -166,6 +183,7 @@ export class HabitEditorModal extends Modal {
     this.wireRangeSlider('oa-habit-priority', 'oa-habit-priority-value');
     this.wireRangeSlider('oa-habit-max-gap', 'oa-habit-max-gap-value');
 
+    this.attachSubAreaSync();
     this.attachRelatedFileField();
 
     const colorInput = this.contentEl.querySelector<HTMLInputElement>('#oa-habit-color');
@@ -285,12 +303,32 @@ export class HabitEditorModal extends Modal {
     return raw.replace(/^\[\[|\]\]$/g, '').split('|')[0].split('#')[0];
   }
 
-  /** Autocompletado + hint del campo "Archivo relacionado", replicando el picker del modal de tareas */
+  /** Recalcula las opciones de sub-área cuando cambia el combobox de área */
+  private attachSubAreaSync(): void {
+    const areaSelect = this.contentEl.querySelector<HTMLSelectElement>('#oa-habit-area');
+    const subAreaSelect = this.contentEl.querySelector<HTMLSelectElement>('#oa-habit-sub-area');
+    if (!areaSelect || !subAreaSelect) return;
+
+    areaSelect.addEventListener('change', () => {
+      const options = this.buildSubAreaOptions(areaSelect.value, '');
+      subAreaSelect.innerHTML = '';
+      options.forEach(option => {
+        const opt = this.contentEl.ownerDocument.createElement('option');
+        opt.value = option.value;
+        opt.textContent = option.label;
+        if (option.selected) opt.selected = true;
+        subAreaSelect.appendChild(opt);
+      });
+    });
+  }
+
+  /** Autocompletado + chips removibles del campo "Archivos relacionados", replicando el picker del modal de tareas */
   private attachRelatedFileField(): void {
     const input = this.contentEl.querySelector<HTMLInputElement>('#oa-habit-related-file');
     const suggestionsList = this.contentEl.querySelector<HTMLUListElement>('#oa-habit-related-file-suggestions');
     const hintEl = this.contentEl.querySelector<HTMLElement>('#oa-habit-related-file-hint');
-    if (!input) return;
+    const chipsContainer = this.contentEl.querySelector<HTMLElement>('#oa-habit-related-file-chips');
+    if (!input || !chipsContainer) return;
 
     const markdownFiles = this.app.vault.getMarkdownFiles();
 
@@ -298,22 +336,58 @@ export class HabitEditorModal extends Modal {
       suggestionsList?.addClass('oa-hidden');
     };
 
-    const updateHint = (raw: string) => {
+    const getChipLinks = (): string[] =>
+      Array.from(chipsContainer.querySelectorAll<HTMLElement>('[data-link]')).map(el => el.dataset.link ?? '');
+
+    const updateHint = () => {
       if (!hintEl) return;
-      const value = raw.trim();
-      if (!value) {
+      const links = getChipLinks();
+      if (links.length === 0) {
         hintEl.textContent = '';
         hintEl.className = 'oa-file-hint';
         return;
       }
 
-      const linktext = this.resolveLinktext(value);
       const sourcePath = this.habit?.file.path ?? '';
-      const resolved = this.app.metadataCache.getFirstLinkpathDest(linktext, sourcePath)
-        ?? this.app.vault.getAbstractFileByPath(linktext);
-      hintEl.textContent = resolved ? '' : this.i18n.t('habit_related_file_hint_missing');
-      hintEl.className = resolved ? 'oa-file-hint' : 'oa-file-hint oa-file-hint--new';
+      const hasUnresolvedLink = links.some(value => {
+        const linktext = this.resolveLinktext(value);
+        return !this.app.metadataCache.getFirstLinkpathDest(linktext, sourcePath)
+          && !this.app.vault.getAbstractFileByPath(linktext);
+      });
+      hintEl.textContent = hasUnresolvedLink ? this.i18n.t('habit_related_file_hint_missing') : '';
+      hintEl.className = hasUnresolvedLink ? 'oa-file-hint oa-file-hint--new' : 'oa-file-hint';
     };
+
+    const addChip = (link: string) => {
+      const trimmed = link.trim();
+      if (!trimmed || getChipLinks().includes(trimmed)) return;
+
+      const chip = this.contentEl.ownerDocument.createElement('span');
+      chip.className = 'oa-related-chip';
+      chip.dataset.link = trimmed;
+
+      const label = this.contentEl.ownerDocument.createElement('span');
+      label.className = 'oa-related-chip__label';
+      label.textContent = trimmed;
+      chip.appendChild(label);
+
+      const removeBtn = this.contentEl.ownerDocument.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'oa-related-chip__remove';
+      removeBtn.setAttribute('aria-label', this.i18n.t('habit_related_file_remove'));
+      removeBtn.textContent = '×';
+      chip.appendChild(removeBtn);
+
+      chipsContainer.appendChild(chip);
+      updateHint();
+    };
+
+    chipsContainer.addEventListener('click', (event) => {
+      const removeBtn = (event.target as HTMLElement).closest<HTMLButtonElement>('.oa-related-chip__remove');
+      if (!removeBtn) return;
+      removeBtn.closest('.oa-related-chip')?.remove();
+      updateHint();
+    });
 
     const showSuggestions = (query: string) => {
       if (!suggestionsList) return;
@@ -335,9 +409,9 @@ export class HabitEditorModal extends Modal {
         li.addEventListener('mousedown', (event) => {
           event.preventDefault();
           const sourcePath = this.habit?.file.path ?? `${this.habitManager.getFolderPath()}/untitled.md`;
-          input.value = this.app.fileManager.generateMarkdownLink(file, sourcePath);
+          addChip(this.app.fileManager.generateMarkdownLink(file, sourcePath));
+          input.value = '';
           hideSuggestions();
-          updateHint(input.value);
         });
         suggestionsList.appendChild(li);
       });
@@ -346,16 +420,22 @@ export class HabitEditorModal extends Modal {
     };
 
     input.addEventListener('input', () => {
-      const query = input.value.trim();
-      showSuggestions(query);
-      updateHint(query);
+      showSuggestions(input.value.trim());
+    });
+
+    input.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      addChip(input.value);
+      input.value = '';
+      hideSuggestions();
     });
 
     input.addEventListener('blur', () => {
       window.setTimeout(hideSuggestions, 150);
     });
 
-    updateHint(input.value);
+    updateHint();
   }
 
   private attachTimeDial(): void {
@@ -439,7 +519,11 @@ export class HabitEditorModal extends Modal {
     const color = get<HTMLInputElement>('oa-habit-color')?.value.trim() ?? '';
     const status = get<HTMLInputElement>('oa-habit-status')?.checked ? 'active' : 'inactive';
     const area = get<HTMLSelectElement>('oa-habit-area')?.value ?? 'temporal';
-    const relatedFile = get<HTMLInputElement>('oa-habit-related-file')?.value.trim() ?? '';
+    const subAreaSelect = get<HTMLSelectElement>('oa-habit-sub-area');
+    const subArea = subAreaSelect ? subAreaSelect.value : (this.habit?.subArea ?? '');
+    const relatedFiles = Array.from(form.querySelectorAll<HTMLElement>('#oa-habit-related-file-chips [data-link]'))
+      .map(el => el.dataset.link ?? '')
+      .filter(Boolean);
     const frequencyMode = get<HTMLSelectElement>('oa-habit-frequency')?.value ?? 'everyday';
 
     let frequency: unknown = frequencyMode;
@@ -453,7 +537,7 @@ export class HabitEditorModal extends Modal {
       form.querySelector<HTMLInputElement>(`#oa-habit-daytime-${daytime.replace(/\s+/g, '_')}`)?.checked
     );
 
-    return { name, description, time, priority, maxGap, color, status, area, relatedFile, frequency, daytimes };
+    return { name, description, time, priority, maxGap, color, status, area, subArea, relatedFiles, frequency, daytimes };
   }
 
   private async handleSubmit(form: HTMLFormElement): Promise<void> {
@@ -478,6 +562,7 @@ export class HabitEditorModal extends Modal {
       await this.createHabit(values);
     }
 
+    await this.habitManager.refreshHabits();
     document.dispatchEvent(new CustomEvent('obsidian-agenda:habits-refresh'));
     this.close();
   }
@@ -492,7 +577,6 @@ export class HabitEditorModal extends Modal {
 
     const frontmatter: Record<string, unknown> = {
       name: values.name,
-      description: values.description,
       time: values.time,
       area: values.area,
       frequency: values.frequency,
@@ -502,10 +586,11 @@ export class HabitEditorModal extends Modal {
       maxGap: values.maxGap,
     };
 
-    if (values.relatedFile) frontmatter.relatedFile = values.relatedFile;
+    if (values.subArea) frontmatter['sub-area'] = values.subArea;
+    if (values.relatedFiles.length > 0) frontmatter.related = values.relatedFiles;
     if (values.color) frontmatter.color = values.color;
 
-    const content = `---\n${stringifyYaml(frontmatter)}---\n`;
+    const content = `---\n${stringifyYaml(frontmatter)}---\n${values.description ? `${values.description}\n` : ''}`;
     await this.app.vault.create(filePath, content);
     new Notice(this.i18n.t('habit_created'));
   }
@@ -521,14 +606,20 @@ export class HabitEditorModal extends Modal {
 
     await this.app.fileManager.processFrontMatter(habit.file, (fm: Record<string, unknown>) => {
       fm.name = values.name;
-      fm.description = values.description;
+      delete fm.description;
       fm.time = values.time;
       fm.area = values.area;
-      if (values.relatedFile) {
-        fm.relatedFile = values.relatedFile;
+      if (values.subArea) {
+        fm['sub-area'] = values.subArea;
       } else {
-        delete fm.relatedFile;
+        delete fm['sub-area'];
       }
+      if (values.relatedFiles.length > 0) {
+        fm.related = values.relatedFiles;
+      } else {
+        delete fm.related;
+      }
+      delete fm.relatedFile;
       fm.frequency = values.frequency;
       fm.priority = values.priority;
       fm.daytime = values.daytimes;
@@ -542,6 +633,12 @@ export class HabitEditorModal extends Modal {
       // completions/entries no se tocan: se preservan tal cual estaban.
     });
 
+    await this.app.vault.process(habit.file, content => {
+      const body = content.replace(/^---[\s\S]*?---\s*/, '');
+      const description = values.description ? `${values.description}\n` : '';
+      return `${content.slice(0, content.length - body.length)}${description}`;
+    });
+
     if (renaming) {
       await this.app.fileManager.renameFile(habit.file, targetPath);
     }
@@ -551,6 +648,7 @@ export class HabitEditorModal extends Modal {
 
   private async deleteHabit(file: TFile): Promise<void> {
     await this.app.vault.delete(file);
+    await this.habitManager.refreshHabits();
     document.dispatchEvent(new CustomEvent('obsidian-agenda:habits-refresh'));
     this.close();
   }

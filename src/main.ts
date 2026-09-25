@@ -121,6 +121,7 @@ export default class ObsidianAgenda extends Plugin {
       ...(typeof data.habitDefaultMaxGap === "number" ? { habitDefaultMaxGap: data.habitDefaultMaxGap } : {}),
       ...(typeof data.habitDefaultPriority === "number" ? { habitDefaultPriority: data.habitDefaultPriority } : {}),
       ...(typeof data.habitDefaultColor === "string" ? { habitDefaultColor: data.habitDefaultColor } : {}),
+      ...(typeof data.showHabitSubAreaField === "boolean" ? { showHabitSubAreaField: data.showHabitSubAreaField } : {}),
       ...(typeof data.showHabitGridTab === "boolean" ? { showHabitGridTab: data.showHabitGridTab } : {}),
       ...(typeof data.showHabitDashboardTab === "boolean" ? { showHabitDashboardTab: data.showHabitDashboardTab } : {}),
       ...(typeof data.showHabitRoutineTab === "boolean" ? { showHabitRoutineTab: data.showHabitRoutineTab } : {}),

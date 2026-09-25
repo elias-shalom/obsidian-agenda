@@ -30,6 +30,7 @@ interface TableRow {
   color: string;
   areaLabel: string;
   areaColor: string;
+  subArea: string;
   hasRelatedFile: boolean;
   frequency: string;
   priority: number;
@@ -41,8 +42,8 @@ interface TableRow {
 }
 
 export class HabitTableView extends HabitView {
-  private sortKey = 'priority';
-  private sortDesc = true;
+  private sortKey = 'title';
+  private sortDesc = false;
 
   constructor(
     leaf: WorkspaceLeaf,
@@ -128,6 +129,7 @@ export class HabitTableView extends HabitView {
       color: habit.color,
       areaLabel: getAreaLabel(habit.area, this.i18n),
       areaColor: getAreaColor(habit.area),
+      subArea: habit.subArea,
       hasRelatedFile: !!habit.relatedFile,
       frequency: this.frequencyLabel(habit),
       priority: habit.priority,

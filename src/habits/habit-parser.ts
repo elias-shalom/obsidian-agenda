@@ -142,11 +142,26 @@ function normalizeDaytimes(value: unknown): Daytime[] {
   return [...normalized];
 }
 
-export function parseHabit(file: TFile, fm: Record<string, unknown>, settings: AgendaPluginSettings): IHabit | null {
+function normalizeRelated(value: unknown): string[] {
+  const rawValues = Array.isArray(value) ? value : [value];
+  return [...new Set(rawValues
+    .filter(item => typeof item === 'string')
+    .flatMap(item => item.split(/\r?\n/))
+    .map(item => item.trim())
+    .filter(Boolean))];
+}
+
+export function parseHabit(
+  file: TFile,
+  fm: Record<string, unknown>,
+  settings: AgendaPluginSettings,
+  bodyDescription?: string
+): IHabit | null {
   const rawStatus = String(fm.status ?? 'active').trim().toLowerCase();
   const status = rawStatus === 'inactive' || rawStatus === 'archived' || rawStatus === 'disabled' ? 'inactive' : 'active';
 
   const area = String(fm.area ?? '').trim() || 'temporal';
+  const related = normalizeRelated(fm.related);
 
   const title = String(fm.title ?? fm.name ?? file.basename ?? 'Habit').trim() || file.basename || 'Habit';
   const maxGapValue = Number(fm.maxGap ?? settings.habitDefaultMaxGap);
@@ -166,10 +181,12 @@ export function parseHabit(file: TFile, fm: Record<string, unknown>, settings: A
     file,
     name: String(fm.name ?? file.basename ?? title).trim() || file.basename || title,
     title,
-    description: String(fm.description ?? '').trim(),
+    description: bodyDescription?.trim() || String(fm.description ?? '').trim(),
     time: Number(fm.time ?? 0),
     area,
-    relatedFile: String(fm.relatedFile ?? '').trim(),
+    subArea: String(fm['sub-area'] ?? '').trim(),
+    related,
+    relatedFile: related[0] ?? '',
     frequencySet: normalizeFrequencySet(fm.frequency),
     priority: normalizePriority(fm.priority ?? settings.habitDefaultPriority),
     daytimes,

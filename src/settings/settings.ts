@@ -13,6 +13,7 @@ export interface AgendaPluginSettings {
   habitDefaultMaxGap: number;
   habitDefaultPriority: number;
   habitDefaultColor: string;
+  showHabitSubAreaField: boolean;
   showHabitGridTab: boolean;
   showHabitDashboardTab: boolean;
   showHabitRoutineTab: boolean;
@@ -33,6 +34,7 @@ export const DEFAULT_SETTINGS: AgendaPluginSettings = {
   habitDefaultMaxGap: 0,
   habitDefaultPriority: 3,
   habitDefaultColor: "",
+  showHabitSubAreaField: false,
   showHabitGridTab: true,
   showHabitDashboardTab: true,
   showHabitRoutineTab: true,

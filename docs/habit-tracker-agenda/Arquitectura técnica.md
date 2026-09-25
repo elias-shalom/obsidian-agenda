@@ -130,7 +130,7 @@ async function toggleOccurrence(app: App, file: TFile, h: IHabit, date: string, 
 - **`area`**: ya **no se normaliza ni valida** contra un enum. `parseHabit` toma `String(fm.area ?? '').trim() || 'temporal'` tal cual; cualquier string es válido (revisado, ver ADR-004 en [[Modelo de datos]]).
 - `frequencyToSet(fm.frequency): Set<number>` — `everyday→{1..7}`, `workweek→{1..5}`, `weekend→{6,7}`, lista de nombres→números; tokens inválidos dentro de una lista se ignoran; lista vacía o campo ausente → `{1..7}` (ver ADR-005).
 - `clampPriority(fm.priority): number` — `parseInt` + clamp `1..5`; `NaN` → `3`.
-- `relatedFile` se lee como string opcional (por defecto `""`); reemplaza a `subArea` (eliminado) — guarda un wikilink/link inline a una nota de apoyo, resuelto vía `HabitManager.resolveRelatedFile()` (ver §2.4-bis en [[Modelo de datos]]).
+- `related` se lee como lista opcional (por defecto `[]`) — guarda múltiples wikilinks/links inline a notas de apoyo, resueltos por `HabitManager.resolveRelatedFile()` usando el primero (ver §2.4-bis en [[Modelo de datos]]).
 - `parseCompletions(fm.completions, daytimes): ICompletions` — objeto → mapa validado (claves ISO, valores filtrados contra `daytimes`, sin duplicados); si es inválido → `{}`. **Fallback legacy**: si no hay `completions` pero sí `entries`, sintetiza `{ [date]: [...daytimes] }` (migración, §2.4).
 - Todas las funciones devuelven valores validados; nunca lanzan (resiliencia §8).
 

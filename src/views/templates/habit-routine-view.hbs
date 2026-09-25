@@ -79,6 +79,13 @@
                 <span class="oa-habit-routine-daytime-tag">{{this.daytimeLabel}}</span>
               {{/unless}}
             </div>
+            {{#unless (eq @root.groupBy "area")}}
+              {{#if @root.settings.showHabitSubAreaField}}
+                {{#if this.subArea}}
+                  <div class="oa-habit-routine-sub-area">{{this.subArea}}</div>
+                {{/if}}
+              {{/if}}
+            {{/unless}}
           </div>
           <div class="oa-habit-routine-habit-actions">
             <button class="oa-habit-routine-action-btn" data-action="open-note" data-habit-id="{{this.id}}">{{t "open_file"}}</button>

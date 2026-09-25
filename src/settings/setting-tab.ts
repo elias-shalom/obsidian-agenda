@@ -69,6 +69,11 @@ export class SettingTab extends PluginSettingTab {
             desc: this.i18n.t('habit_default_color_desc'),
             control: { type: 'text', key: 'habitDefaultColor', placeholder: this.i18n.t('habit_default_color_placeholder') },
           },
+          {
+            name: this.i18n.t('show_habit_sub_area_field'),
+            desc: this.i18n.t('show_habit_sub_area_field_desc'),
+            control: { type: 'toggle', key: 'showHabitSubAreaField' },
+          },
         ],
       },
       {
@@ -221,6 +226,16 @@ export class SettingTab extends PluginSettingTab {
         .setValue(this.plugin.settings.habitDefaultColor)
         .onChange(async (value) => {
           this.plugin.settings.habitDefaultColor = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("show_habit_sub_area_field"))
+      .setDesc(this.i18n.t("show_habit_sub_area_field_desc"))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.showHabitSubAreaField)
+        .onChange(async (value) => {
+          this.plugin.settings.showHabitSubAreaField = value;
           await this.plugin.saveSettings();
         }));
 

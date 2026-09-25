@@ -122,7 +122,22 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [x] Grid/Semanal: los días no programados encerrados dentro de una racha activa ahora se pintan como una línea delgada de conexión en vez de cortar la píldora; un hábito completado en un día que después se quitó de la frecuencia ahora muestra un marcador distintivo (círculo con diagonal roja) en vez de desaparecer visualmente
 - [x] Grid/Semanal: corregido el parpadeo de la forma incorrecta de la píldora durante la espera entre el toggle optimista y el refresco real
 
-## 🎯 Próximas Características (v1.1.3)
+## 🎯 Características (v1.1.3)
+
+### Task Management Views
+- [x] Descripción del hábito: ahora se guarda en el cuerpo de la nota en vez del frontmatter (con compatibilidad hacia notas antiguas)
+- [x] Campo `related` (reemplaza a `relatedFile`): ahora admite múltiples wikilinks; se agregan uno por uno desde el Habit Editor con autocompletado y se muestran como chips removibles debajo del campo
+- [x] Nuevo campo opcional **Sub-área**: combobox poblado con las subcarpetas de 2º/3er nivel del área elegida (ej. `body/salud`); oculto por defecto, activable en Settings ▸ Habits; se muestra debajo del área en las vistas Lista y Rutina cuando está activo
+- [x] Vista Lista de hábitos: orden por defecto cambiado a alfabético por nombre (antes era por prioridad)
+
+### 🐛 Correcciones
+- [x] Corregido: al editar/borrar un hábito, este desaparecía brevemente de las vistas Rutina/Lista hasta recargar (condición de carrera entre el refresco async de la caché y el evento `habits-refresh`)
+- [x] Corregido: `loadSettings()` perdía silenciosamente cualquier ajuste nuevo no incluido en su whitelist manual, reseteándolo a su valor por defecto en cada carga/actualización del plugin; reemplazado por un merge genérico (`{ ...DEFAULT_SETTINGS, ...data }`)
+
+### Documentación
+- [x] README: sección "🆕 News" con lo último de la versión en curso + callout destacado arriba, además de la entrada correspondiente en el Changelog completo
+
+## 🎯 Próximas Características (v1.1.4)
 
 [Google Calendar](https://community.obsidian.md/plugins/google-calendar)
 [Day Planner](https://community.obsidian.md/plugins/obsidian-day-planner)

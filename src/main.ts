@@ -100,34 +100,10 @@ export default class ObsidianAgenda extends Plugin {
 
   async loadSettings(): Promise<void> {
     const raw: unknown = await this.loadData();
+    const data = (raw && typeof raw === "object") ? raw as Partial<AgendaPluginSettings> : {};
 
-    if (!raw || typeof raw !== "object") {
-      this.settings = { ...DEFAULT_SETTINGS };
-      return;
-    }
-
-    const data = raw as Partial<AgendaPluginSettings>;
-
-    this.settings = {
-      ...DEFAULT_SETTINGS,
-      ...(typeof data.showOverviewTab === "boolean" ? { showOverviewTab: data.showOverviewTab } : {}),
-      ...(typeof data.showListTab === "boolean" ? { showListTab: data.showListTab } : {}),
-      ...(typeof data.showTableTab === "boolean" ? { showTableTab: data.showTableTab } : {}),
-      ...(typeof data.showCalendarTab === "boolean" ? { showCalendarTab: data.showCalendarTab } : {}),
-      ...(typeof data.weekStartDay === "number" ? { weekStartDay: data.weekStartDay } : {}),
-      ...(typeof data.habitFolderPath === "string" ? { habitFolderPath: data.habitFolderPath } : {}),
-      ...(typeof data.habitDaysToShow === "number" ? { habitDaysToShow: data.habitDaysToShow } : {}),
-      ...(typeof data.habitShowStreaks === "boolean" ? { habitShowStreaks: data.habitShowStreaks } : {}),
-      ...(typeof data.habitDefaultMaxGap === "number" ? { habitDefaultMaxGap: data.habitDefaultMaxGap } : {}),
-      ...(typeof data.habitDefaultPriority === "number" ? { habitDefaultPriority: data.habitDefaultPriority } : {}),
-      ...(typeof data.habitDefaultColor === "string" ? { habitDefaultColor: data.habitDefaultColor } : {}),
-      ...(typeof data.showHabitSubAreaField === "boolean" ? { showHabitSubAreaField: data.showHabitSubAreaField } : {}),
-      ...(typeof data.showHabitGridTab === "boolean" ? { showHabitGridTab: data.showHabitGridTab } : {}),
-      ...(typeof data.showHabitDashboardTab === "boolean" ? { showHabitDashboardTab: data.showHabitDashboardTab } : {}),
-      ...(typeof data.showHabitRoutineTab === "boolean" ? { showHabitRoutineTab: data.showHabitRoutineTab } : {}),
-      ...(typeof data.showHabitWeeklyTab === "boolean" ? { showHabitWeeklyTab: data.showHabitWeeklyTab } : {}),
-      ...(typeof data.showHabitListTab === "boolean" ? { showHabitListTab: data.showHabitListTab } : {}),
-    };
+    // Merge genérico: cualquier clave guardada sobrescribe su default, sin necesidad de listarla aquí.
+    this.settings = { ...DEFAULT_SETTINGS, ...data };
   }
 
   async saveSettings(): Promise<void> {

@@ -178,7 +178,9 @@
     "invalidDependency": "Icon {icon} is not followed by a valid dependency list.",
     "invalidRecurrence": "Icon {icon} is not followed by a valid recurrence pattern.",
     "initializeTaskSection": "Error initializing TaskSection: {error}",
-    "invalidRecurrencePattern": "Icon {icon} is not followed by a valid recurrence pattern."
+    "invalidRecurrencePattern": "Icon {icon} is not followed by a valid recurrence pattern.",
+    "invalidTime": "Icon {icon} is not followed by a valid time (HH:mm).",
+    "invalidDuration": "Icon {icon} is not followed by a valid duration in minutes (e.g. 90m)."
   },
   "new_task": "New task",
   "edit_task": "Edit task",

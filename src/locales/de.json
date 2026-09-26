@@ -177,7 +177,9 @@
     "invalidDependency": "Icon {icon} ist nicht gefolgt von einer gültigen Abhängigkeitsliste.",
     "invalidRecurrence": "Icon {icon} ist nicht gefolgt von einem gültigen Wiederholungsmuster.",
     "initializeTaskSection": "Fehler bei der Initialisierung der TaskSection: {error}",
-    "invalidRecurrencePattern": "Icon {icon} ist nicht gefolgt von einem gültigen Wiederholungsmuster."
+    "invalidRecurrencePattern": "Icon {icon} ist nicht gefolgt von einem gültigen Wiederholungsmuster.",
+    "invalidTime": "Icon {icon} ist nicht gefolgt von einer gültigen Uhrzeit (HH:mm).",
+    "invalidDuration": "Icon {icon} ist nicht gefolgt von einer gültigen Dauer in Minuten (z. B. 90m)."
   },
   "title_priority": "Priorität",
   "new_task": "Neue Aufgabe",

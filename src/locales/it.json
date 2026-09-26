@@ -177,7 +177,9 @@
     "invalidDependency": "Icona {icon} non è seguita da un elenco di dipendenze valido.",
     "invalidRecurrence": "Icona {icon} non è seguita da un modello di ricorrenza valido.",
     "initializeTaskSection": "Errore durante l'inizializzazione della sezione attività: {error}",
-    "invalidRecurrencePattern": "Icona {icon} non è seguita da un modello di ricorrenza valido."
+    "invalidRecurrencePattern": "Icona {icon} non è seguita da un modello di ricorrenza valido.",
+    "invalidTime": "Icona {icon} non è seguita da un orario valido (HH:mm).",
+    "invalidDuration": "Icona {icon} non è seguita da una durata valida in minuti (es. 90m)."
   },
   "title_priority": "Priorità",
   "new_task": "Nuova attività",

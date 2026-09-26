@@ -177,7 +177,9 @@
     "invalidDependency": "L'icône {icon} n'est pas suivie d'une liste de dépendances valide.",
     "invalidRecurrence": "L'icône {icon} n'est pas suivie d'un modèle de récurrence valide.",
     "initializeTaskSection": "Erreur lors de l'initialisation de la section des tâches : {error}",
-    "invalidRecurrencePattern": "L'icône {icon} n'est pas suivie d'un modèle de récurrence valide."
+    "invalidRecurrencePattern": "L'icône {icon} n'est pas suivie d'un modèle de récurrence valide.",
+    "invalidTime": "L'icône {icon} n'est pas suivie d'une heure valide (HH:mm).",
+    "invalidDuration": "L'icône {icon} n'est pas suivie d'une durée valide en minutes (ex. 90m)."
   },
   "title_priority": "Priorité",
   "new_task": "Nouvelle tâche",

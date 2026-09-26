@@ -78,6 +78,10 @@ export interface ITaskDate {
   created: DateTime | null;
   done: DateTime | null;
   cancelled: DateTime | null;
+  /** Hora del día de `scheduled` en formato HH:mm (24h), o null si no se especificó (v1.1.4, ADR-T2/T3) */
+  scheduledTime: string | null;
+  /** Duración en minutos de `scheduled` en modo bloque, o null si no se especificó (v1.1.4, ADR-T2) */
+  scheduledDuration: number | null;
 }
 
 /**

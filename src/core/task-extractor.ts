@@ -1,4 +1,5 @@
 import { App, TFile, CachedMetadata, FrontMatterCache } from "obsidian";
+import { DateTime } from "luxon";
 import { ITask } from "../types/interfaces";
 import { TaskSection } from "../entities/task-section";
 import { Task } from "../entities/task";
@@ -141,10 +142,15 @@ export class TaskExtractor {
         date: {
           due: taskSection.extractDate(taskSection.taskData.dueDate),
           start: taskSection.extractDate(taskSection.taskData.startDate),
-          scheduled: taskSection.extractDate(taskSection.taskData.scheduledDate),
+          scheduled: this.applyScheduledTime(
+            taskSection.extractDate(taskSection.taskData.scheduledDate),
+            taskSection.extractTime(taskSection.taskData.scheduledTime)
+          ),
           created: taskSection.extractDate(taskSection.taskData.createdDate),
           done: taskSection.extractDate(taskSection.taskData.doneDate),
-          cancelled: taskSection.extractDate(taskSection.taskData.cancelledDate)
+          cancelled: taskSection.extractDate(taskSection.taskData.cancelledDate),
+          scheduledTime: taskSection.extractTime(taskSection.taskData.scheduledTime),
+          scheduledDuration: taskSection.extractDuration(taskSection.taskData.scheduledDuration)
         },
         
         section: {
@@ -166,6 +172,13 @@ export class TaskExtractor {
       console.error(`Error creando tarea de línea ${lineNumber + 1} en ${file.path}:`, error);
       return null;
     }
+  }
+
+  /** Aplica la hora (HH:mm) al DateTime de `scheduled`, si ambos están presentes (v1.1.4, ADR-T2) */
+  private applyScheduledTime(date: DateTime | null, time: string | null): DateTime | null {
+    if (!date || !time) return date;
+    const [hour, minute] = time.split(':').map(Number);
+    return date.set({ hour, minute });
   }
 
   /**

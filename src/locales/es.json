@@ -177,7 +177,9 @@
     "invalidDependency": "El ícono {icon} no está seguido por una lista de dependencias válida.",
     "invalidRecurrence": "El ícono {icon} no está seguido por un patrón de recurrencia válido.",
     "initializeTaskSection": "Error al inicializar TaskSection: {error}",
-    "invalidRecurrencePattern": "El ícono {icon} no está seguido por un patrón de recurrencia válido."
+    "invalidRecurrencePattern": "El ícono {icon} no está seguido por un patrón de recurrencia válido.",
+    "invalidTime": "El ícono {icon} no está seguido por una hora válida (HH:mm).",
+    "invalidDuration": "El ícono {icon} no está seguido por una duración válida en minutos (ej. 90m)."
   },
   "title_priority": "Prioridad",
   "new_task": "Nueva tarea",

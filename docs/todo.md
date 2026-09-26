@@ -144,9 +144,13 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 [Timelineal](https://timelineal.com/)
 
 ### Core Tasks
-- [ ] Compatibilidad con la programación de tareas según la hora del día [vista por día (hora y día completo)]
-  - [ ] Una forma de agregar la fecha desde el archivo con iconos
-  - [ ] Puede ser con el boton secundario agregar las fechas y demás
+- [ ] Compatibilidad con la programación de tareas según la hora del día [vista por día (hora y día completo)] — diseño acordado, ver `docs/agenda-tasks/Modelo de datos.md` §9 (ADR-T1 a T6) y `docs/agenda-tasks/Plan de implementación.md`
+  - [ ] `due` siempre día completo (sin hora); `scheduled` es el único campo con hora, en modo punto o modo bloque con duración
+  - [ ] Icono de hora (🕐) y de duración (⏱️) ligados por posición al icono de fecha inmediatamente anterior (no rompe compatibilidad con Obsidian Tasks)
+  - [ ] Insertar desde el archivo vía comando/atajo (menú nativo) y vía clic derecho (menú contextual sobre la línea), reutilizando `flatpickr` para capturar el valor
+  - [ ] Vista Día: franjas horarias pobladas por `scheduled`; fila fija "Todo el día" para `due`/`start`; tareas completadas atenuadas
+  - [ ] Filtro configurable de qué fechas mostrar (`start`/`due`/`scheduled`) con marca visual distinta por tipo — setting global + override por vista
+  - [ ] Vista Semana: mostrar la hora como etiqueta dentro de la cápsula existente (sin rediseñar la grilla)
 - [ ] Edición de tareas nativas en las vistas de OBS Agenda (abc tarea al calendario)
 - [ ] Creación avanzada de tareas (todas las fechas, id, dependencias, estatus, proyectos, etc)
 
@@ -156,7 +160,7 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [ ] Diferencia si segun el estado
 
 ### Calendar Enhancements
-- [ ] Calendario Drag and drop de tareas cambiando las fechas
+- [ ] Calendario Drag and drop de tareas cambiando las fechas — requiere primero una capacidad de reescritura en el lugar en `TaskWriter` (compartida con "Edición de tareas nativas"); Mes/Semana/Año cambian el día, vista Día cambia hora (arrastrar) y duración (redimensionar)
 - [ ] Agregar date picker navegable por niveles (año → mes → día), abierto desde el encabezado del calendario, que al confirmar/seleccionar lleve la vista a la fecha elegida de forma inmediata.
 
 ### 🐛 Correcciones Pendientes

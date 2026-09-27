@@ -168,8 +168,8 @@ enum CalendarViewType { Year, Month, Week, WorkWeek, Day }
 | 🆔 | `id` | `id::` |
 | ⛔ | `dependsOn` (lista separada por coma) | `dependson::` / `depends::` / `blockedby::` |
 | 🏁 | `onCompletion` (`keep`\|`delete`) | `oncompletion::` / `completion::` |
-| 🕐 *(v1.1.4, diseñado)* | hora del día — ligada al icono de fecha **inmediatamente anterior** en la línea (📅/🛫/⏳); formato 24h `HH:mm` | `time::` (siempre modifica a `scheduled`, ya que `due`/`start` nunca llevan hora) |
-| ⏱️ *(v1.1.4, diseñado)* | `duration` — ligada siempre a `⏳ scheduled` (modo bloque); formato en **minutos** (`⏱️ 90m`, sin mezclar horas) | `duration::` (minutos) |
+| 🕐 *(v1.1.4, implementado)* | hora del día — ligada al icono de fecha **inmediatamente anterior** en la línea (📅/🛫/⏳); formato 24h `HH:mm` | `time::` (siempre modifica a `scheduled`, ya que `due`/`start` nunca llevan hora) |
+| ⏱️ *(v1.1.4, implementado)* | `duration` — ligada siempre a `⏳ scheduled` (modo bloque); formato en **minutos** (`⏱️ 90m`, sin mezclar horas) | `duration::` (minutos) |
 
 Ambos formatos convergen en el mismo `taskData` interno — una tarea puede incluso mezclar campos emoji y Dataview en la misma línea, el parser los resuelve por igual.
 
@@ -226,7 +226,7 @@ type GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags';
 
 - **Decisión**: las vistas de calendario pueden mostrar `start`, `due` y `scheduled` (no `created`/`done`/`cancelled`), de forma **configurable** (setting global con checkboxes + posible override por vista), cada una con una marca visual distinta (color/borde/indicador) para distinguirlas a simple vista.
 - **Prioridad de aparición** cuando una tarea tiene más de una de estas fechas cayendo el mismo día: `scheduled > due > start` — se muestra **una sola vez**, con la de mayor prioridad presente ese día, para no duplicar la tarea en la misma celda/franja.
-- **Vista Día**: `scheduled` (con hora) puebla las franjas horarias (`hourSlots`); `due` y `start` sin hora (siempre, por ADR-T1) aparecen en **dos filas fijas separadas** "Todo el día" (una para `due`, otra para `start`), colapsadas por defecto, cada una con su propio distintivo visual (ver ADR-T4-bis).
+- **Vista Día**: `scheduled` (con hora) puebla las franjas horarias (`hourSlots`); `due` y `start` sin hora (siempre, por ADR-T1) aparecen en **dos filas fijas separadas** "Todo el día" (una para `due`, otra para `start`), expandidas por defecto (revertido de la decisión original D10, colapsable manualmente), cada una con su propio distintivo visual (ver ADR-T4-bis).
 
 ### ADR-T4-bis — Distintivo visual por tipo de fecha
 
@@ -240,7 +240,8 @@ type GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags';
 
 ### ADR-T6 — Tareas completadas con horario/bloque
 
-- **Decisión**: una tarea completada (`done`) que tenga `scheduled`/duración sigue mostrándose en su franja u origen (para valor retrospectivo), pero con tratamiento visual atenuado (opacidad reducida/tachado) en vez de ocultarse.
+- **Decisión**: por defecto, una tarea completada (`done`) que tenga `scheduled`/duración sigue mostrándose en su franja u origen (para valor retrospectivo), pero con tratamiento visual atenuado (opacidad reducida/tachado) en vez de ocultarse.
+- **Ampliación**: se agregó el setting `calendarShowCompletedTasks` (Settings ▸ Calendario, default activado) para quien prefiera **ocultar por completo** las tareas completadas del calendario en vez de solo atenuarlas.
 - **Nota de futuro**: esto siembra la base de datos necesaria para el ítem ya listado en el roadmap "Seguimiento de tiempo real gastado vs. estimado" (Gestión de Tiempo Avanzada, v1.x–v2.x).
 
 ### ADR-T7 — Bloque que cruza medianoche

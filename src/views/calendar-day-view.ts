@@ -44,22 +44,17 @@ export class CalendarDayView extends CalendarView {
   protected generateViewData(): DayViewData {
     const dayTasks = this.getTasksForDate(this.currentDate);
 
-    // Organizar tareas por hora (24 horas)
+    // Tareas ancladas por `scheduled` con hora asignada -> franjas horarias (modo punto/bloque, ADR-T2)
+    const scheduledWithTime = dayTasks.filter(task => task.calendarDateType === 'scheduled' && task.date.scheduledTime);
+    // Todo-el-día: due/start (siempre día completo, ADR-T1) y scheduled sin hora (caso límite)
+    const allDayDue = dayTasks.filter(task => task.calendarDateType === 'due');
+    const allDayStart = dayTasks.filter(task => task.calendarDateType === 'start');
+    const allDayScheduled = dayTasks.filter(task => task.calendarDateType === 'scheduled' && !task.date.scheduledTime);
+
+    // Organizar tareas programadas por hora (24 horas)
     const hourSlots: HourSlot[] = [];
     for (let hour = 0; hour < 24; hour++) {
-      // Filtrar tareas para esta hora específica
-      const hourTasks = dayTasks.filter(task => {
-        if (!task.date.due) return false;
-        
-        // Convertir a DateTime si es string
-        const taskDate = typeof task.date.due === 'string'
-          ? DateTime.fromISO(task.date.due)
-          : task.date.due;
-          
-        // Verificar si la tarea es para esta hora
-        return taskDate.hour === hour;
-      });
-      
+      const hourTasks = scheduledWithTime.filter(task => task.date.scheduled?.hour === hour);
       hourSlots.push({
         hour,
         formattedHour: this.formatHour(hour),
@@ -78,6 +73,9 @@ export class CalendarDayView extends CalendarView {
       isToday: this.currentDate.hasSame(DateTime.now(), 'day'),
       tasksForDay: dayTasks,
       hourSlots: hourSlots,
+      allDayDue,
+      allDayStart,
+      allDayScheduled,
       periodName: this.currentDate.toFormat('EEEE, MMMM d, yyyy'),
       miniCalendar: miniCalendar
     };
@@ -297,6 +295,16 @@ export class CalendarDayView extends CalendarView {
         this.navigateToNextMonth();
       });
     }
+
+    // Sección "Todo el día": colapsada por defecto (D10)
+    const alldayToggle = container.querySelector<HTMLButtonElement>('.oa-calendar-allday-toggle');
+    const alldayContainer = container.querySelector<HTMLElement>('.oa-calendar-allday');
+    alldayToggle?.addEventListener('click', () => {
+      if (!alldayContainer) return;
+      const nowExpanded = !alldayContainer.hasClass('oa-expanded');
+      alldayContainer.toggleClass('oa-expanded', nowExpanded);
+      alldayToggle.setAttribute('aria-expanded', String(nowExpanded));
+    });
   }
 
   async onClose(): Promise<void> {

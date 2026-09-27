@@ -186,12 +186,12 @@ En el constructor de `ObsidianAgenda` se instancian, en orden: `I18n`, `TaskMana
 |---|---|---|
 | `showOverviewTab` / `showListTab` / `showTableTab` / `showCalendarTab` | `boolean` | Visibilidad de cada grupo de vistas de tareas en el header. |
 | `weekStartDay` | `number` (1–7, ISO) | Día de inicio de semana; al cambiarlo, `setting-tab.ts` sólo llama `refreshView()` sobre los leaves cuyas vistas son de tipo calendario (`CALENDAR_VIEW_TYPES`), no sobre todas las vistas abiertas. |
+| `calendarShowDueDates` (default `true`) / `calendarShowStartDates` (default `false`) / `calendarShowScheduledDates` (default `true`) | `boolean` | Grupo **"Calendario"** (v1.1.4) — qué tipos de fecha ancla una tarea a un día del calendario (`CalendarView.getTasksForDate()`, prioridad `scheduled > due > start`, ADR-T4). |
+| `calendarShowCompletedTasks` (default `true`) | `boolean` | Grupo "Calendario" (v1.1.4) — si `false`, las tareas completadas se excluyen por completo de las vistas de calendario en vez de solo atenuarse (ADR-T6). |
 
-No existe (a diferencia de hábitos) una ruta configurable para las tareas ni ajustes de patrones de emoji personalizados.
+No existe (a diferencia de hábitos) una ruta configurable para las tareas ni ajustes de patrones de emoji personalizados. Los cuatro settings de "Calendario" refrescan las vistas de calendario abiertas al cambiar (`SettingTab.refreshCalendarViews()`), igual que `weekStartDay`.
 
-> **v1.1.4 (diseñado)**: nuevo grupo de settings **"Calendario"** con checkboxes para elegir qué fechas (`start`/`due`/`scheduled`) se muestran por defecto en las vistas de calendario (ver ADR-T4 en [[Modelo de datos]]).
-
-## 6. Nueva superficie: inserción de campos desde el editor de notas (v1.1.4, diseñado)
+## 6. Nueva superficie: inserción de campos desde el editor de notas (v1.1.4, implementado)
 
 > Hasta hoy este plugin **nunca** interviene el editor de texto en vivo de Obsidian — todo es `ItemView` + Handlebars, vistas separadas de la nota. Esta es la primera funcionalidad que toca el editor de una nota mientras se escribe, así que merece su propia decisión de arquitectura (no es un cambio de datos, es una nueva superficie de integración).
 

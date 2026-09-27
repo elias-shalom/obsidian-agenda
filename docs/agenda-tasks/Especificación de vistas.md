@@ -81,11 +81,11 @@ Vista de un único día con **24 franjas horarias** (`hourSlots`, cada una con `
 
 > **v1.1.4 (diseñado, ver ADR-T1/T2/T4 en [[Modelo de datos]])**:
 > - `scheduled` con hora puebla la franja horaria correspondiente; si además tiene duración (modo bloque), la tarea ocupa un bloque visual de `[hora, hora + duración]` (posiblemente varias franjas), similar a un evento de calendario.
-> - `due` y `start` (siempre de día completo) se muestran en **dos filas fijas separadas** "Todo el día" (una para `due`, otra para `start`), **colapsadas por defecto**, en vez de una franja horaria, para que ninguna tarea desaparezca de la vista Día.
+> - `due` y `start` (siempre de día completo) se muestran en **dos filas fijas separadas** "Todo el día" (una para `due`, otra para `start`), **expandidas por defecto** (colapsable manualmente), en vez de una franja horaria, para que ninguna tarea desaparezca de la vista Día.
 > - Distintivo visual por tipo de fecha: icono (el mismo emoji 🛫/📅/⏳) + acento de color, consistente en todas las vistas de calendario (ver ADR-T4-bis en [[Modelo de datos]]).
 > - Tareas superpuestas en la misma franja: se apilan verticalmente en v1.1.4 (ver ADR-T5); un layout en carriles lado a lado queda como mejora futura.
 > - Bloques que cruzan medianoche: se recortan al final del día (ADR-T7).
-> - Tareas completadas con bloque/hora: se muestran atenuadas, no se ocultan (ADR-T6).
+> - Tareas completadas con bloque/hora: por defecto se muestran atenuadas, no se ocultan (ADR-T6); el setting `calendarShowCompletedTasks` permite ocultarlas por completo del calendario.
 > - **Filtro de fechas visibles**: qué combinación de `start`/`due`/`scheduled` se muestra es configurable — un setting global (Settings ▸ **Calendario**, grupo nuevo) define el valor por defecto, y cada vista de calendario puede sobreescribirlo en su propio toolbar (checkboxes), sin necesidad de guardarlo.
 > - **Drag and drop (planeado, no en el primer corte)**: arrastrar un bloque a otra franja reescribe la hora de `scheduled`; redimensionar su borde inferior reescribe la duración. Arrastrar una tarea entre días en Mes/Semana/Semana laboral/Año solo cambia el día de la fecha que la esté posicionando (según la prioridad `scheduled > due > start`). Requiere una capacidad nueva en `TaskWriter` para reescribir en su lugar una línea de tarea existente (hoy solo soporta anexar); comparte esa base con el ítem, también pendiente, de edición nativa de tareas — ver [[Plan de implementación]].
 

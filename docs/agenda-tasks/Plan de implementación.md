@@ -80,11 +80,11 @@ tags:
 - [ ] *(Diferido, no en esta fase)* `EditorSuggest` estilo Tasks (menú al escribir espacio) — anotado como posible fase 2 si se quiere esa experiencia exacta.
 
 ### Fase C — Vistas de calendario
-- [ ] `CalendarDayView`: poblar `hourSlots` desde `scheduled` (+ bloque si hay duración); fila fija "Todo el día" para `due`/`start`.
-- [ ] `CalendarWeekView`: etiqueta de hora dentro de la cápsula existente (sin rediseño de grilla).
-- [ ] `CalendarMonthView`/`CalendarWorkWeekView`/`CalendarYearView`: extender de "solo `due`" a "`start`/`due`/`scheduled` configurables", con marca visual por tipo.
-- [ ] Nuevo setting global (Settings ▸ Calendar) con checkboxes de qué fechas mostrar por defecto + control por vista (toolbar) que lo sobreescribe en sesión.
-- [ ] Tratamiento visual atenuado para tareas completadas con bloque/hora.
+- [x] `CalendarDayView`: puebla `hourSlots` desde `scheduled` (hora); fila "Todo el día" para `due`/`start` (dos filas separadas, ADR-T4-bis), **expandida por defecto** (revertido de D10, colapsable manualmente) + una tercera para `scheduled` sin hora asignada (caso límite). **Simplificación**: el modo bloque (⏱️ duración) muestra la duración como etiqueta ("90m") en la franja de inicio, pero **no** expande visualmente la tarea a lo largo de varias franjas todavía — queda anotado como pulido visual futuro.
+- [x] `CalendarWeekView`/`CalendarWorkWeekView`: etiqueta de hora dentro de la cápsula existente (sin rediseño de grilla).
+- [x] `CalendarMonthView`/`CalendarWorkWeekView`/`CalendarYearView`: extendidas de "solo `due`" a "`start`/`due`/`scheduled` configurables" (vía `CalendarView.getTasksForDate()` centralizado), con marca visual icono+color por tipo.
+- [x] Nuevo setting global (Settings ▸ Calendario) con checkboxes de qué fechas mostrar por defecto — el control por vista (toolbar) que lo sobreescribe en sesión queda diferido (ver D9, no se construyó en esta fase).
+- [x] Tratamiento visual atenuado para tareas completadas (`isTaskDone` helper + clase `.oa-calendar-task--done`), aplicado en Día/Semana/Semana laboral/Mes; se agregó además `calendarShowCompletedTasks` para poder ocultarlas por completo en vez de solo atenuarlas.
 
 ### Fase D — Edición en el lugar y drag and drop (dependencia compartida)
 - [ ] Nueva capacidad en `TaskWriter`: reescribir en su lugar una línea de tarea existente (localizar por archivo + número de línea, modificar solo el campo tocado, preservar el resto). Es prerrequisito tanto de "Edición de tareas nativas" como de "Drag and drop", ambos ya listados en el roadmap de v1.1.4.
@@ -97,6 +97,7 @@ tags:
 - [ ] Aplicar el mismo patrón al modal de edición (`"edit-task"`) una vez esté implementado (Fase D).
 
 ### Fuera de alcance de v1.1.4 (anotado para más adelante)
+- Expansión visual multi-franja de bloques con duración en la vista Día (hoy solo se muestra la duración como etiqueta en la franja de inicio).
 - Vista Semana horaria completa (grilla 7×24 estilo Google Calendar).
 - Layout en carriles para tareas superpuestas en la misma franja (hoy: apiladas).
 - Kanban view y terminar Gantt view (quedan técnicamente más fáciles una vez exista `scheduled`+`duration`, pero no se abordan en esta fase).

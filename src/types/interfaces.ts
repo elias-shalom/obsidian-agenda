@@ -408,6 +408,12 @@ export interface DayViewData {
   isToday: boolean;
   tasksForDay: ITask[];
   hourSlots: HourSlot[];
+  /** Tareas con `due` como ancla del d\u00eda (siempre d\u00eda completo, ADR-T1) */
+  allDayDue: ITask[];
+  /** Tareas con `start` como ancla del d\u00eda (siempre d\u00eda completo) */
+  allDayStart: ITask[];
+  /** Tareas con `scheduled` como ancla pero sin hora asignada (caso l\u00edmite, ver Plan de implementaci\u00f3n) */
+  allDayScheduled: ITask[];
   periodName: string;
   miniCalendar: MiniCalendarData;
 }

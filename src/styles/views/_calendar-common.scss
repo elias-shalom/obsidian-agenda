@@ -81,9 +81,44 @@
 }
 
 .oa-task-title {
-  display: block;
+  display: inline-block;
+  flex: 1 1 0;
+  min-width: 0;
   @include text-truncate();
-  width: 100%;
+}
+
+/* Distintivo visual por tipo de fecha (v1.1.4, ADR-T4-bis): mismo icono que el usuario ya
+   escribió (📅/🛫/⏳) + un acento de color, consistente en Mes/Semana/Semana laboral/Día. */
+.oa-calendar-task--due {
+  border-left-color: var(--interactive-accent) !important;
+
+  &::before {
+    content: "📅 ";
+  }
+}
+
+.oa-calendar-task--start {
+  border-left-color: #3b82c4 !important;
+
+  &::before {
+    content: "🛫 ";
+  }
+}
+
+.oa-calendar-task--scheduled {
+  border-left-color: #16a34a !important;
+
+  &::before {
+    content: "⏳ ";
+  }
+}
+
+.oa-calendar-task--done {
+  opacity: 0.5;
+
+  .oa-task-title {
+    text-decoration: line-through;
+  }
 }
 
 /* Estilos para las vistas semanales y diarias */

@@ -214,6 +214,12 @@
   "confirm_delete": "¿Estás seguro de que deseas eliminar esta tarea?",
 
   "week_start_day": "La semana empieza el",
+  "calendar_settings": "Calendario",
+  "calendar_show_due_dates": "Mostrar fechas de vencimiento",
+  "calendar_show_start_dates": "Mostrar fechas de inicio",
+  "calendar_show_scheduled_dates": "Mostrar fechas programadas",
+  "calendar_show_completed_tasks": "Mostrar tareas completadas",
+  "calendar_all_day": "Todo el día",
   "habit_settings": "Hábitos",
   "habit_folder_path": "Ruta de la carpeta de hábitos",
   "habit_folder_path_desc": "Ruta a la carpeta que contiene las notas de hábitos (por defecto: daily plan/daily routine/habit)",

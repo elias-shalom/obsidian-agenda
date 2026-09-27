@@ -9,6 +9,9 @@ import { CalendarViewType } from '../types/enums';
 
 export const CALENDAR_VIEW_TYPE = 'calendar-view';
 
+/** Tipo de fecha que ancla una tarea a un día del calendario (v1.1.4, ADR-T4 en docs/agenda-tasks). */
+export type CalendarDateType = 'due' | 'start' | 'scheduled';
+
 export abstract class CalendarView extends BaseView {
   protected tasks: ITask[] = []; 
   protected currentDate: DateTime = DateTime.now();
@@ -83,18 +86,52 @@ export abstract class CalendarView extends BaseView {
   /**
    * Gets tasks for a specific date
    */
-  protected getTasksForDate(date: DateTime): ITask[] {
-    const dayUnit = 'day';
-    return this.tasks.filter(task => {
-      if (!task.date.due) return false;
-      
-      // Convertir a DateTime si es string
-      const taskDate = typeof task.date.due === 'string' 
-        ? DateTime.fromISO(task.date.due) 
-        : task.date.due;
-      
-      return taskDate.hasSame(date, dayUnit);
-    });
+  protected getTasksForDate(date: DateTime): (ITask & { calendarDateType: CalendarDateType })[] {
+    const enabled = this.getCalendarDateSettings();
+    const showCompleted = this.getCalendarShowCompletedTasks();
+    const result: (ITask & { calendarDateType: CalendarDateType })[] = [];
+
+    for (const task of this.tasks) {
+      if (!showCompleted && task.state.status === 'x') continue;
+      const type = this.resolveCalendarAnchor(task, date, enabled);
+      if (type) result.push({ ...task, calendarDateType: type });
+    }
+
+    return result;
+  }
+
+  /** Lee de los settings si las tareas completadas se muestran (atenuadas) u ocultan por completo en el calendario. */
+  protected getCalendarShowCompletedTasks(): boolean {
+    const plugin = this.plugin as AgendaPlugin;
+    return plugin.settings?.calendarShowCompletedTasks ?? true;
+  }
+
+  /** Lee de los settings qué tipos de fecha se muestran en el calendario (ADR-T4). */
+  protected getCalendarDateSettings(): { due: boolean; start: boolean; scheduled: boolean } {
+    const plugin = this.plugin as AgendaPlugin;
+    return {
+      due: plugin.settings?.calendarShowDueDates ?? true,
+      start: plugin.settings?.calendarShowStartDates ?? false,
+      scheduled: plugin.settings?.calendarShowScheduledDates ?? true,
+    };
+  }
+
+  /** Resuelve, con prioridad `scheduled > due > start`, qué tipo de fecha ancla esta tarea al día dado (o null si ninguna aplica). */
+  private resolveCalendarAnchor(
+    task: ITask,
+    date: DateTime,
+    enabled: { due: boolean; start: boolean; scheduled: boolean }
+  ): CalendarDateType | null {
+    const matchesDay = (value: DateTime | string | null): boolean => {
+      if (!value) return false;
+      const dt = typeof value === 'string' ? DateTime.fromISO(value) : value;
+      return dt.isValid && dt.hasSame(date, 'day');
+    };
+
+    if (enabled.scheduled && matchesDay(task.date.scheduled)) return 'scheduled';
+    if (enabled.due && matchesDay(task.date.due)) return 'due';
+    if (enabled.start && matchesDay(task.date.start)) return 'start';
+    return null;
   }
 
   // Métodos de navegación común que cada vista sobrescribirá según necesite
@@ -158,6 +195,9 @@ export abstract class CalendarView extends BaseView {
     Handlebars.registerHelper('equals', function(this: unknown, arg1: unknown, arg2: unknown, options: Handlebars.HelperOptions) {
       return (arg1 === arg2) ? options.fn(this) : options.inverse(this);
     });
+
+    // Helper para saber si una tarea está completada (usado para el atenuado visual, ADR-T6)
+    Handlebars.registerHelper('isTaskDone', (status: unknown) => status === 'x');
 
     Handlebars.registerHelper('toISODate', (date) => {
       if (!date) return '';

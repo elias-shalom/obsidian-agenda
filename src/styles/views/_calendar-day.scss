@@ -115,6 +115,109 @@
   width: 100%;
 }
 
+.oa-calendar-allday {
+  margin-bottom: 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  overflow: hidden;
+
+  &.oa-expanded {
+    .oa-calendar-allday-content {
+      display: block;
+    }
+
+    .oa-calendar-allday-caret {
+      transform: rotate(90deg);
+    }
+  }
+}
+
+.oa-calendar-allday-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  background-color: color-mix(in srgb, $primary-bg-color 30%, transparent);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-normal);
+  text-align: left;
+}
+
+.oa-calendar-allday-caret {
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.oa-calendar-allday-content {
+  display: none;
+  padding: 8px 12px;
+}
+
+.oa-calendar-allday-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.oa-calendar-day-hours {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.oa-calendar-hour-row {
+  display: flex;
+  min-height: 44px;
+  border-bottom: 1px solid var(--background-modifier-border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.oa-calendar-hour-label {
+  width: 60px;
+  flex-shrink: 0;
+  padding: 6px 8px;
+  font-size: 0.8em;
+  color: var(--text-muted);
+  border-right: 1px solid var(--background-modifier-border);
+}
+
+.oa-calendar-hour-slot {
+  flex: 1;
+  padding: 4px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .oa-calendar-task {
+    @include calendar-task-styles();
+    margin-bottom: 0;
+  }
+}
+
+.oa-calendar-task-time {
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.oa-calendar-task-duration {
+  margin-left: auto;
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+
 .oa-calendar-mini-sidebar {
   width: 250px;
   padding: 10px;

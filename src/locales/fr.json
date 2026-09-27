@@ -207,6 +207,7 @@
   "task_duration_modal_title": "Définir la durée",
   "task_duration_modal_label": "Durée (minutes)",
   "task_duration_invalid": "Entrez un nombre entier de minutes supérieur à 0",
+  "task_drag_drop_error": "Impossible de déplacer la tâche (le fichier a peut-être changé)",
   "task_due_date": "Date d'échéance",
   "save": "Enregistrer",
   "cancel": "Annuler",

@@ -7,7 +7,7 @@ import { DateTime } from "luxon";
  * Interfaz para la configuración de emojios en las tareas
  */
 interface EmojiConfig {
-  type: 'date' | 'priority' | 'recurrence' | 'id' | 'blocked' | 'completion';
+  type: 'date' | 'priority' | 'recurrence' | 'id' | 'blocked' | 'completion' | 'time' | 'duration';
   property: string;
   format?: string;
   value?: string | number | TaskPriorityEmoji;
@@ -130,6 +130,11 @@ export class TaskSection {
     "⏫": { type: "priority", property: "priority", value: TaskPriorityEmoji.High, name: "high" },
     "🔺": { type: "priority", property: "priority", value: TaskPriorityEmoji.Highest, name: "highest" },
 
+    // Hora y duración de `scheduled` (v1.1.4, ADR-T2/T3): campos independientes, solo tienen sentido
+    // ligados a `scheduled` semánticamente, pero se detectan en cualquier posición del renglón.
+    "🕐": { type: "time", property: "scheduledTime" },
+    "⏱️": { type: "duration", property: "scheduledDuration" },
+
     // Otros emojios
     "🔁": { type: "recurrence", property: "recurrence" },
     "🆔": { type: "id", property: "id" },
@@ -145,7 +150,7 @@ export class TaskSection {
       this.tasksFields = [];
       this.blockLink = "";
       this.headerRegex = /^[\t ]*(>*)\s*(-|\*|\+|\d+[.)]) {0,4}\[(.)\] {0,4}/;
-      this.emojiRegex = /📅|🛫|⏳|✅|❌|➕|⏬|⏫|🔼|🔽|🔺|🔁|🆔|⛔|🏁/g;
+      this.emojiRegex = /📅|🛫|⏳|✅|❌|➕|⏬|⏫|🔼|🔽|🔺|🔁|🆔|⛔|🏁|🕐|⏱️/g;
   }
 
   /**
@@ -416,8 +421,10 @@ export class TaskSection {
     const errors: string[] = [];
 
     const emojiDateRegex = /(📅|🛫|⏳|✅|❌|➕)\s*(\d{4}-\d{2}-\d{2})\s*$/g // Ícono seguido de una fecha en formato YYYY-MM-DD
-    // ⏳ scheduled admite opcionalmente hora (🕐 HH:mm) y duración (⏱️ <minutos>m) — únicas fechas con hora (v1.1.4, ADR-T1/T2)
-    const scheduledDateTimeRegex = /⏳\s*(\d{4}-\d{2}-\d{2})(?:\s*🕐\s*([01]\d|2[0-3]):([0-5]\d))?(?:\s*⏱️\s*(\d+)m)?\s*$/;
+    // Hora/duración de `scheduled` (v1.1.4, ADR-T2/T3): ahora son campos de primer nivel propios,
+    // detectados en cualquier posición del renglón (ver casos "time"/"duration" más abajo).
+    const scheduledTimeRegex = /^🕐\s*([01]\d|2[0-3]):([0-5]\d)\s*$/;
+    const scheduledDurationRegex = /^⏱️\s*(\d+)m\s*$/;
     const emojiEmptyRegex = /(⏬|⏫|🔼|🔽|🔺)\s*$/g; // Ícono seguido solo por espacios o tabulaciones
     const emojiCompletionRegex = /🏁\s*(keep|delete)/g; // Ícono 🏁 seguido de valores válidos de OnCompletion
     const emojiBlockedRegex = /⛔\s*(.*)/g; // Ícono bloqueado seguido de una cadena de identificadores
@@ -441,30 +448,11 @@ export class TaskSection {
 
       if (emojiConfig) {
         let isValid = true;
-        let extractedValue: string | null = null;
+        let extractedValue: string | number | null = null;
         let errorMessage = "";
 
         switch (emojiConfig.type) {
           case "date": {
-            if (emojiConfig.property === 'scheduledDate') {
-              // ⏳ es la única fecha que admite hora/duración (ADR-T1/T2); se valida con su propio regex
-              const scheduledMatch = fieldText.match(scheduledDateTimeRegex);
-              if (scheduledMatch) {
-                extractedValue = scheduledMatch[1];
-                if (scheduledMatch[2] && scheduledMatch[3]) {
-                  taskData.scheduledTime = `${scheduledMatch[2]}:${scheduledMatch[3]}`;
-                }
-                if (scheduledMatch[4]) {
-                  taskData.scheduledDuration = Number(scheduledMatch[4]);
-                }
-              } else {
-                isValid = false;
-                errorMessage = this.i18n.t('errors.invalidDate', { emoji: emoji });
-                fieldText = `${fieldText} @${errorMessage}`;
-              }
-              break;
-            }
-
             // Reiniciar la expresión regular (debido a 'g')
             emojiDateRegex.lastIndex = 0;
 
@@ -478,6 +466,31 @@ export class TaskSection {
             } else {
               isValid = false;
               errorMessage = this.i18n.t('errors.invalidDate', { emoji: emoji });
+              fieldText = `${fieldText} @${errorMessage}`;
+            }
+            break;
+          }
+
+          case "time": {
+            // Hora de `scheduled` (v1.1.4, ADR-T2/T3): opcional y aditiva, un valor inválido
+            // no invalida la tarea completa (mismo criterio que la recurrencia).
+            const timeMatch = fieldText.match(scheduledTimeRegex);
+            if (timeMatch) {
+              extractedValue = `${timeMatch[1]}:${timeMatch[2]}`;
+            } else {
+              errorMessage = this.i18n.t('errors.invalidTime', { emoji: emoji });
+              fieldText = `${fieldText} @${errorMessage}`;
+            }
+            break;
+          }
+
+          case "duration": {
+            // Duración (modo bloque) de `scheduled` (v1.1.4, ADR-T2): opcional y aditiva.
+            const durationMatch = fieldText.match(scheduledDurationRegex);
+            if (durationMatch) {
+              extractedValue = Number(durationMatch[1]);
+            } else {
+              errorMessage = this.i18n.t('errors.invalidDuration', { emoji: emoji });
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;

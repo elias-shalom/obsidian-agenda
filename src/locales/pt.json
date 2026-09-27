@@ -207,6 +207,7 @@
   "task_duration_modal_title": "Definir duração",
   "task_duration_modal_label": "Duração (minutos)",
   "task_duration_invalid": "Digite um número inteiro de minutos maior que 0",
+  "task_drag_drop_error": "Não foi possível mover a tarefa (o arquivo pode ter mudado)",
   "task_due_date": "Data de vencimento",
   "save": "Salvar",
   "cancel": "Cancelar",

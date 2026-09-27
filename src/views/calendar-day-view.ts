@@ -5,6 +5,7 @@ import { HourSlot, MiniCalendarDay, DayViewData } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import { CalendarViewType } from "../types/enums";
+import { upsertScheduledTime } from "../core/task-line-fields";
 
 export const CALENDAR_DAY_VIEW_TYPE = "calendar-day-view";
 
@@ -305,6 +306,48 @@ export class CalendarDayView extends CalendarView {
       alldayContainer.toggleClass('oa-expanded', nowExpanded);
       alldayToggle.setAttribute('aria-expanded', String(nowExpanded));
     });
+
+    // Drag and drop (v1.1.4, Fase D): arrastrar una tarea programada a otra franja horaria
+    // cambia su hora de `scheduled`, preservando los minutos originales dentro de la hora.
+    const hourSlots = container.querySelectorAll<HTMLElement>('.oa-calendar-hour-slot');
+    hourSlots.forEach(slot => {
+      slot.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        slot.addClass('oa-calendar-drop-target');
+      });
+
+      slot.addEventListener('dragleave', () => {
+        slot.removeClass('oa-calendar-drop-target');
+      });
+
+      slot.addEventListener('drop', (e) => {
+        e.preventDefault();
+        slot.removeClass('oa-calendar-drop-target');
+        this.handleHourSlotDrop(e, slot.dataset.hour);
+      });
+    });
+  }
+
+  /** Aplica el drop de una tarea programada sobre una franja horaria: reescribe su hora (🕐). */
+  private handleHourSlotDrop(event: DragEvent, hourStr: string | undefined): void {
+    if (hourStr === undefined) return;
+    const payload = this.parseTaskDragPayload(event);
+    if (!payload || payload.calendarDateType !== 'scheduled') return;
+
+    const hour = Number(hourStr);
+    if (Number.isNaN(hour)) return;
+
+    const minutes = payload.scheduledTime?.split(':')[1] ?? '00';
+    const newTime = `${String(hour).padStart(2, '0')}:${minutes}`;
+
+    this.taskWriter.updateTaskLine(payload.filePath, payload.lineNumber, (line) => {
+      const result = upsertScheduledTime(line, newTime);
+      return result.ok ? result.line : line;
+    })
+      .then(ok => {
+        if (ok) this.refreshView().catch(console.error);
+      })
+      .catch(console.error);
   }
 
   async onClose(): Promise<void> {

@@ -207,6 +207,7 @@
   "task_duration_modal_title": "Imposta durata",
   "task_duration_modal_label": "Durata (minuti)",
   "task_duration_invalid": "Inserisci un numero intero di minuti maggiore di 0",
+  "task_drag_drop_error": "Impossibile spostare l'attività (il file potrebbe essere cambiato)",
   "task_due_date": "Data di scadenza",
   "save": "Salva",
   "cancel": "Annulla",

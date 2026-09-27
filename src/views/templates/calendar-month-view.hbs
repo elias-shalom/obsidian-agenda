@@ -54,8 +54,10 @@
                 <div class="oa-calendar-month-day-content">
                   {{#each tasksForDay}}
                     <div class="oa-calendar-task oa-calendar-task--{{calendarDateType}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
+                        draggable="true"
                         data-file-path="{{file.path}}" 
                         data-line-number="{{line.number}}"
+                        data-date-type="{{calendarDateType}}"
                         title="{{file.name}}:{{line.number}} - {{section.desc}}">
                       <span class="oa-task-title">{{section.desc}}</span>
                     </div>

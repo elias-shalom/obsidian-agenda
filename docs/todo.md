@@ -151,7 +151,7 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
   - [x] Vista Día: franjas horarias pobladas por `scheduled`; sección "Todo el día" (expandida por defecto) para `due`/`start`; tareas completadas atenuadas u ocultables (`calendarShowCompletedTasks`)
   - [x] Filtro configurable de qué fechas mostrar (`start`/`due`/`scheduled`) con marca visual distinta por tipo — setting global (Settings ▸ Calendario); el override por vista queda diferido
   - [x] Vista Semana: mostrar la hora como etiqueta dentro de la cápsula existente (sin rediseñar la grilla)
-  - [ ] Edición en el lugar + drag and drop (Fase D, pendiente) y modo básico/avanzado del Task Modal (Fase E, pendiente)
+  - [x] Edición en el lugar (`TaskWriter.updateTaskLine`) + drag and drop en Mes/Semana/Semana laboral (cambia el día) y en Día (cambia la hora) — Fase D; modo básico/avanzado del Task Modal sigue pendiente (Fase E)
 - [ ] Edición de tareas nativas en las vistas de OBS Agenda (abc tarea al calendario)
 - [ ] Creación avanzada de tareas (todas las fechas, id, dependencias, estatus, proyectos, etc)
 
@@ -161,7 +161,7 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [ ] Diferencia si segun el estado
 
 ### Calendar Enhancements
-- [ ] Calendario Drag and drop de tareas cambiando las fechas — requiere primero una capacidad de reescritura en el lugar en `TaskWriter` (compartida con "Edición de tareas nativas"); Mes/Semana/Año cambian el día, vista Día cambia hora (arrastrar) y duración (redimensionar)
+- [x] Calendario Drag and drop de tareas cambiando las fechas — Mes/Semana/Semana laboral cambian el día, vista Día cambia la hora (arrastrar); redimensionar para cambiar la duración queda diferido (depende de la expansión visual multi-franja, fuera de alcance de v1.1.4)
 - [ ] Agregar date picker navegable por niveles (año → mes → día), abierto desde el encabezado del calendario, que al confirmar/seleccionar lleve la vista a la fecha elegida de forma inmediata.
 
 ### 🐛 Correcciones Pendientes

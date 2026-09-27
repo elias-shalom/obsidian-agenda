@@ -208,6 +208,7 @@
   "task_duration_modal_title": "Set duration",
   "task_duration_modal_label": "Duration (minutes)",
   "task_duration_invalid": "Enter a whole number of minutes greater than 0",
+  "task_drag_drop_error": "Couldn't move the task (the file may have changed)",
   "task_due_date": "Due date",
   "save": "Save",
   "cancel": "Cancel",

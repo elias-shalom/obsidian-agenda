@@ -100,7 +100,8 @@ Método público `filterTasks(tasks, criteria?)`, apoyado en privados especializ
 
 ### 2.5 `TaskWriter`
 
-Único método: `appendTaskLine(filePath, line)`. Normaliza la ruta, crea el archivo si no existe (`vault.create`) o lee+concatena+escribe si ya existe (`vault.read` + `vault.modify`), cuidando los saltos de línea al inicio/final. Genera el texto en formato emoji crudo (ej. `- [ ] Tarea 📅 2026-10-01 ⏫`).
+- `appendTaskLine(filePath, line)` — normaliza la ruta, crea el archivo si no existe (`vault.create`) o lee+concatena+escribe si ya existe (`vault.read` + `vault.modify`), cuidando los saltos de línea al inicio/final. Genera el texto en formato emoji crudo (ej. `- [ ] Tarea 📅 2026-10-01 ⏫`).
+- `updateTaskLine(filePath, lineNumber, transform)` (v1.1.4, Fase D) — reescribe **en su lugar** una línea de tarea existente: localiza el archivo, separa el contenido en líneas, valida que la línea indicada siga pareciendo una tarea (`isTaskLine`, por si el archivo cambió entre el render y la acción) y aplica `transform` solo a esa línea, dejando el resto del archivo intacto. Devuelve `false` sin escribir nada si el archivo no existe o la línea ya no es válida. Es el prerrequisito compartido por drag and drop (§7) y por la futura edición de tareas nativas (`"edit-task"`, ver deuda técnica).
 
 ### 2.6 `TaskCache`
 
@@ -213,3 +214,19 @@ Se quiere poder agregar `📅`/`🛫`/`⏳`/`🕐`/`⏱️`/prioridad/etc. a una
 **B2 + B3 + B4 combinados**; B1 queda diferido. Cubre tanto al usuario de mouse (clic derecho) como al de teclado (atajo, igual que ya tienen con Ctrl+P), sin construir un `EditorSuggest` desde cero ni pelear con los internals de CodeMirror. Si más adelante se quiere la experiencia idéntica a Tasks (menú al escribir), B1 queda anotado como posible fase 2, no bloquea v1.1.4.
 
 Desglose de tareas de esta decisión: ver [[Plan de implementación]] — Fase B. El `TaskModal` (creación/edición) recibe por separado un modo básico/avanzado con los mismos campos — ver [[Especificación de vistas]] §7.
+
+## 7. Drag and drop en las vistas de calendario (v1.1.4, Fase D, implementado)
+
+### 7.1 Mecanismo
+
+Se usa la [Drag and Drop API nativa del navegador](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API) (`draggable`, `dragstart`/`dragover`/`drop`), no una librería externa — el plugin no la tenía como dependencia y el caso de uso (arrastrar una píldora a una celda dentro del mismo contenedor renderizado) no la necesita.
+
+- **Origen del drag** (común a Mes/Semana/Semana laboral/Día, cableado una sola vez en `CalendarView.setupViewSpecificEventListeners`): cada `.oa-calendar-task` con `draggable="true"` serializa en `dataTransfer` (`application/json`) un payload `TaskDragPayload` — `filePath`, `lineNumber`, `calendarDateType` (`due`/`start`/`scheduled`, tomado de `data-date-type`) y `scheduledTime` (tomado de `data-scheduled-time`, solo presente en las franjas horarias de Día). `CalendarView.parseTaskDragPayload()` es el único punto que deserializa y valida ese payload.
+- **Destino en Mes/Semana/Semana laboral** (`CalendarView`, clase base): las celdas de día (`.oa-calendar-month-day`, `.oa-calendar-week-day-container`) aceptan el drop y llaman a `handleTaskDayDrop()`, que resuelve la transformación de línea según `calendarDateType` (`due`/`start` → `upsertSimpleDate`, `scheduled` → `upsertScheduledDate`, preservando hora/duración ya existentes) y la aplica con `TaskWriter.updateTaskLine()`. Si la escritura falla (línea ya no válida), se muestra un `Notice` (`task_drag_drop_error`) en vez de fallar silenciosamente.
+- **Destino en Día** (`CalendarDayView`, sobrescribe el mismo patrón): las franjas horarias (`.oa-calendar-hour-slot`) solo aceptan payloads con `calendarDateType === 'scheduled'` y llaman a `handleHourSlotDrop()`, que arma la nueva hora `HH:mm` combinando la hora de la franja destino con los minutos originales del payload, y la aplica con `upsertScheduledTime()`.
+- Tras un drop exitoso, cada vista llama a `this.refreshView()` (mismo patrón que el resto de acciones del calendario) para re-renderizar con los datos actualizados del vault.
+
+### 7.2 Limitaciones conocidas (anotadas, no bloquean la fase)
+
+- **Vista Año**: sus celdas de día (`.oa-calendar-year-day`) solo muestran un contador de tareas, no píldoras individuales (ver [[Especificación de vistas]] §4.5) — no hay de dónde iniciar un drag, así que el arrastre de tareas no aplica ahí en la práctica, aunque el selector de destino compartido la incluya sin efecto negativo.
+- **Redimensionar la duración arrastrando el borde inferior** (mencionado en el plan original) requiere que el bloque de una tarea programada ocupe visualmente varias franjas según su duración — eso está explícitamente fuera de alcance de v1.1.4 (ver [[Plan de implementación]], "Fuera de alcance"), así que esta fase implementa solo el cambio de hora por arrastre, no el redimensionado.

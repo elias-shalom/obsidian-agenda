@@ -2,11 +2,11 @@
 
 > A comprehensive task management and calendar plugin for Obsidian
 
-[![Release](https://img.shields.io/badge/version-1.1.4-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
+[![Release](https://img.shields.io/badge/version-1.1.5-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Obsidian](https://img.shields.io/badge/Obsidian-0.13.0+-purple.svg)](https://obsidian.md)
 
-> 🆕 **What's New in v1.1.4** — Time-of-day scheduling (⏳ scheduled dates now support a time and duration), insert/edit task fields right from the editor, calendar views with drag-and-drop rescheduling and click-to-edit, and a redesigned Task Modal with a collapsible "More fields" section. [See details](#news) · [Full changelog](#changelog).
+> 🆕 **What's New in v1.1.5** — Fixed stale habit data in views after editing: the habit cache now reads frontmatter from the freshly read file instead of relying on Obsidian's asynchronously updated metadata cache. [See details](#news) · [Full changelog](#changelog).
 
 ## Overview
 
@@ -40,7 +40,10 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 
 ## 🆕 News
 
-### v1.1.4 (latest)
+### v1.1.5 (latest)
+- Fixed a race condition where editing a habit could save the file correctly but leave old values in the Habit Tracker views until a later refresh. The cache now parses frontmatter from the file content it just read.
+
+### v1.1.4
 - **Time-of-day scheduling**: the ⏳ `scheduled` date can now carry a 🕐 time and, for block-mode tasks, a ⏱️ duration — fully optional and additive, existing tasks are unaffected. `due` stays a whole-day field
 - **Insert or edit task fields from the editor**, no need to open a modal: a right-click context menu and a command (with keyboard shortcut) work on any task line, using a native date picker and a new iOS-style scroll wheel for the time
 - **Calendar views** (Month/Week/Work Week/Day) can now show `start` and `scheduled` dates alongside `due`, each with its own icon + color badge — configurable in Settings ▸ Calendar; completed tasks are dimmed by default, with an option to hide them entirely
@@ -290,6 +293,11 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 ---
 
 ## 📋 Changelog
+
+### Version 1.1.5 🐛
+- Fixed stale Habit Tracker data after editing a habit: `HabitManager.refreshCache()` now parses frontmatter from the freshly read file content rather than relying on Obsidian's asynchronously refreshed metadata cache.
+- Made production builds portable to CI by restricting the local-vault copy step to development/watch mode.
+- Added a GitHub Actions release workflow that installs dependencies from `package-lock.json`, builds from the pushed version tag, validates the tag against `manifest.json`, and publishes the generated artifacts.
 
 ### Version 1.1.4 ⏰
 - **Time-of-day scheduling**: `scheduled` tasks can now include a 🕐 time (`HH:mm`, 24h) and, when a time is set, an ⏱️ duration in minutes for block-mode tasks; both are fully optional/additive and recognized anywhere on the line, so existing notes and the Obsidian Tasks plugin keep working unchanged

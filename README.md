@@ -415,6 +415,25 @@ npm run dev
 npm run build
 ```
 
+### 🚀 Releasing a New Version
+
+Releases are built by CI (`.github/workflows/release.yml`), not from a local machine, so the published `main.js` is always reproducible from the tagged source with the exact dependency versions in `package-lock.json`. To publish a new version:
+
+1. **Bump the version** (updates `package.json`, `manifest.json` and `versions.json` together):
+   ```bash
+   npm version 1.2.0 --no-git-tag-version
+   ```
+2. **Update the README** — add the new version to the [News](#news) and [Changelog](#changelog) sections.
+3. **Commit** those changes (version bump + README) to the target branch and push.
+4. **Tag the release commit with the exact version number** (no `v` prefix — it must match `manifest.json`'s `version` field exactly, or the workflow's version check will fail the release):
+   ```bash
+   git tag 1.2.0
+   git push origin 1.2.0
+   ```
+5. GitHub Actions then automatically: checks out that tag, runs `npm ci` (clean install from the lockfile) + `npm run build`, verifies the tag matches `manifest.json`, and creates the GitHub Release with `main.js`, `manifest.json` and `styles.css` attached — built entirely inside the CI runner, never uploaded by hand.
+
+**Note**: the `dist/**/*` → local vault copy step in `src/esbuild.config.mjs` only runs during `npm run dev` (watch mode) for local testing convenience — it's skipped automatically in `npm run build` (used both locally and by the release workflow) so it never affects release artifacts.
+
 ---
 
 ## 💬 Support and Feedback

@@ -1,0 +1,49 @@
+name: Release Obsidian plugin
+
+# Builds main.js/manifest.json/styles.css directly from source (npm ci, using the
+# committed package-lock.json) and attaches them to a GitHub Release, so released
+# artifacts are always reproducible from the tagged commit instead of a manual local build.
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies (from lockfile)
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify manifest.json version matches the tag
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          manifest_version=$(node -p "require('./manifest.json').version")
+          if [ "$tag" != "$manifest_version" ]; then
+            echo "::error::Tag ($tag) does not match manifest.json version ($manifest_version)"
+            exit 1
+          fi
+
+      - name: Create GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          gh release create "$tag" \
+            --title "$tag" \
+            --generate-notes \
+            dist/main.js manifest.json dist/styles.css

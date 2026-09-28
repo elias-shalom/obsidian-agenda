@@ -30,10 +30,7 @@ const PRIORITY_OPTIONS: { emoji: PriorityEmoji; labelKey: string }[] = [
 /** Abre un flatpickr "headless" (sin campo visible) y resuelve con la fecha elegida, o null si se cerró sin elegir. */
 function openFlatpickrPicker(options: { enableTime: boolean; noCalendar?: boolean; defaultDate?: Date }): Promise<Date | null> {
   return new Promise((resolve) => {
-    const input = document.createElement("input");
-    input.type = "text";
-    input.addClass("oa-flatpickr-hidden-input");
-    document.body.appendChild(input);
+    const input = document.body.createEl("input", { type: "text", cls: "oa-flatpickr-hidden-input" });
 
     const instance = flatpickr(input, {
       enableTime: options.enableTime,

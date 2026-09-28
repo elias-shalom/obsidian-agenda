@@ -137,35 +137,36 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 ### Documentación
 - [x] README: sección "🆕 News" con lo último de la versión en curso + callout destacado arriba, además de la entrada correspondiente en el Changelog completo
 
-## 🎯 Próximas Características (v1.1.4)
+## 🎯 Características (v1.1.4)
 
 [Google Calendar](https://community.obsidian.md/plugins/google-calendar)
 [Day Planner](https://community.obsidian.md/plugins/obsidian-day-planner)
 [Timelineal](https://timelineal.com/)
 
 ### Core Tasks
-- [ ] Compatibilidad con la programación de tareas según la hora del día [vista por día (hora y día completo)] — Fases A, B y C implementadas; ver `docs/agenda-tasks/Modelo de datos.md` §9 (ADR-T1 a T7) y `docs/agenda-tasks/Plan de implementación.md`
+- [x] Compatibilidad con la programación de tareas según la hora del día [vista por día (hora y día completo)] — Fases A a E completas; ver `docs/agenda-tasks/Modelo de datos.md` §9 (ADR-T1 a T7) y `docs/agenda-tasks/Plan de implementación.md`
   - [x] `due` siempre día completo (sin hora); `scheduled` es el único campo con hora, en modo punto o modo bloque con duración
-  - [x] Icono de hora (🕐) y de duración (⏱️) ligados por posición al icono de fecha inmediatamente anterior (no rompe compatibilidad con Obsidian Tasks)
+  - [x] Icono de hora (🕐) y de duración (⏱️) como campos de primer nivel independientes, detectados en cualquier posición del renglón (revisado — no rompe compatibilidad con Obsidian Tasks)
   - [x] Insertar desde el archivo vía comando/atajo (menú nativo) y vía clic derecho (menú contextual sobre la línea), reutilizando `flatpickr` para fechas y un wheel picker propio para la hora
   - [x] Vista Día: franjas horarias pobladas por `scheduled`; sección "Todo el día" (expandida por defecto) para `due`/`start`; tareas completadas atenuadas u ocultables (`calendarShowCompletedTasks`)
   - [x] Filtro configurable de qué fechas mostrar (`start`/`due`/`scheduled`) con marca visual distinta por tipo — setting global (Settings ▸ Calendario); el override por vista queda diferido
   - [x] Vista Semana: mostrar la hora como etiqueta dentro de la cápsula existente (sin rediseñar la grilla)
-  - [x] Edición en el lugar (`TaskWriter.updateTaskLine`) + drag and drop en Mes/Semana/Semana laboral (cambia el día) y en Día (cambia la hora) — Fase D; modo básico/avanzado del Task Modal (toggle "Mostrar opciones avanzadas", preferencia recordada en `localStorage`) — Fase E, implementada para creación; pendiente aplicarla al modal de edición cuando exista
+  - [x] Edición en el lugar (`TaskWriter.updateTaskLine`) + drag and drop en Mes/Semana/Semana laboral (cambia el día) y en Día (cambia la hora) — Fase D; modo básico/avanzado del Task Modal (toggle "More fields", preferencia recordada en `localStorage`) — Fase E, aplicado tanto a creación como a edición de tareas
 - [x] Edición de tareas nativas en las vistas de OBS Agenda — clic simple en una tarea del calendario abre el modal de edición (prefilled), doble clic abre el archivo
-- [ ] Creación avanzada de tareas (todas las fechas, id, dependencias, estatus, proyectos, etc)
-
-### UX Improvements
-- [ ] Tool tips o help que diga como usar el plugin
-- [ ] Más widgets en la vista del panel
-- [ ] Diferencia si segun el estado
+- [x] Creación avanzada de tareas (fechas start/scheduled+hora+duración/due, id, dependencias, onCompletion) — sección "More fields" del Task Modal (Fase E); estatus personalizados más allá de todo/hecho sigue en el roadmap de v1.x
 
 ### Calendar Enhancements
 - [x] Calendario Drag and drop de tareas cambiando las fechas — Mes/Semana/Semana laboral cambian el día, vista Día cambia la hora (arrastrar); redimensionar para cambiar la duración queda diferido (depende de la expansión visual multi-franja, fuera de alcance de v1.1.4)
-- [ ] Agregar date picker navegable por niveles (año → mes → día), abierto desde el encabezado del calendario, que al confirmar/seleccionar lleve la vista a la fecha elegida de forma inmediata.
+- [x] Clic en el número de día en Mes/Semana/Semana laboral navega a la vista Día de esa fecha (igual que ya hacía la vista Año)
 
-### 🐛 Correcciones Pendientes
-- [ ] Ancho de las filas de la tabla en la vista tablas
+## 🎯 Características (v1.1.5)
+
+### 🐛 Correcciones
+- [x] Hábitos: al editar un hábito, la vista podía mostrar brevemente datos desactualizados aunque el archivo ya estuviera correcto en disco — condición de carrera entre `metadataCache` (asincrónico) y nuestra propia escritura; `HabitManager.refreshCache()` ahora parsea el frontmatter YAML directamente del contenido leído con `vault.cachedRead()` en vez de depender de `metadataCache`
+
+### Infraestructura
+- [x] Pipeline de CI/CD (`📄.github/workflows/release.yml`) para publicar releases de forma reproducible: build desde el tag con `npm ci` (respeta el lockfile), verificación de que el tag coincide con `manifest.json`, y publicación automática del Release con `main.js`/`manifest.json`/`styles.css` — reemplaza el proceso manual anterior
+- [x] `esbuild.config.mjs`: el copy de conveniencia al vault local de desarrollo ya no corre en build de producción (solo en `npm run dev`), para no ensuciar un build de CI
 
 ## 📊 Próximas Características (v1.x)
 
@@ -189,11 +190,18 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 
 ### UX Improvements
 - [ ] Configuración de sonidos de notificaciones
+- [ ] Tool tips o help que diga como usar el plugin
+- [ ] Más widgets en la vista del panel
+- [ ] Diferencia si segun el estado
 - [x] Agregar atajo de ctrl + p (Se agregó el command palette para abrir la obs agenda)
   - [ ] Varias maneras de abrir el plugin (Se agregó el command palette para abrir la obs agenda)
 
 ### Calendar Enhancements
 - [ ] Calendario. Secciones extra ![vista agenda ](attachments/extra-section.png)
+- [ ] Agregar date picker navegable por niveles (año → mes → día), abierto desde el encabezado del calendario, que al confirmar/seleccionar lleve la vista a la fecha elegida de forma inmediata.
+
+### 🐛 Correcciones Pendientes
+- [ ] Ancho de las filas de la tabla en la vista tablas
 
 
 ## 🔄 **Revisión y Reflexión (v2.x - v3.x)**

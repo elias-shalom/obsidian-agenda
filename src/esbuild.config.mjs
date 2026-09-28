@@ -80,10 +80,12 @@ const context = await esbuild.context({
 						from: "manifest.json", // Ruta de origen
 						to: "dist/manifest.json", // Ruta de destino
 				},
-				{
+				// Copia de conveniencia al vault local de desarrollo: solo en modo watch/dev,
+				// nunca en build de producción (rompería/ensuciaría un build reproducible en CI).
+				...(prod ? [] : [{
 					from: "dist/**/*",
 					to: "C:/Users/elias/OneDrive/Obsidian/develop/.obsidian/plugins/agenda-tasks",
-				},
+				}]),
 			],
 		}),
 	],

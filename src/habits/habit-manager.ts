@@ -1,4 +1,4 @@
-import { App, EventRef, TFile, TFolder } from 'obsidian';
+import { App, EventRef, TFile, TFolder, parseYaml } from 'obsidian';
 import type { AgendaPluginSettings } from '../settings/settings';
 import type { Daytime, IHabit } from './habit';
 import { parseHabit } from './habit-parser';
@@ -169,8 +169,8 @@ export class HabitManager {
     const habits: IHabit[] = [];
 
     for (const file of this.collectHabitFiles(folder)) {
-      const fm = this.app.metadataCache.getFileCache(file)?.frontmatter ?? {};
       const content = await this.app.vault.cachedRead(file);
+      const fm = this.parseFrontmatter(content);
       const bodyDescription = content.replace(/^---[\s\S]*?---\s*/, '').trim();
       this.descriptionCache.set(file.path, bodyDescription);
       const habit = parseHabit(file, fm, this.settingsGetter(), bodyDescription);
@@ -180,6 +180,26 @@ export class HabitManager {
     }
 
     this.habitCache = new Map(habits.map(habit => [habit.file.path, habit]));
+  }
+
+  /**
+   * Extrae y parsea el bloque frontmatter YAML directamente del contenido del archivo.
+   * No usa `metadataCache.getFileCache()` a propósito: ese caché se reindexa de forma
+   * asíncrona tras un `vault.modify()`/`processFrontMatter()` propio, y puede seguir
+   * reflejando el frontmatter anterior justo cuando `refreshCache()` se llama inmediatamente
+   * después de guardar (causaba que la vista mostrara datos viejos tras editar un hábito).
+   */
+  private parseFrontmatter(content: string): Record<string, unknown> {
+    const match = content.match(/^---\n([\s\S]*?)\n---/);
+    if (!match) return {};
+
+    try {
+      const parsed: unknown = parseYaml(match[1]);
+      return parsed && typeof parsed === 'object' ? parsed as Record<string, unknown> : {};
+    } catch (error) {
+      console.error('Error parseando frontmatter de hábito:', error);
+      return {};
+    }
   }
 
   /** Fuerza una reconstrucción completa de la caché y espera a que termine (uso público tras crear/editar/borrar un hábito) */

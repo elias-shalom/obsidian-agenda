@@ -139,6 +139,16 @@
   outline-offset: -2px;
 }
 
+/* Clic en el número de día (Mes/Semana/Semana laboral) navega a la vista Día, igual que en Año. */
+.oa-calendar-month-day .oa-calendar-month-day-number,
+.oa-calendar-week-day-container .oa-calendar-date {
+  cursor: pointer;
+
+  &:hover {
+    color: var(--interactive-accent);
+  }
+}
+
 /* Estilos para las vistas semanales y diarias */
 .oa-calendar-week-view, 
 .oa-calendar-workweek-view, 

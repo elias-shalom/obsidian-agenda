@@ -33,7 +33,7 @@ A diferencia de `docs/habit-tracker-agenda/` (que documentó un módulo nuevo **
 - **Cache**: `TaskCache` mantiene un cache de dos niveles (por archivo + global) con TTL de 5 minutos, invalidado automáticamente por los eventos `create`/`modify`/`delete`/`rename` del vault.
 - **Filtrado y orden**: `TaskFilter`/`TaskSorter` aplican criterios (estado, fecha, prioridad, tags, texto, carpeta) y ordenamientos/agrupaciones multi-campo bajo demanda de cada vista.
 - **Vistas**: Overview (dashboard), Lista (jerárquica por carpeta o plana), Tabla (ordenable/filtrable), Calendario (Día, Semana, Semana laboral, Mes, Año), y dos vistas registradas pero incompletas (Timeline, Gantt).
-- **Creación/edición**: `TaskModal` + `TaskWriter` generan/anexan líneas de tarea en formato emoji al archivo elegido; la edición de tareas existentes está solo parcialmente implementada.
+- **Creación/edición**: `TaskModal` + `TaskWriter` generan/anexan líneas de tarea en formato emoji al archivo elegido; la edición de tareas existentes (`"edit-task"`, reescritura en el lugar) está implementada.
 - **Compatibilidad**: el mismo texto de tarea es reconocido tanto en formato **emoji** (el que usa el plugin [Obsidian Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks)) como en formato **Dataview** (`due:: 2026-10-01`), mapeados a los mismos campos internos.
 
 ## Mapa de documentos
@@ -53,7 +53,7 @@ A diferencia de `docs/habit-tracker-agenda/` (que documentó un módulo nuevo **
 - [x] Vistas Overview / Lista / Tabla / Calendario (5 variantes) completas y en uso
 - [ ] Vista Timeline (placeholder, sin lógica propia de posicionamiento temporal)
 - [ ] Vista Gantt (placeholder, sin cálculo de duración/dependencias visual)
-- [ ] Edición de tareas existentes desde el modal (parcial)
+- [x] Edición de tareas existentes desde el modal (clic simple en el calendario, doble clic abre el archivo)
 - [ ] Programación por hora del día (v1.1.4, ver `docs/todo.md`)
 
 ## Enlaces de interés

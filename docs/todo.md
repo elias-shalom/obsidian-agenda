@@ -151,8 +151,8 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
   - [x] Vista Día: franjas horarias pobladas por `scheduled`; sección "Todo el día" (expandida por defecto) para `due`/`start`; tareas completadas atenuadas u ocultables (`calendarShowCompletedTasks`)
   - [x] Filtro configurable de qué fechas mostrar (`start`/`due`/`scheduled`) con marca visual distinta por tipo — setting global (Settings ▸ Calendario); el override por vista queda diferido
   - [x] Vista Semana: mostrar la hora como etiqueta dentro de la cápsula existente (sin rediseñar la grilla)
-  - [x] Edición en el lugar (`TaskWriter.updateTaskLine`) + drag and drop en Mes/Semana/Semana laboral (cambia el día) y en Día (cambia la hora) — Fase D; modo básico/avanzado del Task Modal sigue pendiente (Fase E)
-- [ ] Edición de tareas nativas en las vistas de OBS Agenda (abc tarea al calendario)
+  - [x] Edición en el lugar (`TaskWriter.updateTaskLine`) + drag and drop en Mes/Semana/Semana laboral (cambia el día) y en Día (cambia la hora) — Fase D; modo básico/avanzado del Task Modal (toggle "Mostrar opciones avanzadas", preferencia recordada en `localStorage`) — Fase E, implementada para creación; pendiente aplicarla al modal de edición cuando exista
+- [x] Edición de tareas nativas en las vistas de OBS Agenda — clic simple en una tarea del calendario abre el modal de edición (prefilled), doble clic abre el archivo
 - [ ] Creación avanzada de tareas (todas las fechas, id, dependencias, estatus, proyectos, etc)
 
 ### UX Improvements

@@ -55,7 +55,7 @@ tags:
 
 - [ ] **Timeline view**: registrada en `ViewManager` y renderiza, pero sin lógica de posicionamiento temporal — pendiente de diseño de datos (eje de tiempo, agrupación por rango) y de plantilla propia.
 - [ ] **Gantt view**: mismo estado; pendiente cálculo de duración (`start`→`due`) y representación de `dependsOn` como dependencias visuales entre barras.
-- [ ] **Edición de tareas existentes** desde el modal (`"edit-task"`): tipo definido en `ModalType`, pero sin flujo de guardado completo (haría falta localizar la línea original en el archivo y reescribirla, similar a como `habit-editor.ts` usa `processFrontMatter`/`vault.process` para hábitos).
+- [x] **Edición de tareas existentes** desde el modal (`"edit-task"`): implementada (2026-09-27) reutilizando `TaskModal`/`TaskWriter.updateTaskLine`; ver [[Especificación de vistas]] §7.3. Origen: clic simple sobre una tarea en las vistas de calendario (doble clic sigue abriendo el archivo).
 - [ ] Tests unitarios: siguen sin existir en el repo para este módulo (igual que para hábitos).
 
 ## Próxima fase — v1.1.4: programación por hora del día (diseño acordado)
@@ -92,9 +92,9 @@ tags:
 - [x] Drag and drop en Día: arrastrar cambia la hora de `scheduled` (preservando los minutos originales). **Redimensionar el borde inferior para cambiar la duración queda diferido**: depende de la expansión visual multi-franja de bloques con duración, ya anotada como fuera de alcance de v1.1.4 (ver más abajo).
 
 ### Fase E — Task Modal: modo básico/avanzado
-- [ ] Agregar enlace/toggle "Mostrar opciones avanzadas ▾" al formulario de creación existente, que despliega en el mismo modal: `start`, `scheduled` (+ hora + duración), recurrencia, dependencias, `onCompletion`, id.
-- [ ] Persistir la preferencia de modo (básico/avanzado) del usuario (setting o almacenamiento local) para que el modal recuerde el último modo usado.
-- [ ] Aplicar el mismo patrón al modal de edición (`"edit-task"`) una vez esté implementado (Fase D).
+- [x] Agregar enlace/toggle "Mostrar opciones avanzadas ▾" al formulario de creación existente, que despliega en el mismo modal: `start`, `scheduled` (+ hora + duración), recurrencia, dependencias, `onCompletion`, id.
+- [x] Persistir la preferencia de modo (básico/avanzado) del usuario (`localStorage`) para que el modal recuerde el último modo usado.
+- [x] Aplicar el mismo patrón al modal de edición (`"edit-task"`) — completado el mismo día que la edición de tareas nativas (ver deuda técnica arriba).
 
 ### Fuera de alcance de v1.1.4 (anotado para más adelante)
 - Expansión visual multi-franja de bloques con duración en la vista Día (hoy solo se muestra la duración como etiqueta en la franja de inicio).

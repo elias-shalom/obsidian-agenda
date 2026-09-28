@@ -8,6 +8,10 @@ import Handlebars from 'handlebars';
 import { CalendarViewType } from '../types/enums';
 import { TaskWriter } from '../core/task-writer';
 import { upsertSimpleDate, upsertScheduledDate } from '../core/task-line-fields';
+import { EDIT_TASK_MODAL_TYPE } from '../core/modal-manager';
+
+/** Espera entre un `click` y un posible segundo `click` antes de asumir que no viene un `dblclick` (ms). */
+const TASK_CLICK_DELAY_MS = 250;
 
 export const CALENDAR_VIEW_TYPE = 'calendar-view';
 
@@ -284,7 +288,32 @@ export abstract class CalendarView extends BaseView {
   // Event listeners para tareas
     const taskItems = container.querySelectorAll<HTMLElement>('.oa-calendar-task');
     taskItems.forEach(item => {
+      // Clic simple: abre el modal de edición; doble clic: abre el archivo (v1.1.4).
+      // Un doble clic real también dispara dos `click` sueltos antes del `dblclick`, así que
+      // el primer clic espera un poco por si llega un segundo antes de abrir el modal.
+      let pendingClickTimer: number | null = null;
+
       item.addEventListener('click', (e) => {
+        const target = e.currentTarget as HTMLElement;
+        if (pendingClickTimer !== null) return;
+
+        pendingClickTimer = window.setTimeout(() => {
+          pendingClickTimer = null;
+          const filePath = target.getAttribute('data-file-path');
+          const lineNumber = target.getAttribute('data-line-number');
+          if (!filePath || !lineNumber) return;
+
+          const task = this.tasks.find(t => t.file.path === filePath && t.line.number === Number(lineNumber));
+          if (task) this.openEditTaskModal(task);
+        }, TASK_CLICK_DELAY_MS);
+      });
+
+      item.addEventListener('dblclick', (e) => {
+        if (pendingClickTimer !== null) {
+          window.clearTimeout(pendingClickTimer);
+          pendingClickTimer = null;
+        }
+
         const target = e.currentTarget as HTMLElement;
         const filePath = target.getAttribute('data-file-path');
         const lineNumber = target.getAttribute('data-line-number');
@@ -344,6 +373,22 @@ export abstract class CalendarView extends BaseView {
         e.preventDefault();
         cell.removeClass('oa-calendar-drop-target');
         this.handleTaskDayDrop(e, cell.dataset.date);
+      });
+    });
+
+    // Clic en el número de día (Mes/Semana/Semana laboral) navega a la vista Día de esa fecha,
+    // igual que ya hace la vista Año con sus números de día.
+    const dayNumbers = container.querySelectorAll<HTMLElement>(
+      '.oa-calendar-month-day .oa-calendar-month-day-number, ' +
+      '.oa-calendar-week-day-container .oa-calendar-date'
+    );
+
+    dayNumbers.forEach(numberEl => {
+      numberEl.addEventListener('click', (e) => {
+        e.stopPropagation(); // evita conflicto con el dblclick de la celda (crear tarea)
+        const cell = numberEl.closest<HTMLElement>('.oa-calendar-month-day, .oa-calendar-week-day-container');
+        const dateStr = cell?.dataset.date;
+        if (dateStr) this.navigateToDayView(dateStr);
       });
     });
   }
@@ -464,7 +509,19 @@ export abstract class CalendarView extends BaseView {
   private openCreateTaskForDate(dateStr: string): void {
     console.debug(`Abriendo modal para crear tarea en fecha ${dateStr}`); // Debugging line
     const plugin = this.plugin as AgendaPlugin;
-    plugin.modalManager.openModal("create-task", { today: dateStr });
+    plugin.modalManager.openModal("create-task", {
+      today: dateStr,
+      onSaved: () => this.refreshView().catch(console.error),
+    });
+  }
+
+  /** Abre el modal de edición para una tarea (clic simple sobre su píldora, v1.1.4). */
+  private openEditTaskModal(task: ITask): void {
+    const plugin = this.plugin as AgendaPlugin;
+    plugin.modalManager.openModal(EDIT_TASK_MODAL_TYPE, {
+      task,
+      onSaved: () => this.refreshView().catch(console.error),
+    });
   }
 
   async onClose(): Promise<void> {

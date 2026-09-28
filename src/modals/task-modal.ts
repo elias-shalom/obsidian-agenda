@@ -4,11 +4,26 @@ import { DateTime } from "luxon";
 import Handlebars from "handlebars";
 import { I18n } from "../core/i18n";
 import { TaskManager } from "../core/task-manager";
-import { ModalType, ModalOptions } from "../types/interfaces";
+import { ModalType, ModalOptions, ITask } from "../types/interfaces";
 import { TaskWriter } from "../core/task-writer";
+import { TaskTimePickerModal } from "./task-time-picker-modal";
+import { TaskDurationModal } from "./task-duration-modal";
 import flatpickr from 'flatpickr';
 //import { es } from 'flatpickr/dist/l10n/es';
 //import 'flatpickr/dist/flatpickr.css';
+
+/** Recuerda el último modo (básico/avanzado) usado en el Task Modal (v1.1.4, Fase E). */
+const ADVANCED_MODE_STORAGE_KEY = "oa_task_modal_advanced_mode";
+
+/** El estado de prioridad se guarda por nombre (ver `task-section.ts`); el formulario necesita el emoji crudo. */
+const PRIORITY_NAME_TO_EMOJI: Record<string, string> = {
+  lowest: "⏬",
+  low: "🔽",
+  normal: "",
+  medium: "🔼",
+  high: "⏫",
+  highest: "🔺",
+};
 
 
 export class TaskModal extends Modal {
@@ -37,13 +52,66 @@ export class TaskModal extends Modal {
     contentEl.empty();
     contentEl.addClass("oa-task-modal");
 
-    await this.renderModal(`${this.modalType}-modal`, {
-    title: "Nueva tarea",
-    today: DateTime.now().toFormat("yyyy-MM-dd"),
-    ...this.modalOptions,
-    });
+    const editingTask = this.modalType === "edit-task" ? (this.modalOptions?.task as ITask | undefined) : undefined;
+
+    // Reutiliza la misma plantilla para crear y editar; solo cambian los valores prefilled.
+    await this.renderModal("create-task-modal", this.buildTemplateData(editingTask));
 
     this.attachModalListeners();
+  }
+
+  /** Notifica a quien abrió el modal (ej. una vista de calendario) que se guardó, para que pueda refrescarse. */
+  private notifySaved(): void {
+    const onSaved = this.modalOptions?.onSaved;
+    if (typeof onSaved === "function") {
+      (onSaved as () => void)();
+    }
+  }
+
+  /** Arma los datos de la plantilla: vacíos/hoy por defecto al crear, prefilled con la tarea al editar (v1.1.4, edición). */
+  private buildTemplateData(task: ITask | undefined): Record<string, unknown> {
+    const none = this.i18n.t("none");
+
+    if (!task) {
+      const today = DateTime.now().toFormat("yyyy-MM-dd");
+      return {
+        headerTitle: this.i18n.t("new_task"),
+        isEdit: false,
+        taskTitle: "",
+        filePathValue: "",
+        priorityValue: "",
+        dueDateValue: "", dueLabelValue: none,
+        startDateValue: "", startLabelValue: none,
+        scheduledDateValue: today, scheduledLabelValue: today,
+        scheduledTimeValue: "", scheduledTimeLabelValue: none,
+        scheduledDurationValue: "", scheduledDurationLabelValue: none,
+        recurrenceValue: "", dependsValue: "", onCompletionValue: "", idValue: "",
+      };
+    }
+
+    const dueIso = task.date.due?.toISODate() ?? "";
+    const startIso = task.date.start?.toISODate() ?? "";
+    const scheduledIso = task.date.scheduled?.toISODate() ?? "";
+    // El id cae a `path-línea` cuando la tarea no tiene 🆔 explícito (ver task-extractor.ts): no lo prefilled como si fuera real.
+    const isAutoId = task.id === `${task.file.path}-${task.line.number}`;
+
+    return {
+      headerTitle: this.i18n.t("edit_task"),
+      isEdit: true,
+      taskTitle: task.section.desc,
+      filePathValue: task.file.path,
+      priorityValue: PRIORITY_NAME_TO_EMOJI[task.state.priority] ?? "",
+      dueDateValue: dueIso, dueLabelValue: dueIso || none,
+      startDateValue: startIso, startLabelValue: startIso || none,
+      scheduledDateValue: scheduledIso, scheduledLabelValue: scheduledIso || none,
+      scheduledTimeValue: task.date.scheduledTime ?? "", scheduledTimeLabelValue: task.date.scheduledTime ?? none,
+      scheduledDurationValue: task.date.scheduledDuration != null ? String(task.date.scheduledDuration) : "",
+      scheduledDurationLabelValue: task.date.scheduledDuration != null ? `${task.date.scheduledDuration}m` : none,
+      recurrenceValue: task.flow.repeat ?? "",
+      dependsValue: (task.flow.dependsOn ?? []).join(", "),
+      onCompletionValue: task.flow.onCompletion ?? "",
+      idValue: isAutoId ? "" : task.id,
+    };
   }
 
   private registerHandlebarsHelpers(): void {
@@ -75,12 +143,9 @@ export class TaskModal extends Modal {
       const parser = new DOMParser();
       const doc = parser.parseFromString(String(html), "text/html");
 
-      const fragment = this.contentEl.ownerDocument.createDocumentFragment();
       Array.from(doc.body.children).forEach((element) => {
-      fragment.appendChild(this.contentEl.ownerDocument.importNode(element, true));
+        this.contentEl.appendChild(this.contentEl.ownerDocument.importNode(element, true));
       });
-
-      this.contentEl.appendChild(fragment);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.contentEl.createDiv({
@@ -93,23 +158,18 @@ export class TaskModal extends Modal {
   private attachModalListeners(): void {
     switch (this.modalType) {
       case "create-task":
-        this.attachCreateTaskListeners();
-        break;
       case "edit-task":
-        this.attachEditTaskListeners();
+        this.attachTaskFormListeners();
         break;
     }
   }
 
-  private attachCreateTaskListeners(): void {
+  private attachTaskFormListeners(): void {
+    const editingTask = this.modalType === "edit-task" ? (this.modalOptions?.task as ITask | undefined) : undefined;
     const form = this.contentEl.querySelector<HTMLFormElement>("#oa-task-form");
     const titleInput = this.contentEl.querySelector<HTMLInputElement>("#oa-task-title");
     const dueInput = this.contentEl.querySelector<HTMLInputElement>("#oa-task-due");
     const fileInput = this.contentEl.querySelector<HTMLInputElement>("#oa-task-file");
-    const priorityInput = this.contentEl.querySelector<HTMLSelectElement>("#oa-task-priority");
-    const dateButton = this.contentEl.querySelector<HTMLButtonElement>("#oa-date-trigger");
-    const priorityButton = this.contentEl.querySelector<HTMLButtonElement>("#oa-priority-trigger");
-    const priorityLabel = this.contentEl.querySelector<HTMLSpanElement>("#oa-priority-label");
     // Poblar datalist con archivos del vault
     const suggestionsList = this.contentEl.querySelector<HTMLUListElement>("#oa-file-suggestions");
     const fileHint = this.contentEl.querySelector<HTMLSpanElement>("#oa-file-hint");
@@ -133,16 +193,13 @@ export class TaskModal extends Modal {
       if (matches.length === 0) { hideSuggestions(); return; }
 
       matches.forEach(file => {
-        const li = this.contentEl.ownerDocument.createElement("li");
-        li.className = "oa-file-suggestion-item";
-        li.textContent = file.path;
+        const li = suggestionsList.createEl("li", { cls: "oa-file-suggestion-item", text: file.path });
         li.addEventListener("mousedown", (e) => {
           e.preventDefault();
           if (fileInput) fileInput.value = file.path;
           hideSuggestions();
           if (fileHint) fileHint.textContent = "";
         });
-        suggestionsList.appendChild(li);
       });
 
       suggestionsList.removeClass("oa-hidden");
@@ -164,55 +221,102 @@ export class TaskModal extends Modal {
       window.setTimeout(hideSuggestions, 150);
     });
 
-    // Abrir select al click del botón
-    priorityButton?.addEventListener("click", (event) => {
-      event.preventDefault();
-      priorityInput?.click();
-    });
-
-    // Actualizar botón y label al cambiar la prioridad
-    priorityInput?.addEventListener("change", () => {
-      const selected = priorityInput.options[priorityInput.selectedIndex];
-      const emoji = priorityInput.value ? priorityInput.value : "🚩";
-      if (priorityButton) priorityButton.textContent = emoji;
-      if (priorityLabel) priorityLabel.textContent = selected.text;
+    // Selector de prioridad: segmented control de píldoras (v1.1.4, reemplaza el botón+dropdown oculto)
+    const priorityGroup = this.contentEl.querySelector<HTMLElement>("#oa-priority-group");
+    const priorityPills = Array.from(this.contentEl.querySelectorAll<HTMLButtonElement>(".oa-priority-pill"));
+    let selectedPriority = priorityGroup?.dataset.selected ?? "";
+    priorityPills.forEach(pill => {
+      pill.toggleClass("oa-active", (pill.dataset.priority ?? "") === selectedPriority);
+      pill.addEventListener("click", () => {
+        selectedPriority = pill.dataset.priority ?? "";
+        priorityPills.forEach(p => p.toggleClass("oa-active", p === pill));
+      });
     });
 
     titleInput?.focus();
 
-    // Inicializar Flatpickr
-    if (dueInput) {
-      flatpickr(dueInput, {
-        //locale: es,
+    // Campos avanzados: start/scheduled reutilizan flatpickr (mismo patrón que due);
+    // hora/duración reutilizan los modales dedicados de la Fase B (v1.1.4).
+    const startInput = this.contentEl.querySelector<HTMLInputElement>("#oa-task-start");
+    const startTrigger = this.contentEl.querySelector<HTMLButtonElement>("#oa-start-trigger");
+    const startLabel = this.contentEl.querySelector<HTMLSpanElement>("#oa-start-label");
+
+    const scheduledInput = this.contentEl.querySelector<HTMLInputElement>("#oa-task-scheduled");
+    const scheduledTrigger = this.contentEl.querySelector<HTMLButtonElement>("#oa-scheduled-trigger");
+    const scheduledLabel = this.contentEl.querySelector<HTMLSpanElement>("#oa-scheduled-label");
+
+    const scheduledTimeInput = this.contentEl.querySelector<HTMLInputElement>("#oa-task-scheduled-time");
+    const scheduledTimeTrigger = this.contentEl.querySelector<HTMLButtonElement>("#oa-scheduled-time-trigger");
+    const scheduledTimeLabel = this.contentEl.querySelector<HTMLSpanElement>("#oa-scheduled-time-label");
+
+    const scheduledDurationInput = this.contentEl.querySelector<HTMLInputElement>("#oa-task-scheduled-duration");
+    const scheduledDurationTrigger = this.contentEl.querySelector<HTMLButtonElement>("#oa-scheduled-duration-trigger");
+    const scheduledDurationLabel = this.contentEl.querySelector<HTMLSpanElement>("#oa-scheduled-duration-label");
+
+    const recurrenceInput = this.contentEl.querySelector<HTMLInputElement>("#oa-task-recurrence");
+    const dependsInput = this.contentEl.querySelector<HTMLInputElement>("#oa-task-depends");
+    const onCompletionInput = this.contentEl.querySelector<HTMLSelectElement>("#oa-task-oncompletion");
+    const idInput = this.contentEl.querySelector<HTMLInputElement>("#oa-task-id");
+
+    if (onCompletionInput) onCompletionInput.value = onCompletionInput.dataset.value ?? "";
+
+    // Toggle de opciones avanzadas (v1.1.4, Fase E): recuerda el último modo usado, sin cambiar
+    // el texto (solo rota el caret), estilo sección colapsable. Al editar una tarea que ya tiene
+    // algún campo avanzado con valor, se muestra expandida de entrada (no depende de la preferencia recordada).
+    const advancedToggle = this.contentEl.querySelector<HTMLButtonElement>("#oa-advanced-toggle");
+    const advancedFields = this.contentEl.querySelector<HTMLElement>("#oa-advanced-fields");
+
+    const setAdvancedMode = (expanded: boolean) => {
+      advancedFields?.toggleClass("oa-expanded", expanded);
+      advancedToggle?.setAttribute("aria-expanded", String(expanded));
+    };
+
+    const hasAdvancedData = !!(dueInput?.value || startInput?.value || recurrenceInput?.value || dependsInput?.value || onCompletionInput?.value || idInput?.value);
+    setAdvancedMode(hasAdvancedData || this.app.loadLocalStorage(ADVANCED_MODE_STORAGE_KEY) === "true");
+
+    advancedToggle?.addEventListener("click", () => {
+      const nowExpanded = advancedToggle.getAttribute("aria-expanded") !== "true";
+      setAdvancedMode(nowExpanded);
+      this.app.saveLocalStorage(ADVANCED_MODE_STORAGE_KEY, String(nowExpanded));
+    });
+
+    const setupSimpleDatePicker = (input: HTMLInputElement | null, trigger: HTMLButtonElement | null, label: HTMLSpanElement | null) => {
+      if (!input) return;
+      flatpickr(input, {
         enableTime: false,
         dateFormat: "Y-m-d",
-        defaultDate: dueInput.value || new Date(),
         appendTo: this.contentEl,
         onClose: (selectedDates) => {
-          if (selectedDates.length > 0) {
-            const selectedDate = selectedDates[0];
-            const formattedDate = selectedDate.toLocaleDateString('es-ES', { 
-              year: 'numeric', 
-              month: 'short', 
-              day: 'numeric' 
-            });
-            dateButton!.title = `📅 ${formattedDate}`;
+          if (selectedDates.length > 0 && label) {
+            label.textContent = input.value;
           }
-        }
+        },
       });
-
-      // Click en botón abre el calendar
-      dateButton?.addEventListener("click", (event) => {
+      trigger?.addEventListener("click", (event) => {
         event.preventDefault();
-        dueInput.click();
+        input.click();
       });
-    }
+    };
 
-    dueInput?.addEventListener("change", () => {
-      const dateLabel = this.contentEl.querySelector<HTMLSpanElement>("#oa-date-label");
-      if (dueInput.value && dateLabel) {
-        dateLabel.textContent = dueInput.value;
-      }
+    setupSimpleDatePicker(dueInput, this.contentEl.querySelector<HTMLButtonElement>("#oa-date-trigger"), this.contentEl.querySelector<HTMLSpanElement>("#oa-date-label"));
+    setupSimpleDatePicker(startInput, startTrigger, startLabel);
+    setupSimpleDatePicker(scheduledInput, scheduledTrigger, scheduledLabel);
+
+    scheduledTimeTrigger?.addEventListener("click", (event) => {
+      event.preventDefault();
+      new TaskTimePickerModal(this.app, this.i18n, scheduledTimeInput?.value || null, (time) => {
+        if (scheduledTimeInput) scheduledTimeInput.value = time;
+        if (scheduledTimeLabel) scheduledTimeLabel.textContent = time;
+      }).open();
+    });
+
+    scheduledDurationTrigger?.addEventListener("click", (event) => {
+      event.preventDefault();
+      const currentMinutes = scheduledDurationInput?.value ? Number(scheduledDurationInput.value) : null;
+      new TaskDurationModal(this.app, this.i18n, currentMinutes, (minutes) => {
+        if (scheduledDurationInput) scheduledDurationInput.value = String(minutes);
+        if (scheduledDurationLabel) scheduledDurationLabel.textContent = `${minutes}m`;
+      }).open();
     });
 
     form?.addEventListener("submit", (event) => {
@@ -226,7 +330,66 @@ export class TaskModal extends Modal {
           return;
         }
 
-        // Validación del archivo
+        const dueDate = (dueInput?.value ?? "").trim();
+        const priority = selectedPriority;
+        const startDate = (startInput?.value ?? "").trim();
+        const scheduledDate = (scheduledInput?.value ?? "").trim();
+        const scheduledTime = (scheduledTimeInput?.value ?? "").trim();
+        const scheduledDuration = (scheduledDurationInput?.value ?? "").trim();
+        const recurrence = (recurrenceInput?.value ?? "").trim();
+        const dependsOn = (dependsInput?.value ?? "").trim();
+        const onCompletion = (onCompletionInput?.value ?? "").trim();
+        const customId = (idInput?.value ?? "").trim();
+
+        // Hora requiere fecha programada, duración requiere hora (ADR-T2/T3)
+        if (scheduledTime && !scheduledDate) {
+          new Notice(this.i18n.t("task_field_menu_need_scheduled_date"));
+          return;
+        }
+        if (scheduledDuration && !scheduledTime) {
+          new Notice(this.i18n.t("task_field_menu_need_scheduled_time"));
+          return;
+        }
+
+        // Construye los campos comunes a crear/editar; el checkbox y el blockLink solo aplican al editar (se preservan).
+        const buildLine = (statusChar: string, blockLink: string): string => {
+          let line = `- [${statusChar}] ${title}`;
+          if (priority) line += ` ${priority}`;
+          if (recurrence) line += ` 🔁 ${recurrence}`;
+          if (startDate) line += ` 🛫 ${startDate}`;
+          if (scheduledDate) {
+            line += ` ⏳ ${scheduledDate}`;
+            if (scheduledTime) line += ` 🕐 ${scheduledTime}`;
+            if (scheduledTime && scheduledDuration) line += ` ⏱️ ${scheduledDuration}m`;
+          }
+          if (dueDate) line += ` 📅 ${dueDate}`;
+          if (dependsOn) line += ` ⛔ ${dependsOn}`;
+          if (onCompletion) line += ` 🏁 ${onCompletion}`;
+          if (customId) line += ` 🆔 ${customId}`;
+          if (blockLink) line += ` ${blockLink}`;
+          return line;
+        };
+
+        if (editingTask) {
+          const line = buildLine(editingTask.state.status, editingTask.flow.blockLink);
+          try {
+            console.debug(`Actualizando línea ${editingTask.line.number} de ${editingTask.file.path}: ${line}`); // Debugging line
+            const ok = await this.taskWriter.updateTaskLine(editingTask.file.path, editingTask.line.number, () => line);
+            if (ok) {
+              new Notice(this.i18n.t("task_updated"));
+              this.notifySaved();
+              this.close();
+            } else {
+              new Notice(this.i18n.t("task_update_error"));
+            }
+          } catch (error) {
+            console.error(`Error actualizando tarea: ${error instanceof Error ? error.message : String(error)}`);
+            new Notice(`Error actualizando tarea: ${String(error)}`);
+          }
+          return;
+        }
+
+        // Validación del archivo (solo aplica al crear; al editar el archivo ya está fijado)
         const filePath = (fileInput?.value ?? "").trim();
         if (!filePath) {
           new Notice(this.i18n.t("file_required"));
@@ -239,12 +402,7 @@ export class TaskModal extends Modal {
           return;
         }
 
-        const dueDate = (dueInput?.value ?? "").trim();
-        const priority = (priorityInput?.value ?? "").trim();
-
-        let line = `- [ ] ${title}`;
-        if (priority) line += ` ${priority}`;
-        if (dueDate) line += ` 📅 ${dueDate}`;
+        const line = buildLine(" ", "");
 
         try {
           console.debug(`Agregando línea a ${filePath}: ${line}`); // Debugging line
@@ -255,6 +413,7 @@ export class TaskModal extends Modal {
             new Notice(this.i18n.t("file_created", { file: filePath }));
           }
           new Notice(this.i18n.t("task_created"));
+          this.notifySaved();
           this.close();
         } catch (error) {
           console.error(`Error creando tarea: ${error instanceof Error ? error.message : String(error)}`);
@@ -269,19 +428,4 @@ export class TaskModal extends Modal {
       this.close();
     });
   }
-
-  private attachEditTaskListeners(): void {
-    // Lógica específica para editar tareas
-    /* const form = this.contentEl.querySelector<HTMLFormElement>("#oa-edit-form");
-    form?.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      // Tu lógica de edición aquí
-      new Notice("Tarea actualizada");
-      this.close();
-    });*/
-  }
-
-
-
-
 }

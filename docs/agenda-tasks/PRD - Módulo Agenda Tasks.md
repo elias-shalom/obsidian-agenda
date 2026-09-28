@@ -47,7 +47,7 @@ Proveer, dentro del plugin **Obsidian Agenda**, un conjunto de vistas de **tarea
 
 - [ ] **Vista Timeline** (`timeline-view.ts`): registrada y renderiza, pero sin lógica de posicionamiento temporal propia — hoy solo lista las tareas cargadas tal cual, igual que un placeholder.
 - [ ] **Vista Gantt** (`gantt-view.ts`): mismo estado que Timeline; falta cálculo de duración (start→due) y representación visual de `dependsOn`.
-- [ ] **Edición de tareas existentes** desde el modal: el tipo `"edit-task"` existe en `ModalType` pero sus listeners de guardado están solo parcialmente implementados en `TaskModal`.
+- [x] **Edición de tareas existentes** desde el modal: implementada — clic simple en una tarea del calendario abre `"edit-task"` prefilled, doble clic abre el archivo.
 - [ ] **Programación por hora del día**: hoy una tarea solo tiene fechas de calendario (`due`/`start`/`scheduled`/`created`/`done`/`cancelled`), sin componente de hora. La vista Día ya organiza el contenido en 24 franjas horarias (`hourSlots`), pero no existe una forma en la UI de asignarle una hora a una tarea — ver roadmap v1.1.4 en `docs/todo.md` ("Una forma de agregar la fecha desde el archivo con iconos", "agregar las fechas con el botón secundario").
 - [ ] Filtro/orden por carpeta como criterio de primera clase de forma uniforme en todas las vistas (hoy es más completo en Tabla que en el resto).
 - [ ] Configuración de patrones de emoji personalizados — los iconos reconocidos están fijos en `TaskSection` (`emojiMapping`), no son configurables por el usuario.

@@ -35,6 +35,17 @@
   gap: 0.4rem;
 }
 
+// Fila de 2+ .oa-form-group en el mismo renglón (v1.1.4, ej. Depends on + Id)
+.oa-form-row {
+  display: flex;
+  gap: 1rem;
+
+  > .oa-form-group {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
 .oa-form-label {
   font-size: 0.9rem;
   font-weight: 500;
@@ -95,6 +106,108 @@
   margin-top: 0.5rem;
 }
 
+// Toggle de opciones avanzadas del Task Modal (v1.1.4, Fase E) — encabezado de sección
+// colapsable con el título a la izquierda y el caret a la derecha (estilo acordeón).
+.oa-advanced-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.4rem;
+  width: 100%;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-top: 1px solid var(--background-modifier-border);
+  padding: 0.7rem 0 0.2rem;
+  margin-top: 0.2rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+
+  &:hover, &:focus, &:active {
+    color: var(--text-normal);
+    background: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  .oa-advanced-toggle-caret {
+    display: inline-block;
+    font-size: 1.3rem;
+    line-height: 1;
+    color: var(--text-faint);
+    transition: transform 0.15s ease;
+  }
+
+  &[aria-expanded="true"] .oa-advanced-toggle-caret {
+    transform: rotate(180deg);
+  }
+}
+
+.oa-advanced-fields {
+  display: none;
+  flex-direction: column;
+  gap: 1rem;
+
+  &.oa-expanded {
+    display: flex;
+  }
+}
+
+// Selector de prioridad: segmented control de píldoras (v1.1.4). Mismo look & feel que
+// los botones-ícono de fecha (.oa-date-trigger): planos, sin fondo/borde visibles hasta
+// que se seleccionan, para que no parezcan botones "de verdad" (revisado 2026-09-27).
+.oa-priority-segmented {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.oa-priority-pill {
+  flex: 0 0 auto;
+  width: 2rem;
+  padding: 0.35rem 0;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-radius: 6px;
+  background-color: transparent !important;
+  color: var(--text-normal);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    background-color: transparent !important;
+  }
+
+  &:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+  }
+
+  &:active {
+    transform: scale(0.95);
+    background-color: transparent !important;
+  }
+
+  &.oa-active {
+    opacity: 1;
+    background-color: color-mix(in srgb, var(--interactive-accent) 18%, transparent) !important;
+  }
+}
+
 .oa-btn {
   padding: 0.6rem 1.2rem;
   border: none;
@@ -133,7 +246,7 @@
 }
 
 // Date Picker Button Styles
-.oa-date-picker-group, .oa-priority-picker-group  {
+.oa-date-picker-group {
   position: relative;
   display: flex;
   flex-direction: row;
@@ -141,9 +254,11 @@
   gap: 0.4rem;
 }
 
-.oa-date-trigger, .oa-priority-trigger {
+.oa-date-trigger {
   padding: 0;
-  border: none;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
   background-color: transparent !important;
   color: var(--text-normal);
   font-size: 1.4rem;
@@ -161,10 +276,12 @@
   &:hover {
     opacity: 1;
     transform: scale(1.15);
+    background-color: transparent !important;
   }
 
   &:focus {
-    outline: none;
+    outline: none !important;
+    box-shadow: none !important;
     opacity: 1;
     transform: scale(0.95);
     background-color: transparent !important;
@@ -176,7 +293,7 @@
   }
 }
 
-.oa-date-input-hidden, .oa-priority-select-hidden{
+.oa-date-input-hidden {
   position: absolute;
   width: 0;
   height: 0;
@@ -184,12 +301,13 @@
   pointer-events: auto;
 }
 
-.oa-date-label, .oa-priority-label{
+.oa-date-label {
   font-size: 0.7rem;
   color: var(--text-normal);
   display: flex;
   align-items: center;
-  flex: 1;
+  flex: 0 1 auto;
+  white-space: nowrap;
 }
 
 .oa-file-hint {

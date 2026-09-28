@@ -2,11 +2,11 @@
 
 > A comprehensive task management and calendar plugin for Obsidian
 
-[![Release](https://img.shields.io/badge/version-1.1.3-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
+[![Release](https://img.shields.io/badge/version-1.1.4-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Obsidian](https://img.shields.io/badge/Obsidian-0.13.0+-purple.svg)](https://obsidian.md)
 
-> 🆕 **What's New in v1.1.3** — Optional sub-area field for habits (hidden by default), multiple related files as removable wikilink chips, and a fix for a race condition that made an edited habit briefly disappear from the Routine/List views. [See details](#news) · [Full changelog](#changelog).
+> 🆕 **What's New in v1.1.4** — Time-of-day scheduling (⏳ scheduled dates now support a time and duration), insert/edit task fields right from the editor, calendar views with drag-and-drop rescheduling and click-to-edit, and a redesigned Task Modal with a collapsible "More fields" section. [See details](#news) · [Full changelog](#changelog).
 
 ## Overview
 
@@ -28,6 +28,7 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 - [Screenshots](#screenshots)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [Gestures & Interactions](#gestures--interactions)
 - [Task Format](#task-format-and-compatibility)
 - [Configuration](#configuration)
 - [Changelog](#changelog)
@@ -39,12 +40,14 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 
 ## 🆕 News
 
-### v1.1.3 (latest)
-- New optional **sub-area** field for habits: a combobox populated from the 2nd/3rd-level subfolders of the chosen area (e.g. `body/salud`), hidden by default — enable it in settings; shown below the area in the List and Routine views
-- Habit **related files** (formerly a single `relatedFile`) is now a multi-value field: add wikilinks one by one from the Habit Editor and remove them individually as chips
-- Habit **description** now lives in the note body instead of the frontmatter
-- Fixed a bug where editing or deleting a habit made it briefly disappear from the Routine/List views until a manual reload
-- Habit List view now sorts by name by default
+### v1.1.4 (latest)
+- **Time-of-day scheduling**: the ⏳ `scheduled` date can now carry a 🕐 time and, for block-mode tasks, a ⏱️ duration — fully optional and additive, existing tasks are unaffected. `due` stays a whole-day field
+- **Insert or edit task fields from the editor**, no need to open a modal: a right-click context menu and a command (with keyboard shortcut) work on any task line, using a native date picker and a new iOS-style scroll wheel for the time
+- **Calendar views** (Month/Week/Work Week/Day) can now show `start` and `scheduled` dates alongside `due`, each with its own icon + color badge — configurable in Settings ▸ Calendar; completed tasks are dimmed by default, with an option to hide them entirely
+- **Day view** now has a real hourly grid populated from scheduled times, plus a collapsible "All day" section for `due`/`start`
+- **Drag and drop** a task in any calendar view to reschedule it: drag to another day in Month/Week/Work Week, or to another hour in Day view
+- **Click a task in the calendar to edit it** in a prefilled modal — double-click still opens the underlying note
+- **Task creation modal redesigned**: scheduled date is now the default field, priority is a one-click segmented selector, and a collapsible "More fields" section holds start date, due date, recurrence, dependencies, on-completion behavior and a custom ID
 
 See the [full changelog](#changelog) below for older versions.
 
@@ -181,27 +184,72 @@ For comprehensive guides, visit the [Wiki](https://github.com/elias-shalom/obsid
 
 ---
 
+## 🖱️ Gestures & Interactions
+
+A quick reference of clicks, double-clicks and drags across the plugin — handy while you're getting familiar with it.
+
+### 📅 Calendar Views (Day / Week / Work Week / Month / Year)
+
+| Gesture | Where | Result |
+|---|---|---|
+| Click | A task pill | Opens the **Edit Task** modal, prefilled with that task's data |
+| Double-click | A task pill | Opens the underlying note, cursor on that line |
+| Click | A day number (Month/Week/Work Week/Year) | Jumps to the **Day view** for that date |
+| Double-click | Empty space in a day cell | Opens **Create Task** prefilled with that date |
+| Drag | A task pill to another day (Month/Week/Work Week) | Reschedules the task to that day (moves whichever date anchors it: `scheduled` > `due` > `start`) |
+| Drag | A task pill to another hour slot (Day view) | Changes the task's scheduled time, keeping the original minutes |
+| Click | The "All day" section header (Day view) | Expands/collapses the due/start section |
+| Click | A date in the mini-calendar (Day view sidebar) | Jumps to that date |
+
+### 📋 List, Table & Overview
+
+| Gesture | Where | Result |
+|---|---|---|
+| Double-click | A task row/item | Opens the underlying note, cursor on that line |
+| Click | A column header (Table view) | Sorts by that column (click again to reverse) |
+
+### 🔥 Habit Tracker
+
+| Gesture | Where | Result |
+|---|---|---|
+| Click | A grid cell or a routine checkbox | Toggles the habit as done/not done for that day (updates instantly, then confirms the write) |
+| Click | A habit's name (Grid/Weekly view) | Opens the **Habit Editor** |
+| Double-click | A habit row (Table view) | Opens the **Habit Editor** |
+| Click | "Open note" action (Routine view) | Opens the habit's own note |
+| Click | "Open related file" action (Routine/Table view) | Opens the file linked in the habit's related-files field |
+| Click | A column header (Table view) | Sorts by that column |
+
+---
+
 ## 📝 Task Format and Compatibility
 
 Agenda Tasks works seamlessly with tasks created using the standard Obsidian checkbox format (`- [ ]`) and is fully compatible with the popular [Obsidian Tasks plugin](https://github.com/obsidian-tasks-group/obsidian-tasks).
 
 ### Supported Metadata
 
-The plugin recognizes and properly handles all standard Obsidian Tasks metadata:
+The plugin recognizes and properly handles all standard Obsidian Tasks metadata, plus its own time-of-day extensions (v1.1.4):
 
-| Metadata | Icon | Example |
-|----------|------|---------|
-| Due Date | 📅 | `- [ ] Task 📅 2024-12-31` |
-| Scheduled Date | ⏳ | `- [ ] Task ⏳ 2024-06-15` |
-| Start Date | 🛫 | `- [ ] Task 🛫 2024-06-01` |
-| Priority | ⏫⏬ | `- [ ] Task ⏫` |
-| Recurrence | 🔁 | `- [ ] Task 🔁 every day` |
-| Tags | `#tag` | `- [ ] Task #project #urgent` |
+| Metadata | Icon | Example | Notes |
+|----------|------|---------|-------|
+| Due Date | 📅 | `- [ ] Task 📅 2024-12-31` | Always a whole day |
+| Scheduled Date | ⏳ | `- [ ] Task ⏳ 2024-06-15` | Only date that can carry a time/duration |
+| Scheduled Time | 🕐 | `- [ ] Task ⏳ 2024-06-15 🕐 14:30` | Optional, 24h `HH:mm`; requires a scheduled date |
+| Duration | ⏱️ | `- [ ] Task ⏳ 2024-06-15 🕐 14:30 ⏱️ 90m` | Optional, minutes; requires a scheduled time (block mode) |
+| Start Date | 🛫 | `- [ ] Task 🛫 2024-06-01` | Always a whole day |
+| Priority | ⏬🔽🔼⏫🔺 | `- [ ] Task ⏫` | Lowest/Low/(Normal, no icon)/Medium/High/Highest |
+| Recurrence | 🔁 | `- [ ] Task 🔁 every day` | Natural-language recurrence |
+| Depends on | ⛔ | `- [ ] Task ⛔ abc123,def456` | Comma-separated task IDs |
+| On completion | 🏁 | `- [ ] Task 🏁 delete` | `keep` or `delete` |
+| ID | 🆔 | `- [ ] Task 🆔 abc123` | Referenced by `⛔` on other tasks |
+| Tags | `#tag` | `- [ ] Task #project #urgent` | |
+
+> ⏰ Scheduled time/duration and the fields above are recognized **anywhere on the line**, in any order — they don't need to be adjacent or in a specific sequence.
 
 ### Example Task
 ```markdown
 - [ ] Complete project documentation 📅 2024-12-31 ⏫ #project #documentation
 - [ ] Review pull requests ⏳ 2024-06-15 #code-review
+- [ ] Team standup ⏳ 2024-06-16 🕐 09:00 ⏱️ 15m 🔁 every weekday
 - [x] Submit final report 🛫 2024-06-01 ✅
 ```
 
@@ -214,6 +262,10 @@ The plugin recognizes and properly handles all standard Obsidian Tasks metadata:
 - **Default View** - Set your preferred view on plugin load
 - **Theme Integration** - Customize colors and appearance
 
+### Calendar Settings (new in 1.1.4)
+- **Show Due/Start/Scheduled Dates** - Independently choose which date types appear on calendar views, each with its own icon + color badge
+- **Show Completed Tasks** - Keep completed tasks dimmed on the calendar, or hide them entirely
+
 ### Filtering & Sorting
 - **Date Filters** - Filter by today, overdue, upcoming, or custom ranges
 - **Priority Filters** - Show tasks by priority level
@@ -221,9 +273,10 @@ The plugin recognizes and properly handles all standard Obsidian Tasks metadata:
 - **Folder Filters** - Organize by file location
 
 ### Advanced Options
-- **Keyboard Shortcuts** - Customize shortcuts for common actions
+- **Keyboard Shortcuts** - Customize shortcuts for common actions, including inserting a task field from the editor without opening a modal
 - **Widget Configuration** - Personalize dashboard widgets
 - **Display Preferences** - Adjust how tasks are displayed
+- **Task Modal mode** - The "More fields" (advanced) section of the Create/Edit Task modal remembers whether you left it expanded or collapsed, per device
 
 ### Habit Tracker Settings
 - **Habit Folder Path** - Vault folder scanned (recursively) for habit notes
@@ -237,6 +290,17 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 ---
 
 ## 📋 Changelog
+
+### Version 1.1.4 ⏰
+- **Time-of-day scheduling**: `scheduled` tasks can now include a 🕐 time (`HH:mm`, 24h) and, when a time is set, an ⏱️ duration in minutes for block-mode tasks; both are fully optional/additive and recognized anywhere on the line, so existing notes and the Obsidian Tasks plugin keep working unchanged
+- New editor integration: a right-click context menu and an "Insert task field" command let you add/replace due, start, scheduled date, scheduled time, duration and priority on the current task line without leaving the editor or opening a modal
+- New custom iOS-style scroll wheel picker for scheduled time, and a small modal for duration
+- Calendar views gained a new **Settings ▸ Calendar** group to choose which date types (`due`/`start`/`scheduled`) appear, each with a distinct icon + color badge; completed tasks are now dimmed (or hidden, via a setting) instead of always shown at full opacity
+- **Day view** rebuilt: a real hour-by-hour grid populated from scheduled times, plus a collapsible "All day" section for `due`/`start` (and scheduled tasks without a time)
+- **Drag and drop** support in calendar views: drag a task to another day (Month/Week/Work Week) or another hour (Day) to reschedule it in place
+- **Edit tasks from the calendar**: click a task to open an edit modal prefilled with all its data (single click edits, double click still opens the file)
+- Task creation/edit modal redesigned: scheduled date is the default field (was due date), priority is now a one-click segmented selector, and a collapsible "More fields" section holds start date, due date, recurrence, dependencies, on-completion behavior and a custom ID
+- Various small fixes: task-pill title truncation in calendar views, off-by-one when rewriting a task line in place, and parser robustness so time/duration are recognized regardless of where they appear on the line
 
 ### Version 1.1.3 🧩
 - New optional **sub-area** field for habits: a combobox populated from the 2nd/3rd-level subfolders of the chosen area (e.g. `body/salud`), hidden by default via a new setting — shown below the area in the List and Routine views when enabled

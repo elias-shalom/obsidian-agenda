@@ -1,10 +1,12 @@
-import { App, Plugin, PluginManifest, Notice } from "obsidian";
+import { App, Plugin, PluginManifest, Notice, Menu, MarkdownView } from "obsidian";
 import { ViewManager } from "./core/view-manager";
 import { I18n } from "./core/i18n";
 import { TaskManager } from "./core/task-manager";
 import { HabitManager } from "./habits";
 import { SettingTab } from "./settings/setting-tab";
 import { TASK_MODAL_TYPE, ModalManager } from "./core/modal-manager";
+import { addTaskFieldMenuItems } from "./core/task-field-menu";
+import { isTaskLine } from "./core/task-line-fields";
 import { DEFAULT_SETTINGS, AgendaPluginSettings, } from "./settings/settings";
 
 export default class ObsidianAgenda extends Plugin {
@@ -90,6 +92,36 @@ export default class ObsidianAgenda extends Plugin {
       // Registrar eventos
       this.taskManager.registerEvents(this);
 
+      // Insertar campos de tarea (fecha/hora/duración/prioridad) desde el editor (v1.1.4, Fase B)
+      this.addCommand({
+        id: "oa-task-insert-field",
+        name: this.i18n.t("task_insert_field_command"),
+        editorCallback: (editor, ctx) => {
+          const lineNumber = editor.getCursor().line;
+          if (!isTaskLine(editor.getLine(lineNumber))) {
+            new Notice(this.i18n.t("task_field_menu_not_a_task"));
+            return;
+          }
+
+          const menu = new Menu();
+          addTaskFieldMenuItems(menu, editor, lineNumber, this.i18n, this.app);
+
+          const view = ctx instanceof MarkdownView ? ctx : this.app.workspace.getActiveViewOfType(MarkdownView);
+          const rect = (view?.contentEl ?? document.body).getBoundingClientRect();
+          menu.showAtPosition({ x: rect.left + rect.width / 2, y: rect.top + 80 });
+        },
+      });
+
+      this.registerEvent(
+        this.app.workspace.on("editor-menu", (menu, editor) => {
+          const lineNumber = editor.getCursor().line;
+          if (!isTaskLine(editor.getLine(lineNumber))) return;
+
+          menu.addSeparator();
+          addTaskFieldMenuItems(menu, editor, lineNumber, this.i18n, this.app);
+        })
+      );
+
       this.viewManager.registerViews();
       //logger.info("Vistas registradas correctamente.");
 
@@ -100,34 +132,10 @@ export default class ObsidianAgenda extends Plugin {
 
   async loadSettings(): Promise<void> {
     const raw: unknown = await this.loadData();
+    const data = (raw && typeof raw === "object") ? raw as Partial<AgendaPluginSettings> : {};
 
-    if (!raw || typeof raw !== "object") {
-      this.settings = { ...DEFAULT_SETTINGS };
-      return;
-    }
-
-    const data = raw as Partial<AgendaPluginSettings>;
-
-    this.settings = {
-      ...DEFAULT_SETTINGS,
-      ...(typeof data.showOverviewTab === "boolean" ? { showOverviewTab: data.showOverviewTab } : {}),
-      ...(typeof data.showListTab === "boolean" ? { showListTab: data.showListTab } : {}),
-      ...(typeof data.showTableTab === "boolean" ? { showTableTab: data.showTableTab } : {}),
-      ...(typeof data.showCalendarTab === "boolean" ? { showCalendarTab: data.showCalendarTab } : {}),
-      ...(typeof data.weekStartDay === "number" ? { weekStartDay: data.weekStartDay } : {}),
-      ...(typeof data.habitFolderPath === "string" ? { habitFolderPath: data.habitFolderPath } : {}),
-      ...(typeof data.habitDaysToShow === "number" ? { habitDaysToShow: data.habitDaysToShow } : {}),
-      ...(typeof data.habitShowStreaks === "boolean" ? { habitShowStreaks: data.habitShowStreaks } : {}),
-      ...(typeof data.habitDefaultMaxGap === "number" ? { habitDefaultMaxGap: data.habitDefaultMaxGap } : {}),
-      ...(typeof data.habitDefaultPriority === "number" ? { habitDefaultPriority: data.habitDefaultPriority } : {}),
-      ...(typeof data.habitDefaultColor === "string" ? { habitDefaultColor: data.habitDefaultColor } : {}),
-      ...(typeof data.showHabitSubAreaField === "boolean" ? { showHabitSubAreaField: data.showHabitSubAreaField } : {}),
-      ...(typeof data.showHabitGridTab === "boolean" ? { showHabitGridTab: data.showHabitGridTab } : {}),
-      ...(typeof data.showHabitDashboardTab === "boolean" ? { showHabitDashboardTab: data.showHabitDashboardTab } : {}),
-      ...(typeof data.showHabitRoutineTab === "boolean" ? { showHabitRoutineTab: data.showHabitRoutineTab } : {}),
-      ...(typeof data.showHabitWeeklyTab === "boolean" ? { showHabitWeeklyTab: data.showHabitWeeklyTab } : {}),
-      ...(typeof data.showHabitListTab === "boolean" ? { showHabitListTab: data.showHabitListTab } : {}),
-    };
+    // Merge genérico: cualquier clave guardada sobrescribe su default, sin necesidad de listarla aquí.
+    this.settings = { ...DEFAULT_SETTINGS, ...data };
   }
 
   async saveSettings(): Promise<void> {

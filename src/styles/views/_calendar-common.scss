@@ -81,9 +81,72 @@
 }
 
 .oa-task-title {
-  display: block;
+  display: inline-block;
+  flex: 1 1 0;
+  min-width: 0;
   @include text-truncate();
-  width: 100%;
+}
+
+/* Distintivo visual por tipo de fecha (v1.1.4, ADR-T4-bis): mismo icono que el usuario ya
+   escribió (📅/🛫/⏳) + un acento de color, consistente en Mes/Semana/Semana laboral/Día. */
+.oa-calendar-task--due {
+  border-left-color: var(--interactive-accent) !important;
+
+  &::before {
+    content: "📅 ";
+  }
+}
+
+.oa-calendar-task--start {
+  border-left-color: #3b82c4 !important;
+
+  &::before {
+    content: "🛫 ";
+  }
+}
+
+.oa-calendar-task--scheduled {
+  border-left-color: #16a34a !important;
+
+  &::before {
+    content: "⏳ ";
+  }
+}
+
+.oa-calendar-task--done {
+  opacity: 0.5;
+
+  .oa-task-title {
+    text-decoration: line-through;
+  }
+}
+
+/* Drag and drop (v1.1.4, Fase D): arrastrar una tarea a otro día/hora. */
+.oa-calendar-task[draggable="true"] {
+  cursor: grab;
+}
+
+.oa-calendar-task.oa-dragging {
+  opacity: 0.4;
+}
+
+.oa-calendar-month-day.oa-calendar-drop-target,
+.oa-calendar-week-day-container.oa-calendar-drop-target,
+.oa-calendar-day-column.oa-calendar-drop-target,
+.oa-calendar-year-day.oa-calendar-drop-target {
+  background-color: color-mix(in srgb, var(--interactive-accent) 15%, transparent);
+  outline: 2px dashed var(--interactive-accent);
+  outline-offset: -2px;
+}
+
+/* Clic en el número de día (Mes/Semana/Semana laboral) navega a la vista Día, igual que en Año. */
+.oa-calendar-month-day .oa-calendar-month-day-number,
+.oa-calendar-week-day-container .oa-calendar-date {
+  cursor: pointer;
+
+  &:hover {
+    color: var(--interactive-accent);
+  }
 }
 
 /* Estilos para las vistas semanales y diarias */

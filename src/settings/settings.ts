@@ -5,6 +5,10 @@ export interface AgendaPluginSettings {
   showTableTab: boolean;
   showCalendarTab: boolean;
   weekStartDay: number;
+  calendarShowDueDates: boolean;
+  calendarShowStartDates: boolean;
+  calendarShowScheduledDates: boolean;
+  calendarShowCompletedTasks: boolean;
 
   // Habits settings
   habitFolderPath: string;
@@ -27,6 +31,10 @@ export const DEFAULT_SETTINGS: AgendaPluginSettings = {
   showTableTab: true,
   showCalendarTab: true,
   weekStartDay: 1,
+  calendarShowDueDates: true,
+  calendarShowStartDates: false,
+  calendarShowScheduledDates: true,
+  calendarShowCompletedTasks: true,
 
   habitFolderPath: "daily plan/daily routine/habit",
   habitDaysToShow: 21,

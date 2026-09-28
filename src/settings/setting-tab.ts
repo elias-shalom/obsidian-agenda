@@ -15,6 +15,15 @@ export class SettingTab extends PluginSettingTab {
     this.plugin = plugin;
   }
 
+  /** Refresca solo las vistas de calendario abiertas (usado por los settings de fechas y día de inicio de semana). */
+  private refreshCalendarViews(): void {
+    this.plugin.app.workspace.iterateAllLeaves((leaf) => {
+      if (CALENDAR_VIEW_TYPES.includes(leaf.view.getViewType()) && leaf.view instanceof BaseView) {
+        leaf.view.refreshView().catch(console.error);
+      }
+    });
+  }
+
   /** API declarativa (Obsidian 1.13+): permite que estos ajustes aparezcan en el buscador global de settings. */
   getSettingDefinitions(): SettingDefinitionItem<keyof AgendaPluginSettings>[] {
     return [
@@ -46,6 +55,60 @@ export class SettingTab extends PluginSettingTab {
                       leaf.view.refreshView().catch(console.error);
                     }
                   });
+                }));
+            },
+          },
+        ],
+      },
+      {
+        type: 'group',
+        heading: this.i18n.t('calendar_settings'),
+        items: [
+          {
+            name: this.i18n.t('calendar_show_due_dates'),
+            render: (setting) => {
+              setting.addToggle(toggle => toggle
+                .setValue(this.plugin.settings.calendarShowDueDates)
+                .onChange(async (value) => {
+                  this.plugin.settings.calendarShowDueDates = value;
+                  await this.plugin.saveSettings();
+                  this.refreshCalendarViews();
+                }));
+            },
+          },
+          {
+            name: this.i18n.t('calendar_show_start_dates'),
+            render: (setting) => {
+              setting.addToggle(toggle => toggle
+                .setValue(this.plugin.settings.calendarShowStartDates)
+                .onChange(async (value) => {
+                  this.plugin.settings.calendarShowStartDates = value;
+                  await this.plugin.saveSettings();
+                  this.refreshCalendarViews();
+                }));
+            },
+          },
+          {
+            name: this.i18n.t('calendar_show_scheduled_dates'),
+            render: (setting) => {
+              setting.addToggle(toggle => toggle
+                .setValue(this.plugin.settings.calendarShowScheduledDates)
+                .onChange(async (value) => {
+                  this.plugin.settings.calendarShowScheduledDates = value;
+                  await this.plugin.saveSettings();
+                  this.refreshCalendarViews();
+                }));
+            },
+          },
+          {
+            name: this.i18n.t('calendar_show_completed_tasks'),
+            render: (setting) => {
+              setting.addToggle(toggle => toggle
+                .setValue(this.plugin.settings.calendarShowCompletedTasks)
+                .onChange(async (value) => {
+                  this.plugin.settings.calendarShowCompletedTasks = value;
+                  await this.plugin.saveSettings();
+                  this.refreshCalendarViews();
                 }));
             },
           },
@@ -161,6 +224,48 @@ export class SettingTab extends PluginSettingTab {
               leaf.view.refreshView().catch(console.error);
             }
           });
+        }));
+
+    new Setting(containerEl).setName(this.i18n.t("calendar_settings")).setHeading();
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("calendar_show_due_dates"))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.calendarShowDueDates)
+        .onChange(async (value) => {
+          this.plugin.settings.calendarShowDueDates = value;
+          await this.plugin.saveSettings();
+          this.refreshCalendarViews();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("calendar_show_start_dates"))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.calendarShowStartDates)
+        .onChange(async (value) => {
+          this.plugin.settings.calendarShowStartDates = value;
+          await this.plugin.saveSettings();
+          this.refreshCalendarViews();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("calendar_show_scheduled_dates"))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.calendarShowScheduledDates)
+        .onChange(async (value) => {
+          this.plugin.settings.calendarShowScheduledDates = value;
+          await this.plugin.saveSettings();
+          this.refreshCalendarViews();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("calendar_show_completed_tasks"))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.calendarShowCompletedTasks)
+        .onChange(async (value) => {
+          this.plugin.settings.calendarShowCompletedTasks = value;
+          await this.plugin.saveSettings();
+          this.refreshCalendarViews();
         }));
 
     new Setting(containerEl).setName(this.i18n.t("habit_settings")).setHeading();

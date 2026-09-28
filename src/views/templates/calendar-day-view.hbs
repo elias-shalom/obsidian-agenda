@@ -40,17 +40,72 @@
           </div>
         </div>
         <div class="oa-calendar-day-body">
-          <div class="oa-calendar-day-full-row">
-            <div class="oa-calendar-day-column {{#if calendar.isToday}}oa-calendar-today{{/if}}" data-date="{{toISODate calendar.date}}">
-              {{#each calendar.tasksForDay}}
-                <div class="oa-calendar-task" 
-                    data-file-path="{{file.path}}" 
-                    data-line-number="{{line.number}}"
-                    data-tooltip="{{section.desc}}">
-                  <span class="oa-task-title">{{section.desc}}</span>
+          <div class="oa-calendar-allday oa-expanded">
+            <button type="button" class="oa-calendar-allday-toggle" aria-expanded="true">
+              <span class="oa-calendar-allday-caret">▸</span>
+              {{t "calendar_all_day"}}
+            </button>
+            <div class="oa-calendar-allday-content">
+              {{#if calendar.allDayDue.length}}
+                <div class="oa-calendar-allday-row">
+                  {{#each calendar.allDayDue}}
+                    <div class="oa-calendar-task oa-calendar-task--due {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
+                        data-file-path="{{file.path}}"
+                        data-line-number="{{line.number}}"
+                        data-tooltip="{{section.desc}}">
+                      <span class="oa-task-title">{{section.desc}}</span>
+                    </div>
+                  {{/each}}
                 </div>
-              {{/each}}
+              {{/if}}
+              {{#if calendar.allDayStart.length}}
+                <div class="oa-calendar-allday-row">
+                  {{#each calendar.allDayStart}}
+                    <div class="oa-calendar-task oa-calendar-task--start {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
+                        data-file-path="{{file.path}}"
+                        data-line-number="{{line.number}}"
+                        data-tooltip="{{section.desc}}">
+                      <span class="oa-task-title">{{section.desc}}</span>
+                    </div>
+                  {{/each}}
+                </div>
+              {{/if}}
+              {{#if calendar.allDayScheduled.length}}
+                <div class="oa-calendar-allday-row">
+                  {{#each calendar.allDayScheduled}}
+                    <div class="oa-calendar-task oa-calendar-task--scheduled {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
+                        data-file-path="{{file.path}}"
+                        data-line-number="{{line.number}}"
+                        data-tooltip="{{section.desc}}">
+                      <span class="oa-task-title">{{section.desc}}</span>
+                    </div>
+                  {{/each}}
+                </div>
+              {{/if}}
             </div>
+          </div>
+
+          <div class="oa-calendar-day-hours">
+            {{#each calendar.hourSlots}}
+              <div class="oa-calendar-hour-row">
+                <div class="oa-calendar-hour-label">{{formattedHour}}</div>
+                <div class="oa-calendar-hour-slot" data-hour="{{hour}}">
+                  {{#each tasks}}
+                    <div class="oa-calendar-task oa-calendar-task--scheduled {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
+                        draggable="true"
+                        data-file-path="{{file.path}}"
+                        data-line-number="{{line.number}}"
+                        data-date-type="scheduled"
+                        data-scheduled-time="{{date.scheduledTime}}"
+                        data-tooltip="{{section.desc}}">
+                      <span class="oa-calendar-task-time">{{date.scheduledTime}}</span>
+                      <span class="oa-task-title">{{section.desc}}</span>
+                      {{#if date.scheduledDuration}}<span class="oa-calendar-task-duration">{{date.scheduledDuration}}m</span>{{/if}}
+                    </div>
+                  {{/each}}
+                </div>
+              </div>
+            {{/each}}
           </div>
         </div>
       </div>

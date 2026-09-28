@@ -7,7 +7,7 @@ import { DateTime } from "luxon";
  * Interfaz para la configuración de emojios en las tareas
  */
 interface EmojiConfig {
-  type: 'date' | 'priority' | 'recurrence' | 'id' | 'blocked' | 'completion';
+  type: 'date' | 'priority' | 'recurrence' | 'id' | 'blocked' | 'completion' | 'time' | 'duration';
   property: string;
   format?: string;
   value?: string | number | TaskPriorityEmoji;
@@ -110,6 +110,8 @@ export class TaskSection {
     'blockedby':     'dependsOn',
     'oncompletion':  'onCompletion',
     'completion':    'onCompletion',
+    'time':          'scheduledTime',
+    'duration':      'scheduledDuration',
   };
 
   private readonly emojiMapping: Record<string, EmojiConfig> = {
@@ -128,6 +130,11 @@ export class TaskSection {
     "⏫": { type: "priority", property: "priority", value: TaskPriorityEmoji.High, name: "high" },
     "🔺": { type: "priority", property: "priority", value: TaskPriorityEmoji.Highest, name: "highest" },
 
+    // Hora y duración de `scheduled` (v1.1.4, ADR-T2/T3): campos independientes, solo tienen sentido
+    // ligados a `scheduled` semánticamente, pero se detectan en cualquier posición del renglón.
+    "🕐": { type: "time", property: "scheduledTime" },
+    "⏱️": { type: "duration", property: "scheduledDuration" },
+
     // Otros emojios
     "🔁": { type: "recurrence", property: "recurrence" },
     "🆔": { type: "id", property: "id" },
@@ -143,7 +150,7 @@ export class TaskSection {
       this.tasksFields = [];
       this.blockLink = "";
       this.headerRegex = /^[\t ]*(>*)\s*(-|\*|\+|\d+[.)]) {0,4}\[(.)\] {0,4}/;
-      this.emojiRegex = /📅|🛫|⏳|✅|❌|➕|⏬|⏫|🔼|🔽|🔺|🔁|🆔|⛔|🏁/g;
+      this.emojiRegex = /📅|🛫|⏳|✅|❌|➕|⏬|⏫|🔼|🔽|🔺|🔁|🆔|⛔|🏁|🕐|⏱️/g;
   }
 
   /**
@@ -200,6 +207,24 @@ export class TaskSection {
    */
   public extractString(value: unknown): string {
     return typeof value === 'string' ? value : "";
+  }
+
+  /**
+   * Extrae la hora del día (HH:mm, 24h) de forma type-safe (v1.1.4, ligada a `scheduled`)
+   * @param value Valor desde taskData
+   * @returns String "HH:mm" válido o null
+   */
+  public extractTime(value: unknown): string | null {
+    return typeof value === 'string' && /^([01]\d|2[0-3]):([0-5]\d)$/.test(value) ? value : null;
+  }
+
+  /**
+   * Extrae la duración en minutos de forma type-safe (v1.1.4, ligada a `scheduled`)
+   * @param value Valor desde taskData
+   * @returns Número de minutos válido (> 0) o null
+   */
+  public extractDuration(value: unknown): number | null {
+    return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
   }
 
   /**
@@ -396,6 +421,10 @@ export class TaskSection {
     const errors: string[] = [];
 
     const emojiDateRegex = /(📅|🛫|⏳|✅|❌|➕)\s*(\d{4}-\d{2}-\d{2})\s*$/g // Ícono seguido de una fecha en formato YYYY-MM-DD
+    // Hora/duración de `scheduled` (v1.1.4, ADR-T2/T3): ahora son campos de primer nivel propios,
+    // detectados en cualquier posición del renglón (ver casos "time"/"duration" más abajo).
+    const scheduledTimeRegex = /^🕐\s*([01]\d|2[0-3]):([0-5]\d)\s*$/;
+    const scheduledDurationRegex = /^⏱️\s*(\d+)m\s*$/;
     const emojiEmptyRegex = /(⏬|⏫|🔼|🔽|🔺)\s*$/g; // Ícono seguido solo por espacios o tabulaciones
     const emojiCompletionRegex = /🏁\s*(keep|delete)/g; // Ícono 🏁 seguido de valores válidos de OnCompletion
     const emojiBlockedRegex = /⛔\s*(.*)/g; // Ícono bloqueado seguido de una cadena de identificadores
@@ -419,7 +448,7 @@ export class TaskSection {
 
       if (emojiConfig) {
         let isValid = true;
-        let extractedValue: string | null = null;
+        let extractedValue: string | number | null = null;
         let errorMessage = "";
 
         switch (emojiConfig.type) {
@@ -437,6 +466,31 @@ export class TaskSection {
             } else {
               isValid = false;
               errorMessage = this.i18n.t('errors.invalidDate', { emoji: emoji });
+              fieldText = `${fieldText} @${errorMessage}`;
+            }
+            break;
+          }
+
+          case "time": {
+            // Hora de `scheduled` (v1.1.4, ADR-T2/T3): opcional y aditiva, un valor inválido
+            // no invalida la tarea completa (mismo criterio que la recurrencia).
+            const timeMatch = fieldText.match(scheduledTimeRegex);
+            if (timeMatch) {
+              extractedValue = `${timeMatch[1]}:${timeMatch[2]}`;
+            } else {
+              errorMessage = this.i18n.t('errors.invalidTime', { emoji: emoji });
+              fieldText = `${fieldText} @${errorMessage}`;
+            }
+            break;
+          }
+
+          case "duration": {
+            // Duración (modo bloque) de `scheduled` (v1.1.4, ADR-T2): opcional y aditiva.
+            const durationMatch = fieldText.match(scheduledDurationRegex);
+            if (durationMatch) {
+              extractedValue = Number(durationMatch[1]);
+            } else {
+              errorMessage = this.i18n.t('errors.invalidDuration', { emoji: emoji });
               fieldText = `${fieldText} @${errorMessage}`;
             }
             break;
@@ -632,6 +686,21 @@ export class TaskSection {
         } else {
           isValid = false;
           errorMessage = this.i18n.t('errors.invalidCompletion', { emoji: keyLabel });
+        }
+      } else if (property === 'scheduledTime') {
+        if (/^([01]\d|2[0-3]):([0-5]\d)$/.test(value)) {
+          if (!('scheduledTime' in taskData)) taskData.scheduledTime = value;
+        } else {
+          isValid = false;
+          errorMessage = this.i18n.t('errors.invalidTime', { emoji: keyLabel });
+        }
+      } else if (property === 'scheduledDuration') {
+        const durationMatch = value.match(/^(\d+)m?$/);
+        if (durationMatch) {
+          if (!('scheduledDuration' in taskData)) taskData.scheduledDuration = Number(durationMatch[1]);
+        } else {
+          isValid = false;
+          errorMessage = this.i18n.t('errors.invalidDuration', { emoji: keyLabel });
         }
       } else {
         // id y otros campos simples

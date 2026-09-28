@@ -273,15 +273,10 @@ export abstract class BaseView extends ItemView {
       const parser = new DOMParser();
       const doc = parser.parseFromString(String(headerHtml), 'text/html');
 
-      // Transferir cada elemento del body al contenedor usando Fragment
-      // para mejorar el rendimiento
-      const fragment = container.ownerDocument.createDocumentFragment();
+      // Transferir cada elemento del body al contenedor
       Array.from(doc.body.children).forEach(element => {
-        fragment.appendChild(container.ownerDocument.importNode(element, true));
+        container.appendChild(container.ownerDocument.importNode(element, true));
       });
-    
-      // Añadir todos los elementos al contenedor de una vez
-      container.appendChild(fragment);
 
       // Identificar la vista activa y aplicar la clase "active"
       const activeViewType = this.getViewType(); // Obtiene el tipo de vista actual

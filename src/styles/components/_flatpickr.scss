@@ -1,4 +1,24 @@
 // Personalización de Flatpickr calendar con más contraste
+// Carga el CSS base real de la librería (nunca se importaba, por eso el calendario
+// se renderizaba sin tamaños/proporciones al usarlo fuera del modal de tareas).
+@use "../../../node_modules/flatpickr/dist/flatpickr.css";
+
+.oa-flatpickr-hidden-input {
+  position: fixed;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.oa-flatpickr-centered {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translate(-50%, -50%) !important;
+}
 
 .flatpickr-calendar {
   background-color: var(--background-primary);
@@ -95,4 +115,81 @@
   background-color: var(--background-primary) !important;
   border: 1px solid var(--background-modifier-border) !important;
   font-weight: 600;
+}
+
+.flatpickr-calendar.noCalendar {
+  padding: 1.25rem 1.5rem;
+}
+
+.flatpickr-time {
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+
+  .numInputWrapper {
+    flex: initial;
+    width: auto;
+    height: auto;
+
+    input {
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: 8px;
+      background-color: var(--background-secondary);
+      color: var(--text-normal);
+      font-size: 1.3rem;
+      font-weight: 700;
+      text-align: center;
+      border: 1px solid var(--background-modifier-border);
+      transition: all 0.2s ease;
+    }
+
+    input:hover,
+    input:focus {
+      border-color: var(--interactive-accent);
+      background-color: var(--background-primary);
+      outline: none;
+    }
+
+    span.arrowUp,
+    span.arrowDown {
+      opacity: 0;
+      border: none;
+      background-color: transparent;
+      transition: opacity 0.15s ease;
+
+      &:hover {
+        background-color: var(--background-modifier-border);
+      }
+    }
+
+    &:hover span {
+      opacity: 1;
+    }
+  }
+
+  .flatpickr-time-separator {
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    font-weight: 700;
+    align-self: center;
+  }
+
+  .flatpickr-am-pm {
+    height: 2.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.9rem;
+    border-radius: 8px;
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    font-weight: 700;
+    transition: opacity 0.2s ease;
+
+    &:hover,
+    &:focus {
+      opacity: 0.85;
+    }
+  }
 }

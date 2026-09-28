@@ -153,11 +153,9 @@ export class HabitEditorModal extends Modal {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
 
-    const fragment = contentEl.ownerDocument.createDocumentFragment();
     Array.from(doc.body.children).forEach(element => {
-      fragment.appendChild(contentEl.ownerDocument.importNode(element, true));
+      contentEl.appendChild(contentEl.ownerDocument.importNode(element, true));
     });
-    contentEl.appendChild(fragment);
 
     this.attachListeners();
   }
@@ -281,9 +279,8 @@ export class HabitEditorModal extends Modal {
 
   /** Resuelve el color de acento activo del tema a un hex válido para <input type="color"> */
   private resolveAccentColorHex(): string {
-    const probe = this.contentEl.ownerDocument.createElement('span');
+    const probe = this.contentEl.ownerDocument.body.createEl('span');
     probe.setCssStyles({ color: 'var(--interactive-accent)', display: 'none' });
-    this.contentEl.ownerDocument.body.appendChild(probe);
     const rgb = getComputedStyle(probe).color;
     probe.remove();
 
@@ -313,11 +310,8 @@ export class HabitEditorModal extends Modal {
       const options = this.buildSubAreaOptions(areaSelect.value, '');
       subAreaSelect.innerHTML = '';
       options.forEach(option => {
-        const opt = this.contentEl.ownerDocument.createElement('option');
-        opt.value = option.value;
-        opt.textContent = option.label;
+        const opt = subAreaSelect.createEl('option', { value: option.value, text: option.label });
         if (option.selected) opt.selected = true;
-        subAreaSelect.appendChild(opt);
       });
     });
   }
@@ -362,23 +356,18 @@ export class HabitEditorModal extends Modal {
       const trimmed = link.trim();
       if (!trimmed || getChipLinks().includes(trimmed)) return;
 
-      const chip = this.contentEl.ownerDocument.createElement('span');
-      chip.className = 'oa-related-chip';
+      const chip = chipsContainer.createEl('span', { cls: 'oa-related-chip' });
       chip.dataset.link = trimmed;
 
-      const label = this.contentEl.ownerDocument.createElement('span');
-      label.className = 'oa-related-chip__label';
-      label.textContent = trimmed;
-      chip.appendChild(label);
+      chip.createEl('span', { cls: 'oa-related-chip__label', text: trimmed });
 
-      const removeBtn = this.contentEl.ownerDocument.createElement('button');
-      removeBtn.type = 'button';
-      removeBtn.className = 'oa-related-chip__remove';
-      removeBtn.setAttribute('aria-label', this.i18n.t('habit_related_file_remove'));
-      removeBtn.textContent = '×';
-      chip.appendChild(removeBtn);
+      chip.createEl('button', {
+        cls: 'oa-related-chip__remove',
+        type: 'button',
+        text: '×',
+        attr: { 'aria-label': this.i18n.t('habit_related_file_remove') },
+      });
 
-      chipsContainer.appendChild(chip);
       updateHint();
     };
 
@@ -403,9 +392,7 @@ export class HabitEditorModal extends Modal {
       if (matches.length === 0) { hideSuggestions(); return; }
 
       matches.forEach(file => {
-        const li = this.contentEl.ownerDocument.createElement('li');
-        li.className = 'oa-file-suggestion-item';
-        li.textContent = file.path;
+        const li = suggestionsList.createEl('li', { cls: 'oa-file-suggestion-item', text: file.path });
         li.addEventListener('mousedown', (event) => {
           event.preventDefault();
           const sourcePath = this.habit?.file.path ?? `${this.habitManager.getFolderPath()}/untitled.md`;
@@ -413,7 +400,6 @@ export class HabitEditorModal extends Modal {
           input.value = '';
           hideSuggestions();
         });
-        suggestionsList.appendChild(li);
       });
 
       suggestionsList.removeClass('oa-hidden');
@@ -647,7 +633,7 @@ export class HabitEditorModal extends Modal {
   }
 
   private async deleteHabit(file: TFile): Promise<void> {
-    await this.app.vault.delete(file);
+    await this.app.fileManager.trashFile(file);
     await this.habitManager.refreshHabits();
     document.dispatchEvent(new CustomEvent('obsidian-agenda:habits-refresh'));
     this.close();

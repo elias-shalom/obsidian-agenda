@@ -194,7 +194,8 @@ $breakpoints: (
   padding: 4px 6px;
   margin-bottom: 5px;
   display: flex;
-  flex-wrap: wrap;  
+  flex-wrap: nowrap;
+  align-items: center;
   border-left: 8px solid var(--interactive-accent); 
   border-right: 1px color-mix(in srgb,$today-border-color 50%, transparent);
   border-bottom: 1px color-mix(in srgb,$today-border-color 50%, transparent);

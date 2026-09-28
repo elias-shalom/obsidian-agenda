@@ -122,17 +122,37 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [x] Grid/Semanal: los días no programados encerrados dentro de una racha activa ahora se pintan como una línea delgada de conexión en vez de cortar la píldora; un hábito completado en un día que después se quitó de la frecuencia ahora muestra un marcador distintivo (círculo con diagonal roja) en vez de desaparecer visualmente
 - [x] Grid/Semanal: corregido el parpadeo de la forma incorrecta de la píldora durante la espera entre el toggle optimista y el refresco real
 
-## 🎯 Próximas Características (v1.1.3)
+## 🎯 Características (v1.1.3)
+
+### Task Management Views
+- [x] Descripción del hábito: ahora se guarda en el cuerpo de la nota en vez del frontmatter (con compatibilidad hacia notas antiguas)
+- [x] Campo `related` (reemplaza a `relatedFile`): ahora admite múltiples wikilinks; se agregan uno por uno desde el Habit Editor con autocompletado y se muestran como chips removibles debajo del campo
+- [x] Nuevo campo opcional **Sub-área**: combobox poblado con las subcarpetas de 2º/3er nivel del área elegida (ej. `body/salud`); oculto por defecto, activable en Settings ▸ Habits; se muestra debajo del área en las vistas Lista y Rutina cuando está activo
+- [x] Vista Lista de hábitos: orden por defecto cambiado a alfabético por nombre (antes era por prioridad)
+
+### 🐛 Correcciones
+- [x] Corregido: al editar/borrar un hábito, este desaparecía brevemente de las vistas Rutina/Lista hasta recargar (condición de carrera entre el refresco async de la caché y el evento `habits-refresh`)
+- [x] Corregido: `loadSettings()` perdía silenciosamente cualquier ajuste nuevo no incluido en su whitelist manual, reseteándolo a su valor por defecto en cada carga/actualización del plugin; reemplazado por un merge genérico (`{ ...DEFAULT_SETTINGS, ...data }`)
+
+### Documentación
+- [x] README: sección "🆕 News" con lo último de la versión en curso + callout destacado arriba, además de la entrada correspondiente en el Changelog completo
+
+## 🎯 Próximas Características (v1.1.4)
 
 [Google Calendar](https://community.obsidian.md/plugins/google-calendar)
 [Day Planner](https://community.obsidian.md/plugins/obsidian-day-planner)
 [Timelineal](https://timelineal.com/)
 
 ### Core Tasks
-- [ ] Compatibilidad con la programación de tareas según la hora del día [vista por día (hora y día completo)]
-  - [ ] Una forma de agregar la fecha desde el archivo con iconos
-  - [ ] Puede ser con el boton secundario agregar las fechas y demás
-- [ ] Edición de tareas nativas en las vistas de OBS Agenda (abc tarea al calendario)
+- [ ] Compatibilidad con la programación de tareas según la hora del día [vista por día (hora y día completo)] — Fases A, B y C implementadas; ver `docs/agenda-tasks/Modelo de datos.md` §9 (ADR-T1 a T7) y `docs/agenda-tasks/Plan de implementación.md`
+  - [x] `due` siempre día completo (sin hora); `scheduled` es el único campo con hora, en modo punto o modo bloque con duración
+  - [x] Icono de hora (🕐) y de duración (⏱️) ligados por posición al icono de fecha inmediatamente anterior (no rompe compatibilidad con Obsidian Tasks)
+  - [x] Insertar desde el archivo vía comando/atajo (menú nativo) y vía clic derecho (menú contextual sobre la línea), reutilizando `flatpickr` para fechas y un wheel picker propio para la hora
+  - [x] Vista Día: franjas horarias pobladas por `scheduled`; sección "Todo el día" (expandida por defecto) para `due`/`start`; tareas completadas atenuadas u ocultables (`calendarShowCompletedTasks`)
+  - [x] Filtro configurable de qué fechas mostrar (`start`/`due`/`scheduled`) con marca visual distinta por tipo — setting global (Settings ▸ Calendario); el override por vista queda diferido
+  - [x] Vista Semana: mostrar la hora como etiqueta dentro de la cápsula existente (sin rediseñar la grilla)
+  - [x] Edición en el lugar (`TaskWriter.updateTaskLine`) + drag and drop en Mes/Semana/Semana laboral (cambia el día) y en Día (cambia la hora) — Fase D; modo básico/avanzado del Task Modal (toggle "Mostrar opciones avanzadas", preferencia recordada en `localStorage`) — Fase E, implementada para creación; pendiente aplicarla al modal de edición cuando exista
+- [x] Edición de tareas nativas en las vistas de OBS Agenda — clic simple en una tarea del calendario abre el modal de edición (prefilled), doble clic abre el archivo
 - [ ] Creación avanzada de tareas (todas las fechas, id, dependencias, estatus, proyectos, etc)
 
 ### UX Improvements
@@ -141,7 +161,7 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [ ] Diferencia si segun el estado
 
 ### Calendar Enhancements
-- [ ] Calendario Drag and drop de tareas cambiando las fechas
+- [x] Calendario Drag and drop de tareas cambiando las fechas — Mes/Semana/Semana laboral cambian el día, vista Día cambia la hora (arrastrar); redimensionar para cambiar la duración queda diferido (depende de la expansión visual multi-franja, fuera de alcance de v1.1.4)
 - [ ] Agregar date picker navegable por niveles (año → mes → día), abierto desde el encabezado del calendario, que al confirmar/seleccionar lleve la vista a la fecha elegida de forma inmediata.
 
 ### 🐛 Correcciones Pendientes

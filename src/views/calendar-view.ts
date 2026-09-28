@@ -1,4 +1,4 @@
-import { WorkspaceLeaf, Plugin } from 'obsidian';
+import { WorkspaceLeaf, Plugin, Notice } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
 import { ITask, CalendarViewData, AgendaPlugin } from '../types/interfaces';
@@ -6,15 +6,34 @@ import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import Handlebars from 'handlebars';
 import { CalendarViewType } from '../types/enums';
+import { TaskWriter } from '../core/task-writer';
+import { upsertSimpleDate, upsertScheduledDate } from '../core/task-line-fields';
+import { EDIT_TASK_MODAL_TYPE } from '../core/modal-manager';
+
+/** Espera entre un `click` y un posible segundo `click` antes de asumir que no viene un `dblclick` (ms). */
+const TASK_CLICK_DELAY_MS = 250;
 
 export const CALENDAR_VIEW_TYPE = 'calendar-view';
+
+/** Payload transportado por `dataTransfer` durante un drag and drop de tarea (v1.1.4, Fase D). */
+export interface TaskDragPayload {
+  filePath: string;
+  lineNumber: number;
+  calendarDateType: string;
+  scheduledTime: string | null;
+}
+
+/** Tipo de fecha que ancla una tarea a un día del calendario (v1.1.4, ADR-T4 en docs/agenda-tasks). */
+export type CalendarDateType = 'due' | 'start' | 'scheduled';
 
 export abstract class CalendarView extends BaseView {
   protected tasks: ITask[] = []; 
   protected currentDate: DateTime = DateTime.now();
+  protected taskWriter: TaskWriter;
 
   constructor(leaf: WorkspaceLeaf, protected plugin: Plugin, protected i18n: I18n, protected taskManager: TaskManager) {
     super(leaf);
+    this.taskWriter = new TaskWriter(this.app);
   }
 
   // Método que todas las vistas derivadas deben implementar
@@ -83,18 +102,52 @@ export abstract class CalendarView extends BaseView {
   /**
    * Gets tasks for a specific date
    */
-  protected getTasksForDate(date: DateTime): ITask[] {
-    const dayUnit = 'day';
-    return this.tasks.filter(task => {
-      if (!task.date.due) return false;
-      
-      // Convertir a DateTime si es string
-      const taskDate = typeof task.date.due === 'string' 
-        ? DateTime.fromISO(task.date.due) 
-        : task.date.due;
-      
-      return taskDate.hasSame(date, dayUnit);
-    });
+  protected getTasksForDate(date: DateTime): (ITask & { calendarDateType: CalendarDateType })[] {
+    const enabled = this.getCalendarDateSettings();
+    const showCompleted = this.getCalendarShowCompletedTasks();
+    const result: (ITask & { calendarDateType: CalendarDateType })[] = [];
+
+    for (const task of this.tasks) {
+      if (!showCompleted && task.state.status === 'x') continue;
+      const type = this.resolveCalendarAnchor(task, date, enabled);
+      if (type) result.push({ ...task, calendarDateType: type });
+    }
+
+    return result;
+  }
+
+  /** Lee de los settings si las tareas completadas se muestran (atenuadas) u ocultan por completo en el calendario. */
+  protected getCalendarShowCompletedTasks(): boolean {
+    const plugin = this.plugin as AgendaPlugin;
+    return plugin.settings?.calendarShowCompletedTasks ?? true;
+  }
+
+  /** Lee de los settings qué tipos de fecha se muestran en el calendario (ADR-T4). */
+  protected getCalendarDateSettings(): { due: boolean; start: boolean; scheduled: boolean } {
+    const plugin = this.plugin as AgendaPlugin;
+    return {
+      due: plugin.settings?.calendarShowDueDates ?? true,
+      start: plugin.settings?.calendarShowStartDates ?? false,
+      scheduled: plugin.settings?.calendarShowScheduledDates ?? true,
+    };
+  }
+
+  /** Resuelve, con prioridad `scheduled > due > start`, qué tipo de fecha ancla esta tarea al día dado (o null si ninguna aplica). */
+  private resolveCalendarAnchor(
+    task: ITask,
+    date: DateTime,
+    enabled: { due: boolean; start: boolean; scheduled: boolean }
+  ): CalendarDateType | null {
+    const matchesDay = (value: DateTime | string | null): boolean => {
+      if (!value) return false;
+      const dt = typeof value === 'string' ? DateTime.fromISO(value) : value;
+      return dt.isValid && dt.hasSame(date, 'day');
+    };
+
+    if (enabled.scheduled && matchesDay(task.date.scheduled)) return 'scheduled';
+    if (enabled.due && matchesDay(task.date.due)) return 'due';
+    if (enabled.start && matchesDay(task.date.start)) return 'start';
+    return null;
   }
 
   // Métodos de navegación común que cada vista sobrescribirá según necesite
@@ -158,6 +211,9 @@ export abstract class CalendarView extends BaseView {
     Handlebars.registerHelper('equals', function(this: unknown, arg1: unknown, arg2: unknown, options: Handlebars.HelperOptions) {
       return (arg1 === arg2) ? options.fn(this) : options.inverse(this);
     });
+
+    // Helper para saber si una tarea está completada (usado para el atenuado visual, ADR-T6)
+    Handlebars.registerHelper('isTaskDone', (status: unknown) => status === 'x');
 
     Handlebars.registerHelper('toISODate', (date) => {
       if (!date) return '';
@@ -230,9 +286,34 @@ export abstract class CalendarView extends BaseView {
     }
 
   // Event listeners para tareas
-    const taskItems = container.querySelectorAll('.oa-calendar-task');
+    const taskItems = container.querySelectorAll<HTMLElement>('.oa-calendar-task');
     taskItems.forEach(item => {
+      // Clic simple: abre el modal de edición; doble clic: abre el archivo (v1.1.4).
+      // Un doble clic real también dispara dos `click` sueltos antes del `dblclick`, así que
+      // el primer clic espera un poco por si llega un segundo antes de abrir el modal.
+      let pendingClickTimer: number | null = null;
+
       item.addEventListener('click', (e) => {
+        const target = e.currentTarget as HTMLElement;
+        if (pendingClickTimer !== null) return;
+
+        pendingClickTimer = window.setTimeout(() => {
+          pendingClickTimer = null;
+          const filePath = target.getAttribute('data-file-path');
+          const lineNumber = target.getAttribute('data-line-number');
+          if (!filePath || !lineNumber) return;
+
+          const task = this.tasks.find(t => t.file.path === filePath && t.line.number === Number(lineNumber));
+          if (task) this.openEditTaskModal(task);
+        }, TASK_CLICK_DELAY_MS);
+      });
+
+      item.addEventListener('dblclick', (e) => {
+        if (pendingClickTimer !== null) {
+          window.clearTimeout(pendingClickTimer);
+          pendingClickTimer = null;
+        }
+
         const target = e.currentTarget as HTMLElement;
         const filePath = target.getAttribute('data-file-path');
         const lineNumber = target.getAttribute('data-line-number');
@@ -240,6 +321,24 @@ export abstract class CalendarView extends BaseView {
         if (filePath) {
           this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined).catch(console.error);
         }
+      });
+
+      // Drag and drop (v1.1.4, Fase D): el `dragstart` es común a todas las vistas de calendario;
+      // cada vista decide qué hace con el payload al recibir el `drop` (cambiar de día u hora).
+      item.addEventListener('dragstart', (e) => {
+        const payload = {
+          filePath: item.getAttribute('data-file-path') ?? '',
+          lineNumber: item.getAttribute('data-line-number') ?? '',
+          calendarDateType: item.getAttribute('data-date-type') ?? '',
+          scheduledTime: item.getAttribute('data-scheduled-time') ?? '',
+        };
+        e.dataTransfer?.setData('application/json', JSON.stringify(payload));
+        if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+        item.addClass('oa-dragging');
+      });
+
+      item.addEventListener('dragend', () => {
+        item.removeClass('oa-dragging');
       });
     });
 
@@ -257,7 +356,96 @@ export abstract class CalendarView extends BaseView {
         console.debug(`Fecha obtenida del dataset: ${dateStr}`); // Debugging line
         if (dateStr) this.openCreateTaskForDate(dateStr);
       });
+
+      // Drop de una tarea arrastrada: cambia el día del campo de fecha que la ancla
+      // (scheduled > due > start, ADR-T4), preservando hora/duración si aplica (ADR-T2).
+      cell.addEventListener('dragover', (e) => {
+        if (!cell.dataset.date) return;
+        e.preventDefault();
+        cell.addClass('oa-calendar-drop-target');
+      });
+
+      cell.addEventListener('dragleave', () => {
+        cell.removeClass('oa-calendar-drop-target');
+      });
+
+      cell.addEventListener('drop', (e) => {
+        e.preventDefault();
+        cell.removeClass('oa-calendar-drop-target');
+        this.handleTaskDayDrop(e, cell.dataset.date);
+      });
     });
+
+    // Clic en el número de día (Mes/Semana/Semana laboral) navega a la vista Día de esa fecha,
+    // igual que ya hace la vista Año con sus números de día.
+    const dayNumbers = container.querySelectorAll<HTMLElement>(
+      '.oa-calendar-month-day .oa-calendar-month-day-number, ' +
+      '.oa-calendar-week-day-container .oa-calendar-date'
+    );
+
+    dayNumbers.forEach(numberEl => {
+      numberEl.addEventListener('click', (e) => {
+        e.stopPropagation(); // evita conflicto con el dblclick de la celda (crear tarea)
+        const cell = numberEl.closest<HTMLElement>('.oa-calendar-month-day, .oa-calendar-week-day-container');
+        const dateStr = cell?.dataset.date;
+        if (dateStr) this.navigateToDayView(dateStr);
+      });
+    });
+  }
+
+  /** Extrae y valida el payload de un drag de tarea desde `dataTransfer` (o `null` si es inválido). */
+  protected parseTaskDragPayload(event: DragEvent): TaskDragPayload | null {
+    const raw = event.dataTransfer?.getData('application/json');
+    if (!raw) return null;
+
+    try {
+      const parsed = JSON.parse(raw) as { filePath: string; lineNumber: string; calendarDateType: string; scheduledTime: string };
+      const lineNumber = Number(parsed.lineNumber);
+      if (!parsed.filePath || Number.isNaN(lineNumber)) return null;
+
+      return {
+        filePath: parsed.filePath,
+        lineNumber,
+        calendarDateType: parsed.calendarDateType,
+        scheduledTime: parsed.scheduledTime || null,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /** Aplica el drop de una tarea sobre una celda de día: reescribe su línea con la nueva fecha. */
+  private handleTaskDayDrop(event: DragEvent, newIsoDate: string | undefined): void {
+    if (!newIsoDate) return;
+    const payload = this.parseTaskDragPayload(event);
+    if (!payload) return;
+
+    const transform = this.buildDateFieldTransform(payload.calendarDateType, newIsoDate);
+    if (!transform) return;
+
+    this.taskWriter.updateTaskLine(payload.filePath, payload.lineNumber, transform)
+      .then(ok => {
+        if (ok) {
+          this.refreshView().catch(console.error);
+        } else {
+          new Notice(this.i18n.t('task_drag_drop_error'));
+        }
+      })
+      .catch(console.error);
+  }
+
+  /** Construye la transformación de línea correspondiente al tipo de fecha que ancla la tarea. */
+  private buildDateFieldTransform(calendarDateType: string, isoDate: string): ((line: string) => string) | null {
+    switch (calendarDateType) {
+      case 'due':
+        return (line: string) => upsertSimpleDate(line, '📅', isoDate);
+      case 'start':
+        return (line: string) => upsertSimpleDate(line, '🛫', isoDate);
+      case 'scheduled':
+        return (line: string) => upsertScheduledDate(line, isoDate);
+      default:
+        return null;
+    }
   }
 
   private getCalendarViewTypeFromString(viewTypeString: string): CalendarViewType {
@@ -321,7 +509,19 @@ export abstract class CalendarView extends BaseView {
   private openCreateTaskForDate(dateStr: string): void {
     console.debug(`Abriendo modal para crear tarea en fecha ${dateStr}`); // Debugging line
     const plugin = this.plugin as AgendaPlugin;
-    plugin.modalManager.openModal("create-task", { today: dateStr });
+    plugin.modalManager.openModal("create-task", {
+      today: dateStr,
+      onSaved: () => this.refreshView().catch(console.error),
+    });
+  }
+
+  /** Abre el modal de edición para una tarea (clic simple sobre su píldora, v1.1.4). */
+  private openEditTaskModal(task: ITask): void {
+    const plugin = this.plugin as AgendaPlugin;
+    plugin.modalManager.openModal(EDIT_TASK_MODAL_TYPE, {
+      task,
+      onSaved: () => this.refreshView().catch(console.error),
+    });
   }
 
   async onClose(): Promise<void> {

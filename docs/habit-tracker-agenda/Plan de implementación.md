@@ -49,7 +49,8 @@ tags:
 - [x] `habit-editor.ts`: `HabitEditorModal` con formulario (name, description, time **[dial circular]**, area **[select dinámico de carpetas]**, relatedFile **[picker de archivo con autocompletado, igual al modal de tareas; guarda wikilink]**, frequency, priority **[slider]**, daytime, status **[switch]**, maxGap **[slider]**, color **[default = acento del tema]**) — más rico que el spec original; sin campo `title` (se quitó por redundante con `name`); `subArea` fue reemplazado por `relatedFile`.
 - [x] **Crear**: `app.vault.create` de `name.md` en `habitFolderPath` (defaults `frequency: everyday`, `priority: 3`, `status: active`).
 - [ ] Plantilla `habit.md` opcional en el cuerpo — no implementada.
-- [x] **Editar**: `processFrontMatter` preservando `completions`/`entries`; `fileManager.renameFile` si cambia el basename; borrado con confirmación de dos clics.
+- [x] **Editar**: escritura única con `vault.process` que reconstruye un solo bloque frontmatter y preserva `completions`/`entries`; `fileManager.renameFile` si cambia el basename; borrado con confirmación de dos clics.
+- [x] **Corrección**: evitar frontmatter duplicado causado por combinar `processFrontMatter` y `vault.process` en la misma edición; los hábitos afectados se normalizan al volver a editarlos.
 - [x] Validación (unicidad de nombre, clamps) + `Notice` de errores; `obsidian-agenda:habits-refresh` al guardar.
 - [x] Disparadores: comandos `oa-habit-new`/`oa-habit-edit`, botón `+` en el header (las 5 vistas), click en el nombre (Grid/Weekly), doble-clic en fila (Lista/Tabla), botón "Edit habit" (Rutina).
 - [x] SCSS `_habit-form.scss`.

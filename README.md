@@ -132,17 +132,6 @@ See the [full changelog](#changelog) below for older versions.
 
 ---
 
-| View | Screenshot |
-|------|-----------|
-| **Overview Dashboard** | ![Overview](screenshots/Overview-white.png) |
-| **List View** | ![List View](screenshots/ListView-white.png) |
-| **Table View** | ![Table View](screenshots/TableView-white.png) |
-| **Month Calendar** | ![Month View](screenshots/MonthView-white.png) |
-| **Week Calendar** | ![Week View](screenshots/WeekView-white.png) |
-| **Day View** | ![Day View](screenshots/DayView-white.png) |
-
----
-
 ## 📥 Installation
 
 ### From Obsidian Community Plugins (Recommended)
@@ -217,7 +206,9 @@ A quick reference of clicks, double-clicks and drags across the plugin — handy
 |---|---|---|
 | Click | A grid cell or a routine checkbox | Toggles the habit as done/not done for that day (updates instantly, then confirms the write) |
 | Click | A habit's name (Grid/Weekly view) | Opens the **Habit Editor** |
-| Double-click | A habit row (Table view) | Opens the **Habit Editor** |
+| Double-click | A habit's name (Grid/Weekly view) | Opens the habit's underlying note |
+| Click | A habit row (List/Table view) | Opens the **Habit Editor** |
+| Double-click | A habit row (List/Table view) | Opens the habit's underlying note |
 | Click | "Open note" action (Routine view) | Opens the habit's own note |
 | Click | "Open related file" action (Routine/Table view) | Opens the file linked in the habit's related-files field |
 | Click | A column header (Table view) | Sorts by that column |

@@ -1,4 +1,4 @@
-import { App, Modal, Notice, TFile, stringifyYaml } from 'obsidian';
+import { App, Modal, Notice, TFile, parseYaml, stringifyYaml } from 'obsidian';
 import Handlebars from 'handlebars';
 import type { I18n } from '../core/i18n';
 import type { HabitManager } from './habit-manager';
@@ -590,7 +590,13 @@ export class HabitEditorModal extends Modal {
       throw new Error(this.i18n.t('habit_name_exists'));
     }
 
-    await this.app.fileManager.processFrontMatter(habit.file, (fm: Record<string, unknown>) => {
+    await this.app.vault.process(habit.file, content => {
+      const frontmatterMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+      const parsedFrontmatter: unknown = frontmatterMatch ? parseYaml(frontmatterMatch[1]) : {};
+      const fm: Record<string, unknown> = parsedFrontmatter && typeof parsedFrontmatter === 'object'
+        ? { ...(parsedFrontmatter as Record<string, unknown>) }
+        : {};
+
       fm.name = values.name;
       delete fm.description;
       fm.time = values.time;
@@ -617,12 +623,7 @@ export class HabitEditorModal extends Modal {
         delete fm.color;
       }
       // completions/entries no se tocan: se preservan tal cual estaban.
-    });
-
-    await this.app.vault.process(habit.file, content => {
-      const body = content.replace(/^---[\s\S]*?---\s*/, '');
-      const description = values.description ? `${values.description}\n` : '';
-      return `${content.slice(0, content.length - body.length)}${description}`;
+      return `---\n${stringifyYaml(fm)}---\n${values.description ? `${values.description}\n` : ''}`;
     });
 
     if (renaming) {

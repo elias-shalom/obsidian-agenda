@@ -48,7 +48,7 @@ Añadir al plugin **obsidian-agenda** un módulo `src/habits/` con:
 | **Dashboard / Overview** | Métricas: cumplimiento de hoy (crudo y **ponderado por prioridad**), rachas, % por área (string libre, ya no un enum cerrado) y por daytime lado a lado, mini-historial de 30 días con leyendas, y heatmap anual global estilo GitHub. **Es la vista inicial por defecto**. |
 | **Semanal** | Matriz hábito × día de la semana (días no programados atenuados). |
 | **Lista / Tabla** | Catálogo con área (string libre), enlace a archivo relacionado, frecuencia, prioridad, daytime, tiempo y rachas. |
-| **Habit Creator** | **Modal** para **crear/editar** hábitos (nota nueva o actualización de frontmatter) con toda la metadata. |
+| **Habit Creator** | **Modal** para **crear/editar** hábitos (nota nueva o actualización de frontmatter) con toda la metadata; la edición reconstruye un único bloque YAML para evitar frontmatter duplicado. |
 
 La vista **Grid** se basa en la referencia de código abierto **Habit Tracker 21** (`github.com/zincplusplus/habit-tracker`, MIT) replicando su comportamiento en el stack del plugin (TypeScript + Handlebars + luxon + SCSS). Además, un **Habit Creator** (modal) permite crear y editar hábitos sin salir del plugin.
 

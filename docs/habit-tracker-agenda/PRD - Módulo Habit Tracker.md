@@ -134,7 +134,7 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
   - Doble-clic en una fila de la vista **Lista/Tabla** (abre el modal en modo edición).
 - **Campos del formulario**: name (basename), `description`, `time` (dial circular, min), `area` (`<select>` poblado con carpetas raíz del vault + áreas usadas, texto libre), `relatedFile` (picker de archivo con autocompletado y wikilink, idéntico al del modal de tareas), `frequency` (select `everyday/workweek/weekend` o multi-check de días), `priority` (slider 1–5), `daytime` (multi-check `wake up/morning/afternoon/evening/night`), `status` (switch activo/inactivo), `maxGap` (slider 0–14), `color` (color picker, default = acento del tema).
 - **Crear**: valida `name` (sanitizado para filename, **único** en la ruta), genera el frontmatter inicial (defaults `frequency: everyday`, `priority: 3`, `status: active`), crea la nota en `habitFolderPath`. **La plantilla `habit.md` opcional en el cuerpo no está implementada** (pendiente).
-- **Editar**: `processFrontMatter` sobre la nota existente; **preserva `completions` y `entries`**; si cambia el basename → `app.fileManager.renameFile`.
+- **Editar**: una escritura única con `vault.process` reconstruye el frontmatter y la descripción; **preserva `completions` y `entries`**, elimina bloques YAML duplicados existentes y evita combinar `processFrontMatter` con una segunda escritura sobre el mismo archivo; si cambia el basename → `app.fileManager.renameFile`.
 - Al guardar, `HabitManager` invalida el cache y las vistas se refrescan (se reutiliza el flujo de `modify`/refresco global).
 
 ## 5. Requerimientos no funcionales

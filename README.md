@@ -2,11 +2,11 @@
 
 > A comprehensive task management and calendar plugin for Obsidian
 
-[![Release](https://img.shields.io/badge/version-1.1.5-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
+[![Release](https://img.shields.io/badge/version-1.1.6-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Obsidian](https://img.shields.io/badge/Obsidian-0.13.0+-purple.svg)](https://obsidian.md)
 
-> 🆕 **What's New in v1.1.5** — Fixed stale habit data in views after editing: the habit cache now reads frontmatter from the freshly read file instead of relying on Obsidian's asynchronously updated metadata cache. [See details](#news) · [Full changelog](#changelog).
+> 🆕 **What's New in v1.1.6** — Fixed duplicated habit frontmatter during edits and added consistent click/double-click gestures for editing habits and opening their notes from Grid, Weekly and List views. [See details](#news) · [Full changelog](#changelog).
 
 ## Overview
 
@@ -40,7 +40,11 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 
 ## 🆕 News
 
-### v1.1.5 (latest)
+### v1.1.6 (latest)
+- Fixed habit edits that could duplicate the YAML frontmatter block; the editor now performs one atomic write and normalizes affected notes when they are edited again
+- Habit Grid, Weekly and List views now use consistent gestures: single click opens the Habit Editor and double-click opens the habit note
+
+### v1.1.5
 - Fixed a race condition where editing a habit could save the file correctly but leave old values in the Habit Tracker views until a later refresh. The cache now parses frontmatter from the file content it just read.
 
 ### v1.1.4
@@ -284,6 +288,11 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 ---
 
 ## 📋 Changelog
+
+### Version 1.1.6 🐛
+- Fixed duplicated YAML frontmatter when editing a habit by replacing the two-step `processFrontMatter` + `vault.process` flow with one atomic write that parses, updates and reconstructs a single frontmatter block
+- Existing habits affected by duplicated frontmatter are normalized the next time they are edited; `completions` and `entries` remain preserved
+- Habit Grid, Weekly and List views now use consistent gestures: single click opens the Habit Editor and double-click opens the underlying note, with click/double-click disambiguation
 
 ### Version 1.1.5 🐛
 - Fixed stale Habit Tracker data after editing a habit: `HabitManager.refreshCache()` now parses frontmatter from the freshly read file content rather than relying on Obsidian's asynchronously refreshed metadata cache.

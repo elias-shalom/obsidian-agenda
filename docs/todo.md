@@ -163,6 +163,7 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 
 ### 🐛 Correcciones
 - [x] Hábitos: al editar un hábito, la vista podía mostrar brevemente datos desactualizados aunque el archivo ya estuviera correcto en disco — condición de carrera entre `metadataCache` (asincrónico) y nuestra propia escritura; `HabitManager.refreshCache()` ahora parsea el frontmatter YAML directamente del contenido leído con `vault.cachedRead()` en vez de depender de `metadataCache`
+- [x] Hábitos: algunas ediciones podían duplicar el bloque YAML del frontmatter al combinar dos escrituras (`processFrontMatter` + `vault.process`); ahora el editor hace una sola escritura y reconstruye un único bloque, reparando duplicados existentes al editar
 
 ### Infraestructura
 - [x] Pipeline de CI/CD (`📄.github/workflows/release.yml`) para publicar releases de forma reproducible: build desde el tag con `npm ci` (respeta el lockfile), verificación de que el tag coincide con `manifest.json`, y publicación automática del Release con `main.js`/`manifest.json`/`styles.css` — reemplaza el proceso manual anterior

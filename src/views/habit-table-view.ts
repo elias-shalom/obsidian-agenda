@@ -179,9 +179,28 @@ export class HabitTableView extends HabitView {
       const habitPath = row.getAttribute('data-habit-id');
       if (!habitPath) return;
 
-      row.addEventListener('dblclick', () => {
+      let pendingClickTimer: number | null = null;
+
+      row.addEventListener('click', (event) => {
+        if ((event.target as HTMLElement).closest('button, a, input, select')) return;
+        if (pendingClickTimer !== null) return;
+
+        pendingClickTimer = window.setTimeout(() => {
+          pendingClickTimer = null;
+          const habit = this.habits.find(item => item.file.path === habitPath);
+          if (habit) this.habitManager.openEditor(habit);
+        }, 250);
+      });
+
+      row.addEventListener('dblclick', (event) => {
+        if ((event.target as HTMLElement).closest('button, a, input, select')) return;
+        if (pendingClickTimer !== null) {
+          window.clearTimeout(pendingClickTimer);
+          pendingClickTimer = null;
+        }
+
         const habit = this.habits.find(item => item.file.path === habitPath);
-        if (habit) this.habitManager.openEditor(habit);
+        if (habit) this.openTaskFile(habit.file.path).catch(console.error);
       });
     });
 

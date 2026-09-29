@@ -191,11 +191,30 @@ export class HabitWeeklyView extends HabitView {
     });
 
     container.querySelectorAll<HTMLAnchorElement>('.oa-habit-weekly-name-link').forEach(link => {
+      let pendingClickTimer: number | null = null;
+
       link.addEventListener('click', (event) => {
         event.preventDefault();
+        if (pendingClickTimer !== null) return;
+
+        pendingClickTimer = window.setTimeout(() => {
+          pendingClickTimer = null;
+          const rowId = link.getAttribute('data-habit-id');
+          const habit = this.findHabitByRowId(rowId);
+          if (habit) this.habitManager.openEditor(habit);
+        }, 250);
+      });
+
+      link.addEventListener('dblclick', (event) => {
+        event.preventDefault();
+        if (pendingClickTimer !== null) {
+          window.clearTimeout(pendingClickTimer);
+          pendingClickTimer = null;
+        }
+
         const rowId = link.getAttribute('data-habit-id');
         const habit = this.findHabitByRowId(rowId);
-        if (habit) this.habitManager.openEditor(habit);
+        if (habit) this.openTaskFile(habit.file.path).catch(console.error);
       });
     });
   }

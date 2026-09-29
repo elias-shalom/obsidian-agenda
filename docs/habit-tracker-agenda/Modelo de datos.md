@@ -331,6 +331,8 @@ await app.fileManager.processFrontMatter(file, (fm) => {
 });
 ```
 
+> **Nota sobre la edición del hábito**: el modal de edición usa una escritura única con `vault.process` para actualizar frontmatter y descripción juntos. No debe combinar `processFrontMatter` con un `vault.process` posterior sobre el mismo guardado: ese patrón podía duplicar el bloque YAML (`---...---`) y dejar el frontmatter anterior como contenido de la nota. La escritura actual reconstruye un solo bloque y repara duplicados existentes al editar.
+
 - **Grid**: cada hábito se expande en **una fila por `daytime`** (ej. `dog time (morning)`, `dog time (afternoon)`); el clic en cualquiera de esas filas llama `toggleOccurrence(date, esaDaytime)` directo — sin popover, sin ambigüedad. El día del hábito se marca completo (`dayCompleted`, espejo `entries`) solo cuando **todas** sus filas/ocurrencias quedan marcadas (§2.7).
 - No se toca ningún otro campo del frontmatter (preservación de metadata). En una nota **legacy** (sin `completions`), el primer write además **migra** el campo (§5.1).
 - Después de escribir, emitir evento de refresco y permitir que el `modify` listener recargue (guardia anti-bucle).

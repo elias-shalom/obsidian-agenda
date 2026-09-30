@@ -211,8 +211,12 @@ A quick reference of clicks, double-clicks and drags across the plugin — handy
 
 | Gesture | Where | Result |
 |---|---|---|
+| Click | A task row/item (List or Table view) | Opens the **Edit Task** modal, prefilled with that task's data |
 | Double-click | A task row/item | Opens the underlying note, cursor on that line |
-| Click | A column header (Table view) | Sorts by that column (click again to reverse); sorting includes status |
+| Click | A column header (Table view) | Sorts by that column; click again to reverse. Sorting is also keyboard-accessible with Enter or Space |
+| Hover or keyboard focus | A control or widget with a tooltip | Shows a themed tooltip with its explanatory text |
+
+Table filters and search are remembered when you return from editing a task or switch views. Column widths adapt to the rows visible after filtering.
 
 ### 🔥 Habit Tracker
 

@@ -173,7 +173,7 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 ### UX Improvements
 - [x] Habit Grid, Weekly y List: clic simple en el nombre/fila abre el Habit Editor; doble clic abre la nota del hábito
 
-## 🔧 Cambios posteriores a v1.1.6 (en desarrollo, aún no releaseados)
+## 🎯 Características (v1.1.7)
 
 ### Correcciones
 - [x] Habit Tracker: esperar a que termine la carga inicial del cache tras cargar settings para evitar vistas vacías/parciales al arrancar o actualizar
@@ -185,6 +185,25 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [x] Grid/Weekly: badge de daytime uniforme; el toggle por defecto activado controla los hábitos de un solo daytime
 - [x] Grid/Weekly: recordar el último orden por vista; Habit List permite ordenar por estatus
 - [x] Weekly: ocultar visualmente el scrollbar horizontal conservando columnas fijas y desplazamiento
+
+## 🔧 Cambios posteriores a v1.1.7 (en desarrollo, aún no releaseados)
+
+### Calendar Enhancements
+- [ ] Date picker navegable por niveles (año → mes → día), abierto desde el encabezado del calendario; al elegir una fecha, navegar inmediatamente a ella.
+- [ ] redimensionar bloques con duración en la vista por día
+- [ ] nueva vista por horas varios días, semana horaria completa.
+- [ ] manejo de estatus desde el calendario
+
+### Habit Tracker
+- [ ] Refresco automático de la Rutina
+- [ ] las vistas dependientes de la fecha actual a medianoche local, sin requerir interacción ni cambios en el vault.
+
+### UX Improvements
+- [x] Tooltips del dashboard ampliados en los seis idiomas; tooltip visual común para vistas y modal de tareas
+- [x] Mejorado el look and feel de las vistas Lista y Tabla
+- [x] Ordenamiento ascendente/descendente por columnas en la vista de tabla
+- [x] Redimensionado de columnas de la Tabla según las tareas visibles después de aplicar filtros
+- [x] Editar tarea con clic simple en las vistas Lista y Tabla; doble clic sigue abriendo la nota
 
 ## 📊 Próximas Características (v1.x)
 
@@ -221,7 +240,6 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 ### Calendar Enhancements
 - [ ] Calendario. Secciones extra ![vista agenda ](attachments/extra-section.png)
 - [ ] Agregar días feriados de diferentes paises
-- [ ] Agregar date picker navegable por niveles (año → mes → día), abierto desde el encabezado del calendario, que al confirmar/seleccionar lleve la vista a la fecha elegida de forma inmediata.
 
 ### 🐛 Correcciones Pendientes
 - [ ] Ancho de las filas de la tabla en la vista tablas

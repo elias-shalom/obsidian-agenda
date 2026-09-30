@@ -49,11 +49,15 @@ Datos principales que calcula y expone a la plantilla: fecha del panel, contador
 
 Expone a la plantilla: `tasks` (plana), `groupedTasks` (árbol de carpetas), `flattenedTasks` (variante aplanada de un nivel) e `isHierarchicalView`. Helpers propios: `totalTaskCount(folder)` (cuenta recursiva incluidas subcarpetas) y `renderFolderHierarchy(folder, options)` (recorre el árbol para el template).
 
+Interacciones: el botón superior alterna entre jerarquía de carpetas y vista plana; las carpetas se pueden contraer. El clic simple en una tarea abre el modal de edición y el doble clic abre su nota en la línea correspondiente. Las filas usan prioridad y fecha de vencimiento como señales secundarias, sin ocultar la descripción.
+
 ## 3. Table View (`table-view`)
 
 **Icono**: `table`. Rol: tabla ordenable/filtrable de tareas.
 
-Estado interno: `currentSortColumn`, `currentSortDirection` (`'asc' | 'desc'`). Datos expuestos: `tasks`, `uniqueFolders` (para el filtro por carpeta). Helpers: `equals`, `not`, `contains`, `inRange`, `dateTypeIcon` (mapea `TaskDateType` a su emoji). Interacciones: clic en encabezado de columna ordenable (`th.oa-sortable`) dispara reordenamiento; input de búsqueda de texto y dropdowns de filtro reaplican el filtrado en el cliente.
+Estado interno: `currentSortColumn`, `currentSortDirection` (`'asc' | 'desc'`). Datos expuestos: `tasks`, `uniqueFolders` (para el filtro por carpeta). Helpers: `equals`, `not`, `contains`, `inRange`, `dateTypeIcon` (mapea `TaskDateType` a su emoji). Interacciones: los encabezados ordenables (`th.oa-sortable`) cambian el orden ascendente/descendente con clic o con Enter/Espacio; el encabezado activo expone `aria-sort`. Búsqueda y filtros de prioridad, estado, carpeta y fecha se aplican en el cliente.
+
+El estado de búsqueda, filtros y orden se guarda en el almacenamiento local de Obsidian y se restaura al volver a la vista, incluso después de editar una tarea. Las anchuras de las columnas se recalculan según el contenido de las filas visibles, con límites para evitar columnas desproporcionadas; en pantallas estrechas se conserva el desplazamiento horizontal. La presentación usa filas alternas sutiles, estados y prioridades diferenciados, fechas agrupadas y etiquetas compactas.
 
 ## 4. Calendar View (abstracta, `calendar-view.ts`)
 
@@ -147,3 +151,7 @@ Iteraciones puntuales de "look and feel" a pedido del usuario, tras las revision
 - **Botones de campo (fecha/hora/duración) sin contorno**: mismo tratamiento — sin outline/box-shadow visibles, mimetizados con el fondo del modal.
 - **Toggle "More fields"**: el caret pasó del lado derecho al izquierdo del texto y se agrandó (`font-size: 1.3rem`).
 - **Botón ✕ del encabezado eliminado**: ver nota en §7.2 — Obsidian ya provee su propio botón de cierre nativo en el `Modal`, hacía el custom redundante.
+
+## 8. Tooltips del plugin
+
+Las vistas renderizadas por `BaseView` y el modal de tareas convierten sus atributos `title` en tooltips propios del plugin. Se muestran al pasar el puntero o enfocar con teclado, incluyen una tarjeta temática con flecha y texto explicativo, y no modifican los tooltips del resto de Obsidian. La relación con el control se expone mediante `aria-describedby`; no incluyen acciones ni botones.

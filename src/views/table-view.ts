@@ -5,13 +5,27 @@ import { ITask, TableViewData, AgendaPlugin } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import Handlebars from 'handlebars';
 import { TaskDateType } from '../types/enums';
+import { EDIT_TASK_MODAL_TYPE } from '../core/modal-manager';
+
+const TASK_CLICK_DELAY_MS = 250;
+const TABLE_VIEW_STATE_KEY = 'obsidian-agenda-task-table-state';
+
+interface TaskTableViewState {
+  search: string;
+  priority: string;
+  status: string;
+  folder: string;
+  due: string;
+  sortColumn: string;
+  sortDirection: 'asc' | 'desc';
+}
 
 export const TABLE_VIEW_TYPE = 'table-view';
 
 export class TableView extends BaseView {
   private tasks: ITask[] = []; // Lista de tareas
-  private currentSortColumn: string = ''; // Columna actualmente ordenada
-  private currentSortDirection: 'asc' | 'desc' = 'asc'; // Dirección de la ordenación
+  private currentSortColumn = 'priority'; // Columna actualmente ordenada
+  private currentSortDirection: 'asc' | 'desc' = 'desc'; // Dirección de la ordenación
 
   constructor(leaf: WorkspaceLeaf, private plugin: Plugin, private i18n: I18n, private taskManager: TaskManager) {
     super(leaf);
@@ -66,33 +80,33 @@ export class TableView extends BaseView {
   }
 
   protected setupViewSpecificEventListeners(container: HTMLElement, _data: TableViewData): void {
+    this.restoreTableState(container);
+
     // Implementar los event listeners para la tabla aquí
     // Por ejemplo: ordenación, filtrado, paginación, etc.
     
     // Listener para ordenar columnas
     const sortableHeaders = container.querySelectorAll('th.oa-sortable');
     sortableHeaders.forEach(header => {
+      header.setAttribute('tabindex', '0');
       header.addEventListener('click', () => {
+        this.handleColumnSort(header as HTMLElement);
+      });
+      header.addEventListener('keydown', (event) => {
+        if (!(event instanceof KeyboardEvent) || (event.key !== 'Enter' && event.key !== ' ')) return;
+        event.preventDefault();
         this.handleColumnSort(header as HTMLElement);
       });
     });
   
-    // Establecer ordenación inicial (opcional)
-    // Por ejemplo, ordenar por prioridad de forma descendente por defecto
-    const initialSortHeader = container.querySelector('th[data-sort="priority"]');
-    if (initialSortHeader) {
-      this.handleColumnSort(initialSortHeader as HTMLElement);
-      // Llamar una segunda vez para ordenar descendente (tareas más importantes primero)
-      this.handleColumnSort(initialSortHeader as HTMLElement);
-    }
-    
     // Listener para el filtro de búsqueda
     const searchInput = container.querySelector('#oa-table-search-input') as HTMLInputElement;
-    if (searchInput) {
-      searchInput.addEventListener('input', () => {
-        this.filterTasks(container);
-      });
-    }
+    const searchClearButton = container.querySelector('#oa-table-search-clear') as HTMLButtonElement;
+    searchClearButton?.classList.toggle('oa-visible', Boolean(searchInput?.value));
+    searchInput?.addEventListener('input', () => {
+      searchClearButton?.classList.toggle('oa-visible', Boolean(searchInput.value));
+      this.filterTasks(container);
+    });
     
     // Listener para los filtros de dropdown
     const filterDropdowns = container.querySelectorAll('.oa-table-filter-dropdown');
@@ -102,20 +116,7 @@ export class TableView extends BaseView {
       });
     });
 
-    // Configurar el botón de limpiar búsqueda
-    const searchClearButton = container.querySelector('#oa-table-search-clear') as HTMLButtonElement;
-
     if (searchInput && searchClearButton) {
-      // Mostrar/ocultar botón según el contenido
-      searchInput.addEventListener('input', () => {
-        if (searchInput.value) {
-          searchClearButton.classList.add('oa-visible');
-        } else {
-          searchClearButton.classList.remove('oa-visible');
-        }
-        this.filterTasks(container);
-      });
-      
       // Limpiar el campo de búsqueda al hacer clic en el botón
       searchClearButton.addEventListener('click', () => {
         searchInput.value = '';
@@ -137,9 +138,15 @@ export class TableView extends BaseView {
     tableRows.forEach(row => {
       // Añadir indicador visual
       row.addClass('clickable');
+      let pendingClickTimer: number | null = null;
       
       // Evento de doble clic para abrir el archivo
-      row.addEventListener('dblclick', (_event) => {
+      row.addEventListener('dblclick', () => {
+        if (pendingClickTimer !== null) {
+          window.clearTimeout(pendingClickTimer);
+          pendingClickTimer = null;
+        }
+
         const filePath = row.getAttribute('data-file-path');
         const lineNumber = row.getAttribute('data-line-number');
         
@@ -147,10 +154,82 @@ export class TableView extends BaseView {
           this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined).catch(console.error);
         }
       });
+
+      row.addEventListener('click', (event) => {
+        if ((event.target as HTMLElement).closest('button, a, input, select')) return;
+        if (pendingClickTimer !== null) return;
+
+        pendingClickTimer = window.setTimeout(() => {
+          pendingClickTimer = null;
+          const filePath = row.getAttribute('data-file-path');
+          const lineNumber = row.getAttribute('data-line-number');
+          const task = this.tasks.find(candidate =>
+            candidate.file.path === filePath && candidate.line.number === Number(lineNumber)
+          );
+          if (task) this.openEditTaskModal(task);
+        }, TASK_CLICK_DELAY_MS);
+      });
     });
 
-    // Inicializar la numeración de filas al cargar la vista
+    this.applyCurrentSort(container);
     this.filterTasks(container);
+  }
+
+  private restoreTableState(container: HTMLElement): void {
+    const savedState = this.app.loadLocalStorage(TABLE_VIEW_STATE_KEY) as string | null;
+    if (!savedState) return;
+
+    try {
+      const state = JSON.parse(savedState) as Partial<TaskTableViewState>;
+      const searchInput = container.querySelector<HTMLInputElement>('#oa-table-search-input');
+      if (typeof state.search === 'string' && searchInput) searchInput.value = state.search;
+
+      const selectValues: Array<[string, string | undefined]> = [
+        ['#oa-table-priority-filter', state.priority],
+        ['#oa-table-status-filter', state.status],
+        ['#oa-table-folder-filter', state.folder],
+        ['#oa-table-due-filter', state.due],
+      ];
+      for (const [selector, value] of selectValues) {
+        const select = container.querySelector<HTMLSelectElement>(selector);
+        if (select && typeof value === 'string' && Array.from(select.options).some(option => option.value === value)) {
+          select.value = value;
+        }
+      }
+
+      const sortableColumns = ['priority', 'status', 'description', 'folder', 'file', 'due', 'tags'];
+      if (state.sortColumn && sortableColumns.includes(state.sortColumn) &&
+          (state.sortDirection === 'asc' || state.sortDirection === 'desc')) {
+        this.currentSortColumn = state.sortColumn;
+        this.currentSortDirection = state.sortDirection;
+      }
+    } catch (error) {
+      console.error('Error al cargar el estado de la tabla de tareas:', error);
+    }
+  }
+
+  private saveTableState(container: HTMLElement): void {
+    const getValue = (selector: string): string =>
+      container.querySelector<HTMLInputElement | HTMLSelectElement>(selector)?.value || '';
+
+    const state: TaskTableViewState = {
+      search: getValue('#oa-table-search-input'),
+      priority: getValue('#oa-table-priority-filter'),
+      status: getValue('#oa-table-status-filter'),
+      folder: getValue('#oa-table-folder-filter'),
+      due: getValue('#oa-table-due-filter'),
+      sortColumn: this.currentSortColumn,
+      sortDirection: this.currentSortDirection,
+    };
+    this.app.saveLocalStorage(TABLE_VIEW_STATE_KEY, JSON.stringify(state));
+  }
+
+  private openEditTaskModal(task: ITask): void {
+    const plugin = this.plugin as AgendaPlugin;
+    plugin.modalManager.openModal(EDIT_TASK_MODAL_TYPE, {
+      task,
+      onSaved: () => this.onOpen().catch(console.error),
+    });
   }
 
   /**
@@ -363,6 +442,50 @@ export class TableView extends BaseView {
         emptyMessage.classList.remove('oa-visible');
       }
     }
+
+    this.saveTableState(container);
+    this.resizeColumns(container);
+  }
+
+  private resizeColumns(container: HTMLElement): void {
+    const table = container.querySelector<HTMLTableElement>('.oa-tasks-table');
+    if (!table) return;
+
+    const canvas = container.createEl('canvas');
+    const context = canvas.getContext('2d');
+    canvas.remove();
+    if (!context) return;
+
+    const headers = Array.from(table.querySelectorAll<HTMLTableCellElement>('thead th'));
+    const visibleRows = Array.from(table.querySelectorAll<HTMLTableRowElement>('tbody tr.oa-task-row:not(.oa-hidden)'));
+    const allRows = Array.from(table.querySelectorAll<HTMLTableRowElement>('tbody tr.oa-task-row'));
+    const limits = [
+      { min: 44, max: 64 },
+      { min: 48, max: 76 },
+      { min: 48, max: 76 },
+      { min: 200, max: 440 },
+      { min: 100, max: 280 },
+      { min: 120, max: 300 },
+      { min: 150, max: 300 },
+      { min: 96, max: 280 },
+    ];
+
+    headers.forEach((header, columnIndex) => {
+      const { min, max } = limits[columnIndex] || { min: 80, max: 280 };
+      let measuredWidth = 0;
+      const cells = [header, ...visibleRows.map(row => row.cells.item(columnIndex)).filter((cell): cell is HTMLTableCellElement => cell !== null)];
+
+      for (const cell of cells) {
+        context.font = window.getComputedStyle(cell).font;
+        const text = (cell.textContent || '').trim().replace(/\s+/g, ' ');
+        measuredWidth = Math.max(measuredWidth, context.measureText(text).width);
+        if (measuredWidth >= max - 28) break;
+      }
+
+      const width = Math.ceil(Math.min(max, Math.max(min, measuredWidth + 28)));
+      const columnCells = [header, ...allRows.map(row => row.cells.item(columnIndex)).filter((cell): cell is HTMLTableCellElement => cell !== null)];
+      columnCells.forEach(cell => cell.setCssStyles({ width: `${width}px`, minWidth: `${width}px` }));
+    });
   }
 
   private handleColumnSort(header: HTMLElement): void {
@@ -379,7 +502,7 @@ export class TableView extends BaseView {
       this.currentSortDirection = 'asc';
     }
     
-    const container = header.closest('.table-view-container');
+    const container = header.closest('.oa-table-view-container');
     if (!container) return;
     
     // Actualizar indicadores visuales de ordenación
@@ -404,16 +527,31 @@ export class TableView extends BaseView {
     this.filterTasks(container as HTMLElement);
   }
 
+  private applyCurrentSort(container: HTMLElement): void {
+    this.updateSortIndicators(container);
+    const tableBody = container.querySelector('tbody');
+    if (!tableBody) return;
+
+    const rows = Array.from(tableBody.querySelectorAll('tr.oa-task-row'));
+    const sortedRows = this.sortRows(rows, this.currentSortColumn, this.currentSortDirection);
+    sortedRows.forEach(row => tableBody.appendChild(row));
+  }
+
   private updateSortIndicators(container: Element): void {
     // Eliminar indicadores existentes
     const allSortIndicators = container.querySelectorAll('.oa-sort-indicator');
     allSortIndicators.forEach(indicator => {
       indicator.classList.remove('oa-sort-asc', 'oa-sort-desc');
     });
+
+    container.querySelectorAll('th[data-sort]').forEach(header => {
+      header.setAttribute('aria-sort', 'none');
+    });
     
     // Añadir indicador a la columna activa
     const activeHeader = container.querySelector(`[data-sort="${this.currentSortColumn}"]`);
     if (activeHeader) {
+      activeHeader.setAttribute('aria-sort', this.currentSortDirection === 'asc' ? 'ascending' : 'descending');
       const indicator = activeHeader.querySelector('.oa-sort-indicator');
       if (indicator) {
         indicator.classList.add(this.currentSortDirection === 'asc' ? 'oa-sort-asc' : 'oa-sort-desc');
@@ -422,6 +560,17 @@ export class TableView extends BaseView {
   }
 
   private sortRows(rows: Element[], sortBy: string, direction: 'asc' | 'desc'): Element[] {
+    const tasksByRow = new Map(
+      this.tasks.map(task => [`${task.file.path}\u0000${task.line.number}`, task])
+    );
+    const getTaskForRow = (row: Element): ITask | undefined => {
+      const filePath = row.getAttribute('data-file-path');
+      const lineNumber = row.getAttribute('data-line-number');
+      return filePath && lineNumber
+        ? tasksByRow.get(`${filePath}\u0000${Number(lineNumber)}`)
+        : undefined;
+    };
+
     return [...rows].sort((a, b) => {
       let valueA: string | number;
       let valueB: string | number;
@@ -477,22 +626,10 @@ export class TableView extends BaseView {
           break;
           
         case 'due': {
-          // Para fechas, buscamos primero la fecha de vencimiento
-          const dueDateElementA = a.querySelector('.task-date.due-date .date-text');
-          const dueDateElementB = b.querySelector('.task-date.due-date .date-text');
-          
-          // Si hay fecha de vencimiento, la usamos; si no, usamos un valor extremo
-          if (dueDateElementA) {
-            valueA = new Date(dueDateElementA.textContent || '').getTime();
-          } else {
-            valueA = direction === 'asc' ? Number.MAX_SAFE_INTEGER : 0;
-          }
-          
-          if (dueDateElementB) {
-            valueB = new Date(dueDateElementB.textContent || '').getTime();
-          } else {
-            valueB = direction === 'asc' ? Number.MAX_SAFE_INTEGER : 0;
-          }
+          const dueDateA = getTaskForRow(a)?.date.due;
+          const dueDateB = getTaskForRow(b)?.date.due;
+          valueA = dueDateA?.toMillis() ?? (direction === 'asc' ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER);
+          valueB = dueDateB?.toMillis() ?? (direction === 'asc' ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER);
           break;
         }
         case 'tags':

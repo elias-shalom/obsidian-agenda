@@ -8,6 +8,7 @@ import { ModalType, ModalOptions, ITask } from "../types/interfaces";
 import { TaskWriter } from "../core/task-writer";
 import { TaskTimePickerModal } from "./task-time-picker-modal";
 import { TaskDurationModal } from "./task-duration-modal";
+import { clearTooltips, installTooltips } from "../core/tooltips";
 import flatpickr from 'flatpickr';
 //import { es } from 'flatpickr/dist/l10n/es';
 //import 'flatpickr/dist/flatpickr.css';
@@ -49,6 +50,7 @@ export class TaskModal extends Modal {
 
   private async initializeModal(): Promise<void> {
     const { contentEl } = this;
+    clearTooltips(contentEl);
     contentEl.empty();
     contentEl.addClass("oa-task-modal");
 
@@ -56,6 +58,7 @@ export class TaskModal extends Modal {
 
     // Reutiliza la misma plantilla para crear y editar; solo cambian los valores prefilled.
     await this.renderModal("create-task-modal", this.buildTemplateData(editingTask));
+    installTooltips(contentEl);
 
     this.attachModalListeners();
   }
@@ -119,6 +122,7 @@ export class TaskModal extends Modal {
   }
 
   onClose(): void {
+    clearTooltips(this.contentEl);
     this.contentEl.empty();
   }
 

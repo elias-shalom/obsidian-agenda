@@ -7,6 +7,7 @@ import { TaskPriorityEmoji } from '../types/enums';
 // @ts-ignore: Plugin de esbuild maneja los archivos .hbs
 import headerTemplate from './templates/header.hbs';
 import { AgendaPluginSettings } from '../settings/settings';
+import { clearTooltips, installTooltips } from '../core/tooltips';
 
 // Type declaration for handlebars template
 type HandlebarsTemplate = (data: ViewData) => string;
@@ -549,6 +550,7 @@ protected attachEventTabs(container: HTMLElement, plugin: AgendaPlugin, leaf: Wo
   protected async render(viewType: string, data: ViewData, i18n: I18n, plugin: AgendaPlugin, leaf: WorkspaceLeaf): Promise<void> {
     console.debug(`Dibuja vista: ${viewType}`); // Debugging line
     const container = this.containerEl.children[1] as HTMLElement;
+    clearTooltips(container);
     container.empty(); // Limpia el contenido previo
 
     // Crear estructura con header fijo y contenido con scroll
@@ -570,6 +572,7 @@ protected attachEventTabs(container: HTMLElement, plugin: AgendaPlugin, leaf: Wo
       
       // Renderizar contenido (asíncrono)
       await this.renderTemplate(contentContainer, viewType, data);
+      installTooltips(container);
       
       // Agregar eventos a los botones
       this.attachEventTabs(headerContainer, plugin, leaf);

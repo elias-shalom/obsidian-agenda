@@ -2,11 +2,11 @@
 
 > A comprehensive task management and calendar plugin for Obsidian
 
-[![Release](https://img.shields.io/badge/version-1.1.6-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
+[![Release](https://img.shields.io/badge/version-1.1.8-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Obsidian](https://img.shields.io/badge/Obsidian-0.13.0+-purple.svg)](https://obsidian.md)
 
-> 🆕 **What's New in v1.1.7** — More reliable Habit Tracker startup and editing, occurrence-aware Dashboard percentages, collapsible Routine groups, consistent daytime labels and remembered sorting in Grid/Weekly, plus improved habit gestures. [See details](#news) · [Full changelog](#changelog).
+> 🆕 **What's New in v1.1.8** — Refined List and Table views, persistent Table filters and sorting, adaptive column widths, and accessible themed tooltips with expanded Dashboard explanations in six languages. [See details](#news) · [Full changelog](#changelog).
 
 ## Overview
 
@@ -40,7 +40,14 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 
 ## 🆕 News
 
-### v1.1.7 (latest)
+### v1.1.8 (latest)
+- Refreshed the List view with compact task rows, clearer folder hierarchy, priority cues, and improved selection feedback
+- Refreshed the Table view with clearer filters, denser rows, visible status/priority cues, and compact date/tag styling
+- Table search, filters and sort order are remembered when returning from task editing or switching views; column widths adapt to the filtered rows
+- Sortable Table headers support mouse and keyboard interaction
+- Added consistent themed tooltips across plugin views and task modals, with clearer Dashboard metric/list descriptions in all six supported languages
+
+### v1.1.7 
 - Fixed Habit Tracker startup after plugin updates: views wait for the initial habit cache to finish loading after saved settings are available
 - Fixed habit edits that could duplicate the YAML frontmatter block; the editor now performs one write and normalizes affected notes when they are edited again
 - Dashboard area/daytime percentages now count completed occurrences individually, so a completed morning occurrence counts while an afternoon occurrence remains pending
@@ -211,8 +218,12 @@ A quick reference of clicks, double-clicks and drags across the plugin — handy
 
 | Gesture | Where | Result |
 |---|---|---|
+| Click | A task row/item (List or Table view) | Opens the **Edit Task** modal, prefilled with that task's data |
 | Double-click | A task row/item | Opens the underlying note, cursor on that line |
-| Click | A column header (Table view) | Sorts by that column (click again to reverse); sorting includes status |
+| Click | A column header (Table view) | Sorts by that column; click again to reverse. Sorting is also keyboard-accessible with Enter or Space |
+| Hover or keyboard focus | A control or widget with a tooltip | Shows a themed tooltip with its explanatory text |
+
+Table filters and search are remembered when you return from editing a task or switch views. Column widths adapt to the rows visible after filtering.
 
 ### 🔥 Habit Tracker
 
@@ -300,6 +311,12 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 ---
 
 ## 📋 Changelog
+
+### Version 1.1.8 (upcoming, not released)
+- Refined the task List view with compact rows, clearer folder hierarchy, priority cues, and a stable margin across flat/hierarchical modes
+- Refined the task Table view: corrected control styling, improved filter/search layout, status and priority cues, date grouping, and responsive horizontal scrolling
+- Added accessible Table sorting by keyboard, persistent search/filter/sort state, and column widths adapted to visible filtered content
+- Added a reusable themed tooltip component for plugin views and task modals; expanded task-dashboard widget explanations in English, Spanish, German, French, Italian, and Portuguese
 
 ### Version 1.1.7 🐛
 - Habit views now wait for the initial cache load after saved settings are ready, preventing empty/partial views after startup or plugin updates

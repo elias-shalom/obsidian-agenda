@@ -4,6 +4,9 @@ import { TaskManager } from '../core/task-manager';
 import { ITask, FolderNode, ListViewData, AgendaPlugin } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import Handlebars from 'handlebars';
+import { EDIT_TASK_MODAL_TYPE } from '../core/modal-manager';
+
+const TASK_CLICK_DELAY_MS = 250;
 
 export const LIST_VIEW_TYPE = 'list-view';
 
@@ -123,9 +126,15 @@ export class ListView extends BaseView {
     taskItems.forEach(item => {
       // Añadir indicador visual
       item.addClass('clickable');
+      let pendingClickTimer: number | null = null;
 
       // Evento de doble clic para abrir el archivo
-      item.addEventListener('dblclick', (_event) => {
+      item.addEventListener('dblclick', () => {
+        if (pendingClickTimer !== null) {
+          window.clearTimeout(pendingClickTimer);
+          pendingClickTimer = null;
+        }
+
         const filePath = item.getAttribute('data-file-path');
         const lineNumber = item.getAttribute('data-line-number');
 
@@ -134,8 +143,9 @@ export class ListView extends BaseView {
         }
       });
 
-      // Evento ADICIONAL para ListView - clic simple para seleccionar
-      item.addEventListener('click', (_event) => {
+      item.addEventListener('click', (event) => {
+        if ((event.target as HTMLElement).closest('button, a, input, select')) return;
+
         // Remover selección previa
         container.querySelectorAll('.oa-task-item.selected').forEach(el => {
           el.removeClass('selected');
@@ -144,9 +154,26 @@ export class ListView extends BaseView {
         // Marcar como seleccionada
         item.addClass('selected');
 
+        if (pendingClickTimer !== null) return;
+        pendingClickTimer = window.setTimeout(() => {
+          pendingClickTimer = null;
+          const filePath = item.getAttribute('data-file-path');
+          const lineNumber = item.getAttribute('data-line-number');
+          const task = this.tasks.find(candidate =>
+            candidate.file.path === filePath && candidate.line.number === Number(lineNumber)
+          );
+          if (task) this.openEditTaskModal(task);
+        }, TASK_CLICK_DELAY_MS);
       });
     });
 
+  }
+
+  private openEditTaskModal(task: ITask): void {
+    this.plugin.modalManager.openModal(EDIT_TASK_MODAL_TYPE, {
+      task,
+      onSaved: () => this.onOpen().catch(console.error),
+    });
   }
 
   /**

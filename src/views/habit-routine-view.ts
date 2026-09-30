@@ -253,6 +253,24 @@ export class HabitRoutineView extends HabitView {
       }
     });
 
+    container.querySelectorAll<HTMLElement>('.oa-habit-routine-section').forEach(section => {
+      const groupKey = section.getAttribute('data-group-key');
+      const toggle = section.querySelector<HTMLButtonElement>('.oa-habit-routine-section-header');
+      if (!groupKey || !toggle) return;
+
+      const storageKey = `oa_habit_routine_collapsed:${this.groupBy}:${groupKey}`;
+      const isCollapsed = this.app.loadLocalStorage(storageKey) === 'true';
+      section.toggleClass('oa-collapsed', isCollapsed);
+      toggle.setAttribute('aria-expanded', String(!isCollapsed));
+
+      toggle.addEventListener('click', () => {
+        const nextCollapsed = !section.hasClass('oa-collapsed');
+        section.toggleClass('oa-collapsed', nextCollapsed);
+        toggle.setAttribute('aria-expanded', String(!nextCollapsed));
+        this.app.saveLocalStorage(storageKey, String(nextCollapsed));
+      });
+    });
+
     container.querySelectorAll<HTMLButtonElement>('.oa-habit-routine-checkbox:not([disabled])').forEach(button => {
       button.addEventListener('click', () => {
         const rowId = button.getAttribute('data-habit-id');

@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Obsidian](https://img.shields.io/badge/Obsidian-0.13.0+-purple.svg)](https://obsidian.md)
 
-> 🆕 **What's New in v1.1.6** — Fixed duplicated habit frontmatter during edits and added consistent click/double-click gestures for editing habits and opening their notes from Grid, Weekly and List views. [See details](#news) · [Full changelog](#changelog).
+> 🆕 **What's New in v1.1.7** — More reliable Habit Tracker startup and editing, occurrence-aware Dashboard percentages, collapsible Routine groups, consistent daytime labels and remembered sorting in Grid/Weekly, plus improved habit gestures. [See details](#news) · [Full changelog](#changelog).
 
 ## Overview
 
@@ -40,7 +40,17 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 
 ## 🆕 News
 
-### v1.1.6 (latest)
+### v1.1.7 (latest)
+- Fixed Habit Tracker startup after plugin updates: views wait for the initial habit cache to finish loading after saved settings are available
+- Fixed habit edits that could duplicate the YAML frontmatter block; the editor now performs one write and normalizes affected notes when they are edited again
+- Dashboard area/daytime percentages now count completed occurrences individually, so a completed morning occurrence counts while an afternoon occurrence remains pending
+- Grid and Weekly show a consistent daytime badge beside every multi-daytime row; a setting (on by default) controls the badge for single-daytime habits
+- Grid and Weekly remember their last selected sort order; the Habit List status column is sortable
+- Routine groups can be collapsed independently, and each group's collapsed state is remembered
+- Habit names use consistent gestures: single-click opens the Habit Editor and double-click opens the note in Grid, Weekly and List
+- Known area names such as `daily plan` are normalized to their palette key (`daily-plan`) when resolving area colors
+
+### v1.1.6 
 - Fixed habit edits that could duplicate the YAML frontmatter block; the editor now performs one atomic write and normalizes affected notes when they are edited again
 - Habit Grid, Weekly and List views now use consistent gestures: single click opens the Habit Editor and double-click opens the habit note
 
@@ -202,13 +212,14 @@ A quick reference of clicks, double-clicks and drags across the plugin — handy
 | Gesture | Where | Result |
 |---|---|---|
 | Double-click | A task row/item | Opens the underlying note, cursor on that line |
-| Click | A column header (Table view) | Sorts by that column (click again to reverse) |
+| Click | A column header (Table view) | Sorts by that column (click again to reverse); sorting includes status |
 
 ### 🔥 Habit Tracker
 
 | Gesture | Where | Result |
 |---|---|---|
 | Click | A grid cell or a routine checkbox | Toggles the habit as done/not done for that day (updates instantly, then confirms the write) |
+| Click | A group header (Routine view) | Collapses or expands that group; its state is remembered |
 | Click | A habit's name (Grid/Weekly view) | Opens the **Habit Editor** |
 | Double-click | A habit's name (Grid/Weekly view) | Opens the habit's underlying note |
 | Click | A habit row (List/Table view) | Opens the **Habit Editor** |
@@ -280,6 +291,7 @@ The plugin recognizes and properly handles all standard Obsidian Tasks metadata,
 - **Habit Folder Path** - Vault folder scanned (recursively) for habit notes
 - **Days to Show** - Number of columns/days rendered in the Grid and history charts
 - **Show Streaks** - Toggle streak indicators and counts
+- **Show daytime for single-daytime habits** - Show a small localized daytime badge beside the habit name in Grid and Weekly (on by default; multi-daytime rows always show the badge)
 - **Default Max Gap** - Default tolerance (in days) before a streak breaks
 - **Tab Visibility** - Show/hide each habit view (Grid, Routine, Dashboard, Weekly, Table) independently
 
@@ -288,6 +300,16 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 ---
 
 ## 📋 Changelog
+
+### Version 1.1.7 🐛
+- Habit views now wait for the initial cache load after saved settings are ready, preventing empty/partial views after startup or plugin updates
+- Fixed duplicated YAML frontmatter when editing a habit by replacing the two-step `processFrontMatter` + `vault.process` flow with one write that reconstructs a single block; existing duplicates are repaired on the next edit, preserving `completions` and `entries`
+- Dashboard percentages by area/daytime count completed occurrences individually; a completed morning occurrence counts even if afternoon is still pending
+- Grid and Weekly use the same localized daytime badge for occurrence rows; `habitShowSingleDaytimeLabel` controls the badge for single-daytime habits (default on)
+- Grid and Weekly remember their last selected sort order; the Habit List status column is sortable
+- Routine groups can be collapsed independently, with each group's state remembered
+- Habit Grid, Weekly and List use consistent gestures: single-click opens the Habit Editor and double-click opens the underlying note
+- Area palette lookup normalizes folder names (for example, `daily plan` matches `daily-plan`)
 
 ### Version 1.1.6 🐛
 - Fixed duplicated YAML frontmatter when editing a habit by replacing the two-step `processFrontMatter` + `vault.process` flow with one atomic write that parses, updates and reconstructs a single frontmatter block

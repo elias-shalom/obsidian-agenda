@@ -55,8 +55,9 @@ export abstract class HabitView extends BaseView {
 
   async onOpen(): Promise<void> {
     this.showLoadingOverlay(6, true);
-    this.habits = this.loadHabits();
     document.addEventListener('obsidian-agenda:habits-refresh', this.handleHabitsRefresh);
+    await this.habitManager.waitForInitialCache();
+    this.habits = this.loadHabits();
     await this.refreshHabitView();
   }
 

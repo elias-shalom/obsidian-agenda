@@ -239,6 +239,8 @@
   "habit_folder_path_desc": "Path to the folder containing habit notes (default: daily plan/daily routine/habit)",
   "habit_days_to_show": "Days to show in grid",
   "habit_show_streaks": "Show streaks",
+  "habit_show_single_daytime_label": "Show daytime for single-daytime habits",
+  "habit_show_single_daytime_label_desc": "Show a small daytime label next to habit names in Grid and Weekly when a habit has one daytime",
   "habit_max_gap": "Default max gap (days)",
   "habit_default_priority": "Default priority",
   "habit_default_color": "Default color",

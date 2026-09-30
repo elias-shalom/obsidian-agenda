@@ -238,6 +238,8 @@
   "habit_folder_path_desc": "Ruta a la carpeta que contiene las notas de hábitos (por defecto: daily plan/daily routine/habit)",
   "habit_days_to_show": "Días a mostrar en la cuadrícula",
   "habit_show_streaks": "Mostrar rachas",
+  "habit_show_single_daytime_label": "Mostrar daytime en hábitos de un solo daytime",
+  "habit_show_single_daytime_label_desc": "Muestra una etiqueta junto al nombre en Cuadrícula y Semanal cuando el hábito tiene un solo daytime",
   "habit_max_gap": "Tolerancia por defecto (días)",
   "habit_default_priority": "Prioridad por defecto",
   "habit_default_color": "Color por defecto",

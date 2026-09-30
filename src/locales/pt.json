@@ -237,6 +237,8 @@
   "habit_folder_path_desc": "Caminho para a pasta contendo as notas de hábitos (padrão: daily plan/daily routine/habit)",
   "habit_days_to_show": "Dias para mostrar na grade",
   "habit_show_streaks": "Mostrar sequências",
+  "habit_show_single_daytime_label": "Mostrar período do dia em hábitos com um único período",
+  "habit_show_single_daytime_label_desc": "Mostra uma pequena etiqueta ao lado do nome na grade e na visão semanal quando o hábito tem um único período",
   "habit_max_gap": "Tolerância padrão (dias)",
   "habit_default_priority": "Prioridade padrão",
   "habit_default_color": "Cor padrão",

@@ -125,6 +125,19 @@ export class SettingTab extends PluginSettingTab {
           },
           { name: this.i18n.t('habit_days_to_show'), control: { type: 'slider', key: 'habitDaysToShow', min: 7, max: 90, step: 1 } },
           { name: this.i18n.t('habit_show_streaks'), control: { type: 'toggle', key: 'habitShowStreaks' } },
+          {
+            name: this.i18n.t('habit_show_single_daytime_label'),
+            desc: this.i18n.t('habit_show_single_daytime_label_desc'),
+            render: (setting) => {
+              setting.addToggle(toggle => toggle
+                .setValue(this.plugin.settings.habitShowSingleDaytimeLabel)
+                .onChange(async (value) => {
+                  this.plugin.settings.habitShowSingleDaytimeLabel = value;
+                  await this.plugin.saveSettings();
+                  document.dispatchEvent(new CustomEvent('obsidian-agenda:habits-refresh'));
+                }));
+            },
+          },
           { name: this.i18n.t('habit_max_gap'), control: { type: 'slider', key: 'habitDefaultMaxGap', min: 0, max: 30, step: 1 } },
           { name: this.i18n.t('habit_default_priority'), control: { type: 'slider', key: 'habitDefaultPriority', min: 1, max: 5, step: 1 } },
           {
@@ -299,6 +312,17 @@ export class SettingTab extends PluginSettingTab {
         .onChange(async (value) => {
           this.plugin.settings.habitShowStreaks = value;
           await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t('habit_show_single_daytime_label'))
+      .setDesc(this.i18n.t('habit_show_single_daytime_label_desc'))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.habitShowSingleDaytimeLabel)
+        .onChange(async (value) => {
+          this.plugin.settings.habitShowSingleDaytimeLabel = value;
+          await this.plugin.saveSettings();
+          document.dispatchEvent(new CustomEvent('obsidian-agenda:habits-refresh'));
         }));
 
     new Setting(containerEl)

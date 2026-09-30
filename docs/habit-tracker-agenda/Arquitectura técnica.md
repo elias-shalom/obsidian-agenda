@@ -66,6 +66,7 @@ export class HabitManager {
 - Filtro de hábitos activos: `status === 'active'` OR sin `status` (defecto activo).
 - **Cache**: map `path -> { habit, hashFm }` invalidado por eventos de vault (create/modify/delete/rename dentro de `habitFolderPath`).
 - Reusar lo más posible `metadataCache.getFileCache(file)?.frontmatter`; relectura con `vault.read` + `parseYaml` cuando el evento `modify` exija.
+- **Carga inicial (fix 2026-09-29)**: `HabitManager` registra listeners en el constructor, pero difiere el primer `refreshCache()` hasta que una vista llama `waitForInitialCache()`. Esto es intencional: `HabitManager` se instancia en el constructor del plugin, mientras que `main.onload()` carga los settings guardados después. Iniciar el escaneo en el constructor podía consultar la ruta por defecto antes de conocer el `habitFolderPath` real. `HabitView.onOpen()` muestra el loading overlay, registra el listener de refresco, espera `waitForInitialCache()` y solo entonces lee `getHabits()`/`getAllHabits()` y renderiza. Así se evita mostrar cero hábitos o una carga parcial durante arranques/actualizaciones.
 
 ### 2.2 `HabitManager.getHabits()` — algoritmo
 
@@ -141,7 +142,7 @@ async function toggleOccurrence(app: App, file: TFile, h: IHabit, date: string, 
 1. **Clase** `export class HabitGridView extends BaseView` en `src/views/habit-grid-view.ts`:
    - `export const HABIT_GRID_VIEW_TYPE = 'habit-grid-view';`
    - `getViewType()`, `getDisplayText()` (usa `i18n.t`), `getIcon()` (propuesta: `'list-checks'`).
-   - `async onOpen()`: `showLoadingOverlay()`, cargar `habitManager.getHabits()`, construir `data`, `await this.render(TYPE, data, i18n, plugin, this.leaf)`.
+  - `async onOpen()`: `showLoadingOverlay()`, registrar listener `habits-refresh`, `await habitManager.waitForInitialCache()`, cargar `habitManager.getHabits()`, construir `data`, `await this.render(TYPE, data, i18n, plugin, this.leaf)`.
    - `setupViewSpecificEventListeners(container, data)`: clics de celda, doble-clic en nombre, drag horizontal, tooltips.
    - Sobrescribir `registerViewSpecificHelpers` si se requieren helpers Handlebars (`formatDate` ya existe).
 2. **Template** `src/views/templates/habit-grid-view.hbs` (Handlebars) con el HTML de la grid.
@@ -198,6 +199,8 @@ export interface AgendaPluginSettings {
   habitFolderPath: string;         // "daily plan/daily routine/habit"
   habitDaysToShow: number;         // 21
   habitShowStreaks: boolean;       // true
+  habitShowSingleDaytimeLabel: boolean; // true; muestra el daytime en Grid/Weekly si el hábito tiene uno solo
+  // El orden seleccionado en Grid y Weekly se persiste por vista en localStorage, no como plugin setting.
   habitDefaultMaxGap: number;      // 0
   habitDefaultPriority: number;    // 3  (si la nota no trae priority)
   habitDefaultColor: string;       // ""
@@ -214,6 +217,7 @@ export interface AgendaPluginSettings {
   - `Text` para `habitFolderPath` (con hint del default).
   - `Slider` para `habitDaysToShow` (7–90).
   - `Toggle` para `habitShowStreaks`.
+  - `Toggle` para `habitShowSingleDaytimeLabel` (default `true`); al cambiarlo emite `obsidian-agenda:habits-refresh` para actualizar Grid/Weekly abiertas.
   - `Slider` para `habitDefaultMaxGap` (0–30).
   - `Slider` para `habitDefaultPriority` (1–5).
   - `Text` color para `habitDefaultColor`.

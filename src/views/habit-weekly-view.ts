@@ -14,6 +14,7 @@ const ROW_ID_SEPARATOR = '::';
 const DAYTIME_ORDER: Daytime[] = ['wake up', 'morning', 'afternoon', 'evening', 'night'];
 const SORT_MODES = ['alphabetical', 'area', 'daytime', 'priority', 'streak', 'pct'] as const;
 type WeeklySortMode = typeof SORT_MODES[number];
+const WEEKLY_SORT_STORAGE_KEY = 'oa_habit_weekly_sort';
 
 function daytimeLabelKey(daytime: Daytime): string {
   return `habit_daytime_${daytime.replace(/\s+/g, '_')}`;
@@ -22,6 +23,8 @@ function daytimeLabelKey(daytime: Daytime): string {
 interface WeeklyRowRecord {
   id: string;
   title: string;
+  daytimeLabel: string;
+  showDaytimeLabel: boolean;
   color: string;
   streak: number;
   pct: number;
@@ -43,6 +46,10 @@ export class HabitWeeklyView extends HabitView {
     habitManager: HabitManager
   ) {
     super(leaf, plugin, i18n, taskManager, habitManager);
+    const savedSort = this.app.loadLocalStorage(WEEKLY_SORT_STORAGE_KEY) as string | null;
+    if (typeof savedSort === 'string' && (SORT_MODES as readonly string[]).includes(savedSort)) {
+      this.sortBy = savedSort as WeeklySortMode;
+    }
   }
 
   getViewType(): string {
@@ -82,11 +89,13 @@ export class HabitWeeklyView extends HabitView {
         const scheduledCells = cells.filter(cell => cell.scheduled);
         const doneCount = scheduledCells.filter(cell => cell.ticked).length;
         const pct = scheduledCells.length === 0 ? 0 : Math.round((doneCount / scheduledCells.length) * 100);
-        const title = isMulti ? `${habit.title} (${this.i18n.t(daytimeLabelKey(daytime))})` : habit.title;
+        const title = habit.title;
 
         rows.push({
           id: `${habit.file.path}${ROW_ID_SEPARATOR}${daytime}`,
           title,
+          daytimeLabel: this.i18n.t(daytimeLabelKey(daytime)),
+          showDaytimeLabel: isMulti || this.plugin.settings.habitShowSingleDaytimeLabel,
           color: habit.color,
           streak: computeOccurrenceStats(habit, daytime).current,
           pct,
@@ -174,6 +183,7 @@ export class HabitWeeklyView extends HabitView {
       const value = sortSelect.value as WeeklySortMode;
       if ((SORT_MODES as readonly string[]).includes(value)) {
         this.sortBy = value;
+        this.app.saveLocalStorage(WEEKLY_SORT_STORAGE_KEY, value);
         this.refreshHabitView().catch(console.error);
       }
     });

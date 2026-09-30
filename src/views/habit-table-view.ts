@@ -113,6 +113,7 @@ export class HabitTableView extends HabitView {
         case 'time': cmp = a.time - b.time; break;
         case 'streak': cmp = a.streak - b.streak; break;
         case 'pct30d': cmp = a.pct30d - b.pct30d; break;
+        case 'status': cmp = Number(a.active) - Number(b.active); break;
         case 'priority':
         default: cmp = a.priority - b.priority; break;
       }

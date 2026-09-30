@@ -53,7 +53,8 @@
           {{#if this.color}}
             <div class="habit-color-indicator" style="background-color: {{this.color}}"></div>
           {{/if}}
-          <a href="#" class="habit-title oa-habit-grid-name-link" data-habit-id="{{this.id}}" title="{{this.title}}">{{this.title}}</a>
+          <a href="#" class="habit-title oa-habit-grid-name-link" data-habit-id="{{this.id}}" title="{{this.title}} — {{this.daytimeLabel}}" aria-label="{{this.title}}, {{this.daytimeLabel}}">{{this.title}}</a>
+          {{#if this.showDaytimeLabel}}<span class="oa-habit-name-daytime">{{this.daytimeLabel}}</span>{{/if}}
         </div>
         {{#each this.cells}}
           <button
@@ -71,7 +72,7 @@
               {{~#if this.runEnd}} oa-habit-grid-cell--run-end{{/if~}}"
             data-date="{{this.date}}"
             data-habit-id="{{../id}}"
-            aria-label="{{../title}} {{this.date}}"
+            aria-label="{{../title}} {{../daytimeLabel}} {{this.date}}"
             {{#if this.deadline}}title="{{t 'habit_streak_deadline_tooltip'}}"{{/if}}
             {{#unless this.scheduled}}disabled{{/unless}}>{{~#if this.runEnd}}{{#if (gt this.streakCount 1)}}<span class="oa-habit-grid-cell-count">{{this.streakCount}}</span>{{/if}}{{/if~}}</button>
         {{/each}}

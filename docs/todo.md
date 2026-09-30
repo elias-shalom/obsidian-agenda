@@ -139,10 +139,6 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 
 ## 🎯 Características (v1.1.4)
 
-[Google Calendar](https://community.obsidian.md/plugins/google-calendar)
-[Day Planner](https://community.obsidian.md/plugins/obsidian-day-planner)
-[Timelineal](https://timelineal.com/)
-
 ### Core Tasks
 - [x] Compatibilidad con la programación de tareas según la hora del día [vista por día (hora y día completo)] — Fases A a E completas; ver `docs/agenda-tasks/Modelo de datos.md` §9 (ADR-T1 a T7) y `docs/agenda-tasks/Plan de implementación.md`
   - [x] `due` siempre día completo (sin hora); `scheduled` es el único campo con hora, en modo punto o modo bloque con duración
@@ -169,7 +165,32 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [x] Pipeline de CI/CD (`📄.github/workflows/release.yml`) para publicar releases de forma reproducible: build desde el tag con `npm ci` (respeta el lockfile), verificación de que el tag coincide con `manifest.json`, y publicación automática del Release con `main.js`/`manifest.json`/`styles.css` — reemplaza el proceso manual anterior
 - [x] `esbuild.config.mjs`: el copy de conveniencia al vault local de desarrollo ya no corre en build de producción (solo en `npm run dev`), para no ensuciar un build de CI
 
+## 🎯 Características (v1.1.6)
+
+### 🐛 Correcciones
+- [x] Habit Editor: evitar frontmatter YAML duplicado al editar; una sola escritura reconstruye el bloque y conserva `completions`/`entries`
+
+### UX Improvements
+- [x] Habit Grid, Weekly y List: clic simple en el nombre/fila abre el Habit Editor; doble clic abre la nota del hábito
+
+## 🔧 Cambios posteriores a v1.1.6 (en desarrollo, aún no releaseados)
+
+### Correcciones
+- [x] Habit Tracker: esperar a que termine la carga inicial del cache tras cargar settings para evitar vistas vacías/parciales al arrancar o actualizar
+- [x] Dashboard: porcentajes por daytime y área cuentan ocurrencias completadas individualmente; completar morning suma aunque afternoon siga pendiente
+- [x] Habit areas: normalizar nombres de carpeta al consultar colores de paleta (por ejemplo, `daily plan` → `daily-plan`)
+
+### UX Improvements
+- [x] Rutina: grupos por daytime/área colapsables y estado recordado entre refrescos y cambios de fecha
+- [x] Grid/Weekly: badge de daytime uniforme; el toggle por defecto activado controla los hábitos de un solo daytime
+- [x] Grid/Weekly: recordar el último orden por vista; Habit List permite ordenar por estatus
+- [x] Weekly: ocultar visualmente el scrollbar horizontal conservando columnas fijas y desplazamiento
+
 ## 📊 Próximas Características (v1.x)
+
+[Google Calendar](https://community.obsidian.md/plugins/google-calendar)
+[Day Planner](https://community.obsidian.md/plugins/obsidian-day-planner)
+[Timelineal](https://timelineal.com/)
 
 ### Core Tasks
 - [ ] Compatibilidad con tareas recursivas/repetitivas (🔁) del pluiin tasks (las tareas recursivas se van creando cuando se marca como terminada la misma anterior)
@@ -199,6 +220,7 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 
 ### Calendar Enhancements
 - [ ] Calendario. Secciones extra ![vista agenda ](attachments/extra-section.png)
+- [ ] Agregar días feriados de diferentes paises
 - [ ] Agregar date picker navegable por niveles (año → mes → día), abierto desde el encabezado del calendario, que al confirmar/seleccionar lleve la vista a la fecha elegida de forma inmediata.
 
 ### 🐛 Correcciones Pendientes

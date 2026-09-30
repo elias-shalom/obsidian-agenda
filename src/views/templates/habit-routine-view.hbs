@@ -44,8 +44,9 @@
 <div class="oa-habit-routine">
   {{#if hasHabits}}
   {{#each daytimes}}
-    <div class="oa-habit-routine-section">
-      <div class="oa-habit-routine-section-header">
+    <div class="oa-habit-routine-section" data-group-key="{{@key}}">
+      <button type="button" class="oa-habit-routine-section-header" aria-expanded="true">
+        <span class="oa-habit-routine-section-caret" aria-hidden="true">▾</span>
         <div class="oa-habit-routine-section-title">
           {{#if this.color}}
             <div class="oa-habit-routine-section-color" style="background-color: {{this.color}}"></div>
@@ -58,8 +59,9 @@
           </div>
           <span>{{this.pct}}%</span>
         </div>
-      </div>
-      {{#each this.habits}}
+      </button>
+      <div class="oa-habit-routine-section-content">
+        {{#each this.habits}}
         <div class="oa-habit-routine-habit">
           <button
             class="oa-habit-routine-checkbox {{#if this.ticked}}oa-habit-routine-checkbox--checked{{/if}}"
@@ -95,7 +97,8 @@
             <button class="oa-habit-routine-action-btn" data-action="edit-habit" data-habit-id="{{this.id}}">{{t "habit_edit_habit"}}</button>
           </div>
         </div>
-      {{/each}}
+        {{/each}}
+      </div>
     </div>
   {{/each}}
   {{else}}

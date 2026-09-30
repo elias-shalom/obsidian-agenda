@@ -237,6 +237,8 @@
   "habit_folder_path_desc": "Pfad zum Ordner mit Gewohnheitsnotizen (Standard: daily plan/daily routine/habit)",
   "habit_days_to_show": "Tage im Grid anzeigen",
   "habit_show_streaks": "Streaks anzeigen",
+  "habit_show_single_daytime_label": "Tageszeit bei Gewohnheiten mit einer Tageszeit anzeigen",
+  "habit_show_single_daytime_label_desc": "Zeigt in Raster und Wochenansicht eine kleine Tageszeit neben dem Namen an, wenn die Gewohnheit nur eine Tageszeit hat",
   "habit_max_gap": "Standard Max-Lücke (Tage)",
   "habit_default_priority": "Standard-Priorität",
   "habit_default_color": "Standardfarbe",

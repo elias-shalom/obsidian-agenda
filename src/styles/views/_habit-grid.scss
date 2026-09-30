@@ -72,6 +72,16 @@ $habit-grid-pill-cap-inset: 3px;
   }
 }
 
+.oa-habit-name-daytime {
+  flex: 0 0 auto;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--background-modifier-hover);
+  color: var(--text-muted);
+  font-size: var(--font-smaller, 0.7rem);
+  line-height: 1.4;
+}
+
 .oa-habit-grid-name .habit-color-indicator {
   width: 10px;
   height: 10px;

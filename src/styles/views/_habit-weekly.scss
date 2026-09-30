@@ -26,6 +26,10 @@ $habit-weekly-pill-cap-inset: 3px;
   border-radius: var(--radius-m, 8px);
 }
 
+.oa-habit-weekly-scroll::-webkit-scrollbar:horizontal {
+  display: none;
+}
+
 .oa-habit-weekly-header {
   display: contents;
 }
@@ -70,6 +74,16 @@ $habit-weekly-pill-cap-inset: 3px;
     outline: 2px solid var(--interactive-accent);
     outline-offset: 1px;
   }
+}
+
+.oa-habit-name-daytime {
+  flex: 0 0 auto;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--background-modifier-hover);
+  color: var(--text-muted);
+  font-size: var(--font-smaller, 0.7rem);
+  line-height: 1.4;
 }
 
 .oa-habit-weekly-name .habit-color-indicator {

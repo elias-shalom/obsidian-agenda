@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import type { IHabit, IHabitDayStat, HabitDashboardData } from './habit';
+import type { Daytime, IHabit, IHabitDayStat, HabitDashboardData } from './habit';
 import { dayCompleted, isScheduled } from './habit';
 import { computeStats } from './habit-streak';
 
@@ -12,6 +12,7 @@ export function computeAreaStats(
   dateString: string
 ): Record<string, { raw: number; weighted: number }> {
   const date = DateTime.fromISO(dateString, { zone: 'local' });
+  const isoDate = toIsoDate(date);
   const totals: Record<string, { done: number; scheduled: number; weightDone: number; weightTotal: number }> = {};
 
   for (const habit of habits) {
@@ -22,12 +23,16 @@ export function computeAreaStats(
       totals[area] = { done: 0, scheduled: 0, weightDone: 0, weightTotal: 0 };
     }
 
-    totals[area].scheduled += 1;
-    totals[area].weightTotal += habit.priority;
+    const daytimes = habit.daytimes.length > 0 ? habit.daytimes : (['morning'] as Daytime[]);
+    const completedDaytimes = habit.completions[isoDate] ?? [];
+    for (const daytime of daytimes) {
+      totals[area].scheduled += 1;
+      totals[area].weightTotal += habit.priority;
 
-    if (dayCompleted(habit, toIsoDate(date))) {
-      totals[area].done += 1;
-      totals[area].weightDone += habit.priority;
+      if (completedDaytimes.includes(daytime)) {
+        totals[area].done += 1;
+        totals[area].weightDone += habit.priority;
+      }
     }
   }
 
@@ -47,12 +52,14 @@ export function computeDaytimeStats(
   dateString: string
 ): Record<string, { raw: number; weighted: number }> {
   const date = DateTime.fromISO(dateString, { zone: 'local' });
+  const isoDate = toIsoDate(date);
   const totals: Record<string, { done: number; scheduled: number; weightDone: number; weightTotal: number }> = {};
 
   for (const habit of habits) {
     if (!isScheduled(habit, date)) continue;
 
-    for (const daytime of habit.daytimes) {
+    const daytimes = habit.daytimes.length > 0 ? habit.daytimes : (['morning'] as Daytime[]);
+    for (const daytime of daytimes) {
       if (!(daytime in totals)) {
         totals[daytime] = { done: 0, scheduled: 0, weightDone: 0, weightTotal: 0 };
       }
@@ -60,7 +67,7 @@ export function computeDaytimeStats(
       totals[daytime].scheduled += 1;
       totals[daytime].weightTotal += habit.priority;
 
-      if (dayCompleted(habit, toIsoDate(date))) {
+      if ((habit.completions[isoDate] ?? []).includes(daytime)) {
         totals[daytime].done += 1;
         totals[daytime].weightDone += habit.priority;
       }

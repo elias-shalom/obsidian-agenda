@@ -12,6 +12,7 @@ export class HabitManager {
   private habitCache = new Map<string, IHabit>();
   private readonly eventRefs: EventRef[] = [];
   private readonly descriptionCache = new Map<string, string>();
+  private initialCacheReady: Promise<void> | null = null;
 
   constructor(
     private app: App,
@@ -19,7 +20,14 @@ export class HabitManager {
     private i18n: I18n
   ) {
     this.registerEvents();
-    void this.refreshCache();
+  }
+
+  /** Permite que las vistas esperen a la primera carga antes de leer el cache sincrónico. */
+  async waitForInitialCache(): Promise<void> {
+    if (!this.initialCacheReady) {
+      this.initialCacheReady = this.refreshCache();
+    }
+    await this.initialCacheReady;
   }
 
   private getHabitFolderPath(): string {

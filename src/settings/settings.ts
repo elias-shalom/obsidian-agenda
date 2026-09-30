@@ -14,6 +14,7 @@ export interface AgendaPluginSettings {
   habitFolderPath: string;
   habitDaysToShow: number;
   habitShowStreaks: boolean;
+  habitShowSingleDaytimeLabel: boolean;
   habitDefaultMaxGap: number;
   habitDefaultPriority: number;
   habitDefaultColor: string;
@@ -39,6 +40,7 @@ export const DEFAULT_SETTINGS: AgendaPluginSettings = {
   habitFolderPath: "daily plan/daily routine/habit",
   habitDaysToShow: 21,
   habitShowStreaks: true,
+  habitShowSingleDaytimeLabel: true,
   habitDefaultMaxGap: 0,
   habitDefaultPriority: 3,
   habitDefaultColor: "",

@@ -237,6 +237,8 @@
   "habit_folder_path_desc": "Chemin vers le dossier contenant les notes d'habitudes (par défaut: daily plan/daily routine/habit)",
   "habit_days_to_show": "Jours à afficher dans la grille",
   "habit_show_streaks": "Afficher les séries",
+  "habit_show_single_daytime_label": "Afficher le moment de la journée pour les habitudes à un seul moment",
+  "habit_show_single_daytime_label_desc": "Affiche un petit libellé à côté du nom dans la grille et la vue hebdomadaire si l'habitude n'a qu'un seul moment",
   "habit_max_gap": "Tolérance par défaut (jours)",
   "habit_default_priority": "Priorité par défaut",
   "habit_default_color": "Couleur par défaut",

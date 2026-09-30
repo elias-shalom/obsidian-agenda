@@ -45,7 +45,7 @@ Rol: historial interactivo por día, equivalente al plugin Habit Tracker 21, int
    · no programado (frequency) — celda deshabilitada/apagada
 ```
 
-- **Filas**: hábitos activos. Si un hábito tiene **una sola** `daytime`, aparece como una fila (`Hábito`). Si tiene **varias**, se expande en **una fila por ocurrencia** (`Hábito (daytime)`), cada una con su propia racha y % independientes. Orden configurable desde el toolbar: alfabético (default), por área, por daytime, por prioridad, por racha o por % de cumplimiento.
+- **Filas**: hábitos activos. Si un hábito tiene **una sola** `daytime`, aparece como una fila (`Hábito`) y, por defecto, muestra una etiqueta compacta localizada junto al nombre; se puede desactivar con `habitShowSingleDaytimeLabel`. Si tiene **varias**, se expande en **una fila por ocurrencia**, cada una con su propia racha y % independientes, y muestra el daytime con la misma etiqueta compacta junto al nombre. Así ambas variantes usan el mismo patrón visual y no se repite el daytime dentro del título. Orden configurable desde el toolbar: alfabético (default), por área, por daytime, por prioridad, por racha o por % de cumplimiento; Grid recuerda la última selección.
 - **Columnas**: ventana de `habitDaysToShow` días terminando en "hoy" (o el día navegado). Header con número (y tooltip día/mes).
 - **Celda**: un `<button>`. `aria-label = "Habit Aug 12"` (formato i18n). Si el día **no está programado** para ese hábito (`frequency`, §2.5 del [[Modelo de datos]]), la celda se renderiza **deshabilitada y atenuada** (`--oa-unscheduled`): no invoca toggle desde el teclado pero acepta click (el toggle es permitido; ver §1.2).
 - **Col X final — Racha**: si `habitShowStreaks`, contador actual al final de cada corrida (`🔥 5`). Si `maxGap>0`, se muestra `+` con tooltip deadline: "Last day to keep your streak". La racha **salta los días no programados**.
@@ -113,6 +113,7 @@ Rol: ver hoy (o el día navegado) organizado por `daytime` y `area`, con barras 
 ```
 
 - **Secciones**: por `daytime` (wake up, morning, afternoon, evening, night) **o por área**, según el selector "Agrupar por" del toolbar (`groupBy`, default `daytime`) — no está fijo al `daytime` como en el diseño original. Cuando se agrupa por área, el encabezado de sección muestra el color del área y cada fila oculta el tag de área (redundante) mostrando en su lugar un tag de `daytime`.
+- **Grupos colapsables** (implementado, 2026-09-29): cada encabezado de sección funciona como un botón con caret e indicador `aria-expanded`; permite ocultar/mostrar los hábitos de ese grupo. El estado colapsado se persiste en el almacenamiento local por modo y clave de grupo, por lo que sobrevive a los refrescos de la vista y a la navegación entre fechas.
 - **Solo hábitos programados ese día**: `frequency` filtra qué aparece (ADR-005). No se implementó el listado plegable de "no programado hoy" (queda fuera del filtro directamente).
 - **Orden dentro de cada sección**: configurable desde el selector "Ordenar por" del toolbar — alfabético, por área, por daytime, por prioridad (default), por racha o por % de cumplimiento (mismo combobox que Grid/Weekly). `racha`/`%` se calculan por ocurrencia sobre una ventana de `habitDaysToShow` días (mismo mecanismo que la Grid).
 - **Li/checkbox**: cada hábito con su checkbox interactivo (toggle por **ocurrencia**) y dos botones: **"Open file"** (abre la nota) y **"Edit habit"** (abre el Habit Editor precargado).
@@ -140,7 +141,7 @@ Rol: métricas globales agregadas. **Es la vista inicial por defecto** al abrir 
 ```
 
 - Cards: cumplimiento de hoy **crudo** (`pbdaily` equivalente) y **ponderado** (`pctWeighted`), racha actual global (máximo entre hábitos), racha máxima, número de hábitos.
-- **Por área** y **Por daytime**: dos secciones lado a lado (`.oa-habit-overview-columns`, CSS Grid `auto-fit minmax(220px,1fr)`, se apilan en paneles angostos). Área ya **no** es el enum de 10 valores: cada barra usa `getAreaLabel`/`getAreaColor` (string libre con fallback determinístico, ver [[Modelo de datos]] §2.4).
+- **Por área** y **Por daytime**: dos secciones lado a lado (`.oa-habit-overview-columns`, CSS Grid `auto-fit minmax(220px,1fr)`, se apilan en paneles angostos). Sus porcentajes cuentan **ocurrencias**: completar `morning` aporta al área y a `morning` aunque `afternoon` siga pendiente; el ponderado suma la prioridad por ocurrencia. El porcentaje global de día completo e historial diario siguen considerando el hábito completo. Área ya **no** es el enum de 10 valores: cada barra usa `getAreaLabel`/`getAreaColor` (string libre con fallback determinístico, ver [[Modelo de datos]] §2.4).
 - **Gráfico de 30 días**: barra por día con el **% ponderado** (`IHabitDayStat.pctWeighted`). Incluye **leyendas**: eje Y (`100%`/`50%`/`0%`) y eje X (fecha de inicio, punto medio y fin del rango), además del tooltip por barra con fecha+%.
 - **Heatmap anual global** (nuevo, no estaba en el diseño original): cuadrícula estilo GitHub, una columna por semana (domingo arriba/sábado abajo), etiquetas de mes y de día de semana, navegable por año (`◀ AÑO ▶`), 5 niveles de color según `pctWeighted` del día (`computeYearHistory(habits, year)` en `habit-stats.ts`), con el día actual resaltado y tooltip por celda.
 - Datos: `HabitManager.computeDashboard()` + `computeYearHistory()`.
@@ -160,6 +161,9 @@ Rol: matriz hábito × 7 días (semana actual navegable).
 ```
 
 - Mismas celdas/hechos que la Grid pero con exactamente 7 columnas (días de la semana).
+- Usa el mismo badge localizado que Grid para identificar el daytime junto al nombre de cada hábito. En hábitos con varios daytimes el badge siempre aparece; `habitShowSingleDaytimeLabel` permite controlar solo la etiqueta de hábitos con un único daytime.
+- El orden del toolbar es independiente de Grid y recuerda la última selección.
+- La grilla conserva sus anchos de columna; el scrollbar horizontal se oculta visualmente, pero el contenido sigue pudiéndose desplazar si no cabe en el panel.
 - Los días **no programados** para un hábito se muestran `·` (`--oa-unscheduled`): no afectan el `pct` semanal (que usa los días programados).
 - Header con `◀ · MMM · ▶` (ventana semanal).
 
@@ -178,8 +182,8 @@ Rol: catálogo de hábitos con metadata y stats.
 
 - **Área**: `getAreaLabel(area, i18n)` — traduce si coincide con un área conocida, si no muestra el string crudo (ya no es un enum cerrado); `SubÁrea` en columna propia.
 - **Frecuencia / Prio**: tokens humanos de `frequency` y `priority 1–5` (sortable por prioridad).
-- Sortable por columna (prioridad por defecto desc).
-- Doble-clic en fila abre el Habit Editor (el clic simple ya no hace nada).
+- Sortable por columna, incluida la columna de estatus (prioridad por defecto desc).
+- Clic simple en fila abre el Habit Editor; doble-clic abre la nota del hábito.
 
 ## 6. Interacciones comunes (todas las vistas)
 

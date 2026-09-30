@@ -237,6 +237,8 @@
   "habit_folder_path_desc": "Percorso alla cartella contenente le note delle abitudini (predefinito: daily plan/daily routine/habit)",
   "habit_days_to_show": "Giorni da mostrare nella griglia",
   "habit_show_streaks": "Mostra serie",
+  "habit_show_single_daytime_label": "Mostra il momento della giornata per le abitudini con un solo momento",
+  "habit_show_single_daytime_label_desc": "Mostra una piccola etichetta accanto al nome nella griglia e nella vista settimanale se l'abitudine ha un solo momento",
   "habit_max_gap": "Tolleranza predefinita (giorni)",
   "habit_default_priority": "Priorità predefinita",
   "habit_default_color": "Colore predefinito",

@@ -56,7 +56,9 @@ function hashString(value: string): number {
 
 /** Color de un área: usa la paleta curada si el nombre coincide, si no genera un tono armonizado por hash */
 export function getAreaColor(area: string): string {
-  const known = HABIT_AREA_COLORS[area];
+  // Las áreas vienen de nombres de carpeta ("daily plan"); las claves de la paleta usan guiones ("daily-plan").
+  const key = area.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const known = HABIT_AREA_COLORS[key];
   if (known) return known;
 
   const hue = hashString(area) % 360;

@@ -186,7 +186,17 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [x] Grid/Weekly: recordar el último orden por vista; Habit List permite ordenar por estatus
 - [x] Weekly: ocultar visualmente el scrollbar horizontal conservando columnas fijas y desplazamiento
 
-## 🔧 Cambios posteriores a v1.1.7 (en desarrollo, aún no releaseados)
+## 🎯 Características (v1.1.8)
+
+### UX Improvements
+- [x] Tooltips del dashboard ampliados en los seis idiomas; tooltip visual común para vistas y modal de tareas
+- [x] Mejorado el look and feel de las vistas Lista y Tabla
+- [x] Ordenamiento ascendente/descendente por columnas en la vista de tabla
+- [x] Redimensionado de columnas de la Tabla según las tareas visibles después de aplicar filtros
+- [x] Conservar búsqueda, filtros y orden de la Tabla al editar tareas o cambiar de vista
+- [x] Editar tarea con clic simple en las vistas Lista y Tabla; doble clic sigue abriendo la nota
+
+## 🔧 Cambios posteriores a v1.1.8 ( en desarrollo, aún no releaseados)
 
 ### Calendar Enhancements
 - [ ] Date picker navegable por niveles (año → mes → día), abierto desde el encabezado del calendario; al elegir una fecha, navegar inmediatamente a ella.
@@ -197,13 +207,6 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 ### Habit Tracker
 - [ ] Refresco automático de la Rutina
 - [ ] las vistas dependientes de la fecha actual a medianoche local, sin requerir interacción ni cambios en el vault.
-
-### UX Improvements
-- [x] Tooltips del dashboard ampliados en los seis idiomas; tooltip visual común para vistas y modal de tareas
-- [x] Mejorado el look and feel de las vistas Lista y Tabla
-- [x] Ordenamiento ascendente/descendente por columnas en la vista de tabla
-- [x] Redimensionado de columnas de la Tabla según las tareas visibles después de aplicar filtros
-- [x] Editar tarea con clic simple en las vistas Lista y Tabla; doble clic sigue abriendo la nota
 
 ## 📊 Próximas Características (v1.x)
 

@@ -261,50 +261,33 @@
   align-items: center;
 }
 
-/* Selector de tipo de vista: grupo de botones pegados (v1.1.9, reemplaza el <select>).
+/* Selector de tipo de vista: grupo de botones (v1.1.9, reemplaza el <select>).
    Mismo lenguaje visual que .oa-priority-pill del Task Modal (planos, sin fondo/borde hasta
-   hover/activo), pero en fila continua y compacta con bordes compartidos entre botones. */
+   hover/activo), con un pequeño espacio entre botones en vez de una caja con bordes compartidos. */
 .oa-calendar-view-segmented {
   display: flex;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
-  overflow: hidden;
+  gap: 4px;
 }
 
 .oa-calendar-view-btn {
+  @include interactive-control;
   flex: 0 0 auto;
   width: 2rem;
   padding: 0.35rem 0;
-  border: none;
-  border-right: 1px solid var(--background-modifier-border);
-  outline: none !important;
-  box-shadow: none !important;
-  background-color: transparent;
-  color: var(--text-normal);
-  cursor: pointer;
-  opacity: 0.6;
-  transition: all 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  &:last-child {
-    border-right: none;
-  }
+  opacity: 0.8;
 
   &:hover {
     opacity: 1;
-    background-color: var(--background-modifier-hover);
-  }
-
-  &:active {
-    background-color: var(--background-modifier-active);
   }
 
   &.oa-active {
     opacity: 1;
-    background-color: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+    background-color: color-mix(in srgb, var(--interactive-accent) 18%, transparent) !important;
     color: var(--interactive-accent);
+    border-color: var(--interactive-accent);
   }
 
   svg {

@@ -82,6 +82,10 @@
 .oa-calendar-day-view {
   // Contenedor con ancho completo
   width: 100%;
+  // Ocupa el espacio restante bajo el toolbar (no height:100%, que lo desbordaba por la altura del toolbar)
+  flex: 1 1 0;
+  height: auto;
+  min-height: 0;
   
   .oa-calendar-day-body {
     display: flex;
@@ -114,6 +118,12 @@
   display: flex;
   width: 100%;
   gap: 8px;
+  flex: 1 1 0;
+  min-height: 0;
+  // Tope de altura: si la ventana es muy alta, el grid de horas no debe estirarse a llenar
+  // todo el espacio (se veía una fila final enorme vacía); de sobrar alto, queda en blanco fuera
+  // de la caja. .oa-calendar-day-hours sigue encargándose del scroll si el contenido no entra.
+  max-height: calc(100vh - 120px);
 }
 
 .oa-calendar-allday {
@@ -121,6 +131,7 @@
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
   overflow: hidden;
+  flex-shrink: 0;
 
   &.oa-expanded {
     .oa-calendar-allday-content {
@@ -174,12 +185,42 @@
   flex-direction: column;
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
-  overflow: hidden;
+  // El scroll de la vista Día vive aquí: ocupa el espacio restante bajo el encabezado y "Todo el día".
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  // Scrollbar realmente oculta (ancho 0) hasta pasar el mouse por encima; al no reservar
+  // espacio, el contenido puede desplazarse unos px al aparecer, pero deja de ser visible.
+  scrollbar-width: none; // Firefox
+
+  &::-webkit-scrollbar {
+    width: 0;
+  }
+
+  &:hover {
+    scrollbar-width: thin;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: $active-border-color;
+    border-radius: 4px;
+  }
 }
 
 .oa-calendar-hour-row {
   display: flex;
   min-height: 44px;
+  flex-shrink: 0;
   border-bottom: 1px solid var(--background-modifier-border);
 
   &:last-child {
@@ -256,14 +297,17 @@
 .oa-calendar-day-main-view {
   flex-grow: 1;
   min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // Sombra más pronunciada
-  overflow: hidden; // Para que los bordes redondeados funcionen correctamente
+  overflow: hidden; // Sin scroll propio: lo hace .oa-calendar-day-hours
   background-color: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
-  overflow-x: hidden; // Para la vista de día
 
   .oa-calendar-day-header {
+    flex-shrink: 0;
     background-color: color-mix(in srgb,$primary-bg-color 25%, transparent); // Color más claro para el encabezado
     border-bottom: 1px solid var(--background-modifier-border);
     
@@ -283,9 +327,10 @@
   }
   
   .oa-calendar-day-body {
-    max-height: calc(100vh - 250px); // Altura máxima adaptativa
-    overflow-y: auto;
-    
+    // Llena el alto restante del main-view; min-height 0 deja que .oa-calendar-day-hours encoja y haga scroll.
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
   }
 }
 

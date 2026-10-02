@@ -47,6 +47,7 @@ export class CalendarWeekView extends CalendarView {
       days.push({
         date: currentDay,
         isToday: currentDay.hasSame(DateTime.now(), 'day'),
+        isSelected: currentDay.hasSame(this.currentDate, 'day'),
         dayOfMonth: currentDay.day,
         dayOfWeek: currentDay.weekday,
         // Usar el nombre localizado del día en lugar de toFormat()
@@ -72,12 +73,12 @@ export class CalendarWeekView extends CalendarView {
   }
 
   protected navigateToPrevious(): void {
-    this.currentDate = this.currentDate.minus({ weeks: 1 });
+    this.setCurrentDate(this.currentDate.minus({ weeks: 1 }));
     this.refreshView().catch(console.error);
   }
 
   protected navigateToNext(): void {
-    this.currentDate = this.currentDate.plus({ weeks: 1 });
+    this.setCurrentDate(this.currentDate.plus({ weeks: 1 }));
     this.refreshView().catch(console.error);
   }
 

@@ -41,6 +41,7 @@ export class CalendarMonthView extends CalendarView {
       date: DateTime;
       isCurrentMonth: boolean;
       isToday: boolean;
+      isSelected: boolean;
       dayOfMonth: number;
       tasksForDay: ITask[];
     };
@@ -62,6 +63,7 @@ export class CalendarMonthView extends CalendarView {
         date: currentDay,
         isCurrentMonth: currentDay.month === startOfMonth.month,
         isToday: currentDay.hasSame(DateTime.now(), 'day'),
+        isSelected: currentDay.hasSame(this.currentDate, 'day'),
         dayOfMonth: currentDay.day,
         tasksForDay: this.getTasksForDate(currentDay)
       };
@@ -96,12 +98,12 @@ export class CalendarMonthView extends CalendarView {
   }
 
   protected navigateToPrevious(): void {
-    this.currentDate = this.currentDate.minus({ months: 1 });
+    this.setCurrentDate(this.currentDate.minus({ months: 1 }));
     this.refreshView().catch(console.error);
   }
 
   protected navigateToNext(): void {
-    this.currentDate = this.currentDate.plus({ months: 1 });
+    this.setCurrentDate(this.currentDate.plus({ months: 1 }));
     this.refreshView().catch(console.error);
   }
 

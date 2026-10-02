@@ -142,5 +142,24 @@
   }
 }
 
+/* Fecha seleccionada (v1.1.9, fecha de referencia): independiente del estilo de 'hoy', ambos se aplican si coinciden. */
+.oa-calendar-month-day.oa-calendar-selected {
+  background-color: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+
+  .oa-calendar-month-day-number {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    font-weight: bold;
+    opacity: 1;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+}
+
 
 

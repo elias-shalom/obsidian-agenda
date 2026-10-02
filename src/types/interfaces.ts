@@ -20,6 +20,7 @@ export interface AgendaPlugin extends Plugin {
 export interface WeekDayData {
   date: DateTime;
   isToday: boolean;
+  isSelected: boolean;
   dayOfMonth: number;
   dayOfWeek: number;
   dayName: string;
@@ -425,6 +426,7 @@ export interface MonthViewData {
       date: DateTime;
       isCurrentMonth: boolean;
       isToday: boolean;
+      isSelected: boolean;
       dayOfMonth: number;
       tasksForDay: ITask[];
     }[];
@@ -448,6 +450,8 @@ export interface YearViewData {
         date: DateTime;
         isCurrentMonth: boolean;
         isToday: boolean;
+        /** Solo se marca cuando isCurrentMonth, para no duplicarse en los días vecinos repetidos (v1.1.9) */
+        isSelected: boolean;
         dayOfMonth: number;
         hasTasksDue: boolean;
         taskCount: number;

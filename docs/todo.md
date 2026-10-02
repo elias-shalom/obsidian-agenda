@@ -200,8 +200,8 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 
 ### Calendar Enhancements
 - [ ] **v1.1.9 — Fecha de referencia y selector de fecha** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.6 y `Arquitectura técnica.md` §9; fases en `Plan de implementación.md`)
-  - [ ] Fecha de referencia compartida: cambiar de vista (Día/Semana/Semana laboral/Mes/Año) conserva la fecha en vez de volver a hoy
-  - [ ] Resaltar la fecha seleccionada, distinta de "hoy", en Mes, Semana, Semana laboral y Año
+  - [x] Fecha de referencia compartida: cambiar de vista (Día/Semana/Semana laboral/Mes/Año) conserva la fecha en vez de volver a hoy
+  - [x] Resaltar la fecha seleccionada, distinta de "hoy", en Mes, Semana, Semana laboral y Año
   - [ ] Selector de fecha ocultable en Mes/Semana/Semana laboral/Año, abierto desde el encabezado del calendario; en Día se integra siempre visible (sin botón). Elegir un día lleva la vista actual a esa fecha (su mes, su semana, etc.); la pestaña "Calendario" del encabezado sigue abriendo Mes + hoy.
   - [ ] Niveles dentro del selector: días → años (por década) → meses → días
   - [ ] Textos del selector en los seis idiomas y uso con teclado (Escape, foco)
@@ -215,9 +215,9 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
   - [x] Doble clic sobre una tarea existente sigue abriendo su nota, sin crear una nueva
   - [x] Altura mínima en la sección "Todo el día" para que siempre haya un área vacía donde hacer doble clic
   - [x] **fix Bug relacionado, confirmado para corregir de paso**: `TaskModal` ignora `modalOptions.today` y siempre prellena la fecha de hoy al crear desde doble clic en Mes/Semana/Semana laboral/Año, sin importar el día de la celda
-- [ ] **Selector de tipo de vista como multi-botón segmentado** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.8 y `Arquitectura técnica.md` §12; fases en `Plan de implementación.md`)
-  - [ ] 6 botones pegados (Año/Mes/Semana/Semana laboral/Día/Lista), un clic para cambiar de vista, misma lógica de `switchToViewType()`
-  - [ ] Reutiliza el estilo del selector de prioridad del Task Modal (`.oa-priority-segmented`/`.oa-priority-pill`), en versión compacta sin espacio entre botones
+- [x] **Selector de tipo de vista como multi-botón segmentado** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.8 y `Arquitectura técnica.md` §12; fases en `Plan de implementación.md`)
+  - [x] 5 botones pegados (Año/Mes/Semana/Semana laboral/Día; Lista se suma en v1.1.10 junto a la vista de lista del calendario), un clic para cambiar de vista, misma lógica de `switchToViewType()`
+  - [x] Reutiliza el estilo del selector de prioridad del Task Modal (`.oa-priority-segmented`/`.oa-priority-pill`), en versión compacta sin espacio entre botones
   - [ ] Ícono por botón + tooltip con el nombre de la vista (gratis con el componente de tooltips ya construido) — por confirmar si el ícono va siempre acompañado de tooltip
   - [ ] Por decidir: íconos concretos, en especial para distinguir Semana de Semana laboral
 - [ ] **Vista Día: modo de varios días 1/3/5** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.4.3 y `Arquitectura técnica.md` §13; fases en `Plan de implementación.md`)

@@ -28,15 +28,8 @@ export class CalendarDayView extends CalendarView {
   }
 
   async onOpen(): Promise<void> {
-    const savedDate = this.app.loadLocalStorage('oa_navigate_to_date') as string | null;
-    if (savedDate) {
-      this.currentDate = DateTime.fromISO(savedDate);
-      this.miniCalendarMonth = this.currentDate;
-      this.app.saveLocalStorage('oa_navigate_to_date', '');
-    }
-    // ... resto del onOpen existente
-    this.tasks = await this.getAllTasks(this.taskManager);
-    await this.refreshCalendar();
+    await super.onOpen();
+    this.miniCalendarMonth = this.currentDate;
   }
 
   /**
@@ -242,19 +235,19 @@ export class CalendarDayView extends CalendarView {
   }
 
   protected navigateToPrevious(): void {
-    this.currentDate = this.currentDate.minus({ days: 1 });
+    this.setCurrentDate(this.currentDate.minus({ days: 1 }));
     this.miniCalendarMonth = this.currentDate; // Sincronizar el mes del mini calendario
     this.refreshView().catch(console.error);
   }
 
   protected navigateToNext(): void {
-    this.currentDate = this.currentDate.plus({ days: 1 });
+    this.setCurrentDate(this.currentDate.plus({ days: 1 }));
     this.miniCalendarMonth = this.currentDate; // Sincronizar el mes del mini calendario
     this.refreshView().catch(console.error);
   }
   
   protected navigateToToday(): void {
-    this.currentDate = DateTime.now();
+    this.setCurrentDate(DateTime.now());
     this.miniCalendarMonth = this.currentDate; // Sincronizar el mes del mini calendario
     this.refreshView().catch(console.error);
   }
@@ -273,7 +266,7 @@ export class CalendarDayView extends CalendarView {
         const dateStr = day.getAttribute('data-date');
         if (dateStr) {
           // Cambiar a la fecha seleccionada
-          this.currentDate = DateTime.fromISO(dateStr);
+          this.setCurrentDate(DateTime.fromISO(dateStr));
           // Actualizar también el mes del mini calendario
           this.miniCalendarMonth = this.currentDate;
           this.refreshView().catch(console.error);

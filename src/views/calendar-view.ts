@@ -1,4 +1,4 @@
-import { WorkspaceLeaf, Plugin, Notice } from 'obsidian';
+import { WorkspaceLeaf, Plugin, Notice, setIcon } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
 import { ITask, CalendarViewData, AgendaPlugin } from '../types/interfaces';
@@ -9,11 +9,21 @@ import { CalendarViewType } from '../types/enums';
 import { TaskWriter } from '../core/task-writer';
 import { upsertSimpleDate, upsertScheduledDate } from '../core/task-line-fields';
 import { EDIT_TASK_MODAL_TYPE } from '../core/modal-manager';
+import { getReferenceDate, setReferenceDate } from '../core/calendar-reference-date';
 
 /** Espera entre un `click` y un posible segundo `click` antes de asumir que no viene un `dblclick` (ms). */
 const TASK_CLICK_DELAY_MS = 250;
 
 export const CALENDAR_VIEW_TYPE = 'calendar-view';
+
+/** Íconos Lucide del selector de vista segmentado (v1.1.9, §12 Arquitectura técnica); Semana/Semana laboral deben distinguirse claramente. */
+const CALENDAR_VIEW_BUTTON_ICONS: Record<string, string> = {
+  year: 'calendar-range',
+  month: 'calendar-days',
+  week: 'columns-3',
+  workweek: 'briefcase',
+  day: 'calendar-clock',
+};
 
 /** Payload transportado por `dataTransfer` durante un drag and drop de tarea (v1.1.4, Fase D). */
 export interface TaskDragPayload {
@@ -51,9 +61,17 @@ export abstract class CalendarView extends BaseView {
   }
 
   async onOpen(): Promise<void> {
+    const reference = getReferenceDate();
+    if (reference) this.currentDate = reference;
     this.showLoadingOverlay(8, true);
     this.tasks = await this.getAllTasks(this.taskManager);
     await this.refreshCalendar();
+  }
+
+  /** Único punto de escritura de `currentDate`: también actualiza la fecha de referencia compartida (v1.1.9, §9 Arquitectura técnica). */
+  protected setCurrentDate(date: DateTime): void {
+    this.currentDate = date;
+    setReferenceDate(date);
   }
 
   protected async refreshCalendar(): Promise<void> {
@@ -156,7 +174,7 @@ export abstract class CalendarView extends BaseView {
 
   // Método que todas las vistas utilizarán para ir a la fecha actual
   protected navigateToToday(): void {
-    this.currentDate = DateTime.now();
+    this.setCurrentDate(DateTime.now());
     this.refreshView().catch(console.error);
   }
 
@@ -272,18 +290,17 @@ export abstract class CalendarView extends BaseView {
       todayButton.addEventListener('click', () => this.navigateToToday());
     }
 
-    const viewDropdown = container.querySelector('#oa-calendar-view-dropdown') as HTMLSelectElement;
+    const viewButtons = container.querySelectorAll<HTMLButtonElement>('.oa-calendar-view-btn');
+    viewButtons.forEach(button => {
+      const viewTypeStr = button.dataset.viewType;
+      const iconId = viewTypeStr && CALENDAR_VIEW_BUTTON_ICONS[viewTypeStr];
+      if (iconId) setIcon(button, iconId);
 
-    if (viewDropdown) {
-      // Establecer el valor actual basado en la vista actual
-      // El valor ya debería estar establecido desde la plantilla usando {{#equals}}
-
-      // Añadir event listener para el cambio de selección
-      viewDropdown.addEventListener('change', () => {
-        const selectedViewType = this.getCalendarViewTypeFromString(viewDropdown.value);
-        this.switchToViewType(selectedViewType);
+      button.addEventListener('click', () => {
+        if (!viewTypeStr) return;
+        this.switchToViewType(this.getCalendarViewTypeFromString(viewTypeStr));
       });
-    }
+    });
 
   // Event listeners para tareas
     const taskItems = container.querySelectorAll<HTMLElement>('.oa-calendar-task');
@@ -530,7 +547,7 @@ export abstract class CalendarView extends BaseView {
   }
 
   protected navigateToDayView(dateStr: string): void {
-    this.app.saveLocalStorage('oa_navigate_to_date', dateStr);
+    this.setCurrentDate(DateTime.fromISO(dateStr));
     const leaf = this.plugin.app.workspace.getActiveViewOfType(CalendarView)?.leaf;
     leaf?.setViewState({ type: 'calendar-day-view' }).catch(console.error);
   }

@@ -24,13 +24,13 @@
       </div>
       {{/equals}}
       <div class="oa-calendar-view-selector">
-        <select id="oa-calendar-view-dropdown" class="oa-calendar-view-dropdown">
-          <option value="year" {{#equals calendar.viewType "year"}}selected{{/equals}}>{{t "year_view"}}</option>
-          <option value="month" {{#equals calendar.viewType "month"}}selected{{/equals}}>{{t "month_view"}}</option>
-          <option value="week" {{#equals calendar.viewType "week"}}selected{{/equals}}>{{t "week_view"}}</option>
-          <option value="workweek" {{#equals calendar.viewType "workweek"}}selected{{/equals}}>{{t "workweek_view"}}</option>
-          <option value="day" {{#equals calendar.viewType "day"}}selected{{/equals}}>{{t "day_view"}}</option>
-        </select>
+        <div class="oa-calendar-view-segmented" role="group" aria-label="{{t 'calendar_view_title'}}">
+          <button type="button" class="oa-calendar-view-btn {{#equals calendar.viewType "year"}}oa-active{{/equals}}" data-view-type="year" title="{{t 'year_view'}}" aria-label="{{t 'year_view'}}"></button>
+          <button type="button" class="oa-calendar-view-btn {{#equals calendar.viewType "month"}}oa-active{{/equals}}" data-view-type="month" title="{{t 'month_view'}}" aria-label="{{t 'month_view'}}"></button>
+          <button type="button" class="oa-calendar-view-btn {{#equals calendar.viewType "week"}}oa-active{{/equals}}" data-view-type="week" title="{{t 'week_view'}}" aria-label="{{t 'week_view'}}"></button>
+          <button type="button" class="oa-calendar-view-btn {{#equals calendar.viewType "workweek"}}oa-active{{/equals}}" data-view-type="workweek" title="{{t 'workweek_view'}}" aria-label="{{t 'workweek_view'}}"></button>
+          <button type="button" class="oa-calendar-view-btn {{#equals calendar.viewType "day"}}oa-active{{/equals}}" data-view-type="day" title="{{t 'day_view'}}" aria-label="{{t 'day_view'}}"></button>
+        </div>
       </div>
       <div class="oa-calendar-navigation">
         <button class="oa-calendar-prev" aria-label="{{t 'previous'}}">
@@ -51,7 +51,7 @@
     <div class="oa-calendar-week-body">
       <div class="oa-calendar-week-days-row">
         {{#each calendar.days}}
-          <div class="oa-calendar-week-day-container {{#if isToday}}oa-calendar-today{{/if}}" data-date="{{toISODate date}}">
+          <div class="oa-calendar-week-day-container {{#if isToday}}oa-calendar-today{{/if}} {{#if isSelected}}oa-calendar-selected{{/if}}" data-date="{{toISODate date}}">
             <div class="oa-calendar-week-day-header">
               <div class="oa-calendar-day-name">{{dayName}}</div>              
             </div>

@@ -71,6 +71,11 @@
         margin: 0 auto;
         padding: 0;
       }
+
+      // El hover genérico de calendar-day-styles() usa !important; sin esto, taparía el tinte de selección.
+      &:hover {
+        background-color: color-mix(in srgb, var(--interactive-accent) 20%, transparent) !important;
+      }
     }
   }
   

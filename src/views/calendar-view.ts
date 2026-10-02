@@ -10,6 +10,8 @@ import { TaskWriter } from '../core/task-writer';
 import { upsertSimpleDate, upsertScheduledDate } from '../core/task-line-fields';
 import { EDIT_TASK_MODAL_TYPE } from '../core/modal-manager';
 import { getReferenceDate, setReferenceDate } from '../core/calendar-reference-date';
+import { CalendarDatePicker } from '../core/calendar-date-picker';
+import { clearTooltips } from '../core/tooltips';
 
 /** Espera entre un `click` y un posible segundo `click` antes de asumir que no viene un `dblclick` (ms). */
 const TASK_CLICK_DELAY_MS = 250;
@@ -40,6 +42,8 @@ export abstract class CalendarView extends BaseView {
   protected tasks: ITask[] = []; 
   protected currentDate: DateTime = DateTime.now();
   protected taskWriter: TaskWriter;
+  /** Cierra el popover del selector de fecha abierto (si lo hay) y retira sus listeners globales. */
+  private closeActiveDatePicker: (() => void) | null = null;
 
   constructor(leaf: WorkspaceLeaf, protected plugin: Plugin, protected i18n: I18n, protected taskManager: TaskManager) {
     super(leaf);
@@ -302,6 +306,17 @@ export abstract class CalendarView extends BaseView {
       });
     });
 
+    // Selector de fecha popover (v1.1.9, §4.6.4): Mes/Semana/Semana laboral/Año; Día usa el modo docked.
+    this.closeActiveDatePicker?.();
+    const datePickerTrigger = container.querySelector<HTMLButtonElement>('.oa-calendar-date-picker-trigger');
+    if (datePickerTrigger) {
+      setIcon(datePickerTrigger, 'calendar');
+      datePickerTrigger.addEventListener('click', () => {
+        if (this.closeActiveDatePicker) { this.closeActiveDatePicker(); return; }
+        this.openDatePickerPopover(datePickerTrigger);
+      });
+    }
+
   // Event listeners para tareas
     const taskItems = container.querySelectorAll<HTMLElement>('.oa-calendar-task');
     taskItems.forEach(item => {
@@ -364,7 +379,30 @@ export abstract class CalendarView extends BaseView {
     );
 
     dayCells.forEach(cell => {
+      // Clic simple selecciona y resalta el día (v1.1.9, §4.6.7 decisión revisitada); un clic que
+      // llegara antes de un posible doble clic se demora lo mismo que en las tareas para no
+      // interrumpir la creación de tarea por doble clic en la misma celda.
+      let pendingSelectTimer: number | null = null;
+
+      cell.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).closest('.oa-calendar-task')) return;
+        if (pendingSelectTimer !== null) return;
+
+        const dateStr = cell.dataset.date;
+        if (!dateStr) return;
+
+        pendingSelectTimer = window.setTimeout(() => {
+          pendingSelectTimer = null;
+          this.setCurrentDate(DateTime.fromISO(dateStr));
+          this.refreshCalendar().catch(console.error);
+        }, TASK_CLICK_DELAY_MS);
+      });
+
       cell.addEventListener('dblclick', (e) => {        
+        if (pendingSelectTimer !== null) {
+          window.clearTimeout(pendingSelectTimer);
+          pendingSelectTimer = null;
+        }
         // Evitar abrir si se dio doble clic sobre una tarea (burbuja)
         if ((e.target as HTMLElement).closest('.oa-calendar-task')) return;
 
@@ -542,8 +580,72 @@ export abstract class CalendarView extends BaseView {
     });
   }
 
+  /**
+   * Abre el selector de fecha compartido en modo popover, anclado al botón del encabezado
+   * (v1.1.9, §9.3 Arquitectura técnica). Se cierra con Escape, clic fuera o al elegir un día.
+   */
+  private openDatePickerPopover(anchorButton: HTMLButtonElement): void {
+    const panel = document.body.createDiv({ cls: 'oa-date-picker oa-date-picker--popover' });
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-label', this.i18n.t('select_date'));
+
+    const positionPanel = (): void => {
+      const anchorRect = anchorButton.getBoundingClientRect();
+      const panelRect = panel.getBoundingClientRect();
+      const margin = 8;
+      const left = Math.max(margin, Math.min(anchorRect.left, window.innerWidth - panelRect.width - margin));
+      const top = Math.max(margin, Math.min(anchorRect.bottom + 4, window.innerHeight - panelRect.height - margin));
+      panel.setCssStyles({ left: `${left}px`, top: `${top}px` });
+    };
+
+    const onKeydown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') { event.preventDefault(); close(); }
+    };
+    const onPointerDown = (event: MouseEvent): void => {
+      if (event.target instanceof Node && (panel.contains(event.target) || anchorButton.contains(event.target))) return;
+      close();
+    };
+    const onResize = (): void => positionPanel();
+
+    const close = (): void => {
+      document.removeEventListener('keydown', onKeydown, true);
+      document.removeEventListener('mousedown', onPointerDown, true);
+      window.removeEventListener('resize', onResize);
+      anchorButton.setAttribute('aria-expanded', 'false');
+      panel.remove();
+      this.closeActiveDatePicker = null;
+      anchorButton.focus();
+    };
+    this.closeActiveDatePicker = close;
+
+    const picker = new CalendarDatePicker({
+      i18n: this.i18n,
+      selectedDate: this.currentDate,
+      getWeekStartDay: () => this.getWeekStartDay(),
+      getLocalizedDayNames: () => this.getLocalizedDayNames(),
+      hasTasks: (date) => this.getTasksForDate(date).length > 0,
+      onSelect: (date) => {
+        this.setCurrentDate(date);
+        close();
+        this.refreshCalendar().catch(console.error);
+      },
+    });
+    picker.mount(panel);
+    positionPanel();
+    picker.focusSelected();
+
+    anchorButton.setAttribute('aria-expanded', 'true');
+    document.addEventListener('keydown', onKeydown, true);
+    document.addEventListener('mousedown', onPointerDown, true);
+    window.addEventListener('resize', onResize);
+  }
+
   async onClose(): Promise<void> {
-    // Limpia recursos si es necesario
+    this.closeActiveDatePicker?.();
+    // Al cambiar de tipo de vista, Obsidian destruye esta instancia sin pasar por render(),
+    // así que un tooltip visible (su DOM vive en document.body, fuera del contenedor) quedaría
+    // huérfano si no se limpia aquí explícitamente.
+    clearTooltips(this.containerEl.children[1] as HTMLElement);
   }
 
   protected navigateToDayView(dateStr: string): void {

@@ -108,6 +108,6 @@ export class CalendarMonthView extends CalendarView {
   }
 
   async onClose(): Promise<void> {
-    // Limpia recursos si es necesario
+    await super.onClose();
   }
 }

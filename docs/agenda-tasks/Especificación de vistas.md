@@ -129,9 +129,9 @@ No es una vista nueva en el selector de §4.8: es un **modo dentro de la vista D
 
 > **Extendido a Mes/Semana/Semana laboral (2026-09-27)**: el mismo clic-en-el-número-de-día para navegar a la vista Día se agregó también a Mes (`.oa-calendar-month-day-number`) y Semana/Semana laboral (`.oa-calendar-date`, comparten contenedor), cableado una sola vez en `CalendarView.setupViewSpecificEventListeners()` (a diferencia de Año, aquí aplica a **todos** los días, tengan tareas o no). `stopPropagation()` evita que el clic también dispare el `dblclick` de la celda (crear tarea en esa fecha).
 
-### 4.6 Fecha de referencia compartida y selector de fecha (v1.1.9 — diseño, no implementado)
+### 4.6 Fecha de referencia compartida y selector de fecha (v1.1.9 — implementado)
 
-> **Estado**: diseño para la v1.1.9, nada de esto está implementado todavía. Lo descrito como "propuesto" o "decidido" aún no existe en el código; lo marcado como "hoy" es el comportamiento actual. Decisiones en §4.6.7 (todas resueltas salvo la 3, diferida). Mecanismo y archivos afectados: [[Arquitectura técnica]] §9. Fases: [[Plan de implementación]].
+> **Estado**: implementado. Lo descrito como "propuesto" ya existe en el código; "decidido" refleja la decisión final tomada durante la implementación. Mecanismo y archivos afectados: [[Arquitectura técnica]] §9. Fases: [[Plan de implementación]].
 
 #### 4.6.1 Situación actual
 
@@ -189,11 +189,13 @@ Nota: `CalendarWeekView` usa `startOf('week')` de Luxon (semana ISO, lunes) y no
 
 El mini-calendario lateral se reemplaza por el mismo componente selector, montado en **modo acoplado**: siempre visible en el mismo lugar del sidebar, sin botón de apertura y sin poder ocultarse (a diferencia del popover de las otras cuatro vistas). Mantiene los mismos niveles días → años → meses → días: pulsar el encabezado mes/año abre el nivel de años igual que en el popover, solo que el panel no se cierra solo ni requiere clic en un botón para mostrarse. Esto elimina la rejilla, las letras de día y el cálculo de indicadores duplicados de `generateMiniCalendarData()` (§9.4 de [[Arquitectura técnica]]), sin cambiar la experiencia visible de la vista Día.
 
+El sidebar completo (selector acoplado incluido) es además **colapsable hacia la derecha** mediante una manija (`.oa-calendar-sidebar-toggle`) entre la vista principal y el sidebar: colapsa su ancho a 0 con una transición suave y la vista principal ocupa el espacio liberado (flexbox puro, sin recalcular anchos en JS). El estado (abierto/colapsado) se persiste en `localStorage` (`calendar_day_sidebar_collapsed`) y se incluye en los datos de la plantilla para que el primer render ya refleje el estado correcto, sin parpadeo.
+
 #### 4.6.7 Decisiones
 
 1. **Persistencia de la referencia — decidido: en memoria.** No sobrevive a un reinicio de Obsidian, para no abrir el calendario días después en una fecha vieja. No se usa `localStorage`.
 2. **Vista Día — decidido: modo acoplado.** Usa el componente común siempre visible (ver §4.6.6), no el popover oculto de las demás vistas.
-3. **Seleccionar con clic en una celda**: diferido, fuera del primer corte. El `dblclick` de la celda crea una tarea, y un clic que re-renderice la vista lo interrumpiría; habría que marcar sin re-renderizar.
+3. **Seleccionar con clic en una celda — implementado.** Un clic simple en una celda de día (Mes/Semana/Semana laboral/Año) selecciona y resalta esa fecha como referencia, re-renderizando con `refreshCalendar()`. Para no interrumpir el `dblclick` de crear tarea en la misma celda, el clic espera el mismo retardo ya usado para distinguir clic/doble clic en las píldoras de tarea (`TASK_CLICK_DELAY_MS`, 250 ms): si llega un `dblclick` antes de que venza el temporizador, se cancela la selección y solo se crea la tarea. Clic sobre una tarea existente (burbuja) no dispara la selección; clic sobre el número del día sigue navegando a la vista Día, sin seleccionar la celda (mismo `stopPropagation()` de antes).
 
 #### 4.6.8 Fuera de alcance
 
@@ -241,9 +243,9 @@ Una manija en el borde inferior del último segmento (`--run-end`, o la propia c
 
 Redimensionar arrastrando el borde **superior** (cambiaría la hora de inicio, no la duración) — para mover la tarea completa ya existe el arrastre de toda la píldora (v1.1.4, Fase D). Posicionar una tarea sin duración dentro de la media hora exacta — sigue anclándose a la celda de su hora completa, como hoy.
 
-### 4.8 Selector de tipo de vista: multi-botón segmentado (v1.1.9 — diseño, no implementado)
+### 4.8 Selector de tipo de vista: multi-botón segmentado (v1.1.9 — implementado)
 
-> **Estado**: diseño en curso, nada implementado todavía. Cambio puramente visual: no toca `switchToViewType()` ni la lógica de navegación, solo cómo se dispara.
+> **Estado**: implementado. Cambio puramente visual: no toca `switchToViewType()` ni la lógica de navegación, solo cómo se dispara.
 
 **Hoy**: cada plantilla de vista de calendario (`calendar-month-view.hbs`, `-week-`, `-workweek-`, `-day-`, `-year-view.hbs`) repite un `<select id="oa-calendar-view-dropdown">` con 5 `<option>`; `CalendarView.setupViewSpecificEventListeners()` escucha su evento `change` y llama a `switchToViewType()`.
 
@@ -253,10 +255,10 @@ Redimensionar arrastrando el borde **superior** (cambiaría la hora de inicio, n
 - Clic en un botón llama a la misma `switchToViewType()` que hoy dispara el `change` del `<select>`; la lógica de cambio de vista no cambia.
 - El botón de la vista activa se marca visualmente (clase `.oa-active`, igual que la píldora de prioridad seleccionada).
 
-#### 4.8.1 Decisiones por confirmar
+#### 4.8.1 Decisiones
 
-1. **Ícono + tooltip, no solo ícono**: con 6 opciones y dos de ellas muy parecidas (Semana / Semana laboral), un ícono sin texto puede ser ambiguo a primera vista; se propone que el tooltip con el nombre de la vista sea obligatorio, no opcional.
-2. **Set de íconos** (propuesta, a revisar visualmente al implementar): Año `calendar-range`, Mes `calendar-days` (ya es el ícono por defecto de `CalendarView.getIcon()`), Semana y Semana laboral con íconos claramente distintos entre sí (a elegir, ej. columnas vs. maletín), Día `calendar-clock`, Lista `list-todo` (mismo ícono que ya usa `ListView.getIcon()`).
+1. **Ícono + tooltip, no solo ícono — confirmado.** El tooltip con el nombre de la vista es obligatorio, no opcional.
+2. **Set de íconos — confirmado**: Año `calendar-range`, Mes `calendar-days`, Semana `columns-3`, Semana laboral `briefcase`, Día `calendar-clock`. Lista (`list-todo`) se suma en v1.1.10 junto con la vista de lista del calendario; por ahora el grupo tiene 5 botones, no 6.
 
 ### 4.9 Manejo de estatus desde el calendario (v1.1.9 — diseño, no implementado)
 

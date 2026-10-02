@@ -1,0 +1,191 @@
+@use '../variables' as *;
+
+/* Selector de fecha compartido (v1.1.9, §9.3 Arquitectura técnica / §4.6.4 Especificación de vistas):
+   mismo componente en modo popover (Mes/Semana/Semana laboral/Año) y docked (Día, barra lateral
+   siempre visible). Reutiliza el lenguaje visual que ya tenía el mini-calendario de Día. */
+.oa-date-picker {
+  background-color: var(--background-secondary);
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.oa-date-picker--popover {
+  position: fixed;
+  z-index: 100;
+  width: 290px;
+  border: 1px solid var(--divider-color);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.oa-date-picker-docked {
+  width: 100%;
+
+  .oa-date-picker {
+    border: 1px solid var(--divider-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.oa-date-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 12px;
+  background-color: var(--background-secondary);
+  border-bottom: 1px solid var(--divider-color);
+  flex-shrink: 0;
+}
+
+.oa-date-picker-nav {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  color: var(--text-muted);
+  border-radius: 4px;
+
+  &:hover {
+    color: var(--text-normal);
+    background-color: var(--background-modifier-hover);
+  }
+
+  .icon {
+    font-size: 0.8em;
+  }
+}
+
+.oa-date-picker-title {
+  font-weight: 600;
+  font-size: 13px;
+  text-align: center;
+  flex-grow: 1;
+  color: var(--text-normal);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px 4px;
+
+  &:hover {
+    background-color: var(--background-modifier-hover);
+  }
+
+  &.oa-date-picker-title-static {
+    cursor: default;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
+}
+
+.oa-date-picker-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  padding: 6px 8px 2px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.oa-date-picker-weekday {
+  padding: 2px 0;
+}
+
+.oa-date-picker-grid {
+  padding: 6px 8px 8px;
+  display: grid;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.oa-date-picker-grid-days {
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(6, 28px);
+  // Las celdas quedan más anchas que altas (7 columnas angostas, filas de 28px); se compensa
+  // con más separación vertical que horizontal para que el ritmo visual se vea uniforme.
+  row-gap: 6px;
+  column-gap: 2px;
+}
+
+.oa-date-picker-grid-months,
+.oa-date-picker-grid-years {
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(4, 32px);
+}
+
+.oa-date-picker-cell {
+  border: 1px solid var(--divider-color);
+  border-radius: 4px;
+  background-color: var(--background-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-normal);
+  transition: all 0.2s ease;
+  position: relative;
+
+  &:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+    z-index: 1;
+  }
+
+  &.oa-other-month {
+    background-color: var(--background-secondary);
+    opacity: 0.5;
+    color: var(--text-muted);
+
+    &:hover {
+      box-shadow: none;
+      transform: none;
+    }
+  }
+
+  &.oa-has-tasks {
+    border-color: var(--interactive-accent);
+
+    &::after {
+      content: "●";
+      display: block;
+      font-size: 6px;
+      color: var(--interactive-accent);
+      line-height: 1;
+      position: absolute;
+      bottom: 2px;
+    }
+  }
+
+  &.oa-date-picker-today {
+    background-color: var(--interactive-accent);
+    border-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    font-weight: 600;
+  }
+
+  &.oa-date-picker-selected:not(.oa-date-picker-today) {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 1px var(--interactive-accent);
+  }
+}
+
+/* Botón de apertura del popover en el encabezado del calendario (Mes/Semana/Semana laboral/Año). */
+.oa-calendar-date-picker-trigger {
+  @include interactive-control;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

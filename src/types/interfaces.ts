@@ -329,15 +329,6 @@ export interface HourSlot {
   tasks: ITask[];
 }
 
-export interface MiniCalendarDay {
-  day: number;
-  date: string; // Formato ISO
-  isCurrentMonth: boolean;
-  isToday: boolean;
-  isSelected: boolean;
-  hasTasks?: boolean;
-}
-
 /**
  * Datos para la vista de tabla
  */
@@ -390,15 +381,6 @@ export interface ListViewData {
 }
 
 /**
- * Datos del mini calendario para la vista diaria
- */
-export interface MiniCalendarData {
-  monthName: string;
-  weekdays: string[];
-  weeks: MiniCalendarDay[][];
-}
-
-/**
  * Datos para la vista de calendario diario
  */
 export interface DayViewData {
@@ -415,9 +397,8 @@ export interface DayViewData {
   allDayStart: ITask[];
   /** Tareas con `scheduled` como ancla pero sin hora asignada (caso l\u00edmite, ver Plan de implementaci\u00f3n) */
   allDayScheduled: ITask[];
-  periodName: string;
-  miniCalendar: MiniCalendarData;
-}
+  periodName: string;  /** Sidebar del selector de fecha colapsado hacia la derecha (preferencia persistida, v1.1.9) */
+  sidebarCollapsed: boolean;}
 
 export interface MonthViewData {
   viewType: CalendarViewType;

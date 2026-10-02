@@ -17,6 +17,15 @@
   padding: 5px 0;
 }
 
+/* Agrupa el botón del selector de fecha junto al título del período (v1.1.9), para que el
+   `justify-content: space-between` del toolbar siga separando solo dos bloques: este grupo
+   y la navegación, en vez de desperdigar el botón entre ambos. */
+.oa-calendar-period-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* Adaptar período actual en toolbar */
 .oa-calendar-current-period h2 {
   margin: 0;

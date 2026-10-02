@@ -199,12 +199,12 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 ## 🔧 v1.1.9 (en desarrollo, aún no releaseada)
 
 ### Calendar Enhancements
-- [ ] **v1.1.9 — Fecha de referencia y selector de fecha** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.6 y `Arquitectura técnica.md` §9; fases en `Plan de implementación.md`)
+- [x] **v1.1.9 — Fecha de referencia y selector de fecha** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.6 y `Arquitectura técnica.md` §9; fases en `Plan de implementación.md`)
   - [x] Fecha de referencia compartida: cambiar de vista (Día/Semana/Semana laboral/Mes/Año) conserva la fecha en vez de volver a hoy
   - [x] Resaltar la fecha seleccionada, distinta de "hoy", en Mes, Semana, Semana laboral y Año
-  - [ ] Selector de fecha ocultable en Mes/Semana/Semana laboral/Año, abierto desde el encabezado del calendario; en Día se integra siempre visible (sin botón). Elegir un día lleva la vista actual a esa fecha (su mes, su semana, etc.); la pestaña "Calendario" del encabezado sigue abriendo Mes + hoy.
-  - [ ] Niveles dentro del selector: días → años (por década) → meses → días
-  - [ ] Textos del selector en los seis idiomas y uso con teclado (Escape, foco)
+  - [x] Selector de fecha ocultable en Mes/Semana/Semana laboral/Año, abierto desde el encabezado del calendario; en Día se integra siempre visible (sin botón). Elegir un día lleva la vista actual a esa fecha (su mes, su semana, etc.); la pestaña "Calendario" del encabezado sigue abriendo Mes + hoy.
+  - [x] Niveles dentro del selector: días → años (por década) → meses → días
+  - [x] Textos del selector en los seis idiomas y uso con teclado (Escape, foco)
 - [ ] **Bloques con duración en la vista por día** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.7 y `Arquitectura técnica.md` §10; fases en `Plan de implementación.md`)
   - [ ] Sin duración: ocupa una hora completa, como hoy. Menos de 60 min: ocupa media celda (con la etiqueta de minutos). 60 min o más: varias celdas conectadas, igual técnica que las rachas de hábitos (sin capa superpuesta)
   - [ ] Tareas solapadas en carriles lado a lado, nunca una tapando a la otra
@@ -218,8 +218,8 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [x] **Selector de tipo de vista como multi-botón segmentado** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.8 y `Arquitectura técnica.md` §12; fases en `Plan de implementación.md`)
   - [x] 5 botones pegados (Año/Mes/Semana/Semana laboral/Día; Lista se suma en v1.1.10 junto a la vista de lista del calendario), un clic para cambiar de vista, misma lógica de `switchToViewType()`
   - [x] Reutiliza el estilo del selector de prioridad del Task Modal (`.oa-priority-segmented`/`.oa-priority-pill`), en versión compacta sin espacio entre botones
-  - [ ] Ícono por botón + tooltip con el nombre de la vista (gratis con el componente de tooltips ya construido) — por confirmar si el ícono va siempre acompañado de tooltip
-  - [ ] Por decidir: íconos concretos, en especial para distinguir Semana de Semana laboral
+  - [x] Ícono por botón + tooltip con el nombre de la vista (gratis con el componente de tooltips ya construido) — tooltip obligatorio, confirmado
+  - [x] Íconos: Año `calendar-range`, Mes `calendar-days`, Semana `columns-3`, Semana laboral `briefcase`, Día `calendar-clock`
 - [ ] **Vista Día: modo de varios días 1/3/5** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.4.3 y `Arquitectura técnica.md` §13; fases en `Plan de implementación.md`)
   - [ ] Multi-botón 1/3/5 solo visible dentro de la vista Día (no en el selector principal de vistas)
   - [ ] Día de referencia centrado (3: 1 antes/1 después; 5: 2 antes/2 después); ◀▶ desplazan un día a la vez
@@ -231,6 +231,13 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
   - [ ] Marcar "Hecho" agrega la fecha ✅; cambiar desde "Hecho" a otro estado la quita — igual que el checkbox nativo de Obsidian
   - [ ] Estados personalizados/configurables y filtrar el calendario por estado quedan fuera de alcance por ahora
 - [ ] **Fix: `task-filter.ts` compara el símbolo contra el texto del estado** — `isTaskCompleted` compara `state.status` (símbolo literal) contra `'DONE'`/`'CANCELLED'` (valores de `state.text`); nunca es verdadero, el filtro no excluye completadas/canceladas como debería
+
+- [x] **Mejoras adicionales encontradas durante la implementación de v1.1.9** (no estaban en el diseño original)
+  - [x] Clic simple en una celda de día (Mes/Semana/Semana laboral/Año) selecciona y resalta esa fecha como referencia, sin interrumpir el doble clic de crear tarea en la misma celda (mismo patrón de retardo que las tareas, `TASK_CLICK_DELAY_MS`) — revisa la decisión 3 de §4.6.7, antes diferida
+  - [x] **fix**: las 5 subclases de `CalendarView` sombreaban por completo `onClose()` de la clase base (no llamaban a `super.onClose()`); un tooltip visible al cambiar de tipo de vista quedaba huérfano en `document.body` para siempre, mostrando 2 tooltips superpuestos la próxima vez que se pasaba el mouse por un botón similar
+  - [x] Sidebar de la vista Día colapsable hacia la derecha (manija entre la vista principal y el sidebar), estado persistido en `localStorage`
+  - [x] Hover especial para el día seleccionado en Mes/Semana/Semana laboral: ya no pierde el tinte de acento al pasar el mouse por encima (el hover genérico compartido usaba `!important`)
+  - [x] Ajustes visuales del selector de fecha: ancho del popover a 290px, `grid-template-rows` explícito (evita que la última fila de días quede recortada), separación vertical/horizontal distinta en la rejilla de días, contorno de acento en días con tareas, margen entre flechas y título del encabezado
 
 ## 🔮 v1.1.10 (ideas, discusión pendiente)
 

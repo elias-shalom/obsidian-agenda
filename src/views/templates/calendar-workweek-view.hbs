@@ -1,7 +1,10 @@
 <div class="oa-calendar-container">
   <div class="oa-calendar-toolbar">
-    <div class="oa-calendar-current-period">
-      <h2>{{t "week"}} {{calendar.weekNumber}} - {{calendar.periodName}}</h2>
+    <div class="oa-calendar-period-group">
+      <button type="button" class="oa-calendar-date-picker-trigger" aria-haspopup="dialog" aria-expanded="false" title="{{t 'open_date_picker'}}" aria-label="{{t 'open_date_picker'}}"></button>
+      <div class="oa-calendar-current-period">
+        <h2>{{t "week"}} {{calendar.weekNumber}} - {{calendar.periodName}}</h2>
+      </div>
     </div>
     
     <div class="oa-calendar-nav-container">

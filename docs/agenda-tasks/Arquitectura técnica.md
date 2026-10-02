@@ -237,7 +237,7 @@ Se usa la [Drag and Drop API nativa del navegador](https://developer.mozilla.org
 - **Origen**: clic simple sobre una tarea en cualquier vista de calendario abre el modal (con la `ITask` ya en memoria, sin releer el archivo); doble clic sigue abriendo el archivo. Ambos gestos comparten el listener `click`/`dblclick` de `.oa-calendar-task`, desambiguados con un `setTimeout` de ~250ms (un doble clic real dispara dos `click` sueltos antes del `dblclick`).
 - **Refresco tras guardar**: como ninguna vista se suscribe al `EventBus`/`TASKS_UPDATED` (los refrescos son siempre explícitos — botón, navegación, o el propio drag and drop llamando `refreshView()`), `TaskModal` acepta un callback opcional `ModalOptions.onSaved` y lo invoca justo tras un guardado exitoso. `CalendarView` lo usa para refrescarse a sí misma al crear o editar una tarea desde el calendario.
 
-## 9. Fecha de referencia compartida y selector de fecha (v1.1.9, diseño — no implementado)
+## 9. Fecha de referencia compartida y selector de fecha (v1.1.9, implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.6. Esta sección cubre el mecanismo y su impacto en el código.
 
@@ -289,6 +289,10 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.6. Est
 - **Re-render completo**: cualquier cambio de fecha vuelve a dibujar la vista; el estado del selector no sobrevive, y es el comportamiento deseado.
 - **Coste de `refreshView()`**: fuerza recarga de tareas en cada navegación. Para el selector se prefiere `refreshCalendar()` con las tareas ya cargadas (no se midió el coste real).
 - **Inicio de semana inconsistente**: Semana usa semana ISO y Mes usa `weekStartDay`; con inicio en domingo el selector, Mes y Semana no coincidirían. Es preexistente y queda fuera de alcance.
+- **Bug encontrado y corregido durante la implementación**: las 5 subclases de `CalendarView` (Mes/Semana/Semana laboral/Año/Día) definían su propio `onClose()` sin llamar a `super.onClose()`, sombreando por completo la limpieza de la clase base. Esto dejaba huérfano el popover del selector (nunca se cerraba) y, más notorio, el tooltip temático (`src/core/tooltips.ts`): su DOM vive en `document.body`, fuera del contenedor de la vista, así que al cambiar de tipo de vista (`switchToViewType()` destruye la instancia vieja sin pasar por `render()`/`clearTooltips()`) un tooltip visible quedaba flotando para siempre, visible junto a un segundo tooltip nuevo al volver a pasar el mouse por un botón similar en la vista nueva. Arreglado: `CalendarView.onClose()` ahora llama a `clearTooltips()` + `closeActiveDatePicker?.()`, y las 5 subclases llaman a `super.onClose()`.
+- **Sidebar de Día colapsable (añadido durante la implementación, fuera del diseño original)**: una manija (`.oa-calendar-sidebar-toggle`) entre `.oa-calendar-day-main-view` y `.oa-calendar-mini-sidebar` alterna la clase `.oa-calendar-mini-sidebar--collapsed` (ancho/padding a 0 con transición); el layout usa flexbox puro (`flex-grow: 1` en la vista principal, sin `width: calc()`) para que el espacio se redistribuya solo. Estado persistido en `localStorage` (`calendar_day_sidebar_collapsed`) e incluido en `DayViewData.sidebarCollapsed` para que el primer render ya sea correcto.
+- **Clic simple para seleccionar (decisión 3 de §4.6.7 revisada)**: inicialmente diferido, se implementó igual que el patrón ya usado para distinguir clic/doble clic en las tareas (`TASK_CLICK_DELAY_MS`): el `click` de una celda arma un `setTimeout`; si llega `dblclick` antes, se cancela y solo se crea la tarea; si no, se cumple y se llama `setCurrentDate()` + `refreshCalendar()`.
+- **Ajustes visuales de la rejilla del selector** (no estaban en el diseño original, encontrados al revisar visualmente): `grid-template-rows` explícito en vez de `grid-auto-rows`/`aspect-ratio` (evita que la última fila quede recortada por el `overflow: hidden` del panel antes de que el navegador resuelva el alto); `row-gap`/`column-gap` distintos en la rejilla de días (las celdas quedan más anchas que altas); `.oa-has-tasks` recuperó el contorno de acento que tenía el mini-calendario original, no solo el punto; `.oa-date-picker--popover` ensanchado a 290px.
 
 ## 10. Bloques con duración en la vista por Día (v1.1.9, diseño — no implementado)
 
@@ -353,9 +357,9 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.4.1.
 
 `.oa-calendar-allday-content` no tiene `min-height` hoy; si un día no tiene ninguna tarea de todo el día, el contenido queda sin filas (`.oa-calendar-allday-row` solo se renderiza condicionalmente por tipo), dejando un área casi inexistente para hacer doble clic. Se le añade un `min-height` fijo (a definir al implementar, orientativamente similar a una fila de tarea) para que siempre haya un área vacía reconocible.
 
-## 12. Selector de tipo de vista: multi-botón segmentado (v1.1.9, diseño — no implementado)
+## 12. Selector de tipo de vista: multi-botón segmentado (v1.1.9, implementado)
 
-Comportamiento de usuario y decisiones abiertas: [[Especificación de vistas]] §4.8.
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.8.
 
 ### 12.1 Reutilización del patrón de la prioridad del Task Modal
 
@@ -380,8 +384,8 @@ Las 5 plantillas de calendario (pronto 6, con Lista) reemplazan su `<select id="
 
 ### 12.5 Riesgos
 
-- **Ambigüedad Semana vs. Semana laboral solo con ícono**: mitigado por el tooltip obligatorio (§4.8.1, decisión 1).
-- **Compacidad en paneles estrechos**: 6 botones pegados deben seguir caben en el encabezado del calendario junto al resto de controles (fecha de referencia, selector de fecha, navegación); se verifica en el mismo caso límite de panel estrecho ya anotado en §4.6.9.
+- **Ambigüedad Semana vs. Semana laboral solo con ícono**: mitigado por el tooltip obligatorio (§4.8.1, decisión 1). Set final: Año `calendar-range`, Mes `calendar-days`, Semana `columns-3`, Semana laboral `briefcase`, Día `calendar-clock`.
+- **Compacidad en paneles estrechos**: 5 botones pegados (6 con Lista en v1.1.10) deben seguir cabiendo en el encabezado del calendario junto al resto de controles (fecha de referencia, selector de fecha, navegación); se verifica en el mismo caso límite de panel estrecho ya anotado en §4.6.9.
 
 ## 13. Vista Día: modo de varios días 1/3/5 (v1.1.9, diseño — no implementado)
 

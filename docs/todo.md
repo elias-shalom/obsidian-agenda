@@ -210,11 +210,11 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
   - [ ] Tareas solapadas en carriles lado a lado, nunca una tapando a la otra
   - [ ] Redimensionar arrastrando el borde inferior, en pasos de 30 minutos
   - [ ] Línea punteada a la media hora en cada franja, como guía visual
-- [ ] doble clic para crear tarea en la vista Día (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.4.1 y `Arquitectura técnica.md` §11; fases en `Plan de implementación.md`)
-  - [ ] Franja horaria: prellena fecha y hora. Sección "Todo el día": prellena solo fecha (igual que las demás vistas)
-  - [ ] Doble clic sobre una tarea existente sigue abriendo su nota, sin crear una nueva
-  - [ ] Altura mínima en la sección "Todo el día" para que siempre haya un área vacía donde hacer doble clic
-  - [ ] **fix Bug relacionado, confirmado para corregir de paso**: `TaskModal` ignora `modalOptions.today` y siempre prellena la fecha de hoy al crear desde doble clic en Mes/Semana/Semana laboral/Año, sin importar el día de la celda
+- [x] doble clic para crear tarea en la vista Día (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.4.1 y `Arquitectura técnica.md` §11; fases en `Plan de implementación.md`)
+  - [x] Franja horaria: prellena fecha y hora. Sección "Todo el día": prellena solo fecha (igual que las demás vistas)
+  - [x] Doble clic sobre una tarea existente sigue abriendo su nota, sin crear una nueva
+  - [x] Altura mínima en la sección "Todo el día" para que siempre haya un área vacía donde hacer doble clic
+  - [x] **fix Bug relacionado, confirmado para corregir de paso**: `TaskModal` ignora `modalOptions.today` y siempre prellena la fecha de hoy al crear desde doble clic en Mes/Semana/Semana laboral/Año, sin importar el día de la celda
 - [ ] **Selector de tipo de vista como multi-botón segmentado** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.8 y `Arquitectura técnica.md` §12; fases en `Plan de implementación.md`)
   - [ ] 6 botones pegados (Año/Mes/Semana/Semana laboral/Día/Lista), un clic para cambiar de vista, misma lógica de `switchToViewType()`
   - [ ] Reutiliza el estilo del selector de prioridad del Task Modal (`.oa-priority-segmented`/`.oa-priority-pill`), en versión compacta sin espacio entre botones

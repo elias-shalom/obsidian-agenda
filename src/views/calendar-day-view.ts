@@ -309,8 +309,22 @@ export class CalendarDayView extends CalendarView {
 
     // Drag and drop (v1.1.4, Fase D): arrastrar una tarea programada a otra franja horaria
     // cambia su hora de `scheduled`, preservando los minutos originales dentro de la hora.
+    // Doble clic en una franja vacía crea una tarea con fecha + hora prellenadas (v1.1.9, fix).
     const hourSlots = container.querySelectorAll<HTMLElement>('.oa-calendar-hour-slot');
     hourSlots.forEach(slot => {
+      slot.addEventListener('dblclick', (e) => {
+        if ((e.target as HTMLElement).closest('.oa-calendar-task')) return;
+
+        const hourStr = slot.dataset.hour;
+        if (hourStr === undefined) return;
+        const hour = Number(hourStr);
+        if (Number.isNaN(hour)) return;
+
+        const dateStr = this.currentDate.toISODate();
+        if (!dateStr) return;
+        this.openCreateTaskForDate(dateStr, `${String(hour).padStart(2, '0')}:00`);
+      });
+
       slot.addEventListener('dragover', (e) => {
         e.preventDefault();
         slot.addClass('oa-calendar-drop-target');
@@ -325,6 +339,14 @@ export class CalendarDayView extends CalendarView {
         slot.removeClass('oa-calendar-drop-target');
         this.handleHourSlotDrop(e, slot.dataset.hour);
       });
+    });
+
+    // Doble clic en la sección "Todo el día" crea una tarea sin hora (v1.1.9, fix).
+    const alldayContent = container.querySelector<HTMLElement>('.oa-calendar-allday-content');
+    alldayContent?.addEventListener('dblclick', (e) => {
+      if ((e.target as HTMLElement).closest('.oa-calendar-task')) return;
+      const dateStr = this.currentDate.toISODate();
+      if (dateStr) this.openCreateTaskForDate(dateStr);
     });
   }
 

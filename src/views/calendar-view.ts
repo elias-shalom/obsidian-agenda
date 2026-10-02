@@ -343,8 +343,7 @@ export abstract class CalendarView extends BaseView {
     });
 
     const dayCells = container.querySelectorAll<HTMLElement>(
-      '.oa-calendar-month-day, .oa-calendar-week-day-container, ' +
-      '.oa-calendar-day-column, .oa-calendar-year-day'
+      '.oa-calendar-month-day, .oa-calendar-week-day-container, .oa-calendar-year-day'
     );
 
     dayCells.forEach(cell => {
@@ -506,11 +505,13 @@ export abstract class CalendarView extends BaseView {
     }
   }
 
-  private openCreateTaskForDate(dateStr: string): void {
+  /** Abre el modal de creación para una fecha (doble clic en celda vacía); `scheduledTime` opcional prellena la hora (franjas horarias de Día, v1.1.9). */
+  protected openCreateTaskForDate(dateStr: string, scheduledTime?: string): void {
     console.debug(`Abriendo modal para crear tarea en fecha ${dateStr}`); // Debugging line
     const plugin = this.plugin as AgendaPlugin;
     plugin.modalManager.openModal("create-task", {
       today: dateStr,
+      scheduledTime,
       onSaved: () => this.refreshView().catch(console.error),
     });
   }

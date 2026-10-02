@@ -196,26 +196,58 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [x] Conservar búsqueda, filtros y orden de la Tabla al editar tareas o cambiar de vista
 - [x] Editar tarea con clic simple en las vistas Lista y Tabla; doble clic sigue abriendo la nota
 
-## 🔧 Cambios posteriores a v1.1.8 ( en desarrollo, aún no releaseados)
+## 🔧 v1.1.9 (en desarrollo, aún no releaseada)
 
 ### Calendar Enhancements
-- [ ] Date picker navegable por niveles (año → mes → día), abierto desde el encabezado del calendario; al elegir una fecha, navegar inmediatamente a ella.
-- [ ] redimensionar bloques con duración en la vista por día
-- [ ] nueva vista por horas varios días, semana horaria completa.
-- [ ] manejo de estatus desde el calendario
+- [ ] **v1.1.9 — Fecha de referencia y selector de fecha** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.6 y `Arquitectura técnica.md` §9; fases en `Plan de implementación.md`)
+  - [ ] Fecha de referencia compartida: cambiar de vista (Día/Semana/Semana laboral/Mes/Año) conserva la fecha en vez de volver a hoy
+  - [ ] Resaltar la fecha seleccionada, distinta de "hoy", en Mes, Semana, Semana laboral y Año
+  - [ ] Selector de fecha ocultable en Mes/Semana/Semana laboral/Año, abierto desde el encabezado del calendario; en Día se integra siempre visible (sin botón). Elegir un día lleva la vista actual a esa fecha (su mes, su semana, etc.); la pestaña "Calendario" del encabezado sigue abriendo Mes + hoy.
+  - [ ] Niveles dentro del selector: días → años (por década) → meses → días
+  - [ ] Textos del selector en los seis idiomas y uso con teclado (Escape, foco)
+- [ ] **Bloques con duración en la vista por día** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.7 y `Arquitectura técnica.md` §10; fases en `Plan de implementación.md`)
+  - [ ] Sin duración: ocupa una hora completa, como hoy. Menos de 60 min: ocupa media celda (con la etiqueta de minutos). 60 min o más: varias celdas conectadas, igual técnica que las rachas de hábitos (sin capa superpuesta)
+  - [ ] Tareas solapadas en carriles lado a lado, nunca una tapando a la otra
+  - [ ] Redimensionar arrastrando el borde inferior, en pasos de 30 minutos
+  - [ ] Línea punteada a la media hora en cada franja, como guía visual
+- [ ] doble clic para crear tarea en la vista Día (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.4.1 y `Arquitectura técnica.md` §11; fases en `Plan de implementación.md`)
+  - [ ] Franja horaria: prellena fecha y hora. Sección "Todo el día": prellena solo fecha (igual que las demás vistas)
+  - [ ] Doble clic sobre una tarea existente sigue abriendo su nota, sin crear una nueva
+  - [ ] Altura mínima en la sección "Todo el día" para que siempre haya un área vacía donde hacer doble clic
+  - [ ] **fix Bug relacionado, confirmado para corregir de paso**: `TaskModal` ignora `modalOptions.today` y siempre prellena la fecha de hoy al crear desde doble clic en Mes/Semana/Semana laboral/Año, sin importar el día de la celda
+- [ ] **Selector de tipo de vista como multi-botón segmentado** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.8 y `Arquitectura técnica.md` §12; fases en `Plan de implementación.md`)
+  - [ ] 6 botones pegados (Año/Mes/Semana/Semana laboral/Día/Lista), un clic para cambiar de vista, misma lógica de `switchToViewType()`
+  - [ ] Reutiliza el estilo del selector de prioridad del Task Modal (`.oa-priority-segmented`/`.oa-priority-pill`), en versión compacta sin espacio entre botones
+  - [ ] Ícono por botón + tooltip con el nombre de la vista (gratis con el componente de tooltips ya construido) — por confirmar si el ícono va siempre acompañado de tooltip
+  - [ ] Por decidir: íconos concretos, en especial para distinguir Semana de Semana laboral
+- [ ] **Vista Día: modo de varios días 1/3/5** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.4.3 y `Arquitectura técnica.md` §13; fases en `Plan de implementación.md`)
+  - [ ] Multi-botón 1/3/5 solo visible dentro de la vista Día (no en el selector principal de vistas)
+  - [ ] Día de referencia centrado (3: 1 antes/1 después; 5: 2 antes/2 después); ◀▶ desplazan un día a la vez
+  - [ ] Hereda el grid de horas y los bloques con duración/carriles del punto anterior, por columna de día; ninguna tarea cruza entre columnas
+- [ ] **Manejo de estatus desde el calendario** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.9/§7.5, `Modelo de datos.md` §10 y `Arquitectura técnica.md` §14; fases en `Plan de implementación.md`)
+  - [ ] Sexto estado "En espera" (`?`, ícono ⏸️), sumado a los 5 ya existentes (Todo/En progreso/Hecho/Cancelada/No es tarea)
+  - [ ] Ícono de estado visible en cada píldora del calendario
+  - [ ] Cambiar el estado con clic derecho (menú contextual) sobre la tarea, o desde un nuevo campo en el Task Modal (crear y editar, "Todo" preseleccionado al crear)
+  - [ ] Marcar "Hecho" agrega la fecha ✅; cambiar desde "Hecho" a otro estado la quita — igual que el checkbox nativo de Obsidian
+  - [ ] Estados personalizados/configurables y filtrar el calendario por estado quedan fuera de alcance por ahora
+- [ ] **Fix: `task-filter.ts` compara el símbolo contra el texto del estado** — `isTaskCompleted` compara `state.status` (símbolo literal) contra `'DONE'`/`'CANCELLED'` (valores de `state.text`); nunca es verdadero, el filtro no excluye completadas/canceladas como debería
 
-### Habit Tracker
-- [ ] Refresco automático de la Rutina
-- [ ] las vistas dependientes de la fecha actual a medianoche local, sin requerir interacción ni cambios en el vault.
+## 🔮 v1.1.10 (ideas, discusión pendiente)
+
+- [ ] Vista de lista dentro del calendario: misma fecha de referencia y días que Mes/Semana/Día, pero en renglones en vez de casillas (ver imagen de referencia en el punto 6 de la discusión; se suma como 7º botón al selector segmentado de v1.1.9 una vez diseñada)
+- [ ] Modal de duración: reusar el dial circular del Habit Editor, en incrementos de 5 min en vez de minuto a minuto, cubriendo hasta el día completo
+- [ ] Compatibilidad con tareas recursivas/repetitivas (🔁) del pluiin tasks (las tareas recursivas se van creando cuando se marca como terminada la misma anterior) — analizar cómo lo resuelve Obsidian Tasks antes de diseñar
+
 
 ## 📊 Próximas Características (v1.x)
 
 [Google Calendar](https://community.obsidian.md/plugins/google-calendar)
 [Day Planner](https://community.obsidian.md/plugins/obsidian-day-planner)
 [Timelineal](https://timelineal.com/)
+[FullCalendar](https://community.obsidian.md/plugins/full-calendar-remastered)
+[kanban task](https://community.obsidian.md/plugins/tasks-kanban)
 
 ### Core Tasks
-- [ ] Compatibilidad con tareas recursivas/repetitivas (🔁) del pluiin tasks (las tareas recursivas se van creando cuando se marca como terminada la misma anterior)
 - [ ] Configuración de tareas por nota o multiples tareas por nota (reconocimiento)
 
 ### Task Management Views
@@ -224,7 +256,7 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [ ] Agenda view ![vista agenda ](attachments/agenda-view.png)
 
 ### Timeline & Planning Views
-- [ ] List View. Vista de lista mejorada ![vista lista ](attachments/vista-lista.png)
+- [ ] List View. Vista de lista mejorada ![vista lista ](attachments/vista-lista.png) — la variante dentro del calendario queda rastreada aparte en v1.1.10 (más arriba)
 - [ ] Gantt view
 - [ ] Timeline view
 
@@ -247,6 +279,12 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 ### 🐛 Correcciones Pendientes
 - [ ] Ancho de las filas de la tabla en la vista tablas
 
+### Habit Tracker
+- [ ] Refresco automático de la Rutina
+- [ ] las vistas dependientes de la fecha actual a medianoche local, sin requerir interacción ni cambios en el vault.
+
+
+- [ ] Día recomendado, seria los horarios de que hacer a cada hora dependiendo de lo que se debe de hacer entre tareas y habitos.
 
 ## 🔄 **Revisión y Reflexión (v2.x - v3.x)**
 - [ ] Plantillas de revisión diaria/semanal/mensual

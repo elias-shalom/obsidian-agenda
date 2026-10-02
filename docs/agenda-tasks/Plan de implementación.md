@@ -104,3 +104,136 @@ tags:
 - `EditorSuggest` estilo Tasks (menú al escribir espacio) — la Fase B cubre el mismo resultado funcional con menor esfuerzo (menú contextual + comando).
 - Recurrencia (`🔁`) combinada con hora/duración — ver nota en [[Modelo de datos]] §9 ("Diferido para una próxima versión").
 - Soporte móvil del menú de inserción y del drag-and-drop (v1.1.4 se enfoca en desktop/web; se valida más adelante).
+
+## Próxima fase — v1.1.9: fecha de referencia y selector de fecha (diseño)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §4.6. Mecanismo y archivos: [[Arquitectura técnica]] §9. **Nada de esta fase está implementado.** Decisiones 1 y 2 de §4.6.7 ya resueltas: referencia en memoria; Vista Día usa el componente común en modo acoplado (siempre visible, sin botón).
+
+### Fase A — Fecha de referencia y resaltado (base, sin UI nueva)
+- [ ] Módulo `src/core/calendar-reference-date.ts` y `CalendarView.setCurrentDate()` como único punto de escritura de `currentDate`.
+- [ ] `CalendarView.onOpen()` toma la referencia; quitar de `CalendarDayView.onOpen()` la lectura y borrado de `oa_navigate_to_date`, y de `navigateToDayView()` su escritura.
+- [ ] `switchToViewType()` conserva la fecha; el botón "Hoy" restablece la referencia.
+- [ ] `isSelected` en `WeekDayData`, `MonthViewData` y `YearViewData`, calculado en cada `generateViewData()` (en Año solo si `isCurrentMonth`).
+- [ ] Clases `oa-calendar-selected` / `oa-year-selected` en las cuatro plantillas y su estilo, independiente del de "hoy".
+- [ ] Mantener sin cambios la pestaña "Calendario" del encabezado (`BaseView.attachEventTabs()`): sigue activando `calendar-month-view` directamente, sin leer la referencia — es la mitigación decidida para no reabrir el calendario en una fecha vieja.
+- [ ] Verificable sola: cambiar de vista con una fecha distinta de hoy y ver la fecha marcada en Mes, Semana, Semana laboral y Año.
+
+### Fase B — Componente selector (depende de A)
+- [ ] `src/core/calendar-date-picker.ts` con los niveles días → años → meses → días y estado de exploración propio.
+- [ ] Constructor de rejilla común (6 filas, `weekStartDay`, nombres localizados) y cálculo de "día con tareas" reutilizando `CalendarView.getTasksForDate(día).length > 0` (mismo criterio que Mes; respeta `calendarShowDueDates`/`StartDates`/`ScheduledDates` y `calendarShowCompletedTasks`).
+- [ ] Botón de apertura en las cinco plantillas; popover con `aria-expanded`, cierre con `Escape`, clic fuera y al elegir día; foco devuelto al botón.
+- [ ] Al elegir un día: `setCurrentDate()` y re-render del mismo tipo de vista, preferentemente con `refreshCalendar()`.
+- [ ] Estilos `components/_calendar-date-picker.scss` y claves de i18n nuevas en los seis locales.
+
+### Fase C — Vista Día: componente común en modo acoplado
+- [ ] Montar el componente selector en modo `docked` dentro del sidebar actual de Día (mismo lugar, siempre visible, sin botón de apertura ni opción de ocultarlo).
+- [ ] Sustituir `generateMiniCalendarData()` por el constructor de rejilla común: quita el lunes fijo, las letras en español y el punteado de tareas que ignora los settings de calendario (ver [[Arquitectura técnica]] §9.4).
+- [ ] Conservar los niveles días → años → meses → días al pulsar el encabezado mes/año, igual que en el popover de las otras vistas.
+
+### Fase D — Cierre
+- [ ] Actualizar README (News, Changelog, Gestures) y `docs/todo.md`, indicando el cambio de comportamiento al cambiar de vista.
+- [ ] Subir versión a 1.1.9 al terminar (`npm version 1.1.9 --no-git-tag-version`).
+
+### Validación manual (no hay framework de pruebas ni vault de prueba)
+- [ ] Casos de §4.6.9 de [[Especificación de vistas]]: fin de año y bisiesto, inicio de semana en lunes y domingo, las cinco vistas con fecha distinta de hoy, seis idiomas, tema claro y oscuro, panel estrecho.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+## Próxima fase — v1.1.9 (cont.): bloques con duración en la vista por Día (diseño)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §4.7. Mecanismo y archivos: [[Arquitectura técnica]] §10. **Nada de esta fase está implementado.** Decisiones 1 y 2 de §4.7.5 ya resueltas: redondeo del fin hacia arriba; carriles calculados por conglomerado de solapamiento.
+
+### Fase A — Segmentos conectados (sin carriles ni resize todavía)
+- [ ] `CalendarDayView.generateViewData()` calcula `[startHalfSlot, endHalfSlot)` y `segmentRole` por tarea con `scheduledTime`.
+- [ ] Plantilla y SCSS: adaptar/reutilizar `oa-habit-grid-cell--run-start/--run-middle/--run-end` para las celdas de hora; franja sin duración ocupa la celda completa (sin cambios); duración < 60 min ocupa media celda con su etiqueta.
+- [ ] Línea punteada a la media hora en cada `.oa-calendar-hour-row` (§4.7.1).
+- [ ] Verificable sola: una tarea de 30, 60, 90 y 120 minutos se ve con el tamaño correcto, sin carriles ni resize.
+
+### Fase B — Carriles para tareas solapadas (depende de A)
+- [ ] Algoritmo de conglomerados + asignación greedy de carriles (§4.7.3); ancho de columna por conglomerado, no por todo el día.
+- [ ] Verificable sola: dos tareas que se solapan se ven una junto a la otra, nunca una tapando a la otra.
+
+### Fase C — Redimensionar arrastrando el borde inferior (depende de A)
+- [ ] Manija en el segmento final; arrastre con snap a 30 minutos; escribe con `upsertScheduledDuration()` + `TaskWriter.updateTaskLine()`.
+- [ ] Duración mínima de 30 minutos al arrastrar.
+- [ ] Revisar que el `dragstart` de mover la tarea completa a otro día (ya existente) siga funcionando con el segmento `--run-start` como origen.
+
+### Validación manual
+- [ ] Tareas de distinta duración (sin duración, <30min, 30–59min, 60min, >120min) en las mismas horas, con y sin solape.
+- [ ] Redimensionar hasta el límite mínimo (30 min) y hasta cruzar medianoche (se recorta al final del día, ADR-T7).
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fuera de alcance
+Redimensionar arrastrando el borde superior (cambia la hora de inicio, no la duración); posicionar tareas sin duración dentro de la media hora exacta.
+
+## Próxima fase — v1.1.9 (cont.): doble clic para crear tarea en la vista Día (diseño)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §4.4.1. Mecanismo: [[Arquitectura técnica]] §11. **Nada de esta fase está implementado.** Decisión 1 de §4.4.2 confirmada: se corrige `modalOptions.today` junto con esta fase.
+
+### Fase Única
+- [ ] Corregir `TaskModal.buildTemplateData()` para leer `modalOptions.today` (bug preexistente que afecta también a Mes/Semana/Semana laboral/Año) y una clave nueva `modalOptions.scheduledTime`.
+- [ ] Reemplazar `.oa-calendar-day-column` por `.oa-calendar-hour-slot`/`.oa-calendar-allday-content` en el selector compartido de `CalendarView.setupViewSpecificEventListeners()`, o cablear un listener específico en `CalendarDayView`.
+- [ ] Doble clic en franja horaria: abre creación con fecha + hora prellenadas. Doble clic en "Todo el día": reutiliza `openCreateTaskForDate()` sin cambios.
+- [ ] `min-height` en `.oa-calendar-allday-content` para que el área vacía siga siendo un blanco de doble clic aunque no haya tareas de todo el día ese día.
+- [ ] Verificable sola: doble clic en una franja horaria de un día distinto a hoy prellena la fecha Y la hora correctas; doble clic en Mes/Semana para un día distinto a hoy ya no prellena "hoy" por error.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+## Próxima fase — v1.1.9 (cont.): selector de tipo de vista como multi-botón segmentado (diseño)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §4.8. Mecanismo: [[Arquitectura técnica]] §12. **Nada de esta fase está implementado.** Pendiente confirmar las decisiones de §4.8.1 (ícono+tooltip obligatorio; set de íconos, especialmente Semana vs. Semana laboral).
+
+### Fase Única
+- [ ] Nueva clase `.oa-calendar-view-segmented` (variante compacta, sin espacio entre botones, de `.oa-priority-segmented`/`.oa-priority-pill`).
+- [ ] Reemplazar el `<select id="oa-calendar-view-dropdown">` por el grupo de botones en las 5 plantillas de calendario (serán 6 cuando se sume la vista Lista en v1.1.10).
+- [ ] Cada botón: ícono vía `setIcon()` + `title` con la clave i18n existente de la vista (se vuelve tooltip automáticamente).
+- [ ] `CalendarView.setupViewSpecificEventListeners()`: cambiar el listener `change` del `<select>` por `click` por botón, llamando a la misma `switchToViewType()`.
+- [ ] Verificable sola: un clic cambia de vista igual que hoy el dropdown; el botón activo se marca visualmente; los 6 botones caben en el encabezado sin desbordarse.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+## Próxima fase — v1.1.9 (cont.): vista Día, modo de varios días 1/3/5 (diseño)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §4.4.3. Mecanismo: [[Arquitectura técnica]] §13. **Nada de esta fase está implementado.** Depende de las Fases A/B del §4.7 (bloques con duración y carriles) ya diseñadas.
+
+## Próxima fase — v1.1.9 (cont.): manejo de estatus desde el calendario (diseño)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §4.9 y §7.5. Símbolos: [[Modelo de datos]] §10 (ADR-S1 a S3). Mecanismo: [[Arquitectura técnica]] §14. **Nada de esta fase está implementado**, incluido el fix de `task-filter.ts`.
+
+### Fase A — Modelo de datos y escritura
+- [ ] `CoreTaskStatus.OnHold = "?"` / `CoreTaskStatusIcon.OnHold = "⏸️"` en `src/types/enums.ts`.
+- [ ] `getCoreTaskStatusName`/`getCoreTaskStatusEmoji` (`task-extractor.ts`): caso `OnHold`.
+- [ ] Nueva `upsertTaskStatus(line, status)` en `task-line-fields.ts`: reescribe el símbolo y agrega/quita `✅` según corresponda (ADR-S3).
+- [ ] Fix de `task-filter.ts`: `isTaskCompleted` debe comparar `state.text`, no `state.status`.
+- [ ] Claves i18n nuevas (`status_on_hold`) en los seis locales; reutilizar las existentes para los otros 5 estados.
+
+### Fase B — Badge visual en el calendario (depende de A)
+- [ ] Ícono de estado en `.oa-calendar-task` de Mes/Semana/Semana laboral/Día.
+- [ ] Verificable sola: cada píldora muestra el ícono correcto de su estado.
+
+### Fase C — Menú contextual en el calendario (depende de A)
+- [ ] Listener `contextmenu` en `.oa-calendar-task` (`CalendarView`), `Menu` con las 6 opciones, reutilizando el patrón de `task-field-menu.ts`.
+- [ ] Elegir una opción reescribe el símbolo con `upsertTaskStatus()` + `TaskWriter.updateTaskLine()` + `refreshView()`.
+- [ ] Verificable sola: clic derecho sobre una tarea del calendario permite cambiar su estado; marcar `Done` agrega `✅`, desmarcar la quita.
+
+### Fase D — Campo de estado en el Task Modal (depende de A)
+- [ ] Segmented control de 6 píldoras en `create-task-modal.hbs`, mismo patrón visual que prioridad.
+- [ ] Preseleccionado "Todo" al crear; refleja el estado real al editar.
+- [ ] El guardado usa `upsertTaskStatus()`, no lógica duplicada.
+
+### Validación manual
+- [ ] Los 6 estados se reconocen correctamente al parsear una nota existente con cada símbolo.
+- [ ] Cambiar a `Done` agrega `✅ <hoy>`; cambiar desde `Done` a cualquier otro estado la quita.
+- [ ] El fix de `task-filter.ts` no rompe ningún filtro existente que dependiera (sin saberlo) del bug.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fuera de alcance
+Filtrar el calendario por estado; estados personalizados/configurables; generación de nuevas ocurrencias de tareas recurrentes al marcar `Done` (se diseña aparte).
+
+### Fase Única
+- [ ] Multi-botón 1/3/5 dentro de `calendar-day-view.hbs`, visible solo en esta vista; preferencia persistida en `localStorage`.
+- [ ] `generateViewData()` calcula el rango centrado de fechas según `daysToShow` y genera una columna por día, reutilizando la lógica de segmentos/carriles de duración ya definida para un solo día.
+- [ ] Plantilla: `.oa-calendar-hour-row` con 1 etiqueta de hora compartida + N celdas; sección "todo el día" repetida por columna.
+- [ ] `navigateToPrevious()`/`navigateToNext()` mueven la ventana un día a la vez en este modo.
+- [ ] Verificable sola: con "3" o "5" activos, el día de referencia queda al centro; ninguna tarea ni carril cruza entre columnas; ◀▶ desplazan de a un día.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fuera de alcance (fecha de referencia y selector de fecha)
+- Seleccionar con clic en una celda, rangos de fechas, escribir la fecha a mano, navegar la rejilla con flechas del teclado, y corregir que Semana use semana ISO en vez de `weekStartDay`.

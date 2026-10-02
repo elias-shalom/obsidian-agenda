@@ -259,3 +259,27 @@ type GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags';
 - **Vista Semana horaria completa** (grilla de 7 columnas × 24 filas estilo Google Calendar): la vista Semana actual solo gana una etiqueta de hora dentro de la cápsula existente; la grilla horaria completa queda como un ítem de roadmap propio y futuro.
 - **Kanban / Gantt**: siguen fuera de alcance; una vez exista `scheduled`+`duration` como datos reales, terminar la vista Gantt (hoy un placeholder, ver [[Especificación de vistas]] §6) se vuelve mucho más directo, porque son exactamente los datos que le faltaban.
 - **Drag and drop de fechas**: depende de una capacidad nueva de escritura — reescribir en su lugar una línea de tarea existente (hoy `TaskWriter.appendTaskLine` solo anexa) — compartida con el ítem, también pendiente, de edición nativa de tareas. Ver desglose en [[Plan de implementación]].
+
+## 10. Manejo de estatus desde el calendario (v1.1.9) — decisiones acordadas
+
+### ADR-S1 — Sexto Status Type: `ON_HOLD`
+
+- Símbolo: `?` (nuevo valor en `CoreTaskStatus`, junto a los 5 ya existentes: ` `/`/`/`x`/`-`/`~`).
+- Ícono: ⏸️ (nuevo valor en `CoreTaskStatusIcon`).
+- Nombre para `state.text`: `"OnHold"`, siguiendo el mismo patrón que `"NonTask"`.
+- Tasks no define un símbolo estándar para este tipo (lo deja a elección de cada configuración de estados personalizados); se adopta `?` por afinidad semántica con su propia definición ("esperando información o decisión externa").
+
+### ADR-S2 — Estados personalizados/configurables, diferidos
+
+- Se mantiene un conjunto fijo de 6 símbolos reconocidos (`CoreTaskStatus`); no se expone configuración de símbolos propios en esta versión. El enum `CustomStatus` (`src/types/enums.ts`) sigue sin usarse; queda como base para una versión futura, no se elimina ni se conecta ahora.
+
+### ADR-S3 — Cambiar el estado agrega/quita la fecha de finalización, igual que Obsidian
+
+- Al cambiar el símbolo de una tarea a `Done` (`x`), se agrega `✅ YYYY-MM-DD` (fecha de hoy) si no existía.
+- Al cambiar desde `Done` hacia cualquier otro estado, se quita la fecha `✅` si existía — replica el comportamiento nativo del checkbox de Obsidian/Tasks.
+- No se genera ninguna ocurrencia nueva de tareas recurrentes (🔁) al marcar `Done` desde esta función — ese comportamiento se diseña aparte en el punto de tareas recurrentes del roadmap.
+- Fuera de alcance: filtrar el calendario por estado (ya existe `calendarShowCompletedTasks` para ocultar completadas) y estados personalizados (ADR-S2).
+
+### Fix relacionado (no es parte del diseño de estatus, se corrige de paso)
+
+`TaskFilter`/`src/core/task-filter.ts`: `isTaskCompleted` compara `task.state.status` (símbolo literal, ej. `'x'`/`'-'`) contra las cadenas `'DONE'`/`'CANCELLED'` (que corresponden a `state.text`, no a `state.status`) — la comparación nunca es verdadera. Se corrige para comparar `state.text` contra `'Done'`/`'Cancelled'`.

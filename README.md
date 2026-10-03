@@ -2,11 +2,11 @@
 
 > A comprehensive task management and calendar plugin for Obsidian
 
-[![Release](https://img.shields.io/badge/version-1.1.8-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
+[![Release](https://img.shields.io/badge/version-1.1.9-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Obsidian](https://img.shields.io/badge/Obsidian-0.13.0+-purple.svg)](https://obsidian.md)
 
-> 🆕 **What's New in v1.1.8** — Refined List and Table views, persistent Table filters and sorting, adaptive column widths, and accessible themed tooltips with expanded Dashboard explanations in six languages. [See details](#news) · [Full changelog](#changelog).
+> 🆕 **What's New in v1.1.9** — Duration-aware task blocks with drag-to-resize and overlap lanes in the Day view, a shared reference date with a new date picker, and a compact icon-button view switcher. [See details](#news) · [Full changelog](#changelog).
 
 ## Overview
 
@@ -40,7 +40,17 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 
 ## 🆕 News
 
-### v1.1.8 (latest)
+### v1.1.9 (latest)
+- Day view now renders tasks with their real duration: connected blocks for 60+ minute tasks, half-cell blocks for shorter ones, and side-by-side lanes so overlapping tasks never cover each other
+- Resize a task's duration directly from the Day view by dragging its bottom edge, snapping to 30-minute steps
+- Dragging a task to a new time slot in the Day view now snaps to the exact half-hour under the pointer
+- A shared reference date is kept when switching between calendar view types, with a new date picker (popover in Month/Week/Work Week/Year, always visible in Day) to jump to any date
+- The calendar view-type switcher is now a compact row of icon buttons instead of a dropdown
+- Double-click to create a task directly in the Day view's hour grid or "All day" section
+- Click a day cell in Month/Week/Work Week/Year to select and highlight it as the reference date, without interfering with the double-click-to-create gesture
+- Fixed the Work Week view's task click gesture to match the rest of the calendar (click edits, double-click opens the note)
+
+### v1.1.8
 - Refreshed the List view with compact task rows, clearer folder hierarchy, priority cues, and improved selection feedback
 - Refreshed the Table view with clearer filters, denser rows, visible status/priority cues, and compact date/tag styling
 - Table search, filters and sort order are remembered when returning from task editing or switching views; column widths adapt to the filtered rows
@@ -207,12 +217,18 @@ A quick reference of clicks, double-clicks and drags across the plugin — handy
 |---|---|---|
 | Click | A task pill | Opens the **Edit Task** modal, prefilled with that task's data |
 | Double-click | A task pill | Opens the underlying note, cursor on that line |
+| Click | A view-type icon button (header) | Switches to that calendar view (Day/Week/Work Week/Month/Year), keeping the current reference date |
+| Click | A day cell (Month/Week/Work Week/Year) | Selects and highlights that date as the shared reference date |
 | Click | A day number (Month/Week/Work Week/Year) | Jumps to the **Day view** for that date |
 | Double-click | Empty space in a day cell | Opens **Create Task** prefilled with that date |
+| Click | The date picker trigger (header, Month/Week/Work Week/Year) | Opens a popover to jump to any day, month or year |
+| Click | A date in the date picker (popover or Day view sidebar) | Jumps to that date, updating the shared reference date |
 | Drag | A task pill to another day (Month/Week/Work Week) | Reschedules the task to that day (moves whichever date anchors it: `scheduled` > `due` > `start`) |
-| Drag | A task pill to another hour slot (Day view) | Changes the task's scheduled time, keeping the original minutes |
+| Drag | A task pill to another hour slot (Day view) | Changes the task's scheduled time, snapping to the exact half-hour (`:00`/`:30`) under the pointer |
+| Drag | The bottom edge of a task block (Day view) | Resizes the task's duration in 30-minute steps (30-minute minimum) |
+| Double-click | Empty space in an hour slot or the "All day" section (Day view) | Opens **Create Task** prefilled with that date/time |
 | Click | The "All day" section header (Day view) | Expands/collapses the due/start section |
-| Click | A date in the mini-calendar (Day view sidebar) | Jumps to that date |
+| Click | The sidebar collapse handle (Day view) | Collapses/expands the mini-calendar sidebar |
 
 ### 📋 List, Table & Overview
 
@@ -312,7 +328,21 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 
 ## 📋 Changelog
 
-### Version 1.1.8 (upcoming, not released)
+### Version 1.1.9 📆
+- **Duration-aware Day view**: scheduled tasks render as half-hour-aligned blocks — connected across hours for 60+ minute tasks, half-cell for shorter ones — with overlapping tasks placed in side-by-side lanes instead of covering each other
+- Resize a task's duration by dragging the bottom edge of its block in the Day view, snapping to 30-minute steps with a live duration tooltip
+- Dragging a task to a new slot in the Day view now snaps to the exact half-hour under the pointer (`:00`/`:30`) instead of preserving the original minute
+- **Shared reference date**: switching between calendar view types (Day/Week/Work Week/Month/Year) keeps the current date instead of resetting to today; the selected date is highlighted distinctly from "today" in Month/Week/Work Week/Year
+- New date picker popover (Month/Week/Work Week/Year) and always-visible docked picker (Day) to jump to any day, month or year
+- Clicking a day cell in Month/Week/Work Week/Year now selects and highlights it as the reference date, without interfering with the existing double-click-to-create-task gesture
+- The calendar view-type dropdown was replaced with a compact row of icon buttons with tooltips
+- Double-click to create a task directly in the Day view: hour slots prefill date and time, the "All day" section prefills date only
+- Day view sidebar (mini-calendar) can now be collapsed
+- Fixed: `TaskModal` ignored the pre-filled date when creating a task from a double-click in Month/Week/Work Week/Year, always defaulting to today
+- Fixed: a tooltip could be left orphaned in the DOM when switching calendar view types
+- Fixed: the Work Week view's task click opened the note directly instead of the edit modal, inconsistent with the rest of the calendar views
+
+### Version 1.1.8 🪟
 - Refined the task List view with compact rows, clearer folder hierarchy, priority cues, and a stable margin across flat/hierarchical modes
 - Refined the task Table view: corrected control styling, improved filter/search layout, status and priority cues, date grouping, and responsive horizontal scrolling
 - Added accessible Table sorting by keyboard, persistent search/filter/sort state, and column widths adapted to visible filtered content

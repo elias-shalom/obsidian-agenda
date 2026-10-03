@@ -196,7 +196,7 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [x] Conservar búsqueda, filtros y orden de la Tabla al editar tareas o cambiar de vista
 - [x] Editar tarea con clic simple en las vistas Lista y Tabla; doble clic sigue abriendo la nota
 
-## 🔧 v1.1.9 (en desarrollo, aún no releaseada)
+## 🎯 Características (v1.1.9)
 
 ### Calendar Enhancements
 - [x] **v1.1.9 — Fecha de referencia y selector de fecha** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.6 y `Arquitectura técnica.md` §9; fases en `Plan de implementación.md`)
@@ -228,6 +228,8 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
   - [x] Ajustes visuales del selector de fecha: ancho del popover a 290px, `grid-template-rows` explícito (evita que la última fila de días quede recortada), separación vertical/horizontal distinta en la rejilla de días, contorno de acento en días con tareas, margen entre flechas y título del encabezado
   - [x] Arrastrar una tarea en la vista Día (mover entre franjas) ahora hace snap a la media hora exacta donde se suelta (mitad superior = :00, mitad inferior = :30) en vez de solo cambiar la hora y conservar el minuto original; resaltado visual distingue la mitad de destino
   - [x] Tareas sin duración unificadas al mismo sistema de segmentos/carriles que las tareas con duración (ocupan una sola media-hora y reservan espacio igual, en vez de ocupar la celda completa y poder solaparse)
+  - [x] **fix**: la vista Semana laboral tenía un listener de clic propio (`setupTaskInteractionListeners`, código legado) que abría el archivo directamente en vez de editar; eliminado para usar el mismo clic=editar/doble clic=abrir archivo que el resto de las vistas de calendario
+  - [x] **fix**: el clic en la manija de redimensionar un bloque con duración disparaba también el clic de la píldora contenedora (abría el modal de edición al soltar); se detiene con `stopPropagation()` en un listener de `click` dedicado en la manija
 
 ## 🔮 v1.1.10 (ideas, discusión pendiente)
 

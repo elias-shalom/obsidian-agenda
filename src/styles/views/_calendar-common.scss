@@ -17,6 +17,15 @@
   padding: 5px 0;
 }
 
+/* Agrupa el botón del selector de fecha junto al título del período (v1.1.9), para que el
+   `justify-content: space-between` del toolbar siga separando solo dos bloques: este grupo
+   y la navegación, en vez de desperdigar el botón entre ambos. */
+.oa-calendar-period-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* Adaptar período actual en toolbar */
 .oa-calendar-current-period h2 {
   margin: 0;
@@ -250,6 +259,41 @@
   margin-right: 16px;
   display: flex;
   align-items: center;
+}
+
+/* Selector de tipo de vista: grupo de botones (v1.1.9, reemplaza el <select>).
+   Mismo lenguaje visual que .oa-priority-pill del Task Modal (planos, sin fondo/borde hasta
+   hover/activo), con un pequeño espacio entre botones en vez de una caja con bordes compartidos. */
+.oa-calendar-view-segmented {
+  display: flex;
+  gap: 4px;
+}
+
+.oa-calendar-view-btn {
+  @include interactive-control;
+  flex: 0 0 auto;
+  width: 2rem;
+  padding: 0.35rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &.oa-active {
+    opacity: 1;
+    background-color: color-mix(in srgb, var(--interactive-accent) 18%, transparent) !important;
+    color: var(--interactive-accent);
+    border-color: var(--interactive-accent);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 /* Adaptaciones responsive */

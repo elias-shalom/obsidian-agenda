@@ -6,13 +6,13 @@
     
     <div class="oa-calendar-nav-container">
       <div class="oa-calendar-view-selector">
-        <select id="oa-calendar-view-dropdown" class="oa-calendar-view-dropdown">
-          <option value="year" {{#equals calendar.viewType "year"}}selected{{/equals}}>{{t "year_view"}}</option>
-          <option value="month" {{#equals calendar.viewType "month"}}selected{{/equals}}>{{t "month_view"}}</option>
-          <option value="week" {{#equals calendar.viewType "week"}}selected{{/equals}}>{{t "week_view"}}</option>
-          <option value="workweek" {{#equals calendar.viewType "workweek"}}selected{{/equals}}>{{t "workweek_view"}}</option>
-          <option value="day" {{#equals calendar.viewType "day"}}selected{{/equals}}>{{t "day_view"}}</option>
-        </select>
+        <div class="oa-calendar-view-segmented" role="group" aria-label="{{t 'calendar_view_title'}}">
+          <button type="button" class="oa-calendar-view-btn {{#equals calendar.viewType "year"}}oa-active{{/equals}}" data-view-type="year" title="{{t 'year_view'}}" aria-label="{{t 'year_view'}}"></button>
+          <button type="button" class="oa-calendar-view-btn {{#equals calendar.viewType "month"}}oa-active{{/equals}}" data-view-type="month" title="{{t 'month_view'}}" aria-label="{{t 'month_view'}}"></button>
+          <button type="button" class="oa-calendar-view-btn {{#equals calendar.viewType "week"}}oa-active{{/equals}}" data-view-type="week" title="{{t 'week_view'}}" aria-label="{{t 'week_view'}}"></button>
+          <button type="button" class="oa-calendar-view-btn {{#equals calendar.viewType "workweek"}}oa-active{{/equals}}" data-view-type="workweek" title="{{t 'workweek_view'}}" aria-label="{{t 'workweek_view'}}"></button>
+          <button type="button" class="oa-calendar-view-btn {{#equals calendar.viewType "day"}}oa-active{{/equals}}" data-view-type="day" title="{{t 'day_view'}}" aria-label="{{t 'day_view'}}"></button>
+        </div>
       </div>
       
       <div class="oa-calendar-navigation">
@@ -90,19 +90,48 @@
               <div class="oa-calendar-hour-row">
                 <div class="oa-calendar-hour-label">{{formattedHour}}</div>
                 <div class="oa-calendar-hour-slot" data-hour="{{hour}}">
-                  {{#each tasks}}
-                    <div class="oa-calendar-task oa-calendar-task--scheduled {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
-                        draggable="true"
-                        data-file-path="{{file.path}}"
-                        data-line-number="{{line.number}}"
-                        data-date-type="scheduled"
-                        data-scheduled-time="{{date.scheduledTime}}"
-                        data-tooltip="{{section.desc}}">
-                      <span class="oa-calendar-task-time">{{date.scheduledTime}}</span>
-                      <span class="oa-task-title">{{section.desc}}</span>
-                      {{#if date.scheduledDuration}}<span class="oa-calendar-task-duration">{{date.scheduledDuration}}m</span>{{/if}}
+                  {{#if hasDurationSegments}}
+                  <div class="oa-calendar-duration-track">
+                    <div class="oa-calendar-half-slot oa-calendar-half-slot--upper">
+                      {{#each upperHalfSegments}}
+                        <div class="oa-calendar-task oa-calendar-task--scheduled oa-calendar-task--duration oa-calendar-duration-segment--{{segmentRole}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
+                            draggable="true"
+                            data-file-path="{{file.path}}"
+                            data-line-number="{{line.number}}"
+                            data-date-type="scheduled"
+                            data-scheduled-time="{{date.scheduledTime}}"
+                            data-tooltip="{{section.desc}}"
+                            style="left: {{laneLeftPercent}}%; width: {{laneWidthPercent}}%;">
+                          {{#equals segmentRole "half"}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/equals}}
+                          {{#equals segmentRole "start"}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/equals}}
+                          <span class="oa-task-title">{{section.desc}}</span>
+                          {{#if date.scheduledDuration}}<span class="oa-calendar-task-duration">{{date.scheduledDuration}}m</span>{{/if}}
+                          {{#equals segmentRole "half"}}<div class="oa-calendar-resize-handle" draggable="false" data-file-path="{{file.path}}" data-line-number="{{line.number}}" data-current-duration="{{date.scheduledDuration}}"></div>{{/equals}}
+                          {{#equals segmentRole "end"}}<div class="oa-calendar-resize-handle" draggable="false" data-file-path="{{file.path}}" data-line-number="{{line.number}}" data-current-duration="{{date.scheduledDuration}}"></div>{{/equals}}
+                        </div>
+                      {{/each}}
                     </div>
-                  {{/each}}
+                    <div class="oa-calendar-half-slot oa-calendar-half-slot--lower">
+                      {{#each lowerHalfSegments}}
+                        <div class="oa-calendar-task oa-calendar-task--scheduled oa-calendar-task--duration oa-calendar-duration-segment--{{segmentRole}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
+                            draggable="true"
+                            data-file-path="{{file.path}}"
+                            data-line-number="{{line.number}}"
+                            data-date-type="scheduled"
+                            data-scheduled-time="{{date.scheduledTime}}"
+                            data-tooltip="{{section.desc}}"
+                            style="left: {{laneLeftPercent}}%; width: {{laneWidthPercent}}%;">
+                          {{#equals segmentRole "half"}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/equals}}
+                          {{#equals segmentRole "start"}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/equals}}
+                          <span class="oa-task-title">{{section.desc}}</span>
+                          {{#if date.scheduledDuration}}<span class="oa-calendar-task-duration">{{date.scheduledDuration}}m</span>{{/if}}
+                          {{#equals segmentRole "half"}}<div class="oa-calendar-resize-handle" draggable="false" data-file-path="{{file.path}}" data-line-number="{{line.number}}" data-current-duration="{{date.scheduledDuration}}"></div>{{/equals}}
+                          {{#equals segmentRole "end"}}<div class="oa-calendar-resize-handle" draggable="false" data-file-path="{{file.path}}" data-line-number="{{line.number}}" data-current-duration="{{date.scheduledDuration}}"></div>{{/equals}}
+                        </div>
+                      {{/each}}
+                    </div>
+                  </div>
+                  {{/if}}
                 </div>
               </div>
             {{/each}}
@@ -110,39 +139,10 @@
         </div>
       </div>
 
-      <div class="oa-calendar-mini-sidebar">
-        <div class="oa-calendar-mini-month">
-          <div class="oa-calendar-mini-month-header">
-            <div class="oa-mini-month-nav">
-              <button class="oa-mini-calendar-prev" aria-label="{{t 'previous_month'}}">
-                <span class="icon">◀</span>
-              </button>
-              <div class="oa-mini-month-name">{{calendar.miniCalendar.monthName}}</div>
-              <button class="oa-mini-calendar-next" aria-label="{{t 'next_month'}}">
-                <span class="icon">▶</span>
-              </button>
-            </div>
-          </div>
-          <div class="oa-calendar-mini-month-weekdays">
-            {{#each calendar.miniCalendar.weekdays}}
-              <div class="oa-calendar-mini-weekday">{{this}}</div>
-            {{/each}}
-          </div>
-          <div class="oa-calendar-mini-month-grid">
-            {{#each calendar.miniCalendar.weeks}}
-              <div class="oa-calendar-mini-week">
-                {{#each this}}
-                  <div class="oa-calendar-mini-day {{#if isCurrentMonth}}oa-current-month{{else}}oa-other-month{{/if}} {{#if isToday}}oa-mini-today{{/if}} {{#if isSelected}}oa-mini-selected{{/if}}" 
-                      data-date="{{toISODate date}}">
-                    <div class="oa-mini-day-content {{#if hasTasks}}oa-has-tasks{{/if}}">
-                      {{day}}
-                    </div>
-                  </div>
-                {{/each}}
-              </div>
-            {{/each}}
-          </div>
-        </div>
+      <button type="button" class="oa-calendar-sidebar-toggle" aria-expanded="{{#unless calendar.sidebarCollapsed}}true{{else}}false{{/unless}}" title="{{t 'toggle_sidebar'}}" aria-label="{{t 'toggle_sidebar'}}"></button>
+
+      <div class="oa-calendar-mini-sidebar {{#if calendar.sidebarCollapsed}}oa-calendar-mini-sidebar--collapsed{{/if}}">
+        <div class="oa-date-picker-docked"></div>
       </div>
     </div>
   </div>

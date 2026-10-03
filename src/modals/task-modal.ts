@@ -76,7 +76,10 @@ export class TaskModal extends Modal {
     const none = this.i18n.t("none");
 
     if (!task) {
-      const today = DateTime.now().toFormat("yyyy-MM-dd");
+      // v1.1.9 (fix): antes siempre usaba DateTime.now(), ignorando la fecha/hora que pasó
+      // el doble clic en una celda del calendario (modalOptions.today/scheduledTime).
+      const today = (this.modalOptions?.today as string | undefined) ?? DateTime.now().toFormat("yyyy-MM-dd");
+      const scheduledTime = (this.modalOptions?.scheduledTime as string | undefined) ?? "";
       return {
         headerTitle: this.i18n.t("new_task"),
         isEdit: false,
@@ -86,7 +89,7 @@ export class TaskModal extends Modal {
         dueDateValue: "", dueLabelValue: none,
         startDateValue: "", startLabelValue: none,
         scheduledDateValue: today, scheduledLabelValue: today,
-        scheduledTimeValue: "", scheduledTimeLabelValue: none,
+        scheduledTimeValue: scheduledTime, scheduledTimeLabelValue: scheduledTime || none,
         scheduledDurationValue: "", scheduledDurationLabelValue: none,
         recurrenceValue: "", dependsValue: "", onCompletionValue: "", idValue: "",
       };

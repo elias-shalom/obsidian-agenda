@@ -50,6 +50,7 @@ Proveer, dentro del plugin **Obsidian Agenda**, un conjunto de vistas de **tarea
 - [x] **Edición de tareas existentes** desde el modal: implementada — clic simple en una tarea del calendario abre `"edit-task"` prefilled, doble clic abre el archivo.
 - [ ] **Programación por hora del día**: hoy una tarea solo tiene fechas de calendario (`due`/`start`/`scheduled`/`created`/`done`/`cancelled`), sin componente de hora. La vista Día ya organiza el contenido en 24 franjas horarias (`hourSlots`), pero no existe una forma en la UI de asignarle una hora a una tarea — ver roadmap v1.1.4 en `docs/todo.md` ("Una forma de agregar la fecha desde el archivo con iconos", "agregar las fechas con el botón secundario").
 - [ ] Filtro/orden por carpeta como criterio de primera clase de forma uniforme en todas las vistas (hoy es más completo en Tabla que en el resto).
+- [ ] **Navegación por fecha en el calendario** (v1.1.9, diseño en [[Especificación de vistas]] §4.6): hoy solo se marca "hoy", la fecha no se conserva al cambiar de vista y llegar a una fecha lejana exige muchas flechas. Se propone una fecha de referencia compartida con resaltado propio y un selector ocultable con niveles de día, año y mes.
 - [ ] Configuración de patrones de emoji personalizados — los iconos reconocidos están fijos en `TaskSection` (`emojiMapping`), no son configurables por el usuario.
 
 ## 3. Personas y casos de uso principales

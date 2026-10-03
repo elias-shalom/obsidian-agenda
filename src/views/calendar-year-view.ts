@@ -36,6 +36,7 @@ export class CalendarYearView extends CalendarView {
           date: DateTime;
           isCurrentMonth: boolean;
           isToday: boolean;
+          isSelected: boolean;
           dayOfMonth: number;
           hasTasksDue: boolean;
           taskCount: number;
@@ -55,6 +56,7 @@ export class CalendarYearView extends CalendarView {
           date: DateTime;
           isCurrentMonth: boolean;
           isToday: boolean;
+          isSelected: boolean;
           dayOfMonth: number;
           hasTasksDue: boolean;
           taskCount: number;
@@ -66,6 +68,7 @@ export class CalendarYearView extends CalendarView {
         date: DateTime;
         isCurrentMonth: boolean;
         isToday: boolean;
+        isSelected: boolean;
         dayOfMonth: number;
         hasTasksDue: boolean;
         taskCount: number;
@@ -75,11 +78,14 @@ export class CalendarYearView extends CalendarView {
 
       while (currentDay <= endDate) {
         const tasksForDay = this.getTasksForDate(currentDay);
+        const isCurrentMonth = currentDay.month === monthNumber;
 
         currentWeekDays.push({
           date: currentDay,
-          isCurrentMonth: currentDay.month === monthNumber,
+          isCurrentMonth,
           isToday: currentDay.hasSame(today, 'day'),
+          // Solo se marca dentro del mes actual, para no duplicarse en los d\u00edas vecinos repetidos (v1.1.9)
+          isSelected: isCurrentMonth && currentDay.hasSame(this.currentDate, 'day'),
           dayOfMonth: currentDay.day,
           hasTasksDue: tasksForDay.length > 0,
           taskCount: tasksForDay.length
@@ -115,17 +121,17 @@ export class CalendarYearView extends CalendarView {
   }
 
   protected navigateToPrevious(): void {
-    this.currentDate = this.currentDate.minus({ years: 1 });
+    this.setCurrentDate(this.currentDate.minus({ years: 1 }));
     this.refreshView().catch(console.error);
   }
 
   protected navigateToNext(): void {
-    this.currentDate = this.currentDate.plus({ years: 1 });
+    this.setCurrentDate(this.currentDate.plus({ years: 1 }));
     this.refreshView().catch(console.error);
   }
 
   async onClose(): Promise<void> {
-    // Limpia recursos si es necesario
+    await super.onClose();
   }
 
   protected setupViewSpecificEventListeners(container: HTMLElement, data: YearViewData): void {

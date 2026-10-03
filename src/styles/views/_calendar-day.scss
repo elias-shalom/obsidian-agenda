@@ -82,6 +82,10 @@
 .oa-calendar-day-view {
   // Contenedor con ancho completo
   width: 100%;
+  // Ocupa el espacio restante bajo el toolbar (no height:100%, que lo desbordaba por la altura del toolbar)
+  flex: 1 1 0;
+  height: auto;
+  min-height: 0;
   
   .oa-calendar-day-body {
     display: flex;
@@ -113,6 +117,13 @@
 .oa-calendar-day-container {
   display: flex;
   width: 100%;
+  gap: 8px;
+  flex: 1 1 0;
+  min-height: 0;
+  // Tope de altura: si la ventana es muy alta, el grid de horas no debe estirarse a llenar
+  // todo el espacio (se veía una fila final enorme vacía); de sobrar alto, queda en blanco fuera
+  // de la caja. .oa-calendar-day-hours sigue encargándose del scroll si el contenido no entra.
+  max-height: calc(100vh - 120px);
 }
 
 .oa-calendar-allday {
@@ -120,6 +131,7 @@
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
   overflow: hidden;
+  flex-shrink: 0;
 
   &.oa-expanded {
     .oa-calendar-allday-content {
@@ -153,6 +165,7 @@
 
 .oa-calendar-allday-content {
   display: none;
+  min-height: 32px;
   padding: 8px 12px;
 }
 
@@ -172,13 +185,59 @@
   flex-direction: column;
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
-  overflow: hidden;
+  // El scroll de la vista Día vive aquí: ocupa el espacio restante bajo el encabezado y "Todo el día".
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  // Scrollbar realmente oculta (ancho 0) hasta pasar el mouse por encima; al no reservar
+  // espacio, el contenido puede desplazarse unos px al aparecer, pero deja de ser visible.
+  scrollbar-width: none; // Firefox
+
+  &::-webkit-scrollbar {
+    width: 0;
+  }
+
+  &:hover {
+    scrollbar-width: thin;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: $active-border-color;
+    border-radius: 4px;
+  }
 }
 
 .oa-calendar-hour-row {
   display: flex;
   min-height: 44px;
+  flex-shrink: 0;
   border-bottom: 1px solid var(--background-modifier-border);
+  position: relative;
+  z-index: 0; // Crea un contexto de apilamiento propio para que el ::after no se filtre a otras filas
+
+  // Línea punteada a la media hora (v1.1.9, §4.7.1): puramente visual, hourSlots sigue siendo por hora.
+  // z-index negativo para quedar detrás de cualquier tarea (puntual o con duración): solo debe
+  // verse en el espacio vacío de la franja, no encima de una píldora ya dibujada.
+  &::after {
+    content: '';
+    position: absolute;
+    left: 60px; // Ancho de .oa-calendar-hour-label
+    right: 0;
+    top: 50%;
+    border-top: 1px dashed var(--background-modifier-border);
+    pointer-events: none;
+    z-index: -1;
+  }
 
   &:last-child {
     border-bottom: none;
@@ -206,11 +265,16 @@
     margin-bottom: 0;
   }
 
-  // Drag and drop (v1.1.4, Fase D): franja de destino resaltada mientras se arrastra una tarea sobre ella.
-  &.oa-calendar-drop-target {
-    background-color: color-mix(in srgb, var(--interactive-accent) 15%, transparent);
-    outline: 2px dashed var(--interactive-accent);
-    outline-offset: -2px;
+  // Drag and drop (v1.1.4, Fase D; snap de media hora añadido en v1.1.9): se resalta solo la
+  // mitad (superior/inferior) donde caería la tarea al soltar, no toda la franja de 1 hora.
+  &.oa-calendar-drop-target--upper {
+    background-image: linear-gradient(to bottom, color-mix(in srgb, var(--interactive-accent) 15%, transparent) 0 50%, transparent 50% 100%);
+    box-shadow: inset 0 2px 0 0 var(--interactive-accent);
+  }
+
+  &.oa-calendar-drop-target--lower {
+    background-image: linear-gradient(to top, color-mix(in srgb, var(--interactive-accent) 15%, transparent) 0 50%, transparent 50% 100%);
+    box-shadow: inset 0 -2px 0 0 var(--interactive-accent);
   }
 }
 
@@ -225,25 +289,167 @@
   opacity: 0.8;
 }
 
+/* Bloques con duración (v1.1.9, §4.7): mitad superior/inferior de la hora, sin gap entre ellas
+   para que los segmentos start/middle/end de una misma tarea se vean como una sola píldora
+   continua (misma técnica que las rachas de Habit Grid, rotada de horizontal a vertical). */
+.oa-calendar-duration-track {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.oa-calendar-half-slot {
+  flex: 1 1 0;
+  min-height: 0;
+  position: relative;
+}
+
+.oa-calendar-task--duration {
+  position: absolute;
+  z-index: 1;
+  margin-bottom: 0;
+  max-height: none;
+  // Carriles por conglomerado de solapamiento (v1.1.9, Fase B, §4.7.3): posición absoluta (no
+  // flex + order) para que el carril de una tarea quede fijo en todas sus medias-horas, aunque
+  // en alguna de ellas no esté presente ningún otro carril anterior (si no, al faltar un carril
+  // anterior en una media-hora, flexbox compacta los carriles restantes hacia la izquierda y la
+  // tarea parece "desfasada" respecto a las medias-horas donde sí están todos los carriles).
+  // `left`/`width` llegan precalculados en % vía `style` inline (no `calc()` con variables CSS
+  // anidadas: el minificador de Sass puede aplanar/reordenar esa expresión al compilar).
+  top: 0;
+  bottom: 0;
+
+  &.oa-calendar-duration-segment--start {
+    border-radius: 8px 8px 0 0;
+  }
+
+  &.oa-calendar-duration-segment--middle {
+    border-radius: 0;
+  }
+
+  &.oa-calendar-duration-segment--end {
+    border-radius: 0 0 8px 8px;
+  }
+
+  // El nombre, ícono y duración solo se ven en el primer segmento (half/start); middle/end son
+  // la continuación visual de la píldora, sin repetir el contenido.
+  &.oa-calendar-duration-segment--middle,
+  &.oa-calendar-duration-segment--end {
+    &::before {
+      content: none;
+    }
+
+    .oa-task-title,
+    .oa-calendar-task-duration {
+      display: none;
+    }
+  }
+}
+
+// Manija para redimensionar arrastrando el borde inferior (v1.1.9, Fase C, §4.7.4): solo en el
+// último segmento de cada tarea (roles half/end); oculta hasta pasar el mouse por la píldora.
+.oa-calendar-resize-handle {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  cursor: ns-resize;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 1px;
+    width: 24px;
+    height: 3px;
+    transform: translateX(-50%);
+    border-radius: 2px;
+    background-color: var(--text-on-accent);
+    opacity: 0.6;
+  }
+}
+
+.oa-calendar-task--duration:hover .oa-calendar-resize-handle,
+.oa-calendar-resize-handle.oa-resizing {
+  opacity: 1;
+}
+
+// Insignia flotante con la duración en vivo mientras se arrastra la manija (se crea/destruye por JS).
+.oa-calendar-resize-tooltip {
+  position: fixed;
+  z-index: 10001;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75em;
+  font-weight: 600;
+  color: var(--text-on-accent);
+  background-color: var(--interactive-accent);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+// Cierra el hueco visual entre segmentos conectados que cruzan de una franja horaria a la
+// siguiente: 4px del padding vertical de .oa-calendar-hour-slot + 1px del border-bottom de
+// .oa-calendar-hour-row. Dentro de la misma franja (mitad superior → inferior) ya quedan
+// pegados sin ajuste, porque .oa-calendar-duration-track no tiene gap entre ambas mitades.
+.oa-calendar-half-slot--upper {
+  .oa-calendar-duration-segment--middle,
+  .oa-calendar-duration-segment--end {
+    margin-top: -5px;
+  }
+}
+
+.oa-calendar-half-slot--lower {
+  .oa-calendar-duration-segment--start,
+  .oa-calendar-duration-segment--middle {
+    margin-bottom: -5px;
+  }
+}
+
 .oa-calendar-mini-sidebar {
-  width: 250px;
+  width: 310px;
   padding: 10px;
-  //border-right: 1px solid var(--background-modifier-border);
   flex-shrink: 0;
+  overflow: hidden;
+  transition: width 0.2s ease, padding 0.2s ease, opacity 0.15s ease;
+
+  &.oa-calendar-mini-sidebar--collapsed {
+    width: 0;
+    padding: 0;
+    opacity: 0;
+  }
+}
+
+/* Manija para colapsar/expandir el sidebar del selector de fecha hacia la derecha (v1.1.9). */
+.oa-calendar-sidebar-toggle {
+  @include interactive-control;
+  flex-shrink: 0;
+  width: 16px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
 }
 
 .oa-calendar-day-main-view {
   flex-grow: 1;
-  width: calc(100% - 250px);
-  margin-left: 15px; // Añadir espacio entre el mini calendario y la vista principal
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // Sombra más pronunciada
-  overflow: hidden; // Para que los bordes redondeados funcionen correctamente
+  overflow: hidden; // Sin scroll propio: lo hace .oa-calendar-day-hours
   background-color: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
-  overflow-x: hidden; // Para la vista de día
 
   .oa-calendar-day-header {
+    flex-shrink: 0;
     background-color: color-mix(in srgb,$primary-bg-color 25%, transparent); // Color más claro para el encabezado
     border-bottom: 1px solid var(--background-modifier-border);
     
@@ -263,164 +469,10 @@
   }
   
   .oa-calendar-day-body {
-    max-height: calc(100vh - 250px); // Altura máxima adaptativa
-    overflow-y: auto;
-    
-  }
-}
-
-.oa-calendar-mini-month {
-  background-color: var(--background-secondary);
-  border-radius: 8px;
-  border: 1px solid var(--divider-color);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.oa-calendar-mini-month-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 12px;
-  background-color: var(--background-secondary);
-  border-bottom: 1px solid var(--divider-color);
-  
-  .oa-mini-month-nav {
-    display: flex;
-    width: 100%;
-    align-items: center;
-    justify-content: space-between;
-  }
-  
-  .oa-mini-month-name {
-    font-weight: 600;
-    font-size: 13px;
-    text-align: center;
-    flex-grow: 1;
-    color: var(--text-normal);
-  }
-  
-  .oa-mini-calendar-prev,
-  .oa-mini-calendar-next {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px;
-    color: var(--text-muted);
-    border-radius: 4px;
-    
-    &:hover {
-      color: var(--text-normal);
-      background-color: var(--background-modifier-hover);
-    }
-    
-    .icon {
-      font-size: 0.8em;
-    }
-  }
-}
-
-.oa-calendar-mini-month-weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  padding: 6px 8px 2px;
-  text-align: center;
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-muted);
-  background-color: var(--background-secondary);
-}
-
-.oa-calendar-mini-month-grid {
-  padding: 6px 8px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  background-color: var(--background-secondary);
-}
-
-.oa-calendar-mini-week {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-}
-
-.oa-calendar-mini-day {
-  aspect-ratio: 1;
-  border: 1px solid var(--divider-color);
-  border-radius: 4px;
-  background-color: var(--background-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 10px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  min-height: 22px;
-  position: relative;   // ← agregar esto
-  
-  .oa-mini-day-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    border-radius: 3px;
-    
-    // Indicador de tareas
-    &.oa-has-tasks {
-      background-color: var(--background-tertiary);
-      border: 1px solid var(--interactive-accent);
-      border-radius: 3px;
-      
-      &::after {
-        content: "●";
-        display: block;
-        font-size: 6px;
-        color: var(--interactive-accent);
-        line-height: 1;
-        position: absolute;
-        bottom: 2px;
-      }
-    }
-  }
-
-  &:hover:not(.oa-other-month) {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    transform: translateY(-1px);
-    z-index: 1;
-  }
-  
-  &.oa-other-month {
-    background-color: var(--background-secondary);
-    opacity: 0.5;
-    color: var(--text-muted);
-  }
-  
-  &.oa-mini-today {
-    background-color: var(--interactive-accent);
-    border-color: var(--interactive-accent);
-    color: var(--text-on-accent);
-    font-weight: 600;
-    
-    .oa-mini-day-content {
-      background-color: transparent;
-      border: none;
-    }
-  }
-  
-  &.oa-mini-selected:not(.oa-mini-today) {
-    border-color: var(--interactive-accent);
-    box-shadow: 0 0 0 1px var(--interactive-accent);
-    
-    .oa-mini-day-content {
-      background-color: transparent;
-      border: none;
-    }
+    // Llena el alto restante del main-view; min-height 0 deja que .oa-calendar-day-hours encoja y haga scroll.
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
   }
 }
 

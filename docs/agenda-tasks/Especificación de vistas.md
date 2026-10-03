@@ -81,7 +81,7 @@ Variante de 5 días (lunes–viernes). Calcula el lunes de la semana actual a pa
 
 ### 4.4 Calendar Day View (`calendar-day-view`)
 
-Vista de un único día con **24 franjas horarias** (`hourSlots`, cada una con `hour`, `formattedHour` y sus `tasks`) — hoy ninguna tarea tiene componente de hora, así que todas caen sin asignar a una franja específica. Incluye mini-calendario navegable del mes y persiste la fecha navegada en `localStorage` (`oa_navigate_to_date`).
+Vista de un único día con **24 franjas horarias** (`hourSlots`, cada una con `hour`, `formattedHour` y sus `tasks`) — hoy ninguna tarea tiene componente de hora, así que todas caen sin asignar a una franja específica. Incluye mini-calendario navegable del mes y persiste la fecha navegada en `localStorage` (`oa_navigate_to_date`). *(La fecha compartida entre vistas y el selector de fecha se rediseñan en §4.6, v1.1.9.)*
 
 > **v1.1.4 (diseñado, ver ADR-T1/T2/T4 en [[Modelo de datos]])**:
 > - `scheduled` con hora puebla la franja horaria correspondiente; si además tiene duración (modo bloque), la tarea ocupa un bloque visual de `[hora, hora + duración]` (posiblemente varias franjas), similar a un evento de calendario.
@@ -93,11 +93,186 @@ Vista de un único día con **24 franjas horarias** (`hourSlots`, cada una con `
 > - **Filtro de fechas visibles**: qué combinación de `start`/`due`/`scheduled` se muestra es configurable — un setting global (Settings ▸ **Calendario**, grupo nuevo) define el valor por defecto, y cada vista de calendario puede sobreescribirlo en su propio toolbar (checkboxes), sin necesidad de guardarlo.
 > - **Drag and drop (planeado, no en el primer corte)**: arrastrar un bloque a otra franja reescribe la hora de `scheduled`; redimensionar su borde inferior reescribe la duración. Arrastrar una tarea entre días en Mes/Semana/Semana laboral/Año solo cambia el día de la fecha que la esté posicionando (según la prioridad `scheduled > due > start`). Requiere una capacidad nueva en `TaskWriter` para reescribir en su lugar una línea de tarea existente (hoy solo soporta anexar); comparte esa base con el ítem, también pendiente, de edición nativa de tareas — ver [[Plan de implementación]].
 
+#### 4.4.1 Doble clic para crear tarea (v1.1.9 — diseño, corrige bug)
+
+> **Estado**: diseño acordado, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §11.
+
+**Bug actual**: Mes, Semana, Semana laboral y Año crean una tarea al hacer doble clic en una celda vacía (`CalendarView.setupViewSpecificEventListeners()`), pero el selector compartido incluye `.oa-calendar-day-column`, una clase de un diseño anterior de la vista Día que ya no existe en su plantilla actual (hoy usa `.oa-calendar-day-hours`/`.oa-calendar-hour-slot` y la sección "Todo el día"). Por eso el doble clic no hace nada en Día.
+
+**Diseño**:
+- Doble clic en una **franja horaria** (`.oa-calendar-hour-slot`) abre el modal de creación con la fecha **y la hora de esa franja** prellenadas en el campo `scheduled`.
+- Doble clic en la sección **"Todo el día"** (`.oa-calendar-allday-content`) abre el mismo modal que usan Mes/Semana/Semana laboral/Año (`openCreateTaskForDate`), sin hora.
+- Si el doble clic cae sobre una tarea existente (`.closest('.oa-calendar-task')`), se ignora — el doble clic sobre una tarea sigue abriendo su nota, igual que en las demás vistas; es el mismo guard que ya usan Mes/Semana.
+- `.oa-calendar-allday-content` gana una altura mínima para que, aunque no haya ninguna tarea de todo el día ese día, quede un área vacía visible y fácil de encontrar donde hacer doble clic.
+
+**Bug relacionado encontrado**: `TaskModal.buildTemplateData()` (rama de creación) siempre usa `DateTime.now()` para `scheduledDateValue`; nunca lee `modalOptions.today`, aunque `CalendarView.openCreateTaskForDate(dateStr)` ya se lo pasa. Es decir, **el doble clic para crear tarea en Mes/Semana/Semana laboral/Año hoy siempre prellena la fecha de hoy, sin importar en qué día se hizo doble clic** — bug preexistente, no introducido por este cambio. Para que el nuevo doble clic de Día prellene correctamente la fecha (y la hora, en las franjas), hace falta corregir `buildTemplateData()` para que lea `modalOptions.today` (ya se envía, nunca se usa) y una clave nueva `modalOptions.scheduledTime` (hora de la franja). Se propone corregir esto para las cinco vistas a la vez, ya que comparten el mismo modal.
+
+#### 4.4.2 Decisiones
+
+1. **Corregir el bug de `modalOptions.today` — decidido: sí.** Se corrige junto con esta fase, afecta también a Mes/Semana/Semana laboral/Año.
+
+#### 4.4.3 Modo de varios días: 1/3/5 (v1.1.10 — diseño, no implementado)
+
+> **Estado**: pospuesto de v1.1.9 a v1.1.10; diseño acordado, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §13.
+
+No es una vista nueva en el selector de §4.8: es un **modo dentro de la vista Día**, con su propio multi-botón (1/3/5) que solo aparece cuando Día está activa — mismo patrón que ya usan Semana/Semana laboral con su selector de estilo de grilla (`#oa-calendar-grid-style`, visible solo dentro de esas plantillas). "1 día" es la vista Día actual sin ningún cambio; "3" y "5" son las opciones nuevas.
+
+- **Centrado**: el día de referencia (hoy o el seleccionado) queda en el centro de la ventana visible — 3 días: uno antes, el de referencia, uno después; 5 días: dos antes, el de referencia, dos después. No se construye la alternativa "anclado al inicio" en esta primera versión; queda anotada como posible ajuste configurable a futuro.
+- **Navegación**: ◀▶ desplazan la ventana completa **un día a la vez** (no saltan de ventana en ventana), para poder "recorrer" los días de forma continua.
+- **Hereda el diseño de Día**: mismo grid de horas y bloques con duración/carriles del §4.7, repetido por columna — una etiqueta de hora compartida a la izquierda y N columnas de día a la derecha dentro de cada `.oa-calendar-hour-row` (en vez de una sola celda).
+- **Sin cruces entre días**: los cálculos de bloques con duración y de carriles (§4.7.3) son independientes por columna; ninguna tarea ni carril cruza de un día a otro, consistente con el recorte a medianoche ya acordado (ADR-T7).
+- **Resaltados**: "hoy" y la fecha seleccionada (§4.6.3) se marcan en su columna correspondiente de forma independiente; si ambas coinciden con el día central, se aplican las dos marcas igual que en las demás vistas.
+
 ### 4.5 Calendar Year View (`calendar-year-view`)
 
 12 mini-calendarios (uno por mes), cada día con `hasTasksDue`/`taskCount`. Clic en un número de día con tareas navega a la vista Día de esa fecha (`CalendarView.navigateToDayView()`, guarda la fecha en `localStorage` y cambia el tipo de vista de la hoja).
 
 > **Extendido a Mes/Semana/Semana laboral (2026-09-27)**: el mismo clic-en-el-número-de-día para navegar a la vista Día se agregó también a Mes (`.oa-calendar-month-day-number`) y Semana/Semana laboral (`.oa-calendar-date`, comparten contenedor), cableado una sola vez en `CalendarView.setupViewSpecificEventListeners()` (a diferencia de Año, aquí aplica a **todos** los días, tengan tareas o no). `stopPropagation()` evita que el clic también dispare el `dblclick` de la celda (crear tarea en esa fecha).
+
+### 4.6 Fecha de referencia compartida y selector de fecha (v1.1.9 — implementado)
+
+> **Estado**: implementado. Lo descrito como "propuesto" ya existe en el código; "decidido" refleja la decisión final tomada durante la implementación. Mecanismo y archivos afectados: [[Arquitectura técnica]] §9. Fases: [[Plan de implementación]].
+
+#### 4.6.1 Situación actual
+
+- Solo existe la marca de "hoy" (`oa-calendar-today` en Mes/Semana/Semana laboral, `oa-year-today` en Año). Un día seleccionado distinto de hoy solo existe en el mini-calendario de Día (`oa-mini-selected`).
+- Cada tipo de vista es una instancia nueva (`leaf.setViewState`) con su propio `currentDate`, inicializado en hoy. La fecha solo se transmite hacia Día (`oa_navigate_to_date`, clave que Día lee y borra), así que cambiar de Mes a Semana con el dropdown vuelve a hoy.
+- La pestaña **Calendario** del encabezado (`BaseView.attachEventTabs()`) siempre activa `calendar-month-view` directamente, sin pasar por `currentDate` ni por ninguna fecha guardada.
+- Para llegar a una fecha lejana solo hay flechas (±1 período) y el mini-calendario de Día (±1 mes).
+
+#### 4.6.2 Fecha de referencia (propuesto)
+
+- Hay **una sola fecha de referencia** (la que hoy es `currentDate`) compartida por las cinco vistas. Cada vista muestra el período que la contiene: Día → ese día, Semana/Semana laboral → su semana, Mes → su mes, Año → su año.
+- **Cambiar de tipo de vista conserva la fecha.** Es un cambio de comportamiento respecto a hoy (antes volvía a hoy). El botón "Hoy" restablece la referencia a la fecha actual.
+- **Excepción intencional**: la pestaña **Calendario** del encabezado sigue abriendo siempre Mes en la fecha actual (hoy), igual que hoy — no lee la fecha de referencia. Solo se conserva la fecha al navegar *dentro* del calendario (dropdown de vista, flechas, botón "Hoy", clic en un número de día, selector). Si vienes de Lista/Tabla/Hábitos y abres Calendario desde el encabezado, verás Mes y hoy, no la última fecha que dejaste.
+- Las flechas mueven la referencia por la unidad de la vista (día, semana, mes, año). Luxon recorta a fin de mes (31 ene + 1 mes = 28 feb) y no recupera el 31 al volver; es el comportamiento actual y se acepta.
+- La referencia vive en memoria mientras el plugin está cargado y no se guarda entre reinicios (ver §4.6.7, decisión 1).
+
+#### 4.6.3 Resaltado de la fecha seleccionada (propuesto)
+
+La fecha seleccionada es la fecha de referencia y se marca **de forma independiente de "hoy"**; si coinciden, se aplican ambas marcas. **El estilo de "hoy" no cambia**: se añade un marcador nuevo para la fecha seleccionada, no se sustituye el existente.
+
+| Vista | Celda | Clase nueva | Nota |
+|---|---|---|---|
+| Mes | `oa-calendar-month-day` | `oa-calendar-selected` | También en días de meses adyacentes que completan la grilla. |
+| Semana / Semana laboral | `oa-calendar-week-day-container` | `oa-calendar-selected` | Mismo contenedor en ambas. |
+| Año | `oa-calendar-year-day` | `oa-year-selected` | Solo cuando `isCurrentMonth`: cada mes repite días de los meses vecinos y se marcaría dos veces. |
+| Día | — | — | El encabezado ya muestra el día; el selector marca su fecha igual que las demás vistas. |
+
+- Datos: `isSelected` (calculado como `currentDate.hasSame(día, 'day')`) en `WeekDayData`, en los días de `MonthViewData` y en los de `YearViewData`.
+- Estilo: "hoy" conserva su borde de 2 px; la fecha seleccionada usa fondo tintado con el color de acento y el número en un círculo relleno. No depende solo del color, y usa variables del tema para claro y oscuro.
+
+#### 4.6.4 Selector de fecha (propuesto)
+
+- **Apertura**: un botón con icono de calendario en `.oa-calendar-nav-container` de las cinco plantillas, junto al dropdown de vista, con `aria-haspopup="dialog"` y `aria-expanded`. El selector está **oculto por defecto** y se muestra como popover anclado al botón.
+- **Cierre**: elegir un día, `Escape` (devuelve el foco al botón), clic fuera o pulsar otra vez el botón. Cerrar sin elegir no cambia la fecha.
+- **Estado propio**: el selector guarda su mes/año de exploración, independiente de la fecha seleccionada; se inicializa con la referencia al abrir. **Solo elegir un día cambia la fecha.**
+- **Niveles** (`días → años → meses → días`):
+  1. **Días**: el encabezado muestra mes y año y es un botón; ◀ ▶ cambian de mes. Pulsar el encabezado abre el nivel de años.
+  2. **Años**: rejilla de 3×4 con una década (ej. 2020–2029, con 2019 y 2030 atenuados, como en la referencia visual); ◀ ▶ cambian de década. Elegir un año abre el nivel de meses.
+  3. **Meses**: rejilla de 3×4 con los meses del año elegido (nombres abreviados y localizados); el encabezado muestra el año y vuelve al nivel de años; ◀ ▶ cambian de año. Elegir un mes vuelve al nivel de días de ese mes.
+- **Rejilla de días**: 6 filas fijas para que el popover no cambie de alto entre meses. Respeta `weekStartDay` y usa los nombres de día localizados (`getLocalizedDayNames()`) — el mismo método que ya usan Mes/Semana/Semana laboral/Año. El mini-calendario de Día tiene hoy una lista de letras fija en español (`L M X J V S D`, lunes primero) sin importar el idioma del plugin; se reemplaza por `getLocalizedDayNames()` para que coincida con el idioma y el `weekStartDay` configurados.
+- **Indicadores de tareas**: marca los días con tareas resolviendo cada día con el mismo criterio que usan las vistas (`CalendarView.getTasksForDate()`/`resolveCalendarAnchor()`, que respeta `calendarShowDueDates`/`StartDates`/`ScheduledDates` y `calendarShowCompletedTasks`). Hoy el mini-calendario de Día arma su propio punteado recorriendo `this.tasks` y mirando directamente `task.date.due`/`task.date.scheduled`, sin pasar por esos settings: nunca considera `start`, sigue marcando un día aunque el usuario haya apagado ese tipo de fecha en Settings ▸ Calendario, y cuenta tareas completadas aunque estén ocultas en el calendario principal. El selector reutiliza la lógica de la clase base para que el punteado coincida con lo que la vista activa realmente muestra. **Requisito**: un día se marca con punto si y solo si `getTasksForDate(día).length > 0` — el mismo cálculo que usa Mes. Si todas las tareas de un día están ocultas por los settings (tipo de fecha desactivado o completadas ocultas), ese día no debe mostrar punto, ni en el selector ni en el mini-calendario de Día.
+- **Marcas**: "hoy" y la fecha seleccionada usan las reglas de §4.6.3.
+- **Accesibilidad**: `role="dialog"`; días, meses y años son `<button>`; el foco inicial va a la fecha seleccionada. Navegar la rejilla con flechas queda como segunda iteración.
+- **Idiomas**: meses y años localizados con Luxon (`setLocale(getLanguage())`, como la vista Año); textos nuevos en los 6 locales con las mismas claves.
+
+#### 4.6.5 Al elegir una fecha (propuesto)
+
+1. Se guarda la fecha como referencia y se cierra el selector.
+2. La vista **mantiene su tipo** (el dropdown no cambia) y se re-renderiza en esa fecha.
+3. Se prefiere re-renderizar con las tareas ya en memoria (`refreshCalendar()`); `refreshView()` fuerza una recarga completa de tareas (`_forceNextRefresh`) en cada navegación.
+
+Nota: `CalendarWeekView` usa `startOf('week')` de Luxon (semana ISO, lunes) y no `weekStartDay`, a diferencia de Mes. "La semana que contiene la fecha" será la de Semana tal como funciona hoy; corregir esa discrepancia no forma parte de este cambio.
+
+#### 4.6.6 Vista Día (decidido)
+
+El mini-calendario lateral se reemplaza por el mismo componente selector, montado en **modo acoplado**: siempre visible en el mismo lugar del sidebar, sin botón de apertura y sin poder ocultarse (a diferencia del popover de las otras cuatro vistas). Mantiene los mismos niveles días → años → meses → días: pulsar el encabezado mes/año abre el nivel de años igual que en el popover, solo que el panel no se cierra solo ni requiere clic en un botón para mostrarse. Esto elimina la rejilla, las letras de día y el cálculo de indicadores duplicados de `generateMiniCalendarData()` (§9.4 de [[Arquitectura técnica]]), sin cambiar la experiencia visible de la vista Día.
+
+El sidebar completo (selector acoplado incluido) es además **colapsable hacia la derecha** mediante una manija (`.oa-calendar-sidebar-toggle`) entre la vista principal y el sidebar: colapsa su ancho a 0 con una transición suave y la vista principal ocupa el espacio liberado (flexbox puro, sin recalcular anchos en JS). El estado (abierto/colapsado) se persiste en `localStorage` (`calendar_day_sidebar_collapsed`) y se incluye en los datos de la plantilla para que el primer render ya refleje el estado correcto, sin parpadeo.
+
+#### 4.6.7 Decisiones
+
+1. **Persistencia de la referencia — decidido: en memoria.** No sobrevive a un reinicio de Obsidian, para no abrir el calendario días después en una fecha vieja. No se usa `localStorage`.
+2. **Vista Día — decidido: modo acoplado.** Usa el componente común siempre visible (ver §4.6.6), no el popover oculto de las demás vistas.
+3. **Seleccionar con clic en una celda — implementado.** Un clic simple en una celda de día (Mes/Semana/Semana laboral/Año) selecciona y resalta esa fecha como referencia, re-renderizando con `refreshCalendar()`. Para no interrumpir el `dblclick` de crear tarea en la misma celda, el clic espera el mismo retardo ya usado para distinguir clic/doble clic en las píldoras de tarea (`TASK_CLICK_DELAY_MS`, 250 ms): si llega un `dblclick` antes de que venza el temporizador, se cancela la selección y solo se crea la tarea. Clic sobre una tarea existente (burbuja) no dispara la selección; clic sobre el número del día sigue navegando a la vista Día, sin seleccionar la celda (mismo `stopPropagation()` de antes).
+
+#### 4.6.8 Fuera de alcance
+
+Seleccionar un rango de fechas, escribir una fecha a mano, atajos de teclado globales, atajo por mes en Año, y corregir el inicio de semana de la vista Semana.
+
+#### 4.6.9 Casos límite a verificar
+
+- Diciembre ↔ enero y febrero bisiesto (29 feb); fechas de décadas pasadas y futuras.
+- `weekStartDay` en lunes y en domingo, en el selector y en Mes.
+- La referencia cae en un día de un mes adyacente en Mes, y en un mes distinto del visible en el selector.
+- Cada cambio de tipo de vista entre las cinco, con una fecha distinta de hoy.
+- Re-render con el selector abierto (se cierra) y foco devuelto.
+- Los seis idiomas, tema claro y oscuro, y paneles estrechos (el popover no debe quedar recortado).
+- Apagar `calendarShowDueDates`/`StartDates`/`ScheduledDates` o `calendarShowCompletedTasks` en Settings ▸ Calendario y confirmar que el punto de un día desaparece en el selector y en el mini-calendario de Día, igual que en Mes.
+
+### 4.7 Bloques con duración en la vista por Día (v1.1.9 — implementado)
+
+> **Estado**: implementado (Fases A, B y C: segmentos conectados, carriles por solapamiento y redimensionar arrastrando el borde inferior). Mecanismo: [[Arquitectura técnica]] §10. Fases: [[Plan de implementación]]. Sustituye el enfoque de capa superpuesta (`position: absolute`) planteado inicialmente: en su lugar se reutiliza la misma técnica visual de "píldora conectada" que ya usan las rachas de hábitos (Grid), rotada de carriles horizontales de días a filas verticales de horas.
+
+#### 4.7.1 Granularidad: medias horas
+
+Cada `.oa-calendar-hour-row` (hoy una sola franja de 44px) se divide visualmente en dos mitades iguales, con una línea punteada en el punto medio (minuto :30) como guía. Esta división es puramente visual; `hourSlots` sigue teniendo una entrada por hora, no por media hora.
+
+#### 4.7.2 Tamaño según duración
+
+- **Sin duración** (tarea puntual, solo `scheduledTime`): ocupa la celda completa de su hora, igual que hoy — sin cambios.
+- **Duración menor a 60 min**: ocupa media celda — la mitad superior si el minuto de inicio cae en los primeros 30 min de la hora (`:00`–`:29`), la mitad inferior si cae en los últimos 30 (`:30`–`:59`). Conserva la etiqueta de minutos (ej. "15m").
+- **Duración de 60 min o más**: ocupa varias celdas de media hora **conectadas visualmente**, con las mismas clases que ya usa Habit Grid para las rachas (`oa-habit-grid-cell--run-start`/`--run-middle`/`--run-end`, manipulando `border-radius` y quitando el borde de unión): el primer segmento redondea sus esquinas superiores, los segmentos intermedios quedan cuadrados por ambos lados, y el último segmento redondea sus esquinas inferiores. No hace falta una capa superpuesta nueva.
+- **Redondeo visual del fin**: el final del bloque se redondea hacia arriba al siguiente múltiplo de 30 min para decidir cuántos segmentos dibujar (ej. 14:15 + 50 min, termina 15:05, se dibuja hasta las 15:30). Esto es solo para el dibujo: `scheduledDuration` guardado en la tarea no cambia.
+
+#### 4.7.3 Carriles para tareas solapadas (resuelve ADR-T5, ya no diferido)
+
+Dos o más tareas que se solapan en el tiempo se muestran **una al lado de la otra en carriles**, nunca una tapando a la otra. Se calcula por conglomerado de tareas mutuamente solapadas (algoritmo greedy: ordenar por inicio, asignar el primer carril libre), no para el día completo — así las horas sin solapes no se dividen en columnas innecesarias. El ancho de cada carril es igual al número máximo de carriles simultáneos dentro de ese conglomerado.
+
+#### 4.7.4 Redimensionar arrastrando el borde inferior
+
+Una manija en el borde inferior del último segmento (`--run-end`, o la propia celda si la tarea dura menos de una hora) permite arrastrar para cambiar la duración, en pasos de 30 minutos. Al soltar, se escribe con `upsertScheduledDuration()` (ya existe en `task-line-fields.ts`) + `TaskWriter.updateTaskLine()` — mismo patrón que el resto de la edición en el calendario. Duración mínima al arrastrar: 30 minutos.
+
+#### 4.7.5 Decisiones
+
+1. **Redondeo del fin — decidido: hacia arriba.** Siempre al siguiente medio-hora (nunca hacia abajo), para que el bloque nunca se vea más corto que la duración real.
+2. **Alcance de los carriles — decidido: por conglomerado.** El cálculo se hace por conglomerado de solapamiento, no con un número fijo de carriles para todo el día.
+
+#### 4.7.6 Fuera de alcance
+
+Redimensionar arrastrando el borde **superior** (cambiaría la hora de inicio, no la duración) — para mover la tarea completa ya existe el arrastre de toda la píldora (v1.1.4, Fase D). Posicionar una tarea sin duración dentro de la media hora exacta — sigue anclándose a la celda de su hora completa, como hoy.
+
+### 4.8 Selector de tipo de vista: multi-botón segmentado (v1.1.9 — implementado)
+
+> **Estado**: implementado. Cambio puramente visual: no toca `switchToViewType()` ni la lógica de navegación, solo cómo se dispara.
+
+**Hoy**: cada plantilla de vista de calendario (`calendar-month-view.hbs`, `-week-`, `-workweek-`, `-day-`, `-year-view.hbs`) repite un `<select id="oa-calendar-view-dropdown">` con 5 `<option>`; `CalendarView.setupViewSpecificEventListeners()` escucha su evento `change` y llama a `switchToViewType()`.
+
+**Propuesto**: reemplazar el `<select>` por un grupo de **6 botones pegados** (Año, Mes, Semana, Semana laboral, Día, y Lista — esta última se agrega en v1.1.10, pospuesta tras esta discusión), uno por tipo de vista, con un solo clic para cambiar. Se reutiliza el mismo lenguaje visual que ya existe en el Task Modal para la prioridad (`.oa-priority-segmented`/`.oa-priority-pill`, ver `src/styles/components/_modal.scss`): botones planos, sin fondo ni borde hasta hover/activo — pero en una fila continua y compacta (sin separación entre botones, bordes compartidos, esquinas redondeadas solo en los extremos del grupo), ya que son 6 opciones y deben quedar compactas en el encabezado del calendario.
+
+- Cada botón lleva su **ícono** (Obsidian `setIcon()`/Lucide, igual que los iconos de pestaña que ya usa cada vista) más un atributo `title` con el nombre traducido de la vista — se convierte automáticamente en el tooltip temático ya construido (`installTooltips()` ya corre en cada `BaseView.render()`), sin trabajo adicional.
+- Clic en un botón llama a la misma `switchToViewType()` que hoy dispara el `change` del `<select>`; la lógica de cambio de vista no cambia.
+- El botón de la vista activa se marca visualmente (clase `.oa-active`, igual que la píldora de prioridad seleccionada).
+
+#### 4.8.1 Decisiones
+
+1. **Ícono + tooltip, no solo ícono — confirmado.** El tooltip con el nombre de la vista es obligatorio, no opcional.
+2. **Set de íconos — confirmado**: Año `calendar-range`, Mes `calendar-days`, Semana `columns-3`, Semana laboral `briefcase`, Día `calendar-clock`. Lista (`list-todo`) se suma en v1.1.10 junto con la vista de lista del calendario; por ahora el grupo tiene 5 botones, no 6.
+
+### 4.9 Manejo de estatus desde el calendario (v1.1.10 — diseño, no implementado)
+
+> **Estado**: diseño acordado, nada implementado todavía. Decisiones y símbolos: [[Modelo de datos]] §10 (ADR-S1 a S3). Mecanismo: [[Arquitectura técnica]] §14.
+
+**Identificación visual**: cada píldora de tarea en el calendario (`.oa-calendar-task`, en Mes/Semana/Semana laboral/Día) muestra el ícono de su estado (⭕🛠️⏸️✅❌🗑️), igual que ya se ve en la vista Tabla — hoy solo se distingue completada/no completada (atenuado vía `.oa-calendar-task--done`).
+
+**Cambiar el estado — dos vías**:
+1. **Clic derecho (menú contextual)** sobre una píldora: abre un `Menu` nativo de Obsidian (mismo patrón que el menú de campos del editor, ver [[Arquitectura técnica]] §6) con las 6 opciones de estado, localizadas e iconadas. Elegir una reescribe el símbolo de la tarea.
+2. **Task Modal**: nuevo campo de estado (ver §7.5), disponible tanto al crear como al editar.
+
+**Efecto al marcar "Hecho"/desmarcar**: igual que el checkbox nativo de Obsidian — agrega la fecha ✅ al marcar `Done`, la quita al cambiar a cualquier otro estado (ADR-S3). No genera ninguna ocurrencia nueva de una tarea recurrente (eso se diseña aparte, ver roadmap de tareas recurrentes).
+
+**Fuera de alcance**: filtrar el calendario por estado (ya existe `calendarShowCompletedTasks` para ocultar completadas); estados personalizados/configurables (ADR-S2).
 
 ## 5. Timeline View (`timeline-view`) — placeholder
 
@@ -151,6 +326,10 @@ Iteraciones puntuales de "look and feel" a pedido del usuario, tras las revision
 - **Botones de campo (fecha/hora/duración) sin contorno**: mismo tratamiento — sin outline/box-shadow visibles, mimetizados con el fondo del modal.
 - **Toggle "More fields"**: el caret pasó del lado derecho al izquierdo del texto y se agrandó (`font-size: 1.3rem`).
 - **Botón ✕ del encabezado eliminado**: ver nota en §7.2 — Obsidian ya provee su propio botón de cierre nativo en el `Modal`, hacía el custom redundante.
+
+### 7.5 Campo de estado (v1.1.10 — diseño, no implementado)
+
+Nuevo campo en el formulario del Task Modal, visible tanto al crear como al editar: segmented control de 6 píldoras (mismo lenguaje visual que la prioridad, §7.2), una por Status Type (Todo/En progreso/En espera/Hecho/Cancelada/No es tarea). Al crear una tarea, "Todo" queda preseleccionado por defecto, pero se puede elegir cualquier otro estado antes de guardar. Al editar, refleja el estado actual de la tarea. Mismo efecto de agregar/quitar fecha ✅ que el cambio desde el calendario (ver §4.9).
 
 ## 8. Tooltips del plugin
 

@@ -1,22 +1,24 @@
-import { WorkspaceLeaf, Plugin } from "obsidian";
+import { WorkspaceLeaf, Plugin, setIcon } from "obsidian";
 import { CalendarView } from "./calendar-view";
 import { TaskManager } from "../core/task-manager";
-import { HourSlot, MiniCalendarDay, DayViewData } from '../types/interfaces';
+import { HourSlot, DayViewData, DurationTaskSegment, ITask } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import { CalendarViewType } from "../types/enums";
-import { upsertScheduledTime } from "../core/task-line-fields";
+import { upsertScheduledTime, upsertScheduledDuration } from "../core/task-line-fields";
+import { CalendarDatePicker } from "../core/calendar-date-picker";
 
 export const CALENDAR_DAY_VIEW_TYPE = "calendar-day-view";
 
+/** Clave de persistencia del colapso del sidebar del selector de fecha (v1.1.9). */
+const SIDEBAR_COLLAPSED_KEY = 'calendar_day_sidebar_collapsed';
+
+/** Medias-horas del día (0–47); cada bloque con duración redondea su fin hacia arriba al siguiente múltiplo de 30 min (v1.1.9, §4.7.2/§4.7.5). */
+const HALF_SLOTS_PER_DAY = 48;
+
 export class CalendarDayView extends CalendarView {
-  // Añadir una propiedad para rastrear el mes mostrado en el mini calendario
-  private miniCalendarMonth: DateTime;
-  
   constructor(leaf: WorkspaceLeaf, plugin: Plugin, i18n: I18n, taskManager: TaskManager) {
     super(leaf, plugin, i18n, taskManager);
-    // Inicializar el mes del mini calendario con la fecha actual
-    this.miniCalendarMonth = this.currentDate;
   }
 
   getViewType(): string {
@@ -25,18 +27,6 @@ export class CalendarDayView extends CalendarView {
 
   getDisplayText(): string {
     return this.i18n.t("day_view_title");
-  }
-
-  async onOpen(): Promise<void> {
-    const savedDate = this.app.loadLocalStorage('oa_navigate_to_date') as string | null;
-    if (savedDate) {
-      this.currentDate = DateTime.fromISO(savedDate);
-      this.miniCalendarMonth = this.currentDate;
-      this.app.saveLocalStorage('oa_navigate_to_date', '');
-    }
-    // ... resto del onOpen existente
-    this.tasks = await this.getAllTasks(this.taskManager);
-    await this.refreshCalendar();
   }
 
   /**
@@ -52,19 +42,102 @@ export class CalendarDayView extends CalendarView {
     const allDayStart = dayTasks.filter(task => task.calendarDateType === 'start');
     const allDayScheduled = dayTasks.filter(task => task.calendarDateType === 'scheduled' && !task.date.scheduledTime);
 
-    // Organizar tareas programadas por hora (24 horas)
+    // Bloques con duración (v1.1.9, §4.7 Fase A): un segmento por media-hora que ocupan.
+    const segmentsByHalfSlot: DurationTaskSegment[][] = Array.from({ length: HALF_SLOTS_PER_DAY }, () => []);
+    // Rango de medias-horas por tarea, antes de asignar carriles (Fase B, §4.7.3). Las tareas sin
+    // duración ocupan exactamente una media-hora (la que contiene su minuto) y entran al mismo
+    // sistema de segmentos/carriles que las que sí tienen duración, para reservar espacio igual.
+    const durationRanges: { task: ITask; startHalfSlot: number; endHalfSlotExclusive: number }[] = [];
+
+    for (const task of scheduledWithTime) {
+      const [hourStr, minuteStr] = (task.date.scheduledTime as string).split(':');
+      const hour = Number(hourStr);
+      const minute = Number(minuteStr);
+      const duration = task.date.scheduledDuration;
+
+      const startTotalMinutes = hour * 60 + minute;
+      const startHalfSlot = Math.floor(startTotalMinutes / 30);
+
+      if (!duration || duration <= 0) {
+        // Sin duración: una sola media-hora (la que contiene el minuto de inicio).
+        durationRanges.push({ task, startHalfSlot, endHalfSlotExclusive: startHalfSlot + 1 });
+        continue;
+      }
+
+      // Redondeo del fin hacia arriba al siguiente múltiplo de 30 min (decidido, §4.7.5/§4.7.2):
+      // el bloque dibujado nunca se ve más corto que la duración real.
+      const endTotalMinutesRounded = Math.ceil((startTotalMinutes + duration) / 30) * 30;
+      // Recorta a medianoche (ADR-T7): una tarea no cruza al día siguiente en el dibujo.
+      const endHalfSlotExclusive = Math.max(startHalfSlot + 1, Math.min(HALF_SLOTS_PER_DAY, endTotalMinutesRounded / 30));
+      durationRanges.push({ task, startHalfSlot, endHalfSlotExclusive });
+    }
+
+    // Carriles por conglomerado de solapamiento (Fase B, §4.7.3): se ordena por inicio y se agrupan
+    // en conglomerados de tareas mutuamente solapadas; dentro de cada conglomerado, asignación greedy
+    // del primer carril libre. El ancho de carril (1 / nº de carriles) es uniforme en todo el
+    // conglomerado, no por media-hora individual, para que las columnas queden alineadas.
+    durationRanges.sort((a, b) => a.startHalfSlot - b.startHalfSlot);
+
+    const assignCluster = (cluster: typeof durationRanges): void => {
+      const laneEnds: number[] = [];
+      const laneIndexByItem = new Map<typeof durationRanges[number], number>();
+      for (const item of cluster) {
+        let lane = laneEnds.findIndex(end => end <= item.startHalfSlot);
+        if (lane === -1) {
+          lane = laneEnds.length;
+          laneEnds.push(item.endHalfSlotExclusive);
+        } else {
+          laneEnds[lane] = item.endHalfSlotExclusive;
+        }
+        laneIndexByItem.set(item, lane);
+      }
+      const laneCount = laneEnds.length;
+
+      for (const item of cluster) {
+        const laneIndex = laneIndexByItem.get(item) ?? 0;
+        // Porcentajes precalculados (no calc() con variables CSS anidadas): el minificador de Sass
+        // puede aplanar/reordenar esas expresiones y romper el cálculo (ver nota en interfaces.ts).
+        const laneWidthPercent = 100 / laneCount;
+        const laneLeftPercent = laneIndex * laneWidthPercent;
+        const segmentCount = item.endHalfSlotExclusive - item.startHalfSlot;
+        for (let i = 0; i < segmentCount; i++) {
+          const slotIndex = item.startHalfSlot + i;
+          if (slotIndex < 0 || slotIndex >= HALF_SLOTS_PER_DAY) continue;
+          const segmentRole: DurationTaskSegment['segmentRole'] = segmentCount === 1
+            ? 'half'
+            : i === 0 ? 'start' : i === segmentCount - 1 ? 'end' : 'middle';
+          segmentsByHalfSlot[slotIndex].push({ ...item.task, segmentRole, laneIndex, laneCount, laneLeftPercent, laneWidthPercent });
+        }
+      }
+    };
+
+    let cluster: typeof durationRanges = [];
+    let clusterEnd = -Infinity;
+    for (const item of durationRanges) {
+      if (cluster.length > 0 && item.startHalfSlot >= clusterEnd) {
+        assignCluster(cluster);
+        cluster = [];
+        clusterEnd = -Infinity;
+      }
+      cluster.push(item);
+      clusterEnd = Math.max(clusterEnd, item.endHalfSlotExclusive);
+    }
+    if (cluster.length > 0) assignCluster(cluster);
+
+    // Organizar tareas programadas por hora (24 horas); cada hora expone su mitad superior
+    // (:00–:29) e inferior (:30–:59) por separado para los bloques con duración.
     const hourSlots: HourSlot[] = [];
     for (let hour = 0; hour < 24; hour++) {
-      const hourTasks = scheduledWithTime.filter(task => task.date.scheduled?.hour === hour);
+      const upperHalfSegments = segmentsByHalfSlot[hour * 2] ?? [];
+      const lowerHalfSegments = segmentsByHalfSlot[hour * 2 + 1] ?? [];
       hourSlots.push({
         hour,
         formattedHour: this.formatHour(hour),
-        tasks: hourTasks
+        upperHalfSegments,
+        lowerHalfSegments,
+        hasDurationSegments: upperHalfSegments.length > 0 || lowerHalfSegments.length > 0,
       });
     }
-    
-    // Generar datos del mini calendario usando el mes almacenado
-    const miniCalendar = this.generateMiniCalendarData(this.miniCalendarMonth);
     
     return {
       viewType: CalendarViewType.Day,
@@ -78,184 +151,22 @@ export class CalendarDayView extends CalendarView {
       allDayStart,
       allDayScheduled,
       periodName: this.currentDate.toFormat('EEEE, MMMM d, yyyy'),
-      miniCalendar: miniCalendar
+      sidebarCollapsed: this.app.loadLocalStorage(SIDEBAR_COLLAPSED_KEY) === 'true',
     };
-  }
-
-  /**
-   * Genera datos para el mini calendario
-   * Optimizado para rendimiento
-   */
-  private generateMiniCalendarData(currentDate: DateTime) {
-    const today = DateTime.now().startOf('day');
-    const firstOfMonth = currentDate.startOf('month');
-    const lastOfMonth = currentDate.endOf('month');
-    
-    // Día de la semana del primer día del mes (0-6, donde 0 es domingo en ISO)
-    let firstDayOfWeek = firstOfMonth.weekday % 7;
-    // Ajustar para que la semana comience en lunes (1-7)
-    if (firstDayOfWeek === 0) firstDayOfWeek = 7;
-    
-    // Nombres cortos de los días de la semana
-    const weekdays = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-    
-    // OPTIMIZACIÓN: Precalcular fechas con tareas usando un Set
-    const datesWithTasks = new Set<string>();
-    
-    // Solo procesar una vez las tareas
-    this.tasks.forEach(task => {
-      if (task.date.due) {
-        let dateString: string | undefined;
-        if (typeof task.date.due === 'string') {
-          // Type guard ensures split is called only on string
-          dateString = (task.date.due as string).split('T')[0]; // Extraer solo la parte de la fecha
-        } else if (task.date.due instanceof Date) {
-          const isoDate = DateTime.fromJSDate(task.date.due).toISODate();
-          if (isoDate !== null) {
-            dateString = isoDate;
-          }
-        } else if (task.date.due && typeof task.date.due === 'object' && 'toISODate' in task.date.due) {
-          const isoDate = task.date.due.toISODate();
-          if (isoDate !== null) {
-            dateString = isoDate;
-          }
-        }
-        
-        if (dateString) datesWithTasks.add(dateString);
-      }
-      
-      // También considerar fechas programadas si existen
-      if (task.date.scheduled) {
-        let dateString: string | undefined;
-        if (typeof task.date.scheduled === 'string') {
-          dateString = (task.date.scheduled as string).split('T')[0];
-        } else if (task.date.scheduled instanceof Date) {
-          const isoDate = DateTime.fromJSDate(task.date.scheduled).toISODate();
-          if (isoDate !== null) {
-            dateString = isoDate;
-          }
-        } else if (task.date.scheduled && typeof task.date.scheduled === 'object' && 'toISODate' in task.date.scheduled) {
-          const isoDate = task.date.scheduled.toISODate();
-          if (isoDate !== null) {
-            dateString = isoDate;
-          }
-        }
-          
-        if (dateString) datesWithTasks.add(dateString);
-      }
-    });
-    
-    // OPTIMIZACIÓN: Minimizar creación de objetos DateTime
-    // Preparar strings base para las fechas
-    const currentMonthStr = currentDate.toFormat('yyyy-MM');
-    const prevMonthStr = firstOfMonth.minus({ months: 1 }).toFormat('yyyy-MM');
-    const nextMonthStr = firstOfMonth.plus({ months: 1 }).toFormat('yyyy-MM');
-    
-    // Generar matriz para el calendario
-    const weeks: MiniCalendarDay[][] = [];
-    let currentWeek: MiniCalendarDay[] = [];
-    
-    // Días del mes anterior para completar la primera semana
-    const daysInPrevMonth = firstOfMonth.minus({ months: 1 }).daysInMonth || 30;
-    
-    for (let i = 1; i < firstDayOfWeek; i++) {
-      const day = daysInPrevMonth - firstDayOfWeek + i + 1;
-      const paddedDay = day.toString().padStart(2, '0');
-      const dateStr = `${prevMonthStr}-${paddedDay}`;
-      
-      currentWeek.push({
-        day,
-        date: dateStr,
-        isCurrentMonth: false,
-        isToday: false,
-        isSelected: false,
-        hasTasks: datesWithTasks.has(dateStr)
-      });
-    }
-    
-    // Días del mes actual
-    const daysInMonth = lastOfMonth.day;
-    for (let day = 1; day <= daysInMonth; day++) {
-      const paddedDay = day.toString().padStart(2, '0');
-      const dateStr = `${currentMonthStr}-${paddedDay}`;
-      
-      // Optimización: evitar crear objetos DateTime innecesarios
-      const isToday = today.toISODate() === dateStr;
-      const isSelected = currentDate.day === day && currentDate.month === firstOfMonth.month;
-      
-      currentWeek.push({
-        day,
-        date: dateStr,
-        isCurrentMonth: true,
-        isToday,
-        isSelected,
-        hasTasks: datesWithTasks.has(dateStr)
-      });
-      
-      if (currentWeek.length === 7) {
-        weeks.push(currentWeek);
-        currentWeek = [];
-      }
-    }
-    
-    // Días del mes siguiente para completar la última semana
-    if (currentWeek.length > 0) {
-      let day = 1;
-      while (currentWeek.length < 7) {
-        const paddedDay = day.toString().padStart(2, '0');
-        const dateStr = `${nextMonthStr}-${paddedDay}`;
-        
-        currentWeek.push({
-          day,
-          date: dateStr,
-          isCurrentMonth: false,
-          isToday: false,
-          isSelected: false,
-          hasTasks: datesWithTasks.has(dateStr)
-        });
-        day++;
-      }
-      weeks.push(currentWeek);
-    }
-    
-    return {
-      monthName: currentDate.toFormat('MMMM yyyy'),
-      weekdays,
-      weeks
-    };
-  }
-
-  /**
-   * Navega al mes anterior en el mini calendario
-   */
-  private navigateToPreviousMonth(): void {
-    this.miniCalendarMonth = this.miniCalendarMonth.minus({ months: 1 });
-    this.refreshView().catch(console.error);
-  }
-
-  /**
-   * Navega al mes siguiente en el mini calendario
-   */
-  private navigateToNextMonth(): void {
-    this.miniCalendarMonth = this.miniCalendarMonth.plus({ months: 1 });
-    this.refreshView().catch(console.error);
   }
 
   protected navigateToPrevious(): void {
-    this.currentDate = this.currentDate.minus({ days: 1 });
-    this.miniCalendarMonth = this.currentDate; // Sincronizar el mes del mini calendario
+    this.setCurrentDate(this.currentDate.minus({ days: 1 }));
     this.refreshView().catch(console.error);
   }
 
   protected navigateToNext(): void {
-    this.currentDate = this.currentDate.plus({ days: 1 });
-    this.miniCalendarMonth = this.currentDate; // Sincronizar el mes del mini calendario
+    this.setCurrentDate(this.currentDate.plus({ days: 1 }));
     this.refreshView().catch(console.error);
   }
   
   protected navigateToToday(): void {
-    this.currentDate = DateTime.now();
-    this.miniCalendarMonth = this.currentDate; // Sincronizar el mes del mini calendario
+    this.setCurrentDate(DateTime.now());
     this.refreshView().catch(console.error);
   }
 
@@ -265,37 +176,33 @@ export class CalendarDayView extends CalendarView {
   protected setupViewSpecificEventListeners(container: HTMLElement, data: DayViewData): void {
     // Ejecutar event listeners comunes primero
     super.setupViewSpecificEventListeners(container, data);
-    
-    // Añadir event listeners para los días del mini calendario
-    const miniDays = container.querySelectorAll('.oa-calendar-mini-day');
-    miniDays.forEach(day => {
-      day.addEventListener('click', (_e) => {
-        const dateStr = day.getAttribute('data-date');
-        if (dateStr) {
-          // Cambiar a la fecha seleccionada
-          this.currentDate = DateTime.fromISO(dateStr);
-          // Actualizar también el mes del mini calendario
-          this.miniCalendarMonth = this.currentDate;
-          this.refreshView().catch(console.error);
-        }
+
+    // Selector de fecha compartido (v1.1.9, §4.6.6): modo docked, siempre visible, sin botón de apertura.
+    const datePickerContainer = container.querySelector<HTMLElement>('.oa-date-picker-docked');
+    if (datePickerContainer) {
+      const picker = new CalendarDatePicker({
+        i18n: this.i18n,
+        selectedDate: this.currentDate,
+        getWeekStartDay: () => this.getWeekStartDay(),
+        getLocalizedDayNames: () => this.getLocalizedDayNames(),
+        hasTasks: (date) => this.getTasksForDate(date).length > 0,
+        onSelect: (date) => {
+          this.setCurrentDate(date);
+          this.refreshCalendar().catch(console.error);
+        },
       });
+      picker.mount(datePickerContainer);
+    }
+
+    // Colapsar el sidebar del selector de fecha hacia la derecha (preferencia persistida, v1.1.9).
+    const sidebarToggle = container.querySelector<HTMLButtonElement>('.oa-calendar-sidebar-toggle');
+    sidebarToggle?.addEventListener('click', () => {
+      const collapsed = this.app.loadLocalStorage(SIDEBAR_COLLAPSED_KEY) === 'true';
+      this.app.saveLocalStorage(SIDEBAR_COLLAPSED_KEY, String(!collapsed));
+      this.refreshCalendar().catch(console.error);
     });
-    
-    // Añadir event listeners para los botones de navegación del mini calendario
-    const miniPrevButton = container.querySelector('.oa-mini-calendar-prev');
-    const miniNextButton = container.querySelector('.oa-mini-calendar-next');
-    
-    if (miniPrevButton) {
-      miniPrevButton.addEventListener('click', () => {
-        this.navigateToPreviousMonth();
-      });
-    }
-    
-    if (miniNextButton) {
-      miniNextButton.addEventListener('click', () => {
-        this.navigateToNextMonth();
-      });
-    }
+    const sidebarToggleIcon = data.sidebarCollapsed ? 'chevron-left' : 'chevron-right';
+    if (sidebarToggle) setIcon(sidebarToggle, sidebarToggleIcon);
 
     // Sección "Todo el día": colapsada por defecto (D10)
     const alldayToggle = container.querySelector<HTMLButtonElement>('.oa-calendar-allday-toggle');
@@ -307,29 +214,142 @@ export class CalendarDayView extends CalendarView {
       alldayToggle.setAttribute('aria-expanded', String(nowExpanded));
     });
 
-    // Drag and drop (v1.1.4, Fase D): arrastrar una tarea programada a otra franja horaria
-    // cambia su hora de `scheduled`, preservando los minutos originales dentro de la hora.
+    // Drag and drop (v1.1.4, Fase D; snap de media hora en v1.1.9): arrastrar una tarea programada
+    // a otra franja la mueve a la media hora exacta donde se suelta (mitad superior = :00, mitad
+    // inferior = :30), sin importar el minuto original.
+    // Doble clic en una franja vacía crea una tarea con fecha + hora prellenadas (v1.1.9, fix).
     const hourSlots = container.querySelectorAll<HTMLElement>('.oa-calendar-hour-slot');
     hourSlots.forEach(slot => {
+      slot.addEventListener('dblclick', (e) => {
+        if ((e.target as HTMLElement).closest('.oa-calendar-task')) return;
+
+        const hourStr = slot.dataset.hour;
+        if (hourStr === undefined) return;
+        const hour = Number(hourStr);
+        if (Number.isNaN(hour)) return;
+
+        const dateStr = this.currentDate.toISODate();
+        if (!dateStr) return;
+        this.openCreateTaskForDate(dateStr, `${String(hour).padStart(2, '0')}:00`);
+      });
+
       slot.addEventListener('dragover', (e) => {
         e.preventDefault();
-        slot.addClass('oa-calendar-drop-target');
+        const isUpperHalf = this.isPointerOverUpperHalf(e, slot);
+        slot.toggleClass('oa-calendar-drop-target--upper', isUpperHalf);
+        slot.toggleClass('oa-calendar-drop-target--lower', !isUpperHalf);
       });
 
       slot.addEventListener('dragleave', () => {
-        slot.removeClass('oa-calendar-drop-target');
+        slot.removeClass('oa-calendar-drop-target--upper');
+        slot.removeClass('oa-calendar-drop-target--lower');
       });
 
       slot.addEventListener('drop', (e) => {
         e.preventDefault();
-        slot.removeClass('oa-calendar-drop-target');
-        this.handleHourSlotDrop(e, slot.dataset.hour);
+        const isUpperHalf = this.isPointerOverUpperHalf(e, slot);
+        slot.removeClass('oa-calendar-drop-target--upper');
+        slot.removeClass('oa-calendar-drop-target--lower');
+        this.handleHourSlotDrop(e, slot.dataset.hour, isUpperHalf ? '00' : '30');
       });
+    });
+
+    // Doble clic en la sección "Todo el día" crea una tarea sin hora (v1.1.9, fix).
+    const alldayContent = container.querySelector<HTMLElement>('.oa-calendar-allday-content');
+    alldayContent?.addEventListener('dblclick', (e) => {
+      if ((e.target as HTMLElement).closest('.oa-calendar-task')) return;
+      const dateStr = this.currentDate.toISODate();
+      if (dateStr) this.openCreateTaskForDate(dateStr);
+    });
+
+    // Redimensionar arrastrando el borde inferior del último segmento de una tarea (v1.1.9, Fase C,
+    // §4.7.4): snap a pasos de 30 minutos, duración mínima 30 minutos.
+    const resizeHandles = container.querySelectorAll<HTMLElement>('.oa-calendar-resize-handle');
+    resizeHandles.forEach(handle => this.wireResizeHandle(handle));
+  }
+
+  /** Arrastre lineal (análogo al dial de hábitos, pero vertical) para cambiar `scheduledDuration`. */
+  private wireResizeHandle(handle: HTMLElement): void {
+    const filePath = handle.dataset.filePath;
+    const lineNumber = Number(handle.dataset.lineNumber);
+    if (!filePath || Number.isNaN(lineNumber)) return;
+
+    const initialDuration = Number(handle.dataset.currentDuration) || 30;
+    let halfSlotPx = 22;
+    let startY = 0;
+    let liveDuration = initialDuration;
+    let tooltip: HTMLElement | null = null;
+
+    const snapDuration = (deltaY: number): number => {
+      const deltaHalfSlots = Math.round(deltaY / halfSlotPx);
+      return Math.max(30, initialDuration + deltaHalfSlots * 30);
+    };
+
+    const positionTooltip = (event: PointerEvent): void => {
+      if (!tooltip) return;
+      tooltip.setCssStyles({ left: `${event.clientX + 12}px`, top: `${event.clientY - 12}px` });
+    };
+
+    const onPointerMove = (event: PointerEvent): void => {
+      liveDuration = snapDuration(event.clientY - startY);
+      if (tooltip) tooltip.setText(`${liveDuration}m`);
+      positionTooltip(event);
+    };
+
+    const onPointerUp = (event: PointerEvent): void => {
+      handle.removeEventListener('pointermove', onPointerMove);
+      handle.removeEventListener('pointerup', onPointerUp);
+      handle.releasePointerCapture(event.pointerId);
+      handle.removeClass('oa-resizing');
+      tooltip?.remove();
+      tooltip = null;
+
+      if (liveDuration === initialDuration) return;
+      this.taskWriter.updateTaskLine(filePath, lineNumber, (line) => {
+        const result = upsertScheduledDuration(line, liveDuration);
+        return result.ok ? result.line : line;
+      })
+        .then(ok => {
+          if (ok) this.refreshView().catch(console.error);
+        })
+        .catch(console.error);
+    };
+
+    handle.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      event.stopPropagation(); // No iniciar el drag nativo (mover la tarea) de la píldora contenedora.
+
+      const row = handle.closest<HTMLElement>('.oa-calendar-hour-row');
+      halfSlotPx = (row?.getBoundingClientRect().height ?? 44) / 2;
+      startY = event.clientY;
+      liveDuration = initialDuration;
+
+      handle.addClass('oa-resizing');
+      tooltip = document.body.createDiv({ cls: 'oa-calendar-resize-tooltip', text: `${initialDuration}m` });
+      positionTooltip(event);
+
+      handle.setPointerCapture(event.pointerId);
+      handle.addEventListener('pointermove', onPointerMove);
+      handle.addEventListener('pointerup', onPointerUp);
+    });
+
+    // El navegador dispara 'click' tras el pointerup aunque este se detenga antes; sin esto, el
+    // clic burbujea a la píldora contenedora y abre el modal de edición al soltar.
+    handle.addEventListener('click', (event) => {
+      event.stopPropagation();
+      event.preventDefault();
     });
   }
 
-  /** Aplica el drop de una tarea programada sobre una franja horaria: reescribe su hora (🕐). */
-  private handleHourSlotDrop(event: DragEvent, hourStr: string | undefined): void {
+  /** `true` si el cursor del arrastre está sobre la mitad superior (:00) de la franja; `false` si está en la inferior (:30). */
+  private isPointerOverUpperHalf(event: DragEvent, slot: HTMLElement): boolean {
+    const rect = slot.getBoundingClientRect();
+    return (event.clientY - rect.top) < rect.height / 2;
+  }
+
+  /** Aplica el drop de una tarea programada sobre una franja horaria: reescribe su hora (🕐) a la
+   * media hora exacta donde se soltó, sin importar el minuto original de la tarea (v1.1.9). */
+  private handleHourSlotDrop(event: DragEvent, hourStr: string | undefined, minutes: '00' | '30'): void {
     if (hourStr === undefined) return;
     const payload = this.parseTaskDragPayload(event);
     if (!payload || payload.calendarDateType !== 'scheduled') return;
@@ -337,7 +357,6 @@ export class CalendarDayView extends CalendarView {
     const hour = Number(hourStr);
     if (Number.isNaN(hour)) return;
 
-    const minutes = payload.scheduledTime?.split(':')[1] ?? '00';
     const newTime = `${String(hour).padStart(2, '0')}:${minutes}`;
 
     this.taskWriter.updateTaskLine(payload.filePath, payload.lineNumber, (line) => {
@@ -351,7 +370,6 @@ export class CalendarDayView extends CalendarView {
   }
 
   async onClose(): Promise<void> {
-    // Limpiar event listeners específicos
-    //this.contentEl.off('click', '.calendar-mini-day');
+    await super.onClose();
   }
 }

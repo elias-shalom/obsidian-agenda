@@ -54,6 +54,7 @@ export class CalendarWorkWeekView extends CalendarView {
       days.push({
         date: currentDay,
         isToday: currentDay.hasSame(DateTime.now(), 'day'),
+        isSelected: currentDay.hasSame(this.currentDate, 'day'),
         dayOfMonth: currentDay.day,
         dayOfWeek: currentDay.weekday,
         dayName: localizedDayNames[dayIndex],
@@ -78,12 +79,12 @@ export class CalendarWorkWeekView extends CalendarView {
   }
 
   protected navigateToPrevious(): void {
-    this.currentDate = this.currentDate.minus({ weeks: 1 });
+    this.setCurrentDate(this.currentDate.minus({ weeks: 1 }));
     this.refreshView().catch(console.error);
   }
 
   protected navigateToNext(): void {
-    this.currentDate = this.currentDate.plus({ weeks: 1 });
+    this.setCurrentDate(this.currentDate.plus({ weeks: 1 }));
     this.refreshView().catch(console.error);
   }
 
@@ -132,34 +133,9 @@ export class CalendarWorkWeekView extends CalendarView {
       }
     }
     
-    // Agregar listeners para interacción con tareas
-    this.setupTaskInteractionListeners(container);
-  }
-  
-  /**
-   * Configura los listeners para interacción con tareas
-   * @param container Contenedor donde se aplican los listeners
-   */
-  private setupTaskInteractionListeners(container: HTMLElement): void {
-    const taskElements = container.querySelectorAll('.oa-calendar-task');
-    
-    taskElements.forEach(taskEl => {
-      taskEl.addEventListener('click', (event) => {
-        const target = event.currentTarget as HTMLElement;
-        
-        // Obtener información de la tarea
-        const filePath = target.dataset.filePath;
-        const lineNumber = parseInt(target.dataset.lineNumber || '0', 10);
-        
-        if (filePath) {
-          // Abrir el archivo en la línea donde está la tarea
-          this.plugin.app.workspace.openLinkText(filePath, '', false, { eState: { line: lineNumber } }).catch(console.error);
-        }
-      });
-    });
   }
 
   async onClose(): Promise<void> {
-    // Limpia recursos si es necesario
+    await super.onClose();
   }
 }

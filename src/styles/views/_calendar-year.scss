@@ -100,6 +100,19 @@
     border-color: var(--interactive-accent);
   }
 
+  /* Fecha seleccionada (v1.1.9, fecha de referencia): independiente del estilo de 'hoy', ambos se aplican si coinciden. */
+  &.oa-year-selected:not(.oa-year-today) {
+    background-color: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+    border-color: var(--interactive-accent);
+
+    .oa-year-day-number {
+      background-color: var(--interactive-accent);
+      color: var(--text-on-accent);
+      font-weight: bold;
+      border-radius: 50%;
+    }
+  }
+
   &.oa-has-tasks {
     &:not(.oa-year-today) {
       background-color: var(--background-tertiary);

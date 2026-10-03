@@ -53,6 +53,30 @@
         }
       }
     }
+
+    /* Fecha seleccionada (v1.1.9, fecha de referencia): independiente del estilo de 'hoy', ambos se aplican si coinciden. */
+    &.oa-calendar-selected {
+      background-color: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+
+      .oa-calendar-week-day-header .oa-calendar-date {
+        background-color: var(--interactive-accent);
+        color: var(--text-on-accent);
+        font-weight: bold;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        padding: 0;
+      }
+
+      // El hover genérico de calendar-day-styles() usa !important; sin esto, taparía el tinte de selección.
+      &:hover {
+        background-color: color-mix(in srgb, var(--interactive-accent) 20%, transparent) !important;
+      }
+    }
   }
   
   /* Estilos de cuadrícula adaptados para la semana laboral (5 días) */

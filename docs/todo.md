@@ -205,11 +205,11 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
   - [x] Selector de fecha ocultable en Mes/Semana/Semana laboral/Año, abierto desde el encabezado del calendario; en Día se integra siempre visible (sin botón). Elegir un día lleva la vista actual a esa fecha (su mes, su semana, etc.); la pestaña "Calendario" del encabezado sigue abriendo Mes + hoy.
   - [x] Niveles dentro del selector: días → años (por década) → meses → días
   - [x] Textos del selector en los seis idiomas y uso con teclado (Escape, foco)
-- [ ] **Bloques con duración en la vista por día** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.7 y `Arquitectura técnica.md` §10; fases en `Plan de implementación.md`)
-  - [ ] Sin duración: ocupa una hora completa, como hoy. Menos de 60 min: ocupa media celda (con la etiqueta de minutos). 60 min o más: varias celdas conectadas, igual técnica que las rachas de hábitos (sin capa superpuesta)
-  - [ ] Tareas solapadas en carriles lado a lado, nunca una tapando a la otra
-  - [ ] Redimensionar arrastrando el borde inferior, en pasos de 30 minutos
-  - [ ] Línea punteada a la media hora en cada franja, como guía visual
+- [x] **Bloques con duración en la vista por día** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.7 y `Arquitectura técnica.md` §10; fases en `Plan de implementación.md`)
+  - [x] Sin duración: ocupa una hora completa, como hoy. Menos de 60 min: ocupa media celda (con la etiqueta de minutos). 60 min o más: varias celdas conectadas, igual técnica que las rachas de hábitos (sin capa superpuesta)
+  - [x] Tareas solapadas en carriles lado a lado, nunca una tapando a la otra
+  - [x] Redimensionar arrastrando el borde inferior, en pasos de 30 minutos
+  - [x] Línea punteada a la media hora en cada franja, como guía visual
 - [x] doble clic para crear tarea en la vista Día (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.4.1 y `Arquitectura técnica.md` §11; fases en `Plan de implementación.md`)
   - [x] Franja horaria: prellena fecha y hora. Sección "Todo el día": prellena solo fecha (igual que las demás vistas)
   - [x] Doble clic sobre una tarea existente sigue abriendo su nota, sin crear una nueva
@@ -220,27 +220,28 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
   - [x] Reutiliza el estilo del selector de prioridad del Task Modal (`.oa-priority-segmented`/`.oa-priority-pill`), en versión compacta sin espacio entre botones
   - [x] Ícono por botón + tooltip con el nombre de la vista (gratis con el componente de tooltips ya construido) — tooltip obligatorio, confirmado
   - [x] Íconos: Año `calendar-range`, Mes `calendar-days`, Semana `columns-3`, Semana laboral `briefcase`, Día `calendar-clock`
-- [ ] **Vista Día: modo de varios días 1/3/5** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.4.3 y `Arquitectura técnica.md` §13; fases en `Plan de implementación.md`)
-  - [ ] Multi-botón 1/3/5 solo visible dentro de la vista Día (no en el selector principal de vistas)
-  - [ ] Día de referencia centrado (3: 1 antes/1 después; 5: 2 antes/2 después); ◀▶ desplazan un día a la vez
-  - [ ] Hereda el grid de horas y los bloques con duración/carriles del punto anterior, por columna de día; ninguna tarea cruza entre columnas
-- [ ] **Manejo de estatus desde el calendario** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.9/§7.5, `Modelo de datos.md` §10 y `Arquitectura técnica.md` §14; fases en `Plan de implementación.md`)
-  - [ ] Sexto estado "En espera" (`?`, ícono ⏸️), sumado a los 5 ya existentes (Todo/En progreso/Hecho/Cancelada/No es tarea)
-  - [ ] Ícono de estado visible en cada píldora del calendario
-  - [ ] Cambiar el estado con clic derecho (menú contextual) sobre la tarea, o desde un nuevo campo en el Task Modal (crear y editar, "Todo" preseleccionado al crear)
-  - [ ] Marcar "Hecho" agrega la fecha ✅; cambiar desde "Hecho" a otro estado la quita — igual que el checkbox nativo de Obsidian
-  - [ ] Estados personalizados/configurables y filtrar el calendario por estado quedan fuera de alcance por ahora
-- [ ] **Fix: `task-filter.ts` compara el símbolo contra el texto del estado** — `isTaskCompleted` compara `state.status` (símbolo literal) contra `'DONE'`/`'CANCELLED'` (valores de `state.text`); nunca es verdadero, el filtro no excluye completadas/canceladas como debería
-
 - [x] **Mejoras adicionales encontradas durante la implementación de v1.1.9** (no estaban en el diseño original)
   - [x] Clic simple en una celda de día (Mes/Semana/Semana laboral/Año) selecciona y resalta esa fecha como referencia, sin interrumpir el doble clic de crear tarea en la misma celda (mismo patrón de retardo que las tareas, `TASK_CLICK_DELAY_MS`) — revisa la decisión 3 de §4.6.7, antes diferida
   - [x] **fix**: las 5 subclases de `CalendarView` sombreaban por completo `onClose()` de la clase base (no llamaban a `super.onClose()`); un tooltip visible al cambiar de tipo de vista quedaba huérfano en `document.body` para siempre, mostrando 2 tooltips superpuestos la próxima vez que se pasaba el mouse por un botón similar
   - [x] Sidebar de la vista Día colapsable hacia la derecha (manija entre la vista principal y el sidebar), estado persistido en `localStorage`
   - [x] Hover especial para el día seleccionado en Mes/Semana/Semana laboral: ya no pierde el tinte de acento al pasar el mouse por encima (el hover genérico compartido usaba `!important`)
   - [x] Ajustes visuales del selector de fecha: ancho del popover a 290px, `grid-template-rows` explícito (evita que la última fila de días quede recortada), separación vertical/horizontal distinta en la rejilla de días, contorno de acento en días con tareas, margen entre flechas y título del encabezado
+  - [x] Arrastrar una tarea en la vista Día (mover entre franjas) ahora hace snap a la media hora exacta donde se suelta (mitad superior = :00, mitad inferior = :30) en vez de solo cambiar la hora y conservar el minuto original; resaltado visual distingue la mitad de destino
+  - [x] Tareas sin duración unificadas al mismo sistema de segmentos/carriles que las tareas con duración (ocupan una sola media-hora y reservan espacio igual, en vez de ocupar la celda completa y poder solaparse)
 
 ## 🔮 v1.1.10 (ideas, discusión pendiente)
 
+- [ ] **Manejo de estatus desde el calendario** (pospuesto de v1.1.9; diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.9/§7.5, `Modelo de datos.md` §10 y `Arquitectura técnica.md` §14; fases en `Plan de implementación.md`)
+  - [ ] Sexto estado "En espera" (`?`, ícono ⏸️), sumado a los 5 ya existentes (Todo/En progreso/Hecho/Cancelada/No es tarea)
+  - [ ] Ícono de estado visible en cada píldora del calendario
+  - [ ] Cambiar el estado con clic derecho (menú contextual) sobre la tarea, o desde un nuevo campo en el Task Modal (crear y editar, "Todo" preseleccionado al crear)
+  - [ ] Marcar "Hecho" agrega la fecha ✅; cambiar desde "Hecho" a otro estado la quita — igual que el checkbox nativo de Obsidian
+  - [ ] Estados personalizados/configurables y filtrar el calendario por estado quedan fuera de alcance por ahora
+- [ ] **Fix: `task-filter.ts` compara el símbolo contra el texto del estado** — `isTaskCompleted` compara `state.status` (símbolo literal) contra `'DONE'`/`'CANCELLED'` (valores de `state.text`); nunca es verdadero, el filtro no excluye completadas/canceladas como debería
+- [ ] **Vista Día: modo de varios días 1/3/5** (pospuesto de v1.1.9; diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.4.3 y `Arquitectura técnica.md` §13; fases en `Plan de implementación.md`)
+  - [ ] Multi-botón 1/3/5 solo visible dentro de la vista Día (no en el selector principal de vistas)
+  - [ ] Día de referencia centrado (3: 1 antes/1 después; 5: 2 antes/2 después); ◀▶ desplazan un día a la vez
+  - [ ] Hereda el grid de horas y los bloques con duración/carriles del punto anterior, por columna de día; ninguna tarea cruza entre columnas
 - [ ] Vista de lista dentro del calendario: misma fecha de referencia y días que Mes/Semana/Día, pero en renglones en vez de casillas (ver imagen de referencia en el punto 6 de la discusión; se suma como 7º botón al selector segmentado de v1.1.9 una vez diseñada)
 - [ ] Modal de duración: reusar el dial circular del Habit Editor, en incrementos de 5 min en vez de minuto a minuto, cubriendo hasta el día completo
 - [ ] Compatibilidad con tareas recursivas/repetitivas (🔁) del pluiin tasks (las tareas recursivas se van creando cuando se marca como terminada la misma anterior) — analizar cómo lo resuelve Obsidian Tasks antes de diseñar

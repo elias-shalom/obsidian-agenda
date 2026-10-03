@@ -111,9 +111,9 @@ Vista de un único día con **24 franjas horarias** (`hourSlots`, cada una con `
 
 1. **Corregir el bug de `modalOptions.today` — decidido: sí.** Se corrige junto con esta fase, afecta también a Mes/Semana/Semana laboral/Año.
 
-#### 4.4.3 Modo de varios días: 1/3/5 (v1.1.9 — diseño, no implementado)
+#### 4.4.3 Modo de varios días: 1/3/5 (v1.1.10 — diseño, no implementado)
 
-> **Estado**: diseño acordado, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §13.
+> **Estado**: pospuesto de v1.1.9 a v1.1.10; diseño acordado, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §13.
 
 No es una vista nueva en el selector de §4.8: es un **modo dentro de la vista Día**, con su propio multi-botón (1/3/5) que solo aparece cuando Día está activa — mismo patrón que ya usan Semana/Semana laboral con su selector de estilo de grilla (`#oa-calendar-grid-style`, visible solo dentro de esas plantillas). "1 día" es la vista Día actual sin ningún cambio; "3" y "5" son las opciones nuevas.
 
@@ -211,9 +211,9 @@ Seleccionar un rango de fechas, escribir una fecha a mano, atajos de teclado glo
 - Los seis idiomas, tema claro y oscuro, y paneles estrechos (el popover no debe quedar recortado).
 - Apagar `calendarShowDueDates`/`StartDates`/`ScheduledDates` o `calendarShowCompletedTasks` en Settings ▸ Calendario y confirmar que el punto de un día desaparece en el selector y en el mini-calendario de Día, igual que en Mes.
 
-### 4.7 Bloques con duración en la vista por Día (v1.1.9 — diseño, no implementado)
+### 4.7 Bloques con duración en la vista por Día (v1.1.9 — implementado)
 
-> **Estado**: diseño acordado con el usuario, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §10. Fases: [[Plan de implementación]]. Sustituye el enfoque de capa superpuesta (`position: absolute`) planteado inicialmente: en su lugar se reutiliza la misma técnica visual de "píldora conectada" que ya usan las rachas de hábitos (Grid), rotada de carriles horizontales de días a filas verticales de horas.
+> **Estado**: implementado (Fases A, B y C: segmentos conectados, carriles por solapamiento y redimensionar arrastrando el borde inferior). Mecanismo: [[Arquitectura técnica]] §10. Fases: [[Plan de implementación]]. Sustituye el enfoque de capa superpuesta (`position: absolute`) planteado inicialmente: en su lugar se reutiliza la misma técnica visual de "píldora conectada" que ya usan las rachas de hábitos (Grid), rotada de carriles horizontales de días a filas verticales de horas.
 
 #### 4.7.1 Granularidad: medias horas
 
@@ -260,7 +260,7 @@ Redimensionar arrastrando el borde **superior** (cambiaría la hora de inicio, n
 1. **Ícono + tooltip, no solo ícono — confirmado.** El tooltip con el nombre de la vista es obligatorio, no opcional.
 2. **Set de íconos — confirmado**: Año `calendar-range`, Mes `calendar-days`, Semana `columns-3`, Semana laboral `briefcase`, Día `calendar-clock`. Lista (`list-todo`) se suma en v1.1.10 junto con la vista de lista del calendario; por ahora el grupo tiene 5 botones, no 6.
 
-### 4.9 Manejo de estatus desde el calendario (v1.1.9 — diseño, no implementado)
+### 4.9 Manejo de estatus desde el calendario (v1.1.10 — diseño, no implementado)
 
 > **Estado**: diseño acordado, nada implementado todavía. Decisiones y símbolos: [[Modelo de datos]] §10 (ADR-S1 a S3). Mecanismo: [[Arquitectura técnica]] §14.
 
@@ -327,7 +327,7 @@ Iteraciones puntuales de "look and feel" a pedido del usuario, tras las revision
 - **Toggle "More fields"**: el caret pasó del lado derecho al izquierdo del texto y se agrandó (`font-size: 1.3rem`).
 - **Botón ✕ del encabezado eliminado**: ver nota en §7.2 — Obsidian ya provee su propio botón de cierre nativo en el `Modal`, hacía el custom redundante.
 
-### 7.5 Campo de estado (v1.1.9 — diseño, no implementado)
+### 7.5 Campo de estado (v1.1.10 — diseño, no implementado)
 
 Nuevo campo en el formulario del Task Modal, visible tanto al crear como al editar: segmented control de 6 píldoras (mismo lenguaje visual que la prioridad, §7.2), una por Status Type (Todo/En progreso/En espera/Hecho/Cancelada/No es tarea). Al crear una tarea, "Todo" queda preseleccionado por defecto, pero se puede elegir cualquier otro estado antes de guardar. Al editar, refleja el estado actual de la tarea. Mismo efecto de agregar/quitar fecha ✅ que el cambio desde el calendario (ver §4.9).
 

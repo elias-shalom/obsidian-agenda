@@ -1,17 +1,20 @@
 import { WorkspaceLeaf, Plugin, setIcon } from "obsidian";
 import { CalendarView } from "./calendar-view";
 import { TaskManager } from "../core/task-manager";
-import { HourSlot, DayViewData } from '../types/interfaces';
+import { HourSlot, DayViewData, DurationTaskSegment, ITask } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import { CalendarViewType } from "../types/enums";
-import { upsertScheduledTime } from "../core/task-line-fields";
+import { upsertScheduledTime, upsertScheduledDuration } from "../core/task-line-fields";
 import { CalendarDatePicker } from "../core/calendar-date-picker";
 
 export const CALENDAR_DAY_VIEW_TYPE = "calendar-day-view";
 
 /** Clave de persistencia del colapso del sidebar del selector de fecha (v1.1.9). */
 const SIDEBAR_COLLAPSED_KEY = 'calendar_day_sidebar_collapsed';
+
+/** Medias-horas del día (0–47); cada bloque con duración redondea su fin hacia arriba al siguiente múltiplo de 30 min (v1.1.9, §4.7.2/§4.7.5). */
+const HALF_SLOTS_PER_DAY = 48;
 
 export class CalendarDayView extends CalendarView {
   constructor(leaf: WorkspaceLeaf, plugin: Plugin, i18n: I18n, taskManager: TaskManager) {
@@ -39,14 +42,100 @@ export class CalendarDayView extends CalendarView {
     const allDayStart = dayTasks.filter(task => task.calendarDateType === 'start');
     const allDayScheduled = dayTasks.filter(task => task.calendarDateType === 'scheduled' && !task.date.scheduledTime);
 
-    // Organizar tareas programadas por hora (24 horas)
+    // Bloques con duración (v1.1.9, §4.7 Fase A): un segmento por media-hora que ocupan.
+    const segmentsByHalfSlot: DurationTaskSegment[][] = Array.from({ length: HALF_SLOTS_PER_DAY }, () => []);
+    // Rango de medias-horas por tarea, antes de asignar carriles (Fase B, §4.7.3). Las tareas sin
+    // duración ocupan exactamente una media-hora (la que contiene su minuto) y entran al mismo
+    // sistema de segmentos/carriles que las que sí tienen duración, para reservar espacio igual.
+    const durationRanges: { task: ITask; startHalfSlot: number; endHalfSlotExclusive: number }[] = [];
+
+    for (const task of scheduledWithTime) {
+      const [hourStr, minuteStr] = (task.date.scheduledTime as string).split(':');
+      const hour = Number(hourStr);
+      const minute = Number(minuteStr);
+      const duration = task.date.scheduledDuration;
+
+      const startTotalMinutes = hour * 60 + minute;
+      const startHalfSlot = Math.floor(startTotalMinutes / 30);
+
+      if (!duration || duration <= 0) {
+        // Sin duración: una sola media-hora (la que contiene el minuto de inicio).
+        durationRanges.push({ task, startHalfSlot, endHalfSlotExclusive: startHalfSlot + 1 });
+        continue;
+      }
+
+      // Redondeo del fin hacia arriba al siguiente múltiplo de 30 min (decidido, §4.7.5/§4.7.2):
+      // el bloque dibujado nunca se ve más corto que la duración real.
+      const endTotalMinutesRounded = Math.ceil((startTotalMinutes + duration) / 30) * 30;
+      // Recorta a medianoche (ADR-T7): una tarea no cruza al día siguiente en el dibujo.
+      const endHalfSlotExclusive = Math.max(startHalfSlot + 1, Math.min(HALF_SLOTS_PER_DAY, endTotalMinutesRounded / 30));
+      durationRanges.push({ task, startHalfSlot, endHalfSlotExclusive });
+    }
+
+    // Carriles por conglomerado de solapamiento (Fase B, §4.7.3): se ordena por inicio y se agrupan
+    // en conglomerados de tareas mutuamente solapadas; dentro de cada conglomerado, asignación greedy
+    // del primer carril libre. El ancho de carril (1 / nº de carriles) es uniforme en todo el
+    // conglomerado, no por media-hora individual, para que las columnas queden alineadas.
+    durationRanges.sort((a, b) => a.startHalfSlot - b.startHalfSlot);
+
+    const assignCluster = (cluster: typeof durationRanges): void => {
+      const laneEnds: number[] = [];
+      const laneIndexByItem = new Map<typeof durationRanges[number], number>();
+      for (const item of cluster) {
+        let lane = laneEnds.findIndex(end => end <= item.startHalfSlot);
+        if (lane === -1) {
+          lane = laneEnds.length;
+          laneEnds.push(item.endHalfSlotExclusive);
+        } else {
+          laneEnds[lane] = item.endHalfSlotExclusive;
+        }
+        laneIndexByItem.set(item, lane);
+      }
+      const laneCount = laneEnds.length;
+
+      for (const item of cluster) {
+        const laneIndex = laneIndexByItem.get(item) ?? 0;
+        // Porcentajes precalculados (no calc() con variables CSS anidadas): el minificador de Sass
+        // puede aplanar/reordenar esas expresiones y romper el cálculo (ver nota en interfaces.ts).
+        const laneWidthPercent = 100 / laneCount;
+        const laneLeftPercent = laneIndex * laneWidthPercent;
+        const segmentCount = item.endHalfSlotExclusive - item.startHalfSlot;
+        for (let i = 0; i < segmentCount; i++) {
+          const slotIndex = item.startHalfSlot + i;
+          if (slotIndex < 0 || slotIndex >= HALF_SLOTS_PER_DAY) continue;
+          const segmentRole: DurationTaskSegment['segmentRole'] = segmentCount === 1
+            ? 'half'
+            : i === 0 ? 'start' : i === segmentCount - 1 ? 'end' : 'middle';
+          segmentsByHalfSlot[slotIndex].push({ ...item.task, segmentRole, laneIndex, laneCount, laneLeftPercent, laneWidthPercent });
+        }
+      }
+    };
+
+    let cluster: typeof durationRanges = [];
+    let clusterEnd = -Infinity;
+    for (const item of durationRanges) {
+      if (cluster.length > 0 && item.startHalfSlot >= clusterEnd) {
+        assignCluster(cluster);
+        cluster = [];
+        clusterEnd = -Infinity;
+      }
+      cluster.push(item);
+      clusterEnd = Math.max(clusterEnd, item.endHalfSlotExclusive);
+    }
+    if (cluster.length > 0) assignCluster(cluster);
+
+    // Organizar tareas programadas por hora (24 horas); cada hora expone su mitad superior
+    // (:00–:29) e inferior (:30–:59) por separado para los bloques con duración.
     const hourSlots: HourSlot[] = [];
     for (let hour = 0; hour < 24; hour++) {
-      const hourTasks = scheduledWithTime.filter(task => task.date.scheduled?.hour === hour);
+      const upperHalfSegments = segmentsByHalfSlot[hour * 2] ?? [];
+      const lowerHalfSegments = segmentsByHalfSlot[hour * 2 + 1] ?? [];
       hourSlots.push({
         hour,
         formattedHour: this.formatHour(hour),
-        tasks: hourTasks
+        upperHalfSegments,
+        lowerHalfSegments,
+        hasDurationSegments: upperHalfSegments.length > 0 || lowerHalfSegments.length > 0,
       });
     }
     
@@ -125,8 +214,9 @@ export class CalendarDayView extends CalendarView {
       alldayToggle.setAttribute('aria-expanded', String(nowExpanded));
     });
 
-    // Drag and drop (v1.1.4, Fase D): arrastrar una tarea programada a otra franja horaria
-    // cambia su hora de `scheduled`, preservando los minutos originales dentro de la hora.
+    // Drag and drop (v1.1.4, Fase D; snap de media hora en v1.1.9): arrastrar una tarea programada
+    // a otra franja la mueve a la media hora exacta donde se suelta (mitad superior = :00, mitad
+    // inferior = :30), sin importar el minuto original.
     // Doble clic en una franja vacía crea una tarea con fecha + hora prellenadas (v1.1.9, fix).
     const hourSlots = container.querySelectorAll<HTMLElement>('.oa-calendar-hour-slot');
     hourSlots.forEach(slot => {
@@ -145,17 +235,22 @@ export class CalendarDayView extends CalendarView {
 
       slot.addEventListener('dragover', (e) => {
         e.preventDefault();
-        slot.addClass('oa-calendar-drop-target');
+        const isUpperHalf = this.isPointerOverUpperHalf(e, slot);
+        slot.toggleClass('oa-calendar-drop-target--upper', isUpperHalf);
+        slot.toggleClass('oa-calendar-drop-target--lower', !isUpperHalf);
       });
 
       slot.addEventListener('dragleave', () => {
-        slot.removeClass('oa-calendar-drop-target');
+        slot.removeClass('oa-calendar-drop-target--upper');
+        slot.removeClass('oa-calendar-drop-target--lower');
       });
 
       slot.addEventListener('drop', (e) => {
         e.preventDefault();
-        slot.removeClass('oa-calendar-drop-target');
-        this.handleHourSlotDrop(e, slot.dataset.hour);
+        const isUpperHalf = this.isPointerOverUpperHalf(e, slot);
+        slot.removeClass('oa-calendar-drop-target--upper');
+        slot.removeClass('oa-calendar-drop-target--lower');
+        this.handleHourSlotDrop(e, slot.dataset.hour, isUpperHalf ? '00' : '30');
       });
     });
 
@@ -166,10 +261,95 @@ export class CalendarDayView extends CalendarView {
       const dateStr = this.currentDate.toISODate();
       if (dateStr) this.openCreateTaskForDate(dateStr);
     });
+
+    // Redimensionar arrastrando el borde inferior del último segmento de una tarea (v1.1.9, Fase C,
+    // §4.7.4): snap a pasos de 30 minutos, duración mínima 30 minutos.
+    const resizeHandles = container.querySelectorAll<HTMLElement>('.oa-calendar-resize-handle');
+    resizeHandles.forEach(handle => this.wireResizeHandle(handle));
   }
 
-  /** Aplica el drop de una tarea programada sobre una franja horaria: reescribe su hora (🕐). */
-  private handleHourSlotDrop(event: DragEvent, hourStr: string | undefined): void {
+  /** Arrastre lineal (análogo al dial de hábitos, pero vertical) para cambiar `scheduledDuration`. */
+  private wireResizeHandle(handle: HTMLElement): void {
+    const filePath = handle.dataset.filePath;
+    const lineNumber = Number(handle.dataset.lineNumber);
+    if (!filePath || Number.isNaN(lineNumber)) return;
+
+    const initialDuration = Number(handle.dataset.currentDuration) || 30;
+    let halfSlotPx = 22;
+    let startY = 0;
+    let liveDuration = initialDuration;
+    let tooltip: HTMLElement | null = null;
+
+    const snapDuration = (deltaY: number): number => {
+      const deltaHalfSlots = Math.round(deltaY / halfSlotPx);
+      return Math.max(30, initialDuration + deltaHalfSlots * 30);
+    };
+
+    const positionTooltip = (event: PointerEvent): void => {
+      if (!tooltip) return;
+      tooltip.setCssStyles({ left: `${event.clientX + 12}px`, top: `${event.clientY - 12}px` });
+    };
+
+    const onPointerMove = (event: PointerEvent): void => {
+      liveDuration = snapDuration(event.clientY - startY);
+      if (tooltip) tooltip.setText(`${liveDuration}m`);
+      positionTooltip(event);
+    };
+
+    const onPointerUp = (event: PointerEvent): void => {
+      handle.removeEventListener('pointermove', onPointerMove);
+      handle.removeEventListener('pointerup', onPointerUp);
+      handle.releasePointerCapture(event.pointerId);
+      handle.removeClass('oa-resizing');
+      tooltip?.remove();
+      tooltip = null;
+
+      if (liveDuration === initialDuration) return;
+      this.taskWriter.updateTaskLine(filePath, lineNumber, (line) => {
+        const result = upsertScheduledDuration(line, liveDuration);
+        return result.ok ? result.line : line;
+      })
+        .then(ok => {
+          if (ok) this.refreshView().catch(console.error);
+        })
+        .catch(console.error);
+    };
+
+    handle.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      event.stopPropagation(); // No iniciar el drag nativo (mover la tarea) de la píldora contenedora.
+
+      const row = handle.closest<HTMLElement>('.oa-calendar-hour-row');
+      halfSlotPx = (row?.getBoundingClientRect().height ?? 44) / 2;
+      startY = event.clientY;
+      liveDuration = initialDuration;
+
+      handle.addClass('oa-resizing');
+      tooltip = document.body.createDiv({ cls: 'oa-calendar-resize-tooltip', text: `${initialDuration}m` });
+      positionTooltip(event);
+
+      handle.setPointerCapture(event.pointerId);
+      handle.addEventListener('pointermove', onPointerMove);
+      handle.addEventListener('pointerup', onPointerUp);
+    });
+
+    // El navegador dispara 'click' tras el pointerup aunque este se detenga antes; sin esto, el
+    // clic burbujea a la píldora contenedora y abre el modal de edición al soltar.
+    handle.addEventListener('click', (event) => {
+      event.stopPropagation();
+      event.preventDefault();
+    });
+  }
+
+  /** `true` si el cursor del arrastre está sobre la mitad superior (:00) de la franja; `false` si está en la inferior (:30). */
+  private isPointerOverUpperHalf(event: DragEvent, slot: HTMLElement): boolean {
+    const rect = slot.getBoundingClientRect();
+    return (event.clientY - rect.top) < rect.height / 2;
+  }
+
+  /** Aplica el drop de una tarea programada sobre una franja horaria: reescribe su hora (🕐) a la
+   * media hora exacta donde se soltó, sin importar el minuto original de la tarea (v1.1.9). */
+  private handleHourSlotDrop(event: DragEvent, hourStr: string | undefined, minutes: '00' | '30'): void {
     if (hourStr === undefined) return;
     const payload = this.parseTaskDragPayload(event);
     if (!payload || payload.calendarDateType !== 'scheduled') return;
@@ -177,7 +357,6 @@ export class CalendarDayView extends CalendarView {
     const hour = Number(hourStr);
     if (Number.isNaN(hour)) return;
 
-    const minutes = payload.scheduledTime?.split(':')[1] ?? '00';
     const newTime = `${String(hour).padStart(2, '0')}:${minutes}`;
 
     this.taskWriter.updateTaskLine(payload.filePath, payload.lineNumber, (line) => {

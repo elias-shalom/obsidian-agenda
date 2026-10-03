@@ -90,19 +90,48 @@
               <div class="oa-calendar-hour-row">
                 <div class="oa-calendar-hour-label">{{formattedHour}}</div>
                 <div class="oa-calendar-hour-slot" data-hour="{{hour}}">
-                  {{#each tasks}}
-                    <div class="oa-calendar-task oa-calendar-task--scheduled {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
-                        draggable="true"
-                        data-file-path="{{file.path}}"
-                        data-line-number="{{line.number}}"
-                        data-date-type="scheduled"
-                        data-scheduled-time="{{date.scheduledTime}}"
-                        data-tooltip="{{section.desc}}">
-                      <span class="oa-calendar-task-time">{{date.scheduledTime}}</span>
-                      <span class="oa-task-title">{{section.desc}}</span>
-                      {{#if date.scheduledDuration}}<span class="oa-calendar-task-duration">{{date.scheduledDuration}}m</span>{{/if}}
+                  {{#if hasDurationSegments}}
+                  <div class="oa-calendar-duration-track">
+                    <div class="oa-calendar-half-slot oa-calendar-half-slot--upper">
+                      {{#each upperHalfSegments}}
+                        <div class="oa-calendar-task oa-calendar-task--scheduled oa-calendar-task--duration oa-calendar-duration-segment--{{segmentRole}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
+                            draggable="true"
+                            data-file-path="{{file.path}}"
+                            data-line-number="{{line.number}}"
+                            data-date-type="scheduled"
+                            data-scheduled-time="{{date.scheduledTime}}"
+                            data-tooltip="{{section.desc}}"
+                            style="left: {{laneLeftPercent}}%; width: {{laneWidthPercent}}%;">
+                          {{#equals segmentRole "half"}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/equals}}
+                          {{#equals segmentRole "start"}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/equals}}
+                          <span class="oa-task-title">{{section.desc}}</span>
+                          {{#if date.scheduledDuration}}<span class="oa-calendar-task-duration">{{date.scheduledDuration}}m</span>{{/if}}
+                          {{#equals segmentRole "half"}}<div class="oa-calendar-resize-handle" draggable="false" data-file-path="{{file.path}}" data-line-number="{{line.number}}" data-current-duration="{{date.scheduledDuration}}"></div>{{/equals}}
+                          {{#equals segmentRole "end"}}<div class="oa-calendar-resize-handle" draggable="false" data-file-path="{{file.path}}" data-line-number="{{line.number}}" data-current-duration="{{date.scheduledDuration}}"></div>{{/equals}}
+                        </div>
+                      {{/each}}
                     </div>
-                  {{/each}}
+                    <div class="oa-calendar-half-slot oa-calendar-half-slot--lower">
+                      {{#each lowerHalfSegments}}
+                        <div class="oa-calendar-task oa-calendar-task--scheduled oa-calendar-task--duration oa-calendar-duration-segment--{{segmentRole}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
+                            draggable="true"
+                            data-file-path="{{file.path}}"
+                            data-line-number="{{line.number}}"
+                            data-date-type="scheduled"
+                            data-scheduled-time="{{date.scheduledTime}}"
+                            data-tooltip="{{section.desc}}"
+                            style="left: {{laneLeftPercent}}%; width: {{laneWidthPercent}}%;">
+                          {{#equals segmentRole "half"}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/equals}}
+                          {{#equals segmentRole "start"}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/equals}}
+                          <span class="oa-task-title">{{section.desc}}</span>
+                          {{#if date.scheduledDuration}}<span class="oa-calendar-task-duration">{{date.scheduledDuration}}m</span>{{/if}}
+                          {{#equals segmentRole "half"}}<div class="oa-calendar-resize-handle" draggable="false" data-file-path="{{file.path}}" data-line-number="{{line.number}}" data-current-duration="{{date.scheduledDuration}}"></div>{{/equals}}
+                          {{#equals segmentRole "end"}}<div class="oa-calendar-resize-handle" draggable="false" data-file-path="{{file.path}}" data-line-number="{{line.number}}" data-current-duration="{{date.scheduledDuration}}"></div>{{/equals}}
+                        </div>
+                      {{/each}}
+                    </div>
+                  </div>
+                  {{/if}}
                 </div>
               </div>
             {{/each}}

@@ -260,7 +260,7 @@ type GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags';
 - **Kanban / Gantt**: siguen fuera de alcance; una vez exista `scheduled`+`duration` como datos reales, terminar la vista Gantt (hoy un placeholder, ver [[Especificación de vistas]] §6) se vuelve mucho más directo, porque son exactamente los datos que le faltaban.
 - **Drag and drop de fechas**: depende de una capacidad nueva de escritura — reescribir en su lugar una línea de tarea existente (hoy `TaskWriter.appendTaskLine` solo anexa) — compartida con el ítem, también pendiente, de edición nativa de tareas. Ver desglose en [[Plan de implementación]].
 
-## 10. Manejo de estatus desde el calendario (v1.1.9) — decisiones acordadas
+## 10. Manejo de estatus desde el calendario (v1.1.10) — decisiones acordadas
 
 ### ADR-S1 — Sexto Status Type: `ON_HOLD`
 

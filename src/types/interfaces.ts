@@ -326,8 +326,33 @@ export interface FolderNode {
 export interface HourSlot {
   hour: number;
   formattedHour: string;
-  tasks: ITask[];
+  /** Segmentos de tareas (con o sin duración) que caen en la mitad superior (:00–:29) de esta hora;
+   * las tareas sin duración ocupan una sola media-hora (rol 'half'), igual que las que sí la tienen
+   * (v1.1.9, §4.7) */
+  upperHalfSegments: DurationTaskSegment[];
+  /** Segmentos de tareas que caen en la mitad inferior (:30–:59) de esta hora (v1.1.9, §4.7) */
+  lowerHalfSegments: DurationTaskSegment[];
+  /** `true` si alguna de las dos mitades tiene segmentos; ambas se renderizan juntas para que cada
+   * una ocupe siempre el 50% de la franja, aunque una quede vacía (evita que la otra se estire). */
+  hasDurationSegments: boolean;
 }
+
+/** Rol visual de un segmento de media hora dentro de un bloque con duración (v1.1.9, §4.7.2). */
+export type DurationSegmentRole = 'half' | 'start' | 'middle' | 'end';
+
+/** Una tarea con duración, recortada a la media hora que ocupa dentro de `.oa-calendar-hour-slot`.
+ * `laneIndex`/`laneCount` ubican el carril horizontal dentro de su conglomerado de solapamiento
+ * (v1.1.9, Fase B, §4.7.3): mismo ancho de carril para toda la tarea, aunque esa media-hora en
+ * particular no tenga ninguna otra tarea solapada. `laneLeftPercent`/`laneWidthPercent` son el
+ * mismo dato ya convertido a porcentaje (se escriben directo en `style`, sin `calc()` anidado con
+ * variables CSS: el compilador de Sass puede reordenar/aplanar esas expresiones al minificar). */
+export type DurationTaskSegment = ITask & {
+  segmentRole: DurationSegmentRole;
+  laneIndex: number;
+  laneCount: number;
+  laneLeftPercent: number;
+  laneWidthPercent: number;
+};
 
 /**
  * Datos para la vista de tabla

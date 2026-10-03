@@ -294,7 +294,7 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.6. Est
 - **Clic simple para seleccionar (decisión 3 de §4.6.7 revisada)**: inicialmente diferido, se implementó igual que el patrón ya usado para distinguir clic/doble clic en las tareas (`TASK_CLICK_DELAY_MS`): el `click` de una celda arma un `setTimeout`; si llega `dblclick` antes, se cancela y solo se crea la tarea; si no, se cumple y se llama `setCurrentDate()` + `refreshCalendar()`.
 - **Ajustes visuales de la rejilla del selector** (no estaban en el diseño original, encontrados al revisar visualmente): `grid-template-rows` explícito en vez de `grid-auto-rows`/`aspect-ratio` (evita que la última fila quede recortada por el `overflow: hidden` del panel antes de que el navegador resuelva el alto); `row-gap`/`column-gap` distintos en la rejilla de días (las celdas quedan más anchas que altas); `.oa-has-tasks` recuperó el contorno de acento que tenía el mini-calendario original, no solo el punto; `.oa-date-picker--popover` ensanchado a 290px.
 
-## 10. Bloques con duración en la vista por Día (v1.1.9, diseño — no implementado)
+## 10. Bloques con duración en la vista por Día (v1.1.9, implementado)
 
 Comportamiento de usuario y decisiones abiertas: [[Especificación de vistas]] §4.7.
 
@@ -310,9 +310,13 @@ En vez de una capa `position: absolute` sobre toda la columna de 24 horas (lo pl
 
 Asignación greedy de intervalos: ordenar las tareas de un conglomerado de solapamiento por hora de inicio, asignar cada una al primer carril cuya última tarea no se solape; el ancho de columna de ese conglomerado es `100% / número de carriles`. El conglomerado (no el día completo) acota el cálculo, para no dividir en columnas las horas sin solapes.
 
+**Implementado así**: `CalendarDayView.generateViewData()` calcula los rangos `[startHalfSlot, endHalfSlotExclusive)` de todas las tareas con duración, los ordena por inicio y los agrupa en conglomerados con un barrido simple (nueva tarea empieza antes de que termine el máximo acumulado del conglomerado actual → se une; si no, se cierra el conglomerado y empieza uno nuevo). Dentro de cada conglomerado, `laneIndex`/`laneCount` se calculan con el greedy de intervalos y se adjuntan a cada `DurationTaskSegment`. La plantilla escribe `style="--oa-lane-count: N; --oa-lane-index: i;"` en cada segmento (único uso de `style` inline del proyecto para este caso, ya que el valor es puramente dinámico por tarea); `.oa-calendar-task--duration` en `_calendar-day.scss` usa esas variables en `flex: 0 0 calc(100% / var(--oa-lane-count))` y `order: var(--oa-lane-index)` dentro de `.oa-calendar-half-slot` (`display: flex` en fila), de modo que los carriles sin tarea en una media-hora concreta quedan en blanco en vez de que la tarea presente se expanda a ocuparlos.
+
 ### 10.4 Redimensionar arrastrando
 
 Listener `pointerdown`/`pointermove`/`pointerup` en la manija del segmento final (análogo al dial de hábitos en cuanto a patrón de arrastre, pero lineal no circular); snap a pasos de 30 minutos; escribe con `upsertScheduledDuration()` (ya existe en `src/core/task-line-fields.ts`) + `TaskWriter.updateTaskLine()`.
+
+**Implementado así**: `.oa-calendar-resize-handle` se renderiza solo en el último segmento de cada tarea (roles `half`/`end`), con `draggable="false"` explícito para no disparar el `dragstart` nativo de la píldora contenedora (que sigue sirviendo para moverla a otra franja/día); el `pointerdown` también llama a `stopPropagation()` como refuerzo. El tamaño de un paso de 30 min se mide en vivo (`getBoundingClientRect().height` de `.oa-calendar-hour-row` dividido 2) en vez de un valor fijo, para no desalinearse si cambia el alto de fila. Mientras se arrastra, una insignia (`.oa-calendar-resize-tooltip`, creada/destruida en `document.body`, mismo patrón que el tooltip temático) muestra la duración en vivo junto al cursor; el cambio real solo se escribe en el archivo al soltar (`pointerup`), no en cada `pointermove` — mismo patrón de "aplicar al soltar" que el resto del drag and drop del calendario. Como las tareas sin duración ahora comparten el mismo sistema de segmentos (§10.2, revisado), también ganan una manija: arrastrar hacia abajo les asigna una duración por primera vez vía `upsertScheduledDuration()` (que solo requiere que ya exista una hora, no una duración previa).
 
 ### 10.5 Línea de media hora
 
@@ -387,9 +391,9 @@ Las 5 plantillas de calendario (pronto 6, con Lista) reemplazan su `<select id="
 - **Ambigüedad Semana vs. Semana laboral solo con ícono**: mitigado por el tooltip obligatorio (§4.8.1, decisión 1). Set final: Año `calendar-range`, Mes `calendar-days`, Semana `columns-3`, Semana laboral `briefcase`, Día `calendar-clock`.
 - **Compacidad en paneles estrechos**: 5 botones pegados (6 con Lista en v1.1.10) deben seguir cabiendo en el encabezado del calendario junto al resto de controles (fecha de referencia, selector de fecha, navegación); se verifica en el mismo caso límite de panel estrecho ya anotado en §4.6.9.
 
-## 13. Vista Día: modo de varios días 1/3/5 (v1.1.9, diseño — no implementado)
+## 13. Vista Día: modo de varios días 1/3/5 (v1.1.10, diseño — no implementado)
 
-Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.4.3.
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.4.3. Pospuesto de v1.1.9 a v1.1.10.
 
 ### 13.1 Enfoque
 
@@ -416,7 +420,7 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.4.3.
 | Plantilla | `src/views/templates/calendar-day-view.hbs` |
 | Estilos | `src/styles/views/_calendar-day.scss` (fila de N columnas por hora) |
 
-## 14. Manejo de estatus desde el calendario (v1.1.9, diseño — no implementado)
+## 14. Manejo de estatus desde el calendario (v1.1.10, diseño — no implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.9 y §7.5. Símbolos/ADRs: [[Modelo de datos]] §10.
 

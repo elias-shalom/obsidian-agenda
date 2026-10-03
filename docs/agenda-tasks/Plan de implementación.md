@@ -138,24 +138,24 @@ tags:
 - [ ] Casos de §4.6.9 de [[Especificación de vistas]]: fin de año y bisiesto, inicio de semana en lunes y domingo, las cinco vistas con fecha distinta de hoy, seis idiomas, tema claro y oscuro, panel estrecho.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
-## Próxima fase — v1.1.9 (cont.): bloques con duración en la vista por Día (diseño)
+## Próxima fase — v1.1.9 (cont.): bloques con duración en la vista por Día (Fases A y B implementadas)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §4.7. Mecanismo y archivos: [[Arquitectura técnica]] §10. **Nada de esta fase está implementado.** Decisiones 1 y 2 de §4.7.5 ya resueltas: redondeo del fin hacia arriba; carriles calculados por conglomerado de solapamiento.
+> Comportamiento y decisiones: [[Especificación de vistas]] §4.7. Mecanismo y archivos: [[Arquitectura técnica]] §10. Decisiones 1 y 2 de §4.7.5 ya resueltas: redondeo del fin hacia arriba; carriles calculados por conglomerado de solapamiento. **Fases A y B implementadas; Fase C (redimensionar) pendiente.**
 
 ### Fase A — Segmentos conectados (sin carriles ni resize todavía)
-- [ ] `CalendarDayView.generateViewData()` calcula `[startHalfSlot, endHalfSlot)` y `segmentRole` por tarea con `scheduledTime`.
-- [ ] Plantilla y SCSS: adaptar/reutilizar `oa-habit-grid-cell--run-start/--run-middle/--run-end` para las celdas de hora; franja sin duración ocupa la celda completa (sin cambios); duración < 60 min ocupa media celda con su etiqueta.
-- [ ] Línea punteada a la media hora en cada `.oa-calendar-hour-row` (§4.7.1).
-- [ ] Verificable sola: una tarea de 30, 60, 90 y 120 minutos se ve con el tamaño correcto, sin carriles ni resize.
+- [x] `CalendarDayView.generateViewData()` calcula `[startHalfSlot, endHalfSlot)` y `segmentRole` por tarea con `scheduledTime`.
+- [x] Plantilla y SCSS: adaptar/reutilizar `oa-habit-grid-cell--run-start/--run-middle/--run-end` para las celdas de hora; franja sin duración ocupa la celda completa (sin cambios); duración < 60 min ocupa media celda con su etiqueta.
+- [x] Línea punteada a la media hora en cada `.oa-calendar-hour-row` (§4.7.1).
+- [x] Verificable sola: una tarea de 30, 60, 90 y 120 minutos se ve con el tamaño correcto, sin carriles ni resize.
 
 ### Fase B — Carriles para tareas solapadas (depende de A)
-- [ ] Algoritmo de conglomerados + asignación greedy de carriles (§4.7.3); ancho de columna por conglomerado, no por todo el día.
-- [ ] Verificable sola: dos tareas que se solapan se ven una junto a la otra, nunca una tapando a la otra.
+- [x] Algoritmo de conglomerados + asignación greedy de carriles (§4.7.3); ancho de columna por conglomerado, no por todo el día.
+- [x] Verificable sola: dos tareas que se solapan se ven una junto a la otra, nunca una tapando a la otra.
 
 ### Fase C — Redimensionar arrastrando el borde inferior (depende de A)
-- [ ] Manija en el segmento final; arrastre con snap a 30 minutos; escribe con `upsertScheduledDuration()` + `TaskWriter.updateTaskLine()`.
-- [ ] Duración mínima de 30 minutos al arrastrar.
-- [ ] Revisar que el `dragstart` de mover la tarea completa a otro día (ya existente) siga funcionando con el segmento `--run-start` como origen.
+- [x] Manija en el segmento final; arrastre con snap a 30 minutos; escribe con `upsertScheduledDuration()` + `TaskWriter.updateTaskLine()`.
+- [x] Duración mínima de 30 minutos al arrastrar.
+- [x] Revisar que el `dragstart` de mover la tarea completa a otro día (ya existente) siga funcionando con el segmento `--run-start` como origen.
 
 ### Validación manual
 - [ ] Tareas de distinta duración (sin duración, <30min, 30–59min, 60min, >120min) en las mismas horas, con y sin solape.
@@ -189,13 +189,13 @@ Redimensionar arrastrando el borde superior (cambia la hora de inicio, no la dur
 - [x] Verificable sola: un clic cambia de vista igual que hoy el dropdown; el botón activo se marca visualmente; los 5 botones caben en el encabezado sin desbordarse.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
-## Próxima fase — v1.1.9 (cont.): vista Día, modo de varios días 1/3/5 (diseño)
+## Próxima fase — v1.1.10: vista Día, modo de varios días 1/3/5 (diseño)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §4.4.3. Mecanismo: [[Arquitectura técnica]] §13. **Nada de esta fase está implementado.** Depende de las Fases A/B del §4.7 (bloques con duración y carriles) ya diseñadas.
+> Comportamiento y decisiones: [[Especificación de vistas]] §4.4.3. Mecanismo: [[Arquitectura técnica]] §13. **Pospuesto de v1.1.9 a v1.1.10. Nada de esta fase está implementado.** Depende de las Fases A/B/C del §4.7 (bloques con duración, carriles y redimensionar) ya implementadas.
 
-## Próxima fase — v1.1.9 (cont.): manejo de estatus desde el calendario (diseño)
+## Próxima fase — v1.1.10: manejo de estatus desde el calendario (diseño)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §4.9 y §7.5. Símbolos: [[Modelo de datos]] §10 (ADR-S1 a S3). Mecanismo: [[Arquitectura técnica]] §14. **Nada de esta fase está implementado**, incluido el fix de `task-filter.ts`.
+> Comportamiento y decisiones: [[Especificación de vistas]] §4.9 y §7.5. Símbolos: [[Modelo de datos]] §10 (ADR-S1 a S3). Mecanismo: [[Arquitectura técnica]] §14. **Pospuesto de v1.1.9 a v1.1.10. Nada de esta fase está implementado**, incluido el fix de `task-filter.ts`.
 
 ### Fase A — Modelo de datos y escritura
 - [ ] `CoreTaskStatus.OnHold = "?"` / `CoreTaskStatusIcon.OnHold = "⏸️"` en `src/types/enums.ts`.

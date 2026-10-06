@@ -195,14 +195,14 @@ Redimensionar arrastrando el borde superior (cambia la hora de inicio, no la dur
 
 ## Próxima fase — v1.1.10: manejo de estatus desde el calendario (diseño)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §4.9 y §7.5. Símbolos: [[Modelo de datos]] §10 (ADR-S1 a S3). Mecanismo: [[Arquitectura técnica]] §14. **Pospuesto de v1.1.9 a v1.1.10. Nada de esta fase está implementado**, incluido el fix de `task-filter.ts`.
+> Comportamiento y decisiones: [[Especificación de vistas]] §4.9 y §7.5. Símbolos: [[Modelo de datos]] §10 (ADR-S1 a S3). Mecanismo: [[Arquitectura técnica]] §14. **Pospuesto de v1.1.9 a v1.1.10.** Fix de `task-filter.ts` ya aplicado; el resto de la fase no está implementado.
 
 ### Fase A — Modelo de datos y escritura
-- [ ] `CoreTaskStatus.OnHold = "?"` / `CoreTaskStatusIcon.OnHold = "⏸️"` en `src/types/enums.ts`.
-- [ ] `getCoreTaskStatusName`/`getCoreTaskStatusEmoji` (`task-extractor.ts`): caso `OnHold`.
-- [ ] Nueva `upsertTaskStatus(line, status)` en `task-line-fields.ts`: reescribe el símbolo y agrega/quita `✅` según corresponda (ADR-S3).
-- [ ] Fix de `task-filter.ts`: `isTaskCompleted` debe comparar `state.text`, no `state.status`.
-- [ ] Claves i18n nuevas (`status_on_hold`) en los seis locales; reutilizar las existentes para los otros 5 estados.
+- [x] `CoreTaskStatus.OnHold = "?"` / `CoreTaskStatusIcon.OnHold = "⏸️"` en `src/types/enums.ts`.
+- [x] `getCoreTaskStatusName`/`getCoreTaskStatusEmoji` (`task-extractor.ts`): caso `OnHold`.
+- [x] Nueva `upsertTaskStatus(line, status, todayIso)` en `task-line-fields.ts`: reescribe el símbolo y agrega/quita `✅` según corresponda (ADR-S3).
+- [x] Fix de `task-filter.ts`: `isTaskCompleted` debe comparar `state.text`, no `state.status`.
+- [x] Claves i18n nuevas (`status_on_hold`) en los seis locales; reutilizar las existentes para los otros 5 estados. También agregado al filtro de estado existente de la vista Tabla (`table-view.hbs`).
 
 ### Fase B — Badge visual en el calendario (depende de A)
 - [ ] Ícono de estado en `.oa-calendar-task` de Mes/Semana/Semana laboral/Día.
@@ -237,3 +237,57 @@ Filtrar el calendario por estado; estados personalizados/configurables; generaci
 
 ### Fuera de alcance (fecha de referencia y selector de fecha)
 - Seleccionar con clic en una celda, rangos de fechas, escribir la fecha a mano, navegar la rejilla con flechas del teclado, y corregir que Semana use semana ISO en vez de `weekStartDay`.
+
+## Próxima fase — v1.1.10: selector de fecha unificado en el Task Modal (diseño)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §7.6. Mecanismo: [[Arquitectura técnica]] §15. **Nada de esta fase está implementado.** Depende de `CalendarDatePicker` (§9, ya implementado e independiente de las vistas de calendario).
+
+### Fase Única
+- [ ] `TaskModal.setupSimpleDatePicker()`: reemplazar la llamada a `flatpickr()` por un popover de `CalendarDatePicker`, anclado al botón disparador existente de cada campo (due/start/scheduled).
+- [ ] Exponer `getWeekStartDay()`/`getLocalizedDayNames()`/`hasTasks()` al modal (mismos settings que ya usa `CalendarView`, vía `TaskManager`).
+- [ ] Marcar con punto los días con tareas existentes, igual que en el calendario.
+- [ ] Solo un popover abierto a la vez entre los 3 campos (cerrar el anterior al abrir otro).
+- [ ] Verificable sola: los 3 campos de fecha abren el mismo selector visual que usan las vistas de calendario; hora y duración siguen funcionando sin cambios.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fuera de alcance
+Quitar `flatpickr` como dependencia del proyecto (sigue en uso en la inserción de campos desde el editor, §6); migrar esa otra superficie al mismo componente.
+
+## Próxima fase — v1.1.10: vista de lista dentro del calendario (diseño)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §4.10. Mecanismo: [[Arquitectura técnica]] §17. **Nada de esta fase está implementado.**
+
+### Fase Única
+- [ ] Nueva `CalendarListView` + `CALENDAR_LIST_VIEW_TYPE`, registrada en `ViewManager` igual que las otras 5 vistas de calendario.
+- [ ] `generateViewData()`: ventana continua de 14 días desde la fecha de referencia, reutilizando `WeekDayData`/`getTasksForDate()`.
+- [ ] Nueva plantilla `calendar-list-view.hbs`: una fila por día, reutilizando el bloque de renderizado de `.oa-calendar-task` ya usado en Mes/Semana (sin plantilla nueva para las píldoras).
+- [ ] 7º botón en `.oa-calendar-view-segmented` en las 6 plantillas de calendario.
+- [ ] `navigateToPrevious()`/`navigateToNext()` mueven la ventana completa de 14 días.
+- [ ] Verificable sola: la vista muestra 14 filas con sus tareas; clic/doble clic/drag and drop se comportan igual que en Mes/Semana.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+## Próxima fase — v1.1.10: modal de duración con dial circular (diseño)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §7.7. Mecanismo: [[Arquitectura técnica]] §18. **Nada de esta fase está implementado.**
+
+### Fase Única
+- [ ] Extraer `HabitEditorModal.attachTimeDial()` a `src/core/time-dial.ts`, parametrizado por `maxMinutes`/`stepMinutes`.
+- [ ] `HabitEditorModal` usa el componente extraído con los mismos valores que tiene hoy (`120`/`1`), sin cambio de comportamiento.
+- [ ] `TaskDurationModal` usa el componente con `1440`/`5`.
+- [ ] Verificable sola: el Habit Editor se comporta igual que antes; el modal de duración del Task Modal usa el dial en vez del input numérico, con pasos de 5 minutos hasta 1440.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+## Próxima fase — v1.1.10: compatibilidad con tareas recurrentes (diseño)
+
+> Comportamiento y decisiones: [[Modelo de datos]] §11. Mecanismo: [[Arquitectura técnica]] §16. **Nada de esta fase está implementado.** Depende del manejo de estatus (fase anterior): se dispara desde el mismo punto donde se marca una tarea como `Done`.
+
+### Fase Única
+- [ ] `getNextOccurrenceDate(recurrenceText, referenceDate)`: despoja `when done`, reutiliza `convertToRRuleFormat()` + `rrulestr().after()`.
+- [ ] `buildNextOccurrenceLine(originalLine, nextDate)`: desplaza todas las fechas presentes manteniendo su distancia relativa; elimina `🆔`/`⛔`.
+- [ ] `TaskWriter`: nuevo método para insertar una línea completa en una posición específica (una línea arriba de la original).
+- [ ] Enganchar en el mismo punto de `upsertTaskStatus()` que agrega `✅` (manejo de estatus, fase previa).
+- [ ] Verificable sola: completar una tarea con `🔁 every week` crea una nueva línea arriba con la fecha avanzada una semana; completar una con `when done` la calcula desde hoy; los `🆔`/`⛔` no aparecen en la nueva línea.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fuera de alcance
+Configurar el orden de inserción (arriba/abajo); recurrencia "para X veces" o "hasta una fecha"; generar la ocurrencia al completar desde el checkbox nativo de Obsidian fuera del plugin.

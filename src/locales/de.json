@@ -74,6 +74,7 @@
   "status_done": "Fertig",
   "status_cancelled": "Abgebrochen",
   "status_non_task": "Keine aufgabe",
+  "status_on_hold": "Wartend",
   "lowest": "Niedrigste",
   "low": "Niedrig",
   "normal": "Normal",

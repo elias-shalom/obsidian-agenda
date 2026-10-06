@@ -28,7 +28,8 @@ export enum CoreTaskStatus {
   InProgress = "/",
   Done = "x",
   Cancelled = "-",
-  nonTask = "~"
+  nonTask = "~",
+  OnHold = "?"
 }
 
 export enum CoreTaskStatusIcon {
@@ -36,7 +37,8 @@ export enum CoreTaskStatusIcon {
   InProgress = "🛠️",
   Done = "✅",
   Cancelled = "❌",
-  nonTask = "🗑️"
+  nonTask = "🗑️",
+  OnHold = "⏸️"
 }
 
 export enum OnCompletion {

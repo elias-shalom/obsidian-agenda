@@ -280,6 +280,39 @@ type GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags';
 - No se genera ninguna ocurrencia nueva de tareas recurrentes (🔁) al marcar `Done` desde esta función — ese comportamiento se diseña aparte en el punto de tareas recurrentes del roadmap.
 - Fuera de alcance: filtrar el calendario por estado (ya existe `calendarShowCompletedTasks` para ocultar completadas) y estados personalizados (ADR-S2).
 
+## 11. Recurrencia: nueva ocurrencia al completar (v1.1.10) — decisiones acordadas
+
+> Investigación de referencia: comportamiento oficial de Obsidian Tasks. Detalle técnico de implementación: [[Arquitectura técnica]] §16.
+
+### ADR-R1 — Disparador: marcar como `Done` una tarea con 🔁
+
+- Mismo punto de disparo que ADR-S3 (cambio de estado a `Done`, desde el menú contextual del calendario o el Task Modal): si la tarea tiene `flow.repeat` no vacío, además de agregar `✅ <hoy>` a la tarea original, se inserta una nueva línea con la siguiente ocurrencia.
+- La nueva línea se inserta **una línea arriba** de la original (mismo valor por defecto que Tasks); no se agrega una opción para cambiar ese orden en esta fase (ver Fuera de alcance).
+
+### ADR-R2 — Orden de prioridad de fecha para calcular la siguiente ocurrencia
+
+- Se usa el mismo orden ya establecido en ADR-T4 para este plugin: `scheduled > due > start` (no el orden de Tasks, que es `due > scheduled > start`), por consistencia con el resto del comportamiento del calendario (drag and drop, badges). La fecha de mayor prioridad presente en la tarea es la "fecha de referencia" para la regla RRULE.
+- Si la tarea tiene más de una fecha, las demás se desplazan manteniendo la misma distancia relativa a la fecha de referencia que tenían en la tarea original (igual que Tasks).
+
+### ADR-R3 — Soporte de `when done`
+
+- Si el texto de recurrencia termina en `when done` (p. ej. `🔁 every week when done`), la fecha de referencia para calcular la siguiente ocurrencia es la fecha de **hoy** (cuándo se completó), no la fecha original de la tarea — confirmado para esta fase.
+- `task-section.ts` debe reconocer y despojar el sufijo `when done` antes de convertir el resto a RRULE (hoy no lo hace; si el texto trae `when done`, la conversión actual probablemente falla o lo interpreta como parte de la regla).
+
+### ADR-R4 — Campos que se eliminan en la nueva ocurrencia
+
+- `🆔` y `⛔` (id y dependsOn) se eliminan de la nueva ocurrencia, igual que Tasks — evita IDs duplicados y dependencias que quedarían bloqueadas para siempre.
+- El resto de los campos (prioridad, texto de recurrencia, etc.) se copian tal cual.
+
+### ADR-R5 — Fechas inválidas (fin de mes/año)
+
+- Se delega por completo en la librería `rrule` (ya es dependencia del proyecto, usada hoy solo para validar sintaxis) para calcular la siguiente fecha válida; no se reimplementa ninguna lógica de "mover al último día válido" a mano.
+
+### Fuera de alcance
+- Configurar el orden de inserción (arriba/abajo) de la nueva ocurrencia.
+- Recurrencia "para X veces" o "hasta una fecha" (limitaciones conocidas también en Tasks, ligadas a la librería `rrule`).
+- Generar la nueva ocurrencia al marcar `Done` desde el checkbox nativo de Obsidian (fuera del control de este plugin) — solo se cubre el cambio de estado hecho desde dentro del plugin (calendario o Task Modal).
+
 ### Fix relacionado (no es parte del diseño de estatus, se corrige de paso)
 
 `TaskFilter`/`src/core/task-filter.ts`: `isTaskCompleted` compara `task.state.status` (símbolo literal, ej. `'x'`/`'-'`) contra las cadenas `'DONE'`/`'CANCELLED'` (que corresponden a `state.text`, no a `state.status`) — la comparación nunca es verdadera. Se corrige para comparar `state.text` contra `'Done'`/`'Cancelled'`.

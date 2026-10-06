@@ -74,6 +74,7 @@
   "status_done": "Fait",
   "status_cancelled": "Annulé",
   "status_non_task": "Non-tâche",
+  "status_on_hold": "En attente",
   "lowest": "Plus bas",
   "low": "Bas",
   "normal": "Normal",

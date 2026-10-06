@@ -217,6 +217,8 @@ export class TaskExtractor {
         return "Cancelled";
       case CoreTaskStatus.nonTask:
         return "NonTask";
+      case CoreTaskStatus.OnHold:
+        return "OnHold";
       default:
         return "Unknown";
     }
@@ -237,6 +239,8 @@ export class TaskExtractor {
         return CoreTaskStatusIcon.Cancelled;
       case CoreTaskStatus.nonTask:
         return CoreTaskStatusIcon.nonTask;
+      case CoreTaskStatus.OnHold:
+        return CoreTaskStatusIcon.OnHold;
       default:
         return CoreTaskStatusIcon.Todo;
     }

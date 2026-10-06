@@ -96,6 +96,12 @@
   @include text-truncate();
 }
 
+/* Ícono de estado (v1.1.10, Manejo de estatus): se ve al inicio de la píldora, antes del título. */
+.oa-calendar-task-status-icon {
+  flex: 0 0 auto;
+  margin-right: 2px;
+}
+
 /* Distintivo visual por tipo de fecha (v1.1.4, ADR-T4-bis): mismo icono que el usuario ya
    escribió (📅/🛫/⏳) + un acento de color, consistente en Mes/Semana/Semana laboral/Día. */
 .oa-calendar-task--due {

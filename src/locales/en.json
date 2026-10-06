@@ -206,6 +206,7 @@
   "task_file_placeholder": "Path to the file where the task is located (e.g., 'Projects/Tasks.md')",
 
   "task_priority": "Priority",
+  "task_status": "Status",
   "task_insert_field_command": "Insert task field",
   "task_field_menu_set_due": "Set due date",
   "task_field_menu_set_start": "Set start date",

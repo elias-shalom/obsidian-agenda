@@ -62,6 +62,7 @@
                         data-line-number="{{line.number}}"
                         data-date-type="{{calendarDateType}}"
                         title="{{file.name}}:{{line.number}} - {{section.desc}}">
+                      <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
                       <span class="oa-task-title">{{section.desc}}</span>
                     </div>
                   {{/each}}

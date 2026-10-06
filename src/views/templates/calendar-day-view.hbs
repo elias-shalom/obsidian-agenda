@@ -53,6 +53,7 @@
                         data-file-path="{{file.path}}"
                         data-line-number="{{line.number}}"
                         data-tooltip="{{section.desc}}">
+                      <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
                       <span class="oa-task-title">{{section.desc}}</span>
                     </div>
                   {{/each}}
@@ -65,6 +66,7 @@
                         data-file-path="{{file.path}}"
                         data-line-number="{{line.number}}"
                         data-tooltip="{{section.desc}}">
+                      <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
                       <span class="oa-task-title">{{section.desc}}</span>
                     </div>
                   {{/each}}
@@ -77,6 +79,7 @@
                         data-file-path="{{file.path}}"
                         data-line-number="{{line.number}}"
                         data-tooltip="{{section.desc}}">
+                      <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
                       <span class="oa-task-title">{{section.desc}}</span>
                     </div>
                   {{/each}}
@@ -104,6 +107,7 @@
                             style="left: {{laneLeftPercent}}%; width: {{laneWidthPercent}}%;">
                           {{#equals segmentRole "half"}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/equals}}
                           {{#equals segmentRole "start"}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/equals}}
+                          <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
                           <span class="oa-task-title">{{section.desc}}</span>
                           {{#if date.scheduledDuration}}<span class="oa-calendar-task-duration">{{date.scheduledDuration}}m</span>{{/if}}
                           {{#equals segmentRole "half"}}<div class="oa-calendar-resize-handle" draggable="false" data-file-path="{{file.path}}" data-line-number="{{line.number}}" data-current-duration="{{date.scheduledDuration}}"></div>{{/equals}}
@@ -123,6 +127,7 @@
                             style="left: {{laneLeftPercent}}%; width: {{laneWidthPercent}}%;">
                           {{#equals segmentRole "half"}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/equals}}
                           {{#equals segmentRole "start"}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/equals}}
+                          <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
                           <span class="oa-task-title">{{section.desc}}</span>
                           {{#if date.scheduledDuration}}<span class="oa-calendar-task-duration">{{date.scheduledDuration}}m</span>{{/if}}
                           {{#equals segmentRole "half"}}<div class="oa-calendar-resize-handle" draggable="false" data-file-path="{{file.path}}" data-line-number="{{line.number}}" data-current-duration="{{date.scheduledDuration}}"></div>{{/equals}}

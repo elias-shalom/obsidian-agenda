@@ -205,6 +205,7 @@
   "file_invalid_extension": "Datei muss die Erweiterung .md haben",
   "task_file_placeholder": "Pfad zur Datei (z.B. 'Projekte/Aufgaben.md')",
   "task_priority": "Priorität",
+  "task_status": "Status",
   "task_insert_field_command": "Aufgabenfeld einfügen",
   "task_field_menu_set_due": "Fälligkeitsdatum festlegen",
   "task_field_menu_set_start": "Startdatum festlegen",

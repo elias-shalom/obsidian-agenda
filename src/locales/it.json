@@ -205,6 +205,7 @@
   "file_invalid_extension": "Il file deve avere l'estensione .md",
   "task_file_placeholder": "Percorso al file (es: 'Progetti/Attività.md')",
   "task_priority": "Priorità",
+  "task_status": "Stato",
   "task_insert_field_command": "Inserisci campo attività",
   "task_field_menu_set_due": "Imposta data di scadenza",
   "task_field_menu_set_start": "Imposta data di inizio",

@@ -237,11 +237,11 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
   - [ ] Reemplazar `flatpickr` por el componente `CalendarDatePicker` (popover) en los 3 campos de fecha del modal: vencimiento, inicio y programada
   - [ ] Mostrar el punto indicador de días con tareas existentes, igual que en las vistas de calendario
   - [ ] Hora (🕐) y duración (⏱️) conservan sus modales dedicados; sin cambios
-- [ ] **Manejo de estatus desde el calendario** (pospuesto de v1.1.9; diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.9/§7.5, `Modelo de datos.md` §10 y `Arquitectura técnica.md` §14; fases en `Plan de implementación.md`)
+- [x] **Manejo de estatus desde el calendario** (pospuesto de v1.1.9; diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.9/§7.5, `Modelo de datos.md` §10 y `Arquitectura técnica.md` §14; fases en `Plan de implementación.md`)
   - [x] Sexto estado "En espera" (`?`, ícono ⏸️), sumado a los 5 ya existentes (Todo/En progreso/Hecho/Cancelada/No es tarea)
-  - [ ] Ícono de estado visible en cada píldora del calendario
-  - [ ] Cambiar el estado con clic derecho (menú contextual) sobre la tarea, o desde un nuevo campo en el Task Modal (crear y editar, "Todo" preseleccionado al crear)
-  - [x] Marcar "Hecho" agrega la fecha ✅; cambiar desde "Hecho" a otro estado la quita — igual que el checkbox nativo de Obsidian (`upsertTaskStatus()`, falta conectar a una UI)
+  - [x] Ícono de estado visible en cada píldora del calendario
+  - [x] Cambiar el estado con clic derecho (menú contextual) sobre la tarea, o desde un nuevo campo en el Task Modal (crear y editar, "Todo" preseleccionado al crear)
+  - [x] Marcar "Hecho" agrega la fecha ✅; cambiar desde "Hecho" a otro estado la quita — igual que el checkbox nativo de Obsidian (`upsertTaskStatus()`, conectado al menú contextual y al Task Modal)
   - [ ] Estados personalizados/configurables y filtrar el calendario por estado quedan fuera de alcance por ahora
 - [x] **Fix: `task-filter.ts` compara el símbolo contra el texto del estado** — `isTaskCompleted` compara `state.status` (símbolo literal) contra `'DONE'`/`'CANCELLED'` (valores de `state.text`); nunca es verdadero, el filtro no excluye completadas/canceladas como debería
 - [ ] **Vista Día: modo de varios días 1/3/5** (pospuesto de v1.1.9; diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.4.3 y `Arquitectura técnica.md` §13; fases en `Plan de implementación.md`)

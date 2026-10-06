@@ -1,4 +1,4 @@
-import { WorkspaceLeaf, Plugin, Notice, setIcon } from 'obsidian';
+import { WorkspaceLeaf, Plugin, Notice, setIcon, Menu } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
 import { ITask, CalendarViewData, AgendaPlugin } from '../types/interfaces';
@@ -6,8 +6,9 @@ import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import Handlebars from 'handlebars';
 import { CalendarViewType } from '../types/enums';
+import { CoreTaskStatus, CoreTaskStatusIcon } from '../types/enums';
 import { TaskWriter } from '../core/task-writer';
-import { upsertSimpleDate, upsertScheduledDate } from '../core/task-line-fields';
+import { upsertSimpleDate, upsertScheduledDate, upsertTaskStatus } from '../core/task-line-fields';
 import { EDIT_TASK_MODAL_TYPE } from '../core/modal-manager';
 import { getReferenceDate, setReferenceDate } from '../core/calendar-reference-date';
 import { CalendarDatePicker } from '../core/calendar-date-picker';
@@ -15,6 +16,16 @@ import { clearTooltips } from '../core/tooltips';
 
 /** Espera entre un `click` y un posible segundo `click` antes de asumir que no viene un `dblclick` (ms). */
 const TASK_CLICK_DELAY_MS = 250;
+
+/** Opciones del menú contextual de estado (v1.1.10, Manejo de estatus §14.3), en orden de flujo de trabajo. */
+const STATUS_MENU_OPTIONS: { status: CoreTaskStatus; icon: string; labelKey: string }[] = [
+  { status: CoreTaskStatus.Todo, icon: CoreTaskStatusIcon.Todo, labelKey: 'status_todo' },
+  { status: CoreTaskStatus.InProgress, icon: CoreTaskStatusIcon.InProgress, labelKey: 'status_in_progress' },
+  { status: CoreTaskStatus.OnHold, icon: CoreTaskStatusIcon.OnHold, labelKey: 'status_on_hold' },
+  { status: CoreTaskStatus.Done, icon: CoreTaskStatusIcon.Done, labelKey: 'status_done' },
+  { status: CoreTaskStatus.Cancelled, icon: CoreTaskStatusIcon.Cancelled, labelKey: 'status_cancelled' },
+  { status: CoreTaskStatus.nonTask, icon: CoreTaskStatusIcon.nonTask, labelKey: 'status_non_task' },
+];
 
 export const CALENDAR_VIEW_TYPE = 'calendar-view';
 
@@ -371,6 +382,30 @@ export abstract class CalendarView extends BaseView {
 
       item.addEventListener('dragend', () => {
         item.removeClass('oa-dragging');
+      });
+
+      // Menú contextual de estado (v1.1.10, §14.3): clic derecho reescribe el símbolo de la tarea.
+      item.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        const filePath = item.getAttribute('data-file-path');
+        const lineNumberAttr = item.getAttribute('data-line-number');
+        if (!filePath || !lineNumberAttr) return;
+        const lineNumber = Number(lineNumberAttr);
+
+        const menu = new Menu();
+        for (const { status, icon, labelKey } of STATUS_MENU_OPTIONS) {
+          menu.addItem((menuItem) => menuItem
+            .setTitle(`${icon} ${this.i18n.t(labelKey)}`)
+            .onClick(() => {
+              const todayIso = DateTime.now().toFormat('yyyy-MM-dd');
+              this.taskWriter.updateTaskLine(filePath, lineNumber, (line) => upsertTaskStatus(line, status, todayIso))
+                .then(ok => {
+                  if (ok) this.refreshView().catch(console.error);
+                })
+                .catch(console.error);
+            }));
+        }
+        menu.showAtMouseEvent(e);
       });
     });
 

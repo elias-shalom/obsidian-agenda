@@ -46,6 +46,18 @@
       </div>
     </div>
 
+    <!-- Campo de Estado (v1.1.10, Manejo de estatus): mismo patrón visual que Prioridad -->
+    <div class="oa-form-group">
+      <div id="oa-status-group" class="oa-priority-segmented" role="radiogroup" aria-label="{{t "task_status"}}" data-selected="{{statusValue}}">
+        <button type="button" class="oa-priority-pill" data-status=" " title="{{t "status_todo"}}">⭕</button>
+        <button type="button" class="oa-priority-pill" data-status="/" title="{{t "status_in_progress"}}">🛠️</button>
+        <button type="button" class="oa-priority-pill" data-status="?" title="{{t "status_on_hold"}}">⏸️</button>
+        <button type="button" class="oa-priority-pill" data-status="x" title="{{t "status_done"}}">✅</button>
+        <button type="button" class="oa-priority-pill" data-status="-" title="{{t "status_cancelled"}}">❌</button>
+        <button type="button" class="oa-priority-pill" data-status="~" title="{{t "status_non_task"}}">🗑️</button>
+      </div>
+    </div>
+
     <!-- Campo de Fecha programada + hora + duración, todo en el mismo renglón (v1.1.4: scheduled es el campo de fecha por defecto, en lugar de due) -->
     <div class="oa-form-group oa-date-picker-group">
       <button 

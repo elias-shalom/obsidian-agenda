@@ -68,6 +68,7 @@
                     data-date-type="{{calendarDateType}}"
                     title="{{file.basename}}:{{line.number}} - {{section.desc}}">
                   {{#if date.scheduledTime}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/if}}
+                  <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
                   <span class="oa-task-title">{{section.desc}}</span>
                 </div>
               {{/each}}

@@ -205,18 +205,18 @@ Redimensionar arrastrando el borde superior (cambia la hora de inicio, no la dur
 - [x] Claves i18n nuevas (`status_on_hold`) en los seis locales; reutilizar las existentes para los otros 5 estados. También agregado al filtro de estado existente de la vista Tabla (`table-view.hbs`).
 
 ### Fase B — Badge visual en el calendario (depende de A)
-- [ ] Ícono de estado en `.oa-calendar-task` de Mes/Semana/Semana laboral/Día.
-- [ ] Verificable sola: cada píldora muestra el ícono correcto de su estado.
+- [x] Ícono de estado en `.oa-calendar-task` de Mes/Semana/Semana laboral/Día.
+- [x] Verificable sola: cada píldora muestra el ícono correcto de su estado.
 
 ### Fase C — Menú contextual en el calendario (depende de A)
-- [ ] Listener `contextmenu` en `.oa-calendar-task` (`CalendarView`), `Menu` con las 6 opciones, reutilizando el patrón de `task-field-menu.ts`.
-- [ ] Elegir una opción reescribe el símbolo con `upsertTaskStatus()` + `TaskWriter.updateTaskLine()` + `refreshView()`.
-- [ ] Verificable sola: clic derecho sobre una tarea del calendario permite cambiar su estado; marcar `Done` agrega `✅`, desmarcar la quita.
+- [x] Listener `contextmenu` en `.oa-calendar-task` (`CalendarView`), `Menu` con las 6 opciones, reutilizando el patrón de `task-field-menu.ts`.
+- [x] Elegir una opción reescribe el símbolo con `upsertTaskStatus()` + `TaskWriter.updateTaskLine()` + `refreshView()`.
+- [x] Verificable sola: clic derecho sobre una tarea del calendario permite cambiar su estado; marcar `Done` agrega `✅`, desmarcar la quita.
 
 ### Fase D — Campo de estado en el Task Modal (depende de A)
-- [ ] Segmented control de 6 píldoras en `create-task-modal.hbs`, mismo patrón visual que prioridad.
-- [ ] Preseleccionado "Todo" al crear; refleja el estado real al editar.
-- [ ] El guardado usa `upsertTaskStatus()`, no lógica duplicada.
+- [x] Segmented control de 6 píldoras en `create-task-modal.hbs`, mismo patrón visual que prioridad.
+- [x] Preseleccionado "Todo" al crear; refleja el estado real al editar.
+- [x] El guardado usa `upsertTaskStatus()`, no lógica duplicada.
 
 ### Validación manual
 - [ ] Los 6 estados se reconocen correctamente al parsear una nota existente con cada símbolo.

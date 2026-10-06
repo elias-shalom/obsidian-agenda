@@ -205,6 +205,7 @@
   "file_invalid_extension": "O arquivo deve ter a extensão .md",
   "task_file_placeholder": "Caminho para o arquivo onde a tarefa será salva (ex: 'Projetos/Tarefas.md')",
   "task_priority": "Prioridade",
+  "task_status": "Estado",
   "task_insert_field_command": "Inserir campo de tarefa",
   "task_field_menu_set_due": "Definir data de vencimento",
   "task_field_menu_set_start": "Definir data de início",

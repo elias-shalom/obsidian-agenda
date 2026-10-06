@@ -205,6 +205,7 @@
   "file_invalid_extension": "Le fichier doit avoir l'extension .md",
   "task_file_placeholder": "Chemin vers le fichier (ex: 'Projets/Tâches.md')",
   "task_priority": "Priorité",
+  "task_status": "Statut",
   "task_insert_field_command": "Insérer un champ de tâche",
   "task_field_menu_set_due": "Définir la date d'échéance",
   "task_field_menu_set_start": "Définir la date de début",

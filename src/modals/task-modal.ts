@@ -5,7 +5,9 @@ import Handlebars from "handlebars";
 import { I18n } from "../core/i18n";
 import { TaskManager } from "../core/task-manager";
 import { ModalType, ModalOptions, ITask } from "../types/interfaces";
+import { CoreTaskStatus } from "../types/enums";
 import { TaskWriter } from "../core/task-writer";
+import { upsertTaskStatus } from "../core/task-line-fields";
 import { TaskTimePickerModal } from "./task-time-picker-modal";
 import { TaskDurationModal } from "./task-duration-modal";
 import { clearTooltips, installTooltips } from "../core/tooltips";
@@ -86,6 +88,7 @@ export class TaskModal extends Modal {
         taskTitle: "",
         filePathValue: "",
         priorityValue: "",
+        statusValue: CoreTaskStatus.Todo,
         dueDateValue: "", dueLabelValue: none,
         startDateValue: "", startLabelValue: none,
         scheduledDateValue: today, scheduledLabelValue: today,
@@ -107,6 +110,7 @@ export class TaskModal extends Modal {
       taskTitle: task.section.desc,
       filePathValue: task.file.path,
       priorityValue: PRIORITY_NAME_TO_EMOJI[task.state.priority] ?? "",
+      statusValue: task.state.status,
       dueDateValue: dueIso, dueLabelValue: dueIso || none,
       startDateValue: startIso, startLabelValue: startIso || none,
       scheduledDateValue: scheduledIso, scheduledLabelValue: scheduledIso || none,
@@ -230,13 +234,26 @@ export class TaskModal extends Modal {
 
     // Selector de prioridad: segmented control de píldoras (v1.1.4, reemplaza el botón+dropdown oculto)
     const priorityGroup = this.contentEl.querySelector<HTMLElement>("#oa-priority-group");
-    const priorityPills = Array.from(this.contentEl.querySelectorAll<HTMLButtonElement>(".oa-priority-pill"));
+    const priorityPills = Array.from(priorityGroup?.querySelectorAll<HTMLButtonElement>(".oa-priority-pill") ?? []);
     let selectedPriority = priorityGroup?.dataset.selected ?? "";
     priorityPills.forEach(pill => {
       pill.toggleClass("oa-active", (pill.dataset.priority ?? "") === selectedPriority);
       pill.addEventListener("click", () => {
         selectedPriority = pill.dataset.priority ?? "";
         priorityPills.forEach(p => p.toggleClass("oa-active", p === pill));
+      });
+    });
+
+    // Selector de estado (v1.1.10, Manejo de estatus): mismo patrón, grupo y clase de píldora
+    // compartidos con prioridad, por eso cada selector de píldoras se escopea a su propio grupo.
+    const statusGroup = this.contentEl.querySelector<HTMLElement>("#oa-status-group");
+    const statusPills = Array.from(statusGroup?.querySelectorAll<HTMLButtonElement>(".oa-priority-pill") ?? []);
+    let selectedStatus: CoreTaskStatus = (statusGroup?.dataset.selected as CoreTaskStatus) ?? CoreTaskStatus.Todo;
+    statusPills.forEach(pill => {
+      pill.toggleClass("oa-active", ((pill.dataset.status ?? "") as CoreTaskStatus) === selectedStatus);
+      pill.addEventListener("click", () => {
+        selectedStatus = (pill.dataset.status as CoreTaskStatus) ?? CoreTaskStatus.Todo;
+        statusPills.forEach(p => p.toggleClass("oa-active", p === pill));
       });
     });
 
@@ -339,6 +356,7 @@ export class TaskModal extends Modal {
 
         const dueDate = (dueInput?.value ?? "").trim();
         const priority = selectedPriority;
+        const todayIso = DateTime.now().toFormat("yyyy-MM-dd");
         const startDate = (startInput?.value ?? "").trim();
         const scheduledDate = (scheduledInput?.value ?? "").trim();
         const scheduledTime = (scheduledTimeInput?.value ?? "").trim();
@@ -377,8 +395,19 @@ export class TaskModal extends Modal {
           return line;
         };
 
+        // Agrega/quita la fecha ✅ según corresponda (ADR-S3), reutilizando upsertTaskStatus() en vez de
+        // duplicar esa lógica aquí. Si la tarea ya estaba Hecha y el estado no cambió, conserva su fecha
+        // original en vez de pisarla con la de hoy.
+        const applyStatus = (line: string, originalTask?: ITask): string => {
+          if (selectedStatus !== CoreTaskStatus.Done) return line;
+          const doneIso = (originalTask && (originalTask.state.status as CoreTaskStatus) === CoreTaskStatus.Done && originalTask.date.done)
+            ? originalTask.date.done.toISODate() ?? todayIso
+            : todayIso;
+          return upsertTaskStatus(line, CoreTaskStatus.Done, doneIso);
+        };
+
         if (editingTask) {
-          const line = buildLine(editingTask.state.status, editingTask.flow.blockLink);
+          const line = applyStatus(buildLine(selectedStatus, editingTask.flow.blockLink), editingTask);
           try {
             console.debug(`Actualizando línea ${editingTask.line.number} de ${editingTask.file.path}: ${line}`); // Debugging line
             const ok = await this.taskWriter.updateTaskLine(editingTask.file.path, editingTask.line.number, () => line);
@@ -409,7 +438,7 @@ export class TaskModal extends Modal {
           return;
         }
 
-        const line = buildLine(" ", "");
+        const line = applyStatus(buildLine(selectedStatus, ""));
 
         try {
           console.debug(`Agregando línea a ${filePath}: ${line}`); // Debugging line

@@ -178,6 +178,11 @@
   &:last-child {
     margin-bottom: 0;
   }
+
+  .oa-calendar-task {
+    @include calendar-task-styles();
+    margin-bottom: 0;
+  }
 }
 
 .oa-calendar-day-hours {

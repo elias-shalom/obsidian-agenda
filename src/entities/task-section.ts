@@ -556,11 +556,11 @@ export class TaskSection {
 
               try {
                 // Convertir texto de recurrencia al formato RRULE
-                const rruleText = this.convertToRRuleFormat(recurrenceText);               
+                const rruleText = TaskSection.convertToRRuleFormat(recurrenceText);               
 
                 if (rruleText) {
                   // Validar sintaxis RRULE
-                  this.validateRRuleSyntax(rruleText);
+                  TaskSection.validateRRuleSyntax(rruleText);
                   // Si llegamos aquí, el patrón es válido
                   extractedValue = recurrenceText;
                 } else {
@@ -663,9 +663,9 @@ export class TaskSection {
         }
       } else if (property === 'recurrence') {
         try {
-          const rruleText = this.convertToRRuleFormat(value);
+          const rruleText = TaskSection.convertToRRuleFormat(value);
           if (rruleText) {
-            this.validateRRuleSyntax(rruleText);
+            TaskSection.validateRRuleSyntax(rruleText);
             if (!('recurrence' in taskData)) taskData.recurrence = value;
           } else {
             throw new Error("No se pudo convertir al formato RRULE");
@@ -719,7 +719,9 @@ export class TaskSection {
     return { fields, taskData, errors };
   }
 
-  private validateRRuleSyntax(rrule: string): void {
+  /** Pura (no usa estado de instancia); expuesta como estática para que `task-recurrence.ts`
+   * (v1.1.10) pueda reutilizarla sin instanciar un `TaskSection`. */
+  static validateRRuleSyntax(rrule: string): void {
     rrulestr(rrule); // Lanza excepción si es inválido
   }
 
@@ -742,7 +744,9 @@ export class TaskSection {
    * @param recurrenceText Texto de recurrencia en formato Obsidian (ejemplo: "every week")
    * @returns Texto en formato RRULE o null si no se pudo convertir
    */
-  private convertToRRuleFormat(recurrenceText: string): string | null {
+  /** Pura (no usa estado de instancia); expuesta como estática para que `task-recurrence.ts`
+   * (v1.1.10) pueda reutilizarla sin instanciar un `TaskSection`. */
+  static convertToRRuleFormat(recurrenceText: string): string | null {
     // todo: Se debe de implementar un auto compelete para el texto de recurrencia
     // todo: Ejemplo: every 2 weeks until 2023-12-31 count 5 by weekdays
     try {

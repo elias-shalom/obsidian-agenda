@@ -233,10 +233,13 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 
 ## 🔮 v1.1.10 (ideas, discusión pendiente)
 
-- [ ] **Selector de fecha unificado en el Task Modal** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §7.6 y `Arquitectura técnica.md` §15; fases en `Plan de implementación.md`)
-  - [ ] Reemplazar `flatpickr` por el componente `CalendarDatePicker` (popover) en los 3 campos de fecha del modal: vencimiento, inicio y programada
-  - [ ] Mostrar el punto indicador de días con tareas existentes, igual que en las vistas de calendario
-  - [ ] Hora (🕐) y duración (⏱️) conservan sus modales dedicados; sin cambios
+- [x] **fix**: campo de recurrencia (🔁) del Task Modal sin ayuda alguna para escribir el texto — se agregó autocompletado con una lista curada de patrones que `TaskSection.convertToRRuleFormat()` reconoce correctamente (incluye variantes `when done`), mismo componente visual que las sugerencias de archivo (`.oa-file-suggestions`/`.oa-file-suggestion-item`)
+- [x] **fix**: en la vista Día, las tareas "programadas sin hora" de la sección "Todo el día" ahora son arrastrables a una franja horaria (les asigna esa hora, igual que ya pasaba al arrastrar entre franjas); arrastrar una tarea con hora de vuelta a "Todo el día" le quita la hora y la duración (`clearScheduledTime()`, nuevo en `task-line-fields.ts`). Las tareas de 📅 vencimiento/🛫 inicio no son arrastrables a una franja porque nunca pueden llevar hora (ADR-T1/T2). **fix relacionado**: el `dragover` de la zona "Todo el día" intentaba leer el payload con `dataTransfer.getData()`, que siempre vuelve vacío durante `dragover` (solo funciona en `dragstart`/`drop`) — nunca llamaba a `preventDefault()` y el navegador bloqueaba el drop; corregido para que `dragover` solo resalte la zona sin leer el payload, validando el tipo de tarea únicamente en el `drop`
+- [x] **fix**: las tareas de la sección "Todo el día" (vista Día) no tenían el mismo look de píldora que el resto del calendario — les faltaba el `@include calendar-task-styles()` (fondo, borde de acento, radio de esquina, sombra) que sí aplican las franjas horarias y Mes/Semana/Semana laboral; agregado en `.oa-calendar-allday-row .oa-calendar-task`
+- [x] **Selector de fecha unificado en el Task Modal** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §7.6 y `Arquitectura técnica.md` §15; fases en `Plan de implementación.md`)
+  - [x] Reemplazar `flatpickr` por el componente `CalendarDatePicker` (popover) en los 3 campos de fecha del modal: vencimiento, inicio y programada
+  - [x] Mostrar el punto indicador de días con tareas existentes, igual que en las vistas de calendario
+  - [x] Hora (🕐) y duración (⏱️) conservan sus modales dedicados; sin cambios
 - [x] **Manejo de estatus desde el calendario** (pospuesto de v1.1.9; diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.9/§7.5, `Modelo de datos.md` §10 y `Arquitectura técnica.md` §14; fases en `Plan de implementación.md`)
   - [x] Sexto estado "En espera" (`?`, ícono ⏸️), sumado a los 5 ya existentes (Todo/En progreso/Hecho/Cancelada/No es tarea)
   - [x] Ícono de estado visible en cada píldora del calendario
@@ -255,12 +258,12 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [ ] **Modal de duración con dial circular** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §7.7 y `Arquitectura técnica.md` §18; fases en `Plan de implementación.md`)
   - [ ] Extraer el dial circular del Habit Editor a un componente compartido (`src/core/time-dial.ts`), parametrizado por máximo y paso
   - [ ] El modal de duración lo reutiliza: máximo 1440 minutos (un día completo), pasos de 5 minutos
-- [ ] **Compatibilidad con tareas recurrentes (🔁)** (diseño en `docs/agenda-tasks/Modelo de datos.md` §11 y `Arquitectura técnica.md` §16; fases en `Plan de implementación.md`)
-  - [ ] Al marcar una tarea recurrente como "Hecho" (manejo de estatus, más arriba), se inserta una línea nueva una línea arriba con la siguiente ocurrencia
-  - [ ] Prioridad de fecha para calcular la siguiente ocurrencia: `scheduled > due > start` (ADR-T4 del plugin, no el orden de Tasks)
-  - [ ] Soporte del sufijo `when done` (calcula desde la fecha de hoy en vez de la fecha original)
-  - [ ] Se eliminan `🆔`/`⛔` en la nueva ocurrencia; el resto de los campos se copian con el mismo desplazamiento relativo de fechas
-  - [ ] Delega el cálculo de la siguiente fecha válida en la librería `rrule` (ya es dependencia)
+- [x] **Compatibilidad con tareas recurrentes (🔁)** (diseño en `docs/agenda-tasks/Modelo de datos.md` §11 y `Arquitectura técnica.md` §16; fases en `Plan de implementación.md`)
+  - [x] Al marcar una tarea recurrente como "Hecho" (manejo de estatus, más arriba), se inserta una línea nueva una línea arriba con la siguiente ocurrencia
+  - [x] Prioridad de fecha para calcular la siguiente ocurrencia: `scheduled > due > start` (ADR-T4 del plugin, no el orden de Tasks)
+  - [x] Soporte del sufijo `when done` (calcula desde la fecha de hoy en vez de la fecha original)
+  - [x] Se eliminan `🆔`/`⛔` en la nueva ocurrencia; el resto de los campos se copian con el mismo desplazamiento relativo de fechas
+  - [x] Delega el cálculo de la siguiente fecha válida en la librería `rrule` (ya es dependencia)
 
 
 ## 📊 Próximas Características (v1.x)

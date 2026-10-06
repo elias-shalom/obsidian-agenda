@@ -293,14 +293,6 @@
   }
 }
 
-.oa-date-input-hidden {
-  position: absolute;
-  width: 0;
-  height: 0;
-  opacity: 0;
-  pointer-events: auto;
-}
-
 .oa-date-label {
   font-size: 0.7rem;
   color: var(--text-normal);
@@ -320,6 +312,10 @@
 }
 
 .oa-file-picker-group {
+  position: relative;
+}
+
+.oa-recurrence-group {
   position: relative;
 }
 

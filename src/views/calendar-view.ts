@@ -9,6 +9,7 @@ import { CalendarViewType } from '../types/enums';
 import { CoreTaskStatus, CoreTaskStatusIcon } from '../types/enums';
 import { TaskWriter } from '../core/task-writer';
 import { upsertSimpleDate, upsertScheduledDate, upsertTaskStatus } from '../core/task-line-fields';
+import { buildRecurrenceOccurrence } from '../core/task-recurrence';
 import { EDIT_TASK_MODAL_TYPE } from '../core/modal-manager';
 import { getReferenceDate, setReferenceDate } from '../core/calendar-reference-date';
 import { CalendarDatePicker } from '../core/calendar-date-picker';
@@ -398,9 +399,15 @@ export abstract class CalendarView extends BaseView {
             .setTitle(`${icon} ${this.i18n.t(labelKey)}`)
             .onClick(() => {
               const todayIso = DateTime.now().toFormat('yyyy-MM-dd');
+              const task = this.tasks.find(t => t.file.path === filePath && t.line.number === lineNumber);
+              // Calculado antes de escribir: necesita la recurrencia/fechas tal como están ahora (ADR-R1).
+              const nextOccurrenceLine = task ? buildRecurrenceOccurrence(task, status) : null;
+
               this.taskWriter.updateTaskLine(filePath, lineNumber, (line) => upsertTaskStatus(line, status, todayIso))
-                .then(ok => {
-                  if (ok) this.refreshView().catch(console.error);
+                .then(async ok => {
+                  if (!ok) return;
+                  if (nextOccurrenceLine) await this.taskWriter.insertLineAbove(filePath, lineNumber, nextOccurrenceLine);
+                  await this.refreshView();
                 })
                 .catch(console.error);
             }));

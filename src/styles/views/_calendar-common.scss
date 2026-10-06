@@ -148,7 +148,8 @@
 .oa-calendar-month-day.oa-calendar-drop-target,
 .oa-calendar-week-day-container.oa-calendar-drop-target,
 .oa-calendar-day-column.oa-calendar-drop-target,
-.oa-calendar-year-day.oa-calendar-drop-target {
+.oa-calendar-year-day.oa-calendar-drop-target,
+.oa-calendar-allday-content.oa-calendar-drop-target {
   background-color: color-mix(in srgb, var(--interactive-accent) 15%, transparent);
   outline: 2px dashed var(--interactive-accent);
   outline-offset: -2px;

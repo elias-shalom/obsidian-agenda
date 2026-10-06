@@ -8,15 +8,42 @@ import { ModalType, ModalOptions, ITask } from "../types/interfaces";
 import { CoreTaskStatus } from "../types/enums";
 import { TaskWriter } from "../core/task-writer";
 import { upsertTaskStatus } from "../core/task-line-fields";
+import { buildRecurrenceOccurrence } from "../core/task-recurrence";
+import { CalendarDatePicker } from "../core/calendar-date-picker";
 import { TaskTimePickerModal } from "./task-time-picker-modal";
 import { TaskDurationModal } from "./task-duration-modal";
 import { clearTooltips, installTooltips } from "../core/tooltips";
-import flatpickr from 'flatpickr';
-//import { es } from 'flatpickr/dist/l10n/es';
-//import 'flatpickr/dist/flatpickr.css';
 
 /** Recuerda el último modo (básico/avanzado) usado en el Task Modal (v1.1.4, Fase E). */
 const ADVANCED_MODE_STORAGE_KEY = "oa_task_modal_advanced_mode";
+
+/** Días de la semana localizados para el date picker unificado (v1.1.10, §7.6): mismo orden/claves
+ * que `CalendarView.getLocalizedDayNames()`, duplicado aquí porque `TaskModal` no extiende esa clase. */
+const WEEKDAY_KEYS: { key: string; iso: number }[] = [
+  { key: 'day_mon', iso: 1 },
+  { key: 'day_tue', iso: 2 },
+  { key: 'day_wed', iso: 3 },
+  { key: 'day_thu', iso: 4 },
+  { key: 'day_fri', iso: 5 },
+  { key: 'day_sat', iso: 6 },
+  { key: 'day_sun', iso: 7 },
+];
+
+/** Patrones de ejemplo para el autocompletado del campo de recurrencia (v1.1.10): solo texto que
+ * `TaskSection.convertToRRuleFormat()` reconoce correctamente hoy (siempre en inglés, igual que el
+ * resto del formato de Tasks; no son localizables). */
+const RECURRENCE_SUGGESTIONS = [
+  "every day",
+  "every 2 days",
+  "every week",
+  "every 2 weeks",
+  "every weekday",
+  "every weekend",
+  "every month",
+  "every year",
+  "every week when done",
+  "every month when done",
+];
 
 /** El estado de prioridad se guarda por nombre (ver `task-section.ts`); el formulario necesita el emoji crudo. */
 const PRIORITY_NAME_TO_EMOJI: Record<string, string> = {
@@ -35,6 +62,10 @@ export class TaskModal extends Modal {
   private i18n: I18n;
   private taskManager: TaskManager;
   private taskWriter: TaskWriter;
+  private closeActiveDatePicker: (() => void) | null = null;
+  /** Caché de tareas del vault (v1.1.10, §7.6): solo para el punto indicador de días con tareas
+   * del date picker; se puebla una vez al abrir el modal, no se mantiene sincronizada después. */
+  private cachedTasks: ITask[] = [];
 
   constructor(app: App, modalType: ModalType, i18n: I18n, taskManager: TaskManager, modalOptions?: ModalOptions) {
     super(app);
@@ -57,6 +88,8 @@ export class TaskModal extends Modal {
     contentEl.addClass("oa-task-modal");
 
     const editingTask = this.modalType === "edit-task" ? (this.modalOptions?.task as ITask | undefined) : undefined;
+
+    this.cachedTasks = await this.taskManager.getAllTasks();
 
     // Reutiliza la misma plantilla para crear y editar; solo cambian los valores prefilled.
     await this.renderModal("create-task-modal", this.buildTemplateData(editingTask));
@@ -128,7 +161,100 @@ export class TaskModal extends Modal {
     Handlebars.registerHelper("t", (key: string) => this.i18n.t(key));
   }
 
+  private getWeekStartDay(): number {
+    return this.taskManager.getPluginSettings()?.weekStartDay ?? 1; // 1=Lun por defecto (ISO)
+  }
+
+  private getLocalizedDayNames(): string[] {
+    const startDay = this.getWeekStartDay();
+    const startIndex = WEEKDAY_KEYS.findIndex(d => d.iso === startDay);
+    const rotated = [...WEEKDAY_KEYS.slice(startIndex), ...WEEKDAY_KEYS.slice(0, startIndex)];
+    return rotated.map(d => this.i18n.t(d.key));
+  }
+
+  /** Mismo criterio que `CalendarView.getTasksForDate()` (respeta los settings de calendario), pero
+   * solo necesita un booleano "¿hay algo ese día?", no resolver la prioridad de fecha ancla. */
+  private hasTasksOnDate(date: DateTime): boolean {
+    const settings = this.taskManager.getPluginSettings();
+    const showDue = settings?.calendarShowDueDates ?? true;
+    const showStart = settings?.calendarShowStartDates ?? false;
+    const showScheduled = settings?.calendarShowScheduledDates ?? true;
+    const showCompleted = settings?.calendarShowCompletedTasks ?? true;
+
+    const matches = (value: DateTime | null) => !!value && value.hasSame(date, "day");
+
+    return this.cachedTasks.some(task => {
+      if (!showCompleted && task.state.status === "x") return false;
+      return (showDue && matches(task.date.due))
+        || (showStart && matches(task.date.start))
+        || (showScheduled && matches(task.date.scheduled));
+    });
+  }
+
+  /** Popover de fecha compartido con las vistas de calendario (v1.1.10, §7.6/§15). Se cierra con
+   * Escape, clic fuera o al elegir un día. */
+  private openDatePickerPopover(anchorButton: HTMLButtonElement, input: HTMLInputElement, label: HTMLSpanElement | null): void {
+    const panel = document.body.createDiv({ cls: "oa-date-picker oa-date-picker--popover" });
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-label", this.i18n.t("select_date"));
+
+    const positionPanel = (): void => {
+      const anchorRect = anchorButton.getBoundingClientRect();
+      const panelRect = panel.getBoundingClientRect();
+      const margin = 8;
+      const left = Math.max(margin, Math.min(anchorRect.left, window.innerWidth - panelRect.width - margin));
+      const top = Math.max(margin, Math.min(anchorRect.bottom + 4, window.innerHeight - panelRect.height - margin));
+      panel.setCssStyles({ left: `${left}px`, top: `${top}px` });
+    };
+
+    const onKeydown = (event: KeyboardEvent): void => {
+      if (event.key === "Escape") { event.preventDefault(); close(); }
+    };
+    const onPointerDown = (event: MouseEvent): void => {
+      if (event.target instanceof Node && (panel.contains(event.target) || anchorButton.contains(event.target))) return;
+      close();
+    };
+    const onResize = (): void => positionPanel();
+
+    const close = (): void => {
+      document.removeEventListener("keydown", onKeydown, true);
+      document.removeEventListener("mousedown", onPointerDown, true);
+      window.removeEventListener("resize", onResize);
+      anchorButton.setAttribute("aria-expanded", "false");
+      panel.remove();
+      this.closeActiveDatePicker = null;
+      anchorButton.focus();
+    };
+    this.closeActiveDatePicker = close;
+
+    const initialDate = input.value ? DateTime.fromISO(input.value) : DateTime.now();
+    const picker = new CalendarDatePicker({
+      i18n: this.i18n,
+      selectedDate: initialDate.isValid ? initialDate : DateTime.now(),
+      getWeekStartDay: () => this.getWeekStartDay(),
+      getLocalizedDayNames: () => this.getLocalizedDayNames(),
+      hasTasks: (date) => this.hasTasksOnDate(date),
+      onSelect: (date) => {
+        const iso = date.toISODate();
+        if (iso) {
+          input.value = iso;
+          if (label) label.textContent = iso;
+        }
+        close();
+      },
+    });
+    picker.mount(panel);
+    positionPanel();
+    picker.focusSelected();
+
+    anchorButton.setAttribute("aria-expanded", "true");
+    document.addEventListener("keydown", onKeydown, true);
+    document.addEventListener("mousedown", onPointerDown, true);
+    window.addEventListener("resize", onResize);
+  }
+
   onClose(): void {
+    this.closeActiveDatePicker?.();
     clearTooltips(this.contentEl);
     this.contentEl.empty();
   }
@@ -259,8 +385,8 @@ export class TaskModal extends Modal {
 
     titleInput?.focus();
 
-    // Campos avanzados: start/scheduled reutilizan flatpickr (mismo patrón que due);
-    // hora/duración reutilizan los modales dedicados de la Fase B (v1.1.4).
+    // Campos avanzados: start/scheduled reutilizan el date picker unificado (mismo patrón que due,
+    // v1.1.10); hora/duración reutilizan los modales dedicados de la Fase B (v1.1.4).
     const startInput = this.contentEl.querySelector<HTMLInputElement>("#oa-task-start");
     const startTrigger = this.contentEl.querySelector<HTMLButtonElement>("#oa-start-trigger");
     const startLabel = this.contentEl.querySelector<HTMLSpanElement>("#oa-start-label");
@@ -281,6 +407,40 @@ export class TaskModal extends Modal {
     const dependsInput = this.contentEl.querySelector<HTMLInputElement>("#oa-task-depends");
     const onCompletionInput = this.contentEl.querySelector<HTMLSelectElement>("#oa-task-oncompletion");
     const idInput = this.contentEl.querySelector<HTMLInputElement>("#oa-task-id");
+
+    // Autocompletado de recurrencia: solo patrones que `convertToRRuleFormat()` reconoce
+    // correctamente (texto literal en inglés, igual que el resto del formato de Tasks).
+    const recurrenceSuggestionsList = this.contentEl.querySelector<HTMLUListElement>("#oa-recurrence-suggestions");
+
+    const hideRecurrenceSuggestions = () => {
+      recurrenceSuggestionsList?.addClass("oa-hidden");
+    };
+
+    const showRecurrenceSuggestions = (query: string) => {
+      if (!recurrenceSuggestionsList) return;
+      recurrenceSuggestionsList.innerHTML = "";
+
+      const matches = query
+        ? RECURRENCE_SUGGESTIONS.filter(s => s.toLowerCase().includes(query.toLowerCase()))
+        : RECURRENCE_SUGGESTIONS;
+
+      if (matches.length === 0) { hideRecurrenceSuggestions(); return; }
+
+      matches.forEach(suggestion => {
+        const li = recurrenceSuggestionsList.createEl("li", { cls: "oa-file-suggestion-item", text: suggestion });
+        li.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          if (recurrenceInput) recurrenceInput.value = suggestion;
+          hideRecurrenceSuggestions();
+        });
+      });
+
+      recurrenceSuggestionsList.removeClass("oa-hidden");
+    };
+
+    recurrenceInput?.addEventListener("input", () => showRecurrenceSuggestions(recurrenceInput.value.trim()));
+    recurrenceInput?.addEventListener("focus", () => showRecurrenceSuggestions(recurrenceInput.value.trim()));
+    recurrenceInput?.addEventListener("blur", () => window.setTimeout(hideRecurrenceSuggestions, 150));
 
     if (onCompletionInput) onCompletionInput.value = onCompletionInput.dataset.value ?? "";
 
@@ -304,21 +464,17 @@ export class TaskModal extends Modal {
       this.app.saveLocalStorage(ADVANCED_MODE_STORAGE_KEY, String(nowExpanded));
     });
 
+    // Selector de fecha unificado (v1.1.10, §7.6/§15): popover de CalendarDatePicker en vez de
+    // flatpickr, mismo componente que ya usan las vistas de calendario. Solo un popover abierto
+    // a la vez entre los 3 campos (cerrar el anterior al abrir otro).
     const setupSimpleDatePicker = (input: HTMLInputElement | null, trigger: HTMLButtonElement | null, label: HTMLSpanElement | null) => {
-      if (!input) return;
-      flatpickr(input, {
-        enableTime: false,
-        dateFormat: "Y-m-d",
-        appendTo: this.contentEl,
-        onClose: (selectedDates) => {
-          if (selectedDates.length > 0 && label) {
-            label.textContent = input.value;
-          }
-        },
-      });
-      trigger?.addEventListener("click", (event) => {
+      if (!input || !trigger) return;
+      trigger.setAttribute("aria-haspopup", "dialog");
+      trigger.setAttribute("aria-expanded", "false");
+      trigger.addEventListener("click", (event) => {
         event.preventDefault();
-        input.click();
+        if (this.closeActiveDatePicker) { this.closeActiveDatePicker(); return; }
+        this.openDatePickerPopover(trigger, input, label);
       });
     };
 
@@ -408,10 +564,15 @@ export class TaskModal extends Modal {
 
         if (editingTask) {
           const line = applyStatus(buildLine(selectedStatus, editingTask.flow.blockLink), editingTask);
+          // Calculado antes de escribir: necesita la recurrencia/fechas tal como estaban al abrir el modal (ADR-R1).
+          const nextOccurrenceLine = buildRecurrenceOccurrence(editingTask, selectedStatus);
           try {
             console.debug(`Actualizando línea ${editingTask.line.number} de ${editingTask.file.path}: ${line}`); // Debugging line
             const ok = await this.taskWriter.updateTaskLine(editingTask.file.path, editingTask.line.number, () => line);
             if (ok) {
+              if (nextOccurrenceLine) {
+                await this.taskWriter.insertLineAbove(editingTask.file.path, editingTask.line.number, nextOccurrenceLine);
+              }
               new Notice(this.i18n.t("task_updated"));
               this.notifySaved();
               this.close();

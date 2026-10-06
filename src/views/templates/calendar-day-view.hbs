@@ -76,8 +76,10 @@
                 <div class="oa-calendar-allday-row">
                   {{#each calendar.allDayScheduled}}
                     <div class="oa-calendar-task oa-calendar-task--scheduled {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
+                        draggable="true"
                         data-file-path="{{file.path}}"
                         data-line-number="{{line.number}}"
+                        data-date-type="scheduled"
                         data-tooltip="{{section.desc}}">
                       <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
                       <span class="oa-task-title">{{section.desc}}</span>

@@ -238,17 +238,17 @@ Filtrar el calendario por estado; estados personalizados/configurables; generaci
 ### Fuera de alcance (fecha de referencia y selector de fecha)
 - Seleccionar con clic en una celda, rangos de fechas, escribir la fecha a mano, navegar la rejilla con flechas del teclado, y corregir que Semana use semana ISO en vez de `weekStartDay`.
 
-## Próxima fase — v1.1.10: selector de fecha unificado en el Task Modal (diseño)
+## Próxima fase — v1.1.10: selector de fecha unificado en el Task Modal (implementado)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §7.6. Mecanismo: [[Arquitectura técnica]] §15. **Nada de esta fase está implementado.** Depende de `CalendarDatePicker` (§9, ya implementado e independiente de las vistas de calendario).
+> Comportamiento y decisiones: [[Especificación de vistas]] §7.6. Mecanismo: [[Arquitectura técnica]] §15. Depende de `CalendarDatePicker` (§9, ya implementado e independiente de las vistas de calendario).
 
 ### Fase Única
-- [ ] `TaskModal.setupSimpleDatePicker()`: reemplazar la llamada a `flatpickr()` por un popover de `CalendarDatePicker`, anclado al botón disparador existente de cada campo (due/start/scheduled).
-- [ ] Exponer `getWeekStartDay()`/`getLocalizedDayNames()`/`hasTasks()` al modal (mismos settings que ya usa `CalendarView`, vía `TaskManager`).
-- [ ] Marcar con punto los días con tareas existentes, igual que en el calendario.
-- [ ] Solo un popover abierto a la vez entre los 3 campos (cerrar el anterior al abrir otro).
-- [ ] Verificable sola: los 3 campos de fecha abren el mismo selector visual que usan las vistas de calendario; hora y duración siguen funcionando sin cambios.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] `TaskModal.setupSimpleDatePicker()`: reemplazar la llamada a `flatpickr()` por un popover de `CalendarDatePicker`, anclado al botón disparador existente de cada campo (due/start/scheduled).
+- [x] Exponer `getWeekStartDay()`/`getLocalizedDayNames()`/`hasTasks()` al modal (nuevo `TaskManager.getPluginSettings()`; `hasTasksOnDate()` usa una caché de tareas poblada una vez al abrir el modal, no una suscripción en vivo).
+- [x] Marcar con punto los días con tareas existentes, igual que en el calendario.
+- [x] Solo un popover abierto a la vez entre los 3 campos (cerrar el anterior al abrir otro).
+- [x] Verificable sola: los 3 campos de fecha abren el mismo selector visual que usan las vistas de calendario; hora y duración siguen funcionando sin cambios.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
 Quitar `flatpickr` como dependencia del proyecto (sigue en uso en la inserción de campos desde el editor, §6); migrar esa otra superficie al mismo componente.
@@ -277,17 +277,17 @@ Quitar `flatpickr` como dependencia del proyecto (sigue en uso en la inserción 
 - [ ] Verificable sola: el Habit Editor se comporta igual que antes; el modal de duración del Task Modal usa el dial en vez del input numérico, con pasos de 5 minutos hasta 1440.
 - [ ] `npm run build` y ESLint sobre los archivos tocados.
 
-## Próxima fase — v1.1.10: compatibilidad con tareas recurrentes (diseño)
+## Próxima fase — v1.1.10: compatibilidad con tareas recurrentes (implementado)
 
-> Comportamiento y decisiones: [[Modelo de datos]] §11. Mecanismo: [[Arquitectura técnica]] §16. **Nada de esta fase está implementado.** Depende del manejo de estatus (fase anterior): se dispara desde el mismo punto donde se marca una tarea como `Done`.
+> Comportamiento y decisiones: [[Modelo de datos]] §11. Mecanismo: [[Arquitectura técnica]] §16. Depende del manejo de estatus (fase anterior, implementada): se dispara desde el mismo punto donde se marca una tarea como `Done`.
 
 ### Fase Única
-- [ ] `getNextOccurrenceDate(recurrenceText, referenceDate)`: despoja `when done`, reutiliza `convertToRRuleFormat()` + `rrulestr().after()`.
-- [ ] `buildNextOccurrenceLine(originalLine, nextDate)`: desplaza todas las fechas presentes manteniendo su distancia relativa; elimina `🆔`/`⛔`.
-- [ ] `TaskWriter`: nuevo método para insertar una línea completa en una posición específica (una línea arriba de la original).
-- [ ] Enganchar en el mismo punto de `upsertTaskStatus()` que agrega `✅` (manejo de estatus, fase previa).
-- [ ] Verificable sola: completar una tarea con `🔁 every week` crea una nueva línea arriba con la fecha avanzada una semana; completar una con `when done` la calcula desde hoy; los `🆔`/`⛔` no aparecen en la nueva línea.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] `getNextOccurrenceDate(recurrenceText, referenceDate)`: despoja `when done`, reutiliza `convertToRRuleFormat()` + `rrulestr().after()`.
+- [x] `buildNextOccurrenceLine(originalLine, nextDate)`: desplaza todas las fechas presentes manteniendo su distancia relativa; elimina `🆔`/`⛔`.
+- [x] `TaskWriter`: nuevo método para insertar una línea completa en una posición específica (una línea arriba de la original).
+- [x] Enganchar en el mismo punto de `upsertTaskStatus()` que agrega `✅` (menú contextual del calendario y guardado del Task Modal).
+- [x] Verificable sola: completar una tarea con `🔁 every week` crea una nueva línea arriba con la fecha avanzada una semana; completar una con `when done` la calcula desde hoy; los `🆔`/`⛔` no aparecen en la nueva línea.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
 Configurar el orden de inserción (arriba/abajo); recurrencia "para X veces" o "hasta una fecha"; generar la ocurrencia al completar desde el checkbox nativo de Obsidian fuera del plugin.

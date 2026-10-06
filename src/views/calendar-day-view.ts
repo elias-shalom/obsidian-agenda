@@ -5,7 +5,7 @@ import { HourSlot, DayViewData, DurationTaskSegment, ITask } from '../types/inte
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import { CalendarViewType } from "../types/enums";
-import { upsertScheduledTime, upsertScheduledDuration } from "../core/task-line-fields";
+import { upsertScheduledTime, upsertScheduledDuration, clearScheduledTime } from "../core/task-line-fields";
 import { CalendarDatePicker } from "../core/calendar-date-picker";
 
 export const CALENDAR_DAY_VIEW_TYPE = "calendar-day-view";
@@ -260,6 +260,36 @@ export class CalendarDayView extends CalendarView {
       if ((e.target as HTMLElement).closest('.oa-calendar-task')) return;
       const dateStr = this.currentDate.toISODate();
       if (dateStr) this.openCreateTaskForDate(dateStr);
+    });
+
+    // Arrastrar una tarea programada de una franja horaria de vuelta a "Todo el día" le quita la
+    // hora/duración (v1.1.10): vuelve a aparecer en la fila de "programada sin hora". El tipo de
+    // payload solo se valida en el `drop`: `dataTransfer.getData()` no devuelve nada durante
+    // `dragover` (solo en `dragstart`/`drop`), así que validar aquí impediría llamar a
+    // `preventDefault()` y el navegador rechazaría el drop antes de disparar el evento.
+    alldayContent?.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      alldayContent.addClass('oa-calendar-drop-target');
+    });
+
+    alldayContent?.addEventListener('dragleave', () => {
+      alldayContent.removeClass('oa-calendar-drop-target');
+    });
+
+    alldayContent?.addEventListener('drop', (e) => {
+      e.preventDefault();
+      alldayContent.removeClass('oa-calendar-drop-target');
+      const payload = this.parseTaskDragPayload(e);
+      if (!payload || payload.calendarDateType !== 'scheduled') return;
+
+      this.taskWriter.updateTaskLine(payload.filePath, payload.lineNumber, (line) => {
+        const result = clearScheduledTime(line);
+        return result.ok ? result.line : line;
+      })
+        .then(ok => {
+          if (ok) this.refreshView().catch(console.error);
+        })
+        .catch(console.error);
     });
 
     // Redimensionar arrastrando el borde inferior del último segmento de una tarea (v1.1.9, Fase C,

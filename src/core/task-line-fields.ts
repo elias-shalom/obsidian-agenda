@@ -95,6 +95,14 @@ export function upsertScheduledDuration(line: string, minutes: number): { line: 
   return { line: replaceScheduledChunk(line, { ...existing, duration: minutes }), ok: true };
 }
 
+/** Quita la hora (🕐) y duración (⏱️) de `scheduled`, dejando solo la fecha — la tarea vuelve a la
+ * fila "Todo el día" sin hora (v1.1.10: arrastrar de una franja horaria de vuelta a "Todo el día"). */
+export function clearScheduledTime(line: string): { line: string; ok: boolean } {
+  const existing = parseScheduledChunk(line);
+  if (!existing) return { line, ok: false };
+  return { line: replaceScheduledChunk(line, { date: existing.date, time: null, duration: null }), ok: true };
+}
+
 /** Inserta o reemplaza el emoji de prioridad de la tarea. */
 export function upsertPriority(line: string, emoji: PriorityEmoji): string {
   const withoutField = removeChunk(line, PRIORITY_CHUNK_REGEX);

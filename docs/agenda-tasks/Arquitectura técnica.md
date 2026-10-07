@@ -338,7 +338,7 @@ Listener `pointerdown`/`pointermove`/`pointerup` en la manija del segmento final
 - **Recalcular conglomerados en cada refresco**: el cálculo de carriles depende de qué tareas existen ese día; debe rehacerse en cada `refreshCalendar()`, igual que el resto de `generateViewData()`.
 - **Arrastre de la tarea completa a otro día**: el drag and drop existente (v1.1.4, Fase D) sigue tomando la píldora como un solo origen de arrastre; con múltiples segmentos DOM por tarea, el `dragstart` debe quedar en el segmento `--run-start` (o en la celda única si es de menos de una hora), no duplicado en cada segmento.
 
-## 11. Doble clic para crear tarea en la vista Día (v1.1.9, diseño — no implementado)
+## 11. Doble clic para crear tarea en la vista Día (v1.1.9, implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.4.1.
 
@@ -391,7 +391,7 @@ Las 5 plantillas de calendario (pronto 6, con Lista) reemplazan su `<select id="
 - **Ambigüedad Semana vs. Semana laboral solo con ícono**: mitigado por el tooltip obligatorio (§4.8.1, decisión 1). Set final: Año `calendar-range`, Mes `calendar-days`, Semana `columns-3`, Semana laboral `briefcase`, Día `calendar-clock`.
 - **Compacidad en paneles estrechos**: 5 botones pegados (6 con Lista en v1.1.10) deben seguir cabiendo en el encabezado del calendario junto al resto de controles (fecha de referencia, selector de fecha, navegación); se verifica en el mismo caso límite de panel estrecho ya anotado en §4.6.9.
 
-## 13. Vista Día: modo de varios días 1/3/5 (v1.1.10, diseño — no implementado)
+## 13. Vista Día: modo de varios días 1/3/5 (v1.1.10, implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.4.3. Pospuesto de v1.1.9 a v1.1.10.
 
@@ -420,7 +420,7 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.4.3. P
 | Plantilla | `src/views/templates/calendar-day-view.hbs` |
 | Estilos | `src/styles/views/_calendar-day.scss` (fila de N columnas por hora) |
 
-## 14. Manejo de estatus desde el calendario (v1.1.10, diseño — no implementado)
+## 14. Manejo de estatus desde el calendario (v1.1.10, implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.9 y §7.5. Símbolos/ADRs: [[Modelo de datos]] §10.
 
@@ -466,7 +466,7 @@ Las plantillas de calendario (Mes/Semana/Semana laboral/Día) agregan el ícono 
 | Fix | `src/core/task-filter.ts` (`isTaskCompleted`) |
 | i18n | nombres de los 6 estados en los seis locales (algunos ya existen para los filtros de Tabla: `status_todo`, `status_in_progress`, `status_done`, `status_cancelled`, `status_non_task`; falta `status_on_hold`) |
 
-## 15. Selector de fecha unificado en el Task Modal (v1.1.10, diseño — no implementado)
+## 15. Selector de fecha unificado en el Task Modal (v1.1.10, implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §7.6.
 
@@ -494,7 +494,7 @@ Solo los 3 campos de fecha simple (due/start/scheduled). Los modales de hora (`T
 
 Quitar `flatpickr` como dependencia del proyecto (todavía se usa en §6); eso solo sería viable si esa superficie también migra a un componente propio, lo cual no está planeado en esta fase.
 
-## 16. Recurrencia: nueva ocurrencia al completar (v1.1.10, diseño — no implementado)
+## 16. Recurrencia: nueva ocurrencia al completar (v1.1.10, implementado)
 
 Comportamiento de usuario y decisiones: [[Modelo de datos]] §11.
 
@@ -567,7 +567,13 @@ Nuevo `CalendarListView extends CalendarView` + `CALENDAR_LIST_VIEW_TYPE`, regis
 | Registro | `src/core/view-manager.ts`, `src/views/index.ts` |
 | Selector segmentado | las 6 plantillas de calendario (7º botón) |
 
-## 18. Modal de duración con dial circular (v1.1.10, diseño — no implementado)
+### 17.6 Ajustes posteriores
+
+- Ícono del botón: `list-todo` en `CALENDAR_VIEW_BUTTON_ICONS` (`src/views/calendar-view.ts`); orden final del selector: Año/Mes/Semana/Semana laboral/Lista/Día (Lista antes que Día, no al final).
+- Botón `.oa-calendar-date-picker-trigger` (popover de fecha) agregado también a `calendar-list-view.hbs` y `calendar-day-view.hbs` — ambos reutilizan el wiring genérico ya existente en `CalendarView.setupViewSpecificEventListeners()`, sin código nuevo.
+- `CalendarListView` mantiene un `windowStart` propio, separado de `currentDate` (fecha seleccionada/resaltada): `generateViewData()` solo recentra la ventana si `currentDate` cae fuera de ella; un clic en una fila (que solo cambia `currentDate`) resalta el día sin mover la ventana, igual que Mes/Semana. `navigateToPrevious()/navigateToNext()` mueven `windowStart` explícitamente.
+
+## 18. Modal de duración con dial circular (v1.1.10, implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §7.7.
 

@@ -2,11 +2,11 @@
 
 > A comprehensive task management and calendar plugin for Obsidian
 
-[![Release](https://img.shields.io/badge/version-1.1.9-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
+[![Release](https://img.shields.io/badge/version-1.1.10-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Obsidian](https://img.shields.io/badge/Obsidian-0.13.0+-purple.svg)](https://obsidian.md)
 
-> 🆕 **What's New in v1.1.9** — Duration-aware task blocks with drag-to-resize and overlap lanes in the Day view, a shared reference date with a new date picker, and a compact icon-button view switcher. [See details](#news) · [Full changelog](#changelog).
+> 🆕 **What's New in v1.1.10** — A new List view inside the calendar, multi-day (1/3/5) mode for the Day view, task status management from the calendar, recurring tasks, a unified date picker in the Task Modal, and a circular dial for the duration modal. [See details](#news) · [Full changelog](#changelog).
 
 ## Overview
 
@@ -40,7 +40,17 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 
 ## 🆕 News
 
-### v1.1.9 (latest)
+### v1.1.10 (latest)
+- New **List view** inside the calendar: one row per day in a continuous, configurable 7–14 day window (default 14, Settings ▸ Calendar), reusing the same task pills as Month/Week — no "N more" collapsing
+- **Day view** now supports a 1/3/5-day mode, with the reference day centered and its own hour grid, duration blocks and lanes per column; dragging a task to another column reschedules it to that day
+- **Task status management from the calendar**: a new "On Hold" status, a status icon on every calendar task pill, and a right-click context menu (or a Task Modal field) to change a task's status — marking "Done" adds the completion date, same as the native checkbox
+- **Recurring tasks (🔁)**: completing a recurring task now inserts its next occurrence right above, computed with the `rrule` library and respecting `when done`
+- **Unified date picker** in the Task Modal: the due/start/scheduled fields now open the same calendar popover used across calendar views, with a dot marking days that already have tasks
+- **Duration modal** now uses a circular time dial (shared with the Habit Editor) instead of a plain number input, up to 7 hours in 5-minute steps
+- Recurrence field in the Task Modal now offers autocomplete with recognized patterns (including `when done` variants)
+- Fixed: `task-filter.ts` compared a task's status symbol against status text, so completed/cancelled tasks were never excluded as expected
+
+### v1.1.9
 - Day view now renders tasks with their real duration: connected blocks for 60+ minute tasks, half-cell blocks for shorter ones, and side-by-side lanes so overlapping tasks never cover each other
 - Resize a task's duration directly from the Day view by dragging its bottom edge, snapping to 30-minute steps
 - Dragging a task to a new time slot in the Day view now snaps to the exact half-hour under the pointer
@@ -116,7 +126,9 @@ See the [full changelog](#changelog) below for older versions.
 - Conditional formatting
 
 #### Calendar View
-- Multiple calendar layouts (day, week, work week, month, and year)
+- Multiple calendar layouts (day, week, work week, month, year, and list)
+- Day view supports a 1/3/5-day mode with the reference day centered
+- List view shows a continuous, configurable 7–14 day window, one row per day
 - Task visualization on calendar grid
 - Mini-calendar for quick date navigation
 - Task indicators showing busy days
@@ -211,24 +223,27 @@ For comprehensive guides, visit the [Wiki](https://github.com/elias-shalom/obsid
 
 A quick reference of clicks, double-clicks and drags across the plugin — handy while you're getting familiar with it.
 
-### 📅 Calendar Views (Day / Week / Work Week / Month / Year)
+### 📅 Calendar Views (Day / Week / Work Week / Month / Year / List)
 
 | Gesture | Where | Result |
 |---|---|---|
 | Click | A task pill | Opens the **Edit Task** modal, prefilled with that task's data |
 | Double-click | A task pill | Opens the underlying note, cursor on that line |
-| Click | A view-type icon button (header) | Switches to that calendar view (Day/Week/Work Week/Month/Year), keeping the current reference date |
-| Click | A day cell (Month/Week/Work Week/Year) | Selects and highlights that date as the shared reference date |
-| Click | A day number (Month/Week/Work Week/Year) | Jumps to the **Day view** for that date |
-| Double-click | Empty space in a day cell | Opens **Create Task** prefilled with that date |
-| Click | The date picker trigger (header, Month/Week/Work Week/Year) | Opens a popover to jump to any day, month or year |
+| Right-click | A task pill | Opens a context menu to change the task's status |
+| Click | A view-type icon button (header) | Switches to that calendar view (Day/Week/Work Week/Month/Year/List), keeping the current reference date |
+| Click | A day cell/row (Month/Week/Work Week/Year/List) | Selects and highlights that date as the shared reference date |
+| Click | A day number (Month/Week/Work Week/Year/List) | Jumps to the **Day view** for that date |
+| Double-click | Empty space in a day cell/row | Opens **Create Task** prefilled with that date |
+| Click | The date picker trigger (header, Month/Week/Work Week/Year/Day/List) | Opens a popover to jump to any day, month or year |
 | Click | A date in the date picker (popover or Day view sidebar) | Jumps to that date, updating the shared reference date |
-| Drag | A task pill to another day (Month/Week/Work Week) | Reschedules the task to that day (moves whichever date anchors it: `scheduled` > `due` > `start`) |
+| Click | The 1/3/5 day-count buttons (Day view) | Shows that many day columns at once, centered on the reference day |
+| Drag | A task pill to another day/column (Month/Week/Work Week/Day 3-5 mode) | Reschedules the task to that day (moves whichever date anchors it: `scheduled` > `due` > `start`) |
 | Drag | A task pill to another hour slot (Day view) | Changes the task's scheduled time, snapping to the exact half-hour (`:00`/`:30`) under the pointer |
 | Drag | The bottom edge of a task block (Day view) | Resizes the task's duration in 30-minute steps (30-minute minimum) |
 | Double-click | Empty space in an hour slot or the "All day" section (Day view) | Opens **Create Task** prefilled with that date/time |
 | Click | The "All day" section header (Day view) | Expands/collapses the due/start section |
 | Click | The sidebar collapse handle (Day view) | Collapses/expands the mini-calendar sidebar |
+| Click | ◀ / ▶ (List view) | Moves the whole displayed window by its configured number of days |
 
 ### 📋 List, Table & Overview
 
@@ -301,6 +316,7 @@ The plugin recognizes and properly handles all standard Obsidian Tasks metadata,
 ### Calendar Settings (new in 1.1.4)
 - **Show Due/Start/Scheduled Dates** - Independently choose which date types appear on calendar views, each with its own icon + color badge
 - **Show Completed Tasks** - Keep completed tasks dimmed on the calendar, or hide them entirely
+- **List View: Days to Show** (new in 1.1.10) - Number of days shown in the calendar's List view window (7–14, default 14)
 
 ### Filtering & Sorting
 - **Date Filters** - Filter by today, overdue, upcoming, or custom ranges
@@ -327,6 +343,20 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 ---
 
 ## 📋 Changelog
+
+### Version 1.1.10 📋
+- **Calendar List view**: one row per day in a continuous window, with a new **Settings ▸ Calendar ▸ List view: days to show** slider (7–14, default 14); rows reuse the same task-pill rendering as Month/Week, no "N more" collapsing
+- List view gestures match the rest of the calendar: click a pill to edit, double-click to open the note, right-click for the status menu, click a row to select/highlight that day without moving the displayed window, double-click empty row space to create a task
+- View-type selector gained a 7th icon button (`list-todo`) for the List view, placed before the Day view button; a date-picker popover button was also added to the Day and List views
+- **Day view multi-day mode (1/3/5)**: shows 1, 3 or 5 day columns at once with the reference day centered, sharing the hour grid, duration blocks and overlap lanes per column; dragging a task across columns now also reschedules its date, not just its time
+- **Task status management from the calendar**: new "On Hold" status, a status icon on every calendar task pill, and a right-click context menu (plus a Task Modal field) to change status; marking "Done" adds the completion date and removing it clears the date, mirroring the native checkbox
+- Fixed: `task-filter.ts` compared a task's status symbol against status text instead of the status name, so completed/cancelled tasks were never excluded from filters that relied on it
+- **Recurring tasks (🔁)**: completing a recurring task inserts a new line above with its next occurrence, computed via the `rrule` library with support for the `when done` suffix; `🆔`/`⛔` are dropped from the new occurrence
+- **Unified date picker**: the due/start/scheduled fields in the Task Modal now open the same calendar date-picker popover used across calendar views, including the dot marker for days with existing tasks
+- Recurrence field (🔁) in the Task Modal now offers autocomplete with recognized recurrence patterns, including `when done` variants
+- **Duration modal** rebuilt around a circular time dial (extracted from the Habit Editor into a shared `TimeDial` component), supporting up to 7 hours in 5-minute steps
+- Fixed: Day view "All day" tasks without a scheduled time can now be dragged onto an hour slot to assign a time, and a timed task dragged back to "All day" has its time/duration cleared; fixed the related `dragover` handler that silently blocked the drop
+- Fixed: "All day" tasks in the Day view were missing the pill styling (background, accent border, shadow) used everywhere else in the calendar
 
 ### Version 1.1.9 📆
 - **Duration-aware Day view**: scheduled tasks render as half-hour-aligned blocks — connected across hours for 60+ minute tasks, half-cell for shorter ones — with overlapping tasks placed in side-by-side lanes instead of covering each other

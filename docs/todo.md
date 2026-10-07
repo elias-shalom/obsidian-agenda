@@ -231,7 +231,7 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
   - [x] **fix**: la vista Semana laboral tenía un listener de clic propio (`setupTaskInteractionListeners`, código legado) que abría el archivo directamente en vez de editar; eliminado para usar el mismo clic=editar/doble clic=abrir archivo que el resto de las vistas de calendario
   - [x] **fix**: el clic en la manija de redimensionar un bloque con duración disparaba también el clic de la píldora contenedora (abría el modal de edición al soltar); se detiene con `stopPropagation()` en un listener de `click` dedicado en la manija
 
-## 🔮 v1.1.10 (ideas, discusión pendiente)
+## 🎯 Características (v1.1.10)
 
 - [x] **fix**: campo de recurrencia (🔁) del Task Modal sin ayuda alguna para escribir el texto — se agregó autocompletado con una lista curada de patrones que `TaskSection.convertToRRuleFormat()` reconoce correctamente (incluye variantes `when done`), mismo componente visual que las sugerencias de archivo (`.oa-file-suggestions`/`.oa-file-suggestion-item`)
 - [x] **fix**: en la vista Día, las tareas "programadas sin hora" de la sección "Todo el día" ahora son arrastrables a una franja horaria (les asigna esa hora, igual que ya pasaba al arrastrar entre franjas); arrastrar una tarea con hora de vuelta a "Todo el día" le quita la hora y la duración (`clearScheduledTime()`, nuevo en `task-line-fields.ts`). Las tareas de 📅 vencimiento/🛫 inicio no son arrastrables a una franja porque nunca pueden llevar hora (ADR-T1/T2). **fix relacionado**: el `dragover` de la zona "Todo el día" intentaba leer el payload con `dataTransfer.getData()`, que siempre vuelve vacío durante `dragover` (solo funciona en `dragstart`/`drop`) — nunca llamaba a `preventDefault()` y el navegador bloqueaba el drop; corregido para que `dragover` solo resalte la zona sin leer el payload, validando el tipo de tarea únicamente en el `drop`
@@ -256,7 +256,10 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
   - [x] Cantidad de días configurable (setting `calendarListDaysToShow`, slider 7–14, por defecto 14, en Settings ▸ Calendario) — revisado de "fijo en 14" a configurable
   - [x] Ventana continua de N días desde la fecha de referencia (sin alinear a inicio de semana); ◀▶ mueve la ventana completa (`CalendarListView.navigateToPrevious()/navigateToNext()`)
   - [x] Una fila por día (`.oa-calendar-list-row`), reutilizando el mismo render de tarea (`.oa-calendar-task`) que Mes/Semana, sin mecanismo de "N more"
-  - [x] 7º botón en el selector segmentado de vistas (los 6 templates existentes + el nuevo `calendar-list-view.hbs`)
+  - [x] 7º botón en el selector segmentado de vistas (los 6 templates existentes + el nuevo `calendar-list-view.hbs`), con ícono `list-todo` y ubicado a la izquierda del botón de Día
+  - [x] Botón de selector de fecha (popover) agregado también a la vista de Lista y a la vista Día, igual que Mes/Semana/Semana laboral/Año
+  - [x] Filas al doble de alto (para que quepan 2 píldoras apiladas) y el contenedor ajusta su altura a la cantidad de días mostrados, sin dejar margen inferior vacío
+  - [x] **fix**: un clic en una fila ya no recentraba la ventana completa en ese día — se separó el inicio de la ventana (`windowStart`) de la fecha seleccionada/resaltada (`currentDate`), igual que el comportamiento de Mes/Semana
 - [x] **Modal de duración con dial circular** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §7.7 y `Arquitectura técnica.md` §18; fases en `Plan de implementación.md`)
   - [x] Extraer el dial circular del Habit Editor a un componente compartido (`src/core/time-dial.ts`), parametrizado por máximo y paso
   - [x] El modal de duración lo reutiliza: máximo 420 minutos (7 horas), pasos de 5 minutos

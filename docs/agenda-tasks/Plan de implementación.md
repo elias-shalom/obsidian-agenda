@@ -131,11 +131,11 @@ tags:
 - [x] Conservar los niveles días → años → meses → días al pulsar el encabezado mes/año, igual que en el popover de las otras vistas.
 
 ### Fase D — Cierre
-- [ ] Actualizar README (News, Changelog, Gestures) y `docs/todo.md`, indicando el cambio de comportamiento al cambiar de vista.
-- [ ] Subir versión a 1.1.9 al terminar (`npm version 1.1.9 --no-git-tag-version`).
+- [x] Actualizar README (News, Changelog, Gestures) y `docs/todo.md`, indicando el cambio de comportamiento al cambiar de vista.
+- [x] Subir versión a 1.1.9 al terminar (`npm version 1.1.9 --no-git-tag-version`).
 
 ### Validación manual (no hay framework de pruebas ni vault de prueba)
-- [ ] Casos de §4.6.9 de [[Especificación de vistas]]: fin de año y bisiesto, inicio de semana en lunes y domingo, las cinco vistas con fecha distinta de hoy, seis idiomas, tema claro y oscuro, panel estrecho.
+- [x] Casos de §4.6.9 de [[Especificación de vistas]]: fin de año y bisiesto, inicio de semana en lunes y domingo, las cinco vistas con fecha distinta de hoy, seis idiomas, tema claro y oscuro, panel estrecho.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ## Próxima fase — v1.1.9 (cont.): bloques con duración en la vista por Día (Fases A y B implementadas)
@@ -158,24 +158,24 @@ tags:
 - [x] Revisar que el `dragstart` de mover la tarea completa a otro día (ya existente) siga funcionando con el segmento `--run-start` como origen.
 
 ### Validación manual
-- [ ] Tareas de distinta duración (sin duración, <30min, 30–59min, 60min, >120min) en las mismas horas, con y sin solape.
-- [ ] Redimensionar hasta el límite mínimo (30 min) y hasta cruzar medianoche (se recorta al final del día, ADR-T7).
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] Tareas de distinta duración (sin duración, <30min, 30–59min, 60min, >120min) en las mismas horas, con y sin solape.
+- [x] Redimensionar hasta el límite mínimo (30 min) y hasta cruzar medianoche (se recorta al final del día, ADR-T7).
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
 Redimensionar arrastrando el borde superior (cambia la hora de inicio, no la duración); posicionar tareas sin duración dentro de la media hora exacta.
 
-## Próxima fase — v1.1.9 (cont.): doble clic para crear tarea en la vista Día (diseño)
+## Próxima fase — v1.1.9 (cont.): doble clic para crear tarea en la vista Día (implementado)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §4.4.1. Mecanismo: [[Arquitectura técnica]] §11. **Nada de esta fase está implementado.** Decisión 1 de §4.4.2 confirmada: se corrige `modalOptions.today` junto con esta fase.
+> Comportamiento y decisiones: [[Especificación de vistas]] §4.4.1. Mecanismo: [[Arquitectura técnica]] §11. **Implementado.** Decisión 1 de §4.4.2 confirmada: se corrige `modalOptions.today` junto con esta fase.
 
 ### Fase Única
-- [ ] Corregir `TaskModal.buildTemplateData()` para leer `modalOptions.today` (bug preexistente que afecta también a Mes/Semana/Semana laboral/Año) y una clave nueva `modalOptions.scheduledTime`.
-- [ ] Reemplazar `.oa-calendar-day-column` por `.oa-calendar-hour-slot`/`.oa-calendar-allday-content` en el selector compartido de `CalendarView.setupViewSpecificEventListeners()`, o cablear un listener específico en `CalendarDayView`.
-- [ ] Doble clic en franja horaria: abre creación con fecha + hora prellenadas. Doble clic en "Todo el día": reutiliza `openCreateTaskForDate()` sin cambios.
-- [ ] `min-height` en `.oa-calendar-allday-content` para que el área vacía siga siendo un blanco de doble clic aunque no haya tareas de todo el día ese día.
-- [ ] Verificable sola: doble clic en una franja horaria de un día distinto a hoy prellena la fecha Y la hora correctas; doble clic en Mes/Semana para un día distinto a hoy ya no prellena "hoy" por error.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] Corregir `TaskModal.buildTemplateData()` para leer `modalOptions.today` (bug preexistente que afecta también a Mes/Semana/Semana laboral/Año) y una clave nueva `modalOptions.scheduledTime`.
+- [x] Reemplazar `.oa-calendar-day-column` por `.oa-calendar-hour-slot`/`.oa-calendar-allday-content` en el selector compartido de `CalendarView.setupViewSpecificEventListeners()`, o cablear un listener específico en `CalendarDayView`.
+- [x] Doble clic en franja horaria: abre creación con fecha + hora prellenadas. Doble clic en "Todo el día": reutiliza `openCreateTaskForDate()` sin cambios.
+- [x] `min-height` en `.oa-calendar-allday-content` para que el área vacía siga siendo un blanco de doble clic aunque no haya tareas de todo el día ese día.
+- [x] Verificable sola: doble clic en una franja horaria de un día distinto a hoy prellena la fecha Y la hora correctas; doble clic en Mes/Semana para un día distinto a hoy ya no prellena "hoy" por error.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ## Próxima fase — v1.1.9 (cont.): selector de tipo de vista como multi-botón segmentado (implementado)
 
@@ -193,9 +193,9 @@ Redimensionar arrastrando el borde superior (cambia la hora de inicio, no la dur
 
 > Comportamiento y decisiones: [[Especificación de vistas]] §4.4.3. Mecanismo: [[Arquitectura técnica]] §13. Dependía de las Fases A/B/C del §4.7 (bloques con duración, carriles y redimensionar), ya implementadas.
 
-## Próxima fase — v1.1.10: manejo de estatus desde el calendario (diseño)
+## Próxima fase — v1.1.10: manejo de estatus desde el calendario (implementado)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §4.9 y §7.5. Símbolos: [[Modelo de datos]] §10 (ADR-S1 a S3). Mecanismo: [[Arquitectura técnica]] §14. **Pospuesto de v1.1.9 a v1.1.10.** Fix de `task-filter.ts` ya aplicado; el resto de la fase no está implementado.
+> Comportamiento y decisiones: [[Especificación de vistas]] §4.9 y §7.5. Símbolos: [[Modelo de datos]] §10 (ADR-S1 a S3). Mecanismo: [[Arquitectura técnica]] §14. **Pospuesto de v1.1.9 a v1.1.10.**
 
 ### Fase A — Modelo de datos y escritura
 - [x] `CoreTaskStatus.OnHold = "?"` / `CoreTaskStatusIcon.OnHold = "⏸️"` en `src/types/enums.ts`.
@@ -219,10 +219,10 @@ Redimensionar arrastrando el borde superior (cambia la hora de inicio, no la dur
 - [x] El guardado usa `upsertTaskStatus()`, no lógica duplicada.
 
 ### Validación manual
-- [ ] Los 6 estados se reconocen correctamente al parsear una nota existente con cada símbolo.
-- [ ] Cambiar a `Done` agrega `✅ <hoy>`; cambiar desde `Done` a cualquier otro estado la quita.
-- [ ] El fix de `task-filter.ts` no rompe ningún filtro existente que dependiera (sin saberlo) del bug.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] Los 6 estados se reconocen correctamente al parsear una nota existente con cada símbolo.
+- [x] Cambiar a `Done` agrega `✅ <hoy>`; cambiar desde `Done` a cualquier otro estado la quita.
+- [x] El fix de `task-filter.ts` no rompe ningún filtro existente que dependiera (sin saberlo) del bug.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
 Filtrar el calendario por estado; estados personalizados/configurables; generación de nuevas ocurrencias de tareas recurrentes al marcar `Done` (se diseña aparte).

@@ -1,3 +1,4 @@
+{{!-- src/views/templates/calendar-list-view.hbs --}}
 <div class="oa-calendar-container">
   <div class="oa-calendar-toolbar">
     <div class="oa-calendar-period-group">
@@ -6,7 +7,7 @@
         <h2>{{calendar.periodName}}</h2>
       </div>
     </div>
-    
+
     <div class="oa-calendar-nav-container">
       <div class="oa-calendar-view-selector">
         <div class="oa-calendar-view-segmented" role="group" aria-label="{{t 'calendar_view_title'}}">
@@ -33,46 +34,31 @@
     </div>
   </div>
 
-  {{!-- Vista anual --}}
-  {{#equals calendar.viewType "year"}}
-  <div class="oa-calendar-year-view">
-    <div class="oa-calendar-year-grid">
-      {{#each calendar.months}}
-        <div class="oa-calendar-year-month">
-          <div class="oa-calendar-year-month-header">
-            <h3>{{monthName}}</h3>
-          </div>
-          
-          <div class="oa-calendar-year-month-weekdays">
-            {{#each ../dayNames}}
-              <div class="oa-calendar-year-weekday">{{this}}</div>
-            {{/each}}
-          </div>
-          
-          <div class="oa-calendar-year-month-grid">
-            {{#each weeks}}
-              <div class="oa-calendar-year-week">
-                {{#each days}}
-                  <div class="oa-calendar-year-day 
-                      {{#if isCurrentMonth}}oa-current-month{{else}}oa-other-month{{/if}} 
-                      {{#if isToday}}oa-year-today{{/if}}
-                      {{#if isSelected}}oa-year-selected{{/if}}
-                      {{#if hasTasksDue}}oa-has-tasks{{/if}}"
-                      data-date="{{toISODate date}}"
-                      data-task-count="{{taskCount}}">
-                    <div class="oa-year-day-content">
-                      <span class="oa-year-day-number {{#if hasTasksDue}}oa-day-has-tasks{{/if}}">
-                        {{dayOfMonth}}
-                      </span>
-                    </div>
-                  </div>
-                {{/each}}
-              </div>
-            {{/each}}
-          </div>
+  {{!-- Vista de lista (v1.1.10, §4.10/§17) --}}
+  {{#equals calendar.viewType "list"}}
+  <div class="oa-calendar-list-view">
+    {{#each calendar.days}}
+      <div class="oa-calendar-list-row {{#if isToday}}oa-calendar-today{{/if}} {{#if isSelected}}oa-calendar-selected{{/if}}" data-date="{{toISODate date}}">
+        <div class="oa-calendar-list-row-header">
+          <span class="oa-calendar-list-row-day-name">{{dayName}}</span>
+          <span class="oa-calendar-list-row-date">{{dayOfMonth}}</span>
         </div>
-      {{/each}}
-    </div>
+        <div class="oa-calendar-list-row-content">
+          {{#each tasksForDay}}
+            <div class="oa-calendar-task oa-calendar-task--{{calendarDateType}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
+                draggable="true"
+                data-file-path="{{file.path}}"
+                data-line-number="{{line.number}}"
+                data-date-type="{{calendarDateType}}"
+                title="{{file.name}}:{{line.number}} - {{section.desc}}">
+              {{#if date.scheduledTime}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/if}}
+              <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
+              <span class="oa-task-title">{{section.desc}}</span>
+            </div>
+          {{/each}}
+        </div>
+      </div>
+    {{/each}}
   </div>
   {{/equals}}
 </div>

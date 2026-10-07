@@ -20,6 +20,7 @@
         <option value="Done">{{t 'status_done'}}</option>
         <option value="Cancelled">{{t 'status_cancelled'}}</option>
         <option value="nonTask">{{t 'status_non_task'}}</option>
+        <option value="OnHold">{{t 'status_on_hold'}}</option>
       </select>
 
       <select id="oa-table-folder-filter" class="oa-table-filter-dropdown">
@@ -96,7 +97,7 @@
           </td>
           <td class="oa-table-col-status">
             <div class="oa-task-status-icon" title="{{t state.text}}" data-task-id="{{id}}">
-              <span class="oa-status-icon" data-status="{{state.text}}">{{state.icon}}</span>
+              <span class="oa-status-icon" data-status="{{state.text}}">{{state.emoji}}</span>
             </div>
           </td>
           <td class="oa-table-col-task">

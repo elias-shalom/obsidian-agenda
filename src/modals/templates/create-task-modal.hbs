@@ -46,6 +46,18 @@
       </div>
     </div>
 
+    <!-- Campo de Estado (v1.1.10, Manejo de estatus): mismo patrón visual que Prioridad -->
+    <div class="oa-form-group">
+      <div id="oa-status-group" class="oa-priority-segmented" role="radiogroup" aria-label="{{t "task_status"}}" data-selected="{{statusValue}}">
+        <button type="button" class="oa-priority-pill" data-status=" " title="{{t "status_todo"}}">⭕</button>
+        <button type="button" class="oa-priority-pill" data-status="/" title="{{t "status_in_progress"}}">🛠️</button>
+        <button type="button" class="oa-priority-pill" data-status="?" title="{{t "status_on_hold"}}">⏸️</button>
+        <button type="button" class="oa-priority-pill" data-status="x" title="{{t "status_done"}}">✅</button>
+        <button type="button" class="oa-priority-pill" data-status="-" title="{{t "status_cancelled"}}">❌</button>
+        <button type="button" class="oa-priority-pill" data-status="~" title="{{t "status_non_task"}}">🗑️</button>
+      </div>
+    </div>
+
     <!-- Campo de Fecha programada + hora + duración, todo en el mismo renglón (v1.1.4: scheduled es el campo de fecha por defecto, en lugar de due) -->
     <div class="oa-form-group oa-date-picker-group">
       <button 
@@ -59,8 +71,7 @@
       <span id="oa-scheduled-label" class="oa-date-label">{{scheduledLabelValue}}</span>
       <input 
         id="oa-task-scheduled" 
-        type="date" 
-        class="oa-form-input oa-date-input-hidden"
+        type="hidden" 
         value="{{scheduledDateValue}}" 
       />
 
@@ -84,20 +95,21 @@
       <div class="oa-form-group oa-date-picker-group">
         <button type="button" id="oa-date-trigger" class="oa-date-trigger" title="{{t "due_date"}}">📅</button>
         <span id="oa-date-label" class="oa-date-label">{{dueLabelValue}}</span>
-        <input id="oa-task-due" type="date" class="oa-form-input oa-date-input-hidden" value="{{dueDateValue}}" />
+        <input id="oa-task-due" type="hidden" value="{{dueDateValue}}" />
       </div>
 
       <!-- Fecha de inicio -->
       <div class="oa-form-group oa-date-picker-group">
         <button type="button" id="oa-start-trigger" class="oa-date-trigger" title="{{t "start_date"}}">🛫</button>
         <span id="oa-start-label" class="oa-date-label">{{startLabelValue}}</span>
-        <input id="oa-task-start" type="date" class="oa-form-input oa-date-input-hidden" value="{{startDateValue}}" />
+        <input id="oa-task-start" type="hidden" value="{{startDateValue}}" />
       </div>
 
       <!-- Recurrencia -->
-      <div class="oa-form-group">
+      <div class="oa-form-group oa-recurrence-group">
         <label class="oa-form-label" for="oa-task-recurrence">{{t "task_recurrence"}}</label>
-        <input id="oa-task-recurrence" type="text" class="oa-form-input" value="{{recurrenceValue}}" placeholder="{{t "task_recurrence_placeholder"}}" />
+        <input id="oa-task-recurrence" type="text" class="oa-form-input" value="{{recurrenceValue}}" placeholder="{{t "task_recurrence_placeholder"}}" autocomplete="off" />
+        <ul id="oa-recurrence-suggestions" class="oa-file-suggestions oa-hidden"></ul>
       </div>
 
       <!-- Dependencias + Id personalizado, en el mismo renglón -->

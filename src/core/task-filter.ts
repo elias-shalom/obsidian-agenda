@@ -42,7 +42,7 @@ export class TaskFilter {
 
     // Filtrar por estado completado/no completado
     if (criteria.isCompleted !== undefined) {
-      const isTaskCompleted = task.state.status === 'DONE' || task.state.status === 'CANCELLED';
+      const isTaskCompleted = task.state.text === 'Done' || task.state.text === 'Cancelled';
       if (isTaskCompleted !== criteria.isCompleted) {
         return false;
       }

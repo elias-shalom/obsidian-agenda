@@ -21,23 +21,7 @@
         <div
           class="oa-time-dial"
           id="oa-habit-time-dial"
-          tabindex="0"
-          role="slider"
-          aria-label="{{t 'habit_field_time'}}"
-          aria-valuemin="0"
-          aria-valuemax="{{timeDialMax}}"
-          aria-valuenow="{{time}}"
-        >
-          <svg viewBox="0 0 120 120" class="oa-time-dial-svg">
-            <circle class="oa-time-dial-track" cx="60" cy="60" r="52"></circle>
-            <circle class="oa-time-dial-progress" id="oa-habit-time-dial-arc" cx="60" cy="60" r="52"></circle>
-          </svg>
-          <div class="oa-time-dial-thumb" id="oa-habit-time-dial-thumb"></div>
-          <div class="oa-time-dial-center">
-            <span id="oa-habit-time-dial-value" class="oa-time-dial-value">{{time}}</span>
-            <span class="oa-time-dial-unit">{{t "habit_time_unit_minutes"}}</span>
-          </div>
-        </div>
+        ></div>
         <input type="hidden" id="oa-habit-time" value="{{time}}" />
       </div>
 

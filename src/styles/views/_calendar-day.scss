@@ -41,6 +41,22 @@
     background-color: color-mix(in srgb, $today-border-color, 0.1);
     border: 1px solid var(--interactive-accent);
   }
+
+  // Fecha de referencia compartida (v1.1.10, modo de varios días): independiente de "hoy", ambos
+  // se aplican si coinciden, igual que en Mes/Semana/Semana laboral.
+  &.oa-calendar-selected {
+    background-color: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+
+    .oa-calendar-date {
+      color: var(--interactive-accent);
+      font-weight: bold;
+    }
+  }
+
+  // Separador entre columnas visibles cuando hay más de un día (modo 3/5); sin efecto con 1 sola.
+  & + & {
+    border-left: 1px solid var(--background-modifier-border);
+  }
 }
 
 .oa-calendar-day-full-row {
@@ -129,13 +145,14 @@
 .oa-calendar-allday {
   margin-bottom: 12px;
   border: 1px solid var(--background-modifier-border);
+  border-top: none;
   border-radius: 6px;
   overflow: hidden;
   flex-shrink: 0;
 
   &.oa-expanded {
-    .oa-calendar-allday-content {
-      display: block;
+    .oa-calendar-allday-columns {
+      display: flex;
     }
 
     .oa-calendar-allday-caret {
@@ -148,7 +165,10 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  width: 100%;
+  // Deja vacía la misma columna de 60px que ocupa .oa-calendar-hour-label en el grid de horas
+  // (v1.1.10, modo de varios días), para que la barra quede alineada con el resto de las filas.
+  width: calc(100% - 60px);
+  margin-left: 60px;
   padding: 8px 12px;
   background-color: color-mix(in srgb, $primary-bg-color 30%, transparent);
   border: none;
@@ -163,10 +183,21 @@
   transition: transform 0.15s ease;
 }
 
-.oa-calendar-allday-content {
+.oa-calendar-allday-columns {
   display: none;
+}
+
+// Varias columnas lado a lado en el modo de varios días (v1.1.10); con 1 sola columna se ve igual
+// que antes (una sola `.oa-calendar-allday-content`, sin separador).
+.oa-calendar-allday-content {
+  flex: 1;
+  min-width: 0;
   min-height: 32px;
   padding: 8px 12px;
+
+  & + .oa-calendar-allday-content {
+    border-left: 1px solid var(--background-modifier-border);
+  }
 }
 
 .oa-calendar-allday-row {
@@ -176,6 +207,11 @@
   margin-bottom: 6px;
 
   &:last-child {
+    margin-bottom: 0;
+  }
+
+  .oa-calendar-task {
+    @include calendar-task-styles();
     margin-bottom: 0;
   }
 }
@@ -253,12 +289,33 @@
   border-right: 1px solid var(--background-modifier-border);
 }
 
+// Mismo ancho que .oa-calendar-hour-label, pero vacío: alinea las columnas del encabezado y de
+// "Todo el día" con las del grid de horas (v1.1.10, modo de varios días) — sin esto, el grid queda
+// corrido respecto al encabezado porque solo él tiene esa columna de 60px al inicio de cada fila.
+// Borde vertical continuo de arriba a abajo (se une con el de .oa-calendar-hour-label más abajo).
+.oa-calendar-hour-label-spacer {
+  width: 60px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--background-modifier-border);
+}
+
+// Dentro del encabezado, sin esto se ve el fondo con tinte de .oa-calendar-day-header detrás del
+// espaciador, cortándose justo en su borde inferior como si fuera una línea horizontal suelta.
+.oa-calendar-day-header .oa-calendar-hour-label-spacer {
+  background-color: var(--background-primary);
+}
+
 .oa-calendar-hour-slot {
   flex: 1;
   padding: 4px 8px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+
+  // Separador entre columnas visibles (modo de varios días, v1.1.10); sin efecto con 1 sola columna.
+  & + & {
+    border-left: 1px solid var(--background-modifier-border);
+  }
 
   .oa-calendar-task {
     @include calendar-task-styles();
@@ -341,7 +398,8 @@
     }
 
     .oa-task-title,
-    .oa-calendar-task-duration {
+    .oa-calendar-task-duration,
+    .oa-calendar-task-status-icon {
       display: none;
     }
   }
@@ -449,9 +507,9 @@
   border: 1px solid var(--background-modifier-border);
 
   .oa-calendar-day-header {
+    display: flex; // Varias columnas lado a lado en el modo de varios días (v1.1.10)
     flex-shrink: 0;
     background-color: color-mix(in srgb,$primary-bg-color 25%, transparent); // Color más claro para el encabezado
-    border-bottom: 1px solid var(--background-modifier-border);
     
     .oa-calendar-day-column-header {
       padding: 15px 0; // Más espacio para el encabezado

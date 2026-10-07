@@ -1,5 +1,5 @@
 import { App, TFile, Plugin } from "obsidian";
-import { ITask, TaskFilterCriteria } from "../types/interfaces";
+import { ITask, TaskFilterCriteria, AgendaPlugin } from "../types/interfaces";
 import { I18n } from "./i18n";
 import { TaskCache } from "./task-cache";
 import { TaskExtractor } from "./task-extractor";
@@ -28,6 +28,13 @@ export class TaskManager {
     this.queryHandler = new TaskQueryHandler(
       (tasks: ITask[], criteria?: TaskFilterCriteria) => this.getFilteredTasks(criteria)
     );
+  }
+
+  /** Expone los settings del plugin (v1.1.10): usado por `TaskModal`, que no extiende `CalendarView`
+   * pero necesita los mismos settings de calendario para el punto indicador de días con tareas del
+   * date picker unificado (§7.6/§15). */
+  public getPluginSettings(): AgendaPlugin['settings'] | undefined {
+    return (this.plugin as AgendaPlugin).settings;
   }
 
   /**

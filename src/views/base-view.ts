@@ -332,6 +332,8 @@ export abstract class BaseView extends ItemView {
     // @ts-ignore
     "calendar-day-view": () => import("./templates/calendar-day-view.hbs"),
     // @ts-ignore
+    "calendar-list-view": () => import("./templates/calendar-list-view.hbs"),
+    // @ts-ignore
     "calendar-month-view": () => import("./templates/calendar-month-view.hbs"),
     // @ts-ignore
     "calendar-view": () => import("./templates/calendar-view.hbs"),

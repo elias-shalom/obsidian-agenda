@@ -3,8 +3,11 @@
 // de una línea de tarea en formato emoji. Usados por el menú de inserción
 // del editor (v1.1.4, Fase B — ver docs/agenda-tasks/Arquitectura técnica.md §6).
 import { TaskSection } from "../entities/task-section";
+import { CoreTaskStatus } from "../types/enums";
 
 const BLOCK_LINK_TRAIL_REGEX = /\s*\^[a-zA-Z0-9-]+\s*$/;
+const CHECKBOX_REGEX = /^([\t ]*>*\s*(?:-|\*|\+|\d+[.)]) {0,4}\[)(.)(\])/;
+const DONE_DATE_CHUNK_REGEX = /✅\s*\d{4}-\d{2}-\d{2}/;
 const DATE_CHUNK_REGEX: Record<"📅" | "🛫", RegExp> = {
   "📅": /📅\s*\d{4}-\d{2}-\d{2}/,
   "🛫": /🛫\s*\d{4}-\d{2}-\d{2}/,
@@ -92,6 +95,14 @@ export function upsertScheduledDuration(line: string, minutes: number): { line: 
   return { line: replaceScheduledChunk(line, { ...existing, duration: minutes }), ok: true };
 }
 
+/** Quita la hora (🕐) y duración (⏱️) de `scheduled`, dejando solo la fecha — la tarea vuelve a la
+ * fila "Todo el día" sin hora (v1.1.10: arrastrar de una franja horaria de vuelta a "Todo el día"). */
+export function clearScheduledTime(line: string): { line: string; ok: boolean } {
+  const existing = parseScheduledChunk(line);
+  if (!existing) return { line, ok: false };
+  return { line: replaceScheduledChunk(line, { date: existing.date, time: null, duration: null }), ok: true };
+}
+
 /** Inserta o reemplaza el emoji de prioridad de la tarea. */
 export function upsertPriority(line: string, emoji: PriorityEmoji): string {
   const withoutField = removeChunk(line, PRIORITY_CHUNK_REGEX);
@@ -101,4 +112,16 @@ export function upsertPriority(line: string, emoji: PriorityEmoji): string {
 /** Quita el emoji de prioridad de la tarea, si existe. */
 export function clearPriority(line: string): string {
   return removeChunk(line, PRIORITY_CHUNK_REGEX);
+}
+
+/** Inserta o reemplaza el símbolo de estado (checkbox `[.]`) de la tarea; agrega la fecha ✅
+ * al pasar a `Done`, o la quita al salir de `Done` (ADR-S3). `todayIso` solo se usa si `status`
+ * es `Done`. */
+export function upsertTaskStatus(line: string, status: CoreTaskStatus, todayIso: string): string {
+  const withStatus = line.replace(CHECKBOX_REGEX, (_match, before: string, _symbol: string, after: string) => `${before}${status}${after}`);
+  const withoutDoneDate = removeChunk(withStatus, DONE_DATE_CHUNK_REGEX);
+  if (status === CoreTaskStatus.Done) {
+    return appendChunk(withoutDoneDate, `✅ ${todayIso}`);
+  }
+  return withoutDoneDate;
 }

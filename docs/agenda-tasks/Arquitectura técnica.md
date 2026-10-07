@@ -338,7 +338,7 @@ Listener `pointerdown`/`pointermove`/`pointerup` en la manija del segmento final
 - **Recalcular conglomerados en cada refresco**: el cálculo de carriles depende de qué tareas existen ese día; debe rehacerse en cada `refreshCalendar()`, igual que el resto de `generateViewData()`.
 - **Arrastre de la tarea completa a otro día**: el drag and drop existente (v1.1.4, Fase D) sigue tomando la píldora como un solo origen de arrastre; con múltiples segmentos DOM por tarea, el `dragstart` debe quedar en el segmento `--run-start` (o en la celda única si es de menos de una hora), no duplicado en cada segmento.
 
-## 11. Doble clic para crear tarea en la vista Día (v1.1.9, diseño — no implementado)
+## 11. Doble clic para crear tarea en la vista Día (v1.1.9, implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.4.1.
 
@@ -391,7 +391,7 @@ Las 5 plantillas de calendario (pronto 6, con Lista) reemplazan su `<select id="
 - **Ambigüedad Semana vs. Semana laboral solo con ícono**: mitigado por el tooltip obligatorio (§4.8.1, decisión 1). Set final: Año `calendar-range`, Mes `calendar-days`, Semana `columns-3`, Semana laboral `briefcase`, Día `calendar-clock`.
 - **Compacidad en paneles estrechos**: 5 botones pegados (6 con Lista en v1.1.10) deben seguir cabiendo en el encabezado del calendario junto al resto de controles (fecha de referencia, selector de fecha, navegación); se verifica en el mismo caso límite de panel estrecho ya anotado en §4.6.9.
 
-## 13. Vista Día: modo de varios días 1/3/5 (v1.1.10, diseño — no implementado)
+## 13. Vista Día: modo de varios días 1/3/5 (v1.1.10, implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.4.3. Pospuesto de v1.1.9 a v1.1.10.
 
@@ -420,7 +420,7 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.4.3. P
 | Plantilla | `src/views/templates/calendar-day-view.hbs` |
 | Estilos | `src/styles/views/_calendar-day.scss` (fila de N columnas por hora) |
 
-## 14. Manejo de estatus desde el calendario (v1.1.10, diseño — no implementado)
+## 14. Manejo de estatus desde el calendario (v1.1.10, implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.9 y §7.5. Símbolos/ADRs: [[Modelo de datos]] §10.
 
@@ -465,3 +465,131 @@ Las plantillas de calendario (Mes/Semana/Semana laboral/Día) agregan el ícono 
 | Modal | `src/modals/task-modal.ts`, `src/modals/templates/create-task-modal.hbs` (campo de estado) |
 | Fix | `src/core/task-filter.ts` (`isTaskCompleted`) |
 | i18n | nombres de los 6 estados en los seis locales (algunos ya existen para los filtros de Tabla: `status_todo`, `status_in_progress`, `status_done`, `status_cancelled`, `status_non_task`; falta `status_on_hold`) |
+
+## 15. Selector de fecha unificado en el Task Modal (v1.1.10, implementado)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §7.6.
+
+### 15.1 Enfoque
+
+`TaskModal.setupSimpleDatePicker()` deja de llamar a `flatpickr(input, ...)` y en su lugar abre un popover de `CalendarDatePicker` (`src/core/calendar-date-picker.ts`, ya genérico y reutilizado por las 5 vistas de calendario) anclado al botón disparador existente de cada campo (`#oa-date-trigger`, `#oa-start-trigger`, `#oa-scheduled-trigger`), con el mismo patrón de posicionamiento/cierre que `CalendarView.openDatePickerPopover()` (Escape, clic fuera, reposicionamiento en `resize`, solo un popover abierto a la vez).
+
+### 15.2 Dependencias nuevas de `CalendarDatePickerOptions`
+
+A diferencia de las vistas de calendario (que extienden `CalendarView` y ya exponen `getWeekStartDay()`/`getLocalizedDayNames()`/`getTasksForDate()`), `TaskModal` no tiene hoy acceso a esos datos. Se resuelven igual que ya hace `CalendarView` (mismos settings del plugin vía `TaskManager`, ya inyectado en el modal) y se pasan como funciones a `CalendarDatePickerOptions.hasTasks`/`getWeekStartDay`/`getLocalizedDayNames`.
+
+### 15.3 Alcance
+
+Solo los 3 campos de fecha simple (due/start/scheduled). Los modales de hora (`TaskTimePickerModal`) y duración no cambian. La dependencia de `flatpickr` se mantiene instalada porque la sigue usando la inserción de campos desde el editor (§6).
+
+### 15.4 Archivos afectados
+
+| Área | Archivos |
+|---|---|
+| Modal | `src/modals/task-modal.ts` (`setupSimpleDatePicker` reemplazado por un popover de `CalendarDatePicker`) |
+| Componente reutilizado | `src/core/calendar-date-picker.ts` (sin cambios de API, ya genérico) |
+| Estilos | reutiliza `src/styles/components/_calendar-date-picker.scss` (sin cambios) |
+
+### 15.5 Fuera de alcance
+
+Quitar `flatpickr` como dependencia del proyecto (todavía se usa en §6); eso solo sería viable si esa superficie también migra a un componente propio, lo cual no está planeado en esta fase.
+
+## 16. Recurrencia: nueva ocurrencia al completar (v1.1.10, implementado)
+
+Comportamiento de usuario y decisiones: [[Modelo de datos]] §11.
+
+### 16.1 Enfoque
+
+Se engancha en el mismo punto de escritura que ADR-S3 (`upsertTaskStatus()` cambiando a `Done`): si `task.flow.repeat` no está vacío, además de reescribir la línea original con `✅`, se calcula y escribe una segunda línea con la siguiente ocurrencia.
+
+### 16.2 Cálculo de la siguiente fecha
+
+Nueva función `getNextOccurrenceDate(recurrenceText, referenceDate)` en `src/core/task-line-fields.ts` (o un nuevo módulo `src/core/task-recurrence.ts`):
+1. Detecta y separa el sufijo `when done` del resto del texto de recurrencia.
+2. Convierte el resto a RRULE con `convertToRRuleFormat()` (ya existe en `task-section.ts`, se expone/reutiliza).
+3. `rrulestr(rrule).after(referenceDate)` (la librería `rrule` ya es dependencia) calcula la siguiente fecha válida, delegando los casos límite de fin de mes/año.
+4. `referenceDate` es la fecha de la tarea con mayor prioridad según ADR-T4 (`scheduled > due > start`) salvo que el texto tenga `when done`, en cuyo caso es la fecha de hoy (ADR-R3).
+
+### 16.3 Escritura de la nueva línea
+
+Nueva función `buildNextOccurrenceLine(originalLine, nextDate, dateOffsets)` que:
+- Copia la línea original.
+- Reescribe cada fecha presente (`due`/`scheduled`/`start`) con el mismo desplazamiento relativo que tenían respecto a la fecha de referencia (ADR-R2, segundo punto).
+- Elimina `🆔`/`⛔` (ADR-R4).
+- Quita cualquier `✅` previo (no debería tener, pero por seguridad).
+
+`TaskWriter` gana un nuevo método para insertar una línea completa en una posición específica (una línea arriba de la original), reutilizando el prerequisito de edición en el lugar ya construido en v1.1.4 (§8).
+
+### 16.4 Integración con el manejo de estatus (v1.1.10)
+
+Se ejecuta automáticamente como parte de cambiar el estado a `Done` (menú contextual del calendario o Task Modal, §14/§7.5) — no es una acción separada que el usuario deba invocar.
+
+### 16.5 Archivos afectados
+
+| Área | Archivos |
+|---|---|
+| Cálculo | `src/core/task-line-fields.ts` o nuevo `src/core/task-recurrence.ts` (`getNextOccurrenceDate`, `buildNextOccurrenceLine`) |
+| Escritura | `src/core/task-writer.ts` (insertar línea nueva en una posición) |
+| Integración | el mismo punto de `upsertTaskStatus()` usado por el manejo de estatus (§14) |
+| Parser | `src/entities/task-section.ts` (`convertToRRuleFormat`, reconocer `when done`) |
+
+### 16.6 Fuera de alcance
+Ver [[Modelo de datos]] §11, Fuera de alcance.
+
+## 17. Vista de lista dentro del calendario (v1.1.10, implementado)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.10.
+
+### 17.1 Datos
+
+Nuevo `generateViewData()` análogo al de Semana pero sin alinear a `weekStartDay`: genera `daysToShow` `WeekDayData` (mismo shape ya usado por Semana/Semana laboral) a partir de la fecha de referencia hasta referencia + (`daysToShow` - 1) días, donde `daysToShow = plugin.settings.calendarListDaysToShow` (7–14, por defecto 14 — nuevo setting en Settings ▸ Calendario). Reutiliza `CalendarView.getTasksForDate()` tal cual.
+
+### 17.2 Plantilla
+
+Nueva `calendar-list-view.hbs`: una fila (`.oa-calendar-list-row`) por día, con cabecera (fecha + nombre del día, mismo formato que la cabecera de columna de Semana) y un contenedor de ancho completo que reutiliza el mismo bloque `{{#each tasksForDay}}` + clases `.oa-calendar-task` ya usado en Mes/Semana — sin plantilla ni CSS nuevos para las píldoras en sí, y sin mecanismo de "N more" (confirmado: mismo comportamiento que una celda de Mes/Semana, que hoy muestra todas las tareas del día).
+
+### 17.3 Registro como vista
+
+Nuevo `CalendarListView extends CalendarView` + `CALENDAR_LIST_VIEW_TYPE`, registrado en `ViewManager` igual que las otras 5. Un 7º botón en `.oa-calendar-view-segmented`, presente en las 6 plantillas de calendario.
+
+### 17.4 Navegación
+
+`navigateToPrevious()`/`navigateToNext()` mueven la ventana completa (`daysToShow` días, no día a día, a diferencia de Día).
+
+### 17.5 Archivos afectados
+
+| Área | Archivos |
+|---|---|
+| Vista | `src/views/calendar-list-view.ts` (nuevo) |
+| Plantilla | `src/views/templates/calendar-list-view.hbs` (nuevo) |
+| Estilos | `src/styles/views/_calendar-list.scss` (nuevo) |
+| Setting | `src/settings/settings.ts` (`calendarListDaysToShow`, 7–14, por defecto 14), `src/settings/setting-tab.ts` (slider en ambas rutas, declarativa y `display()` legado) |
+| Registro | `src/core/view-manager.ts`, `src/views/index.ts` |
+| Selector segmentado | las 6 plantillas de calendario (7º botón) |
+
+### 17.6 Ajustes posteriores
+
+- Ícono del botón: `list-todo` en `CALENDAR_VIEW_BUTTON_ICONS` (`src/views/calendar-view.ts`); orden final del selector: Año/Mes/Semana/Semana laboral/Lista/Día (Lista antes que Día, no al final).
+- Botón `.oa-calendar-date-picker-trigger` (popover de fecha) agregado también a `calendar-list-view.hbs` y `calendar-day-view.hbs` — ambos reutilizan el wiring genérico ya existente en `CalendarView.setupViewSpecificEventListeners()`, sin código nuevo.
+- `CalendarListView` mantiene un `windowStart` propio, separado de `currentDate` (fecha seleccionada/resaltada): `generateViewData()` solo recentra la ventana si `currentDate` cae fuera de ella; un clic en una fila (que solo cambia `currentDate`) resalta el día sin mover la ventana, igual que Mes/Semana. `navigateToPrevious()/navigateToNext()` mueven `windowStart` explícitamente.
+
+## 18. Modal de duración con dial circular (v1.1.10, implementado)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §7.7.
+
+### 18.1 Extracción del dial compartido
+
+`HabitEditorModal.attachTimeDial()` (hoy privado e inline, `TIME_DIAL_MAX_MINUTES = 120` fijo) se extrae a `src/core/time-dial.ts`, parametrizado por `maxMinutes` y `stepMinutes` (nuevo), siguiendo el mismo patrón de extracción ya usado para `CalendarDatePicker` (clase con `mount(root)`, callback `onChange`). El Habit Editor pasa `{ maxMinutes: 120, stepMinutes: 1 }` (sin cambios de comportamiento); `TaskDurationModal` pasa `{ maxMinutes: 420, stepMinutes: 5 }` (7 horas).
+
+### 18.2 Snap a pasos de 5 minutos
+
+`applyValue()` redondea al múltiplo de `stepMinutes` más cercano en vez de al entero más cercano; lo mismo aplica al manejo de teclado (flechas) y rueda del mouse.
+
+### 18.3 Archivos afectados
+
+| Área | Archivos |
+|---|---|
+| Componente | `src/core/time-dial.ts` (nuevo, extraído de `habit-editor.ts`) |
+| Habit Editor | `src/habits/habit-editor.ts` (usa el componente en vez del código inline) |
+| Modal de duración | `src/modals/task-duration-modal.ts` (usa el componente con `maxMinutes:420, stepMinutes:5`) |
+| Estilos | el SCSS del dial (hoy embebido en los estilos de hábitos) se mueve a un archivo compartido |

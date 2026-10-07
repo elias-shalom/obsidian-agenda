@@ -40,6 +40,17 @@ export interface WeekViewData {
 }
 
 /**
+ * Datos para la vista de lista dentro del calendario (v1.1.10, §4.10/§17): una fila por día en
+ * una ventana continua de `plugin.settings.calendarListDaysToShow` días (7–14), sin alinear a
+ * inicio de semana. Reutiliza `WeekDayData` tal cual (mismo shape que ya usan Semana/Semana laboral).
+ */
+export interface CalendarListViewData {
+  viewType: CalendarViewType;
+  days: WeekDayData[];
+  periodName: string;
+}
+
+/**
  * Información del archivo donde se encuentra la tarea
  */
 export interface ITaskFile {
@@ -323,9 +334,12 @@ export interface FolderNode {
   subfolders: Record<string, FolderNode>; // Subcarpetas
 }
 
+/** Los segmentos de una franja horaria para una sola columna de día (v1.1.10, modo de varios
+ * días §4.4.3/§13): una por columna dentro de `HourRow.columns`. */
 export interface HourSlot {
-  hour: number;
-  formattedHour: string;
+  /** Fecha ISO de la columna dueña de este slot; usada por los drop targets y el doble clic para
+   * crear tarea, que ya no pueden asumir siempre `currentDate` (puede haber varias columnas). */
+  dateIso: string;
   /** Segmentos de tareas (con o sin duración) que caen en la mitad superior (:00–:29) de esta hora;
    * las tareas sin duración ocupan una sola media-hora (rol 'half'), igual que las que sí la tienen
    * (v1.1.9, §4.7) */
@@ -336,6 +350,36 @@ export interface HourSlot {
    * una ocupe siempre el 50% de la franja, aunque una quede vacía (evita que la otra se estire). */
   hasDurationSegments: boolean;
 }
+
+/** Una fila de hora compartida entre todas las columnas visibles del modo de varios días
+ * (v1.1.10, §13.3): 1 etiqueta de hora + N celdas (`columns`), una por día visible. Con
+ * `daysToShow === 1` tiene exactamente una columna, igual que antes. */
+export interface HourRow {
+  hour: number;
+  formattedHour: string;
+  columns: HourSlot[];
+}
+
+/** Un día dentro de la ventana visible de la vista Día (v1.1.10, §4.4.3/§13): generado de forma
+ * independiente por columna, sin compartir carriles de solapamiento con las demás columnas. Con
+ * `daysToShow === 1` hay exactamente una. */
+export interface DayColumnData {
+  dateIso: string;
+  dayName: string;
+  dayOfMonth: number;
+  isToday: boolean;
+  /** `true` solo en la columna de la fecha de referencia compartida (resaltado distinto de "hoy",
+   * mismo criterio que `oa-calendar-selected` en Mes/Semana/Semana laboral/Año). */
+  isReferenceDay: boolean;
+  /** Tareas con `due` como ancla del día (siempre día completo, ADR-T1) */
+  allDayDue: ITask[];
+  /** Tareas con `start` como ancla del día (siempre día completo) */
+  allDayStart: ITask[];
+  /** Tareas con `scheduled` como ancla pero sin hora asignada (caso límite, ver Plan de implementación) */
+  allDayScheduled: ITask[];
+}
+
+export type DaysToShow = 1 | 3 | 5;
 
 /** Rol visual de un segmento de media hora dentro de un bloque con duración (v1.1.9, §4.7.2). */
 export type DurationSegmentRole = 'half' | 'start' | 'middle' | 'end';
@@ -410,18 +454,17 @@ export interface ListViewData {
  */
 export interface DayViewData {
   viewType: CalendarViewType;
+  /** Fecha de referencia compartida (columna central si `daysToShow > 1`). */
   date: DateTime;
   weekday: number;
   dayName: string;
   isToday: boolean;
-  tasksForDay: ITask[];
-  hourSlots: HourSlot[];
-  /** Tareas con `due` como ancla del d\u00eda (siempre d\u00eda completo, ADR-T1) */
-  allDayDue: ITask[];
-  /** Tareas con `start` como ancla del d\u00eda (siempre d\u00eda completo) */
-  allDayStart: ITask[];
-  /** Tareas con `scheduled` como ancla pero sin hora asignada (caso l\u00edmite, ver Plan de implementaci\u00f3n) */
-  allDayScheduled: ITask[];
+  /** Modo de varios días (v1.1.10, §4.4.3/§13): preferencia persistida en `localStorage`. */
+  daysToShow: DaysToShow;
+  /** Una por día visible (1, 3 o 5), centradas en `date`. */
+  columns: DayColumnData[];
+  /** Filas de hora (0–23) compartidas entre todas las columnas. */
+  hourRows: HourRow[];
   periodName: string;  /** Sidebar del selector de fecha colapsado hacia la derecha (preferencia persistida, v1.1.9) */
   sidebarCollapsed: boolean;}
 
@@ -477,7 +520,8 @@ export type CalendarViewData =
   | WeekViewData
   | DayViewData  
   | MonthViewData
-  | YearViewData;
+  | YearViewData
+  | CalendarListViewData;
 /**
  * Tipo unión para todos los posibles datos que pueden pasar las vistas específicas
  */
@@ -490,4 +534,5 @@ export type ViewData =
   | CalendarViewData
   | MonthViewData
   | YearViewData
+  | CalendarListViewData
   | Record<string, unknown>; // Para casos no especificados

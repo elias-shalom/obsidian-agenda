@@ -93,9 +93,9 @@ Vista de un único día con **24 franjas horarias** (`hourSlots`, cada una con `
 > - **Filtro de fechas visibles**: qué combinación de `start`/`due`/`scheduled` se muestra es configurable — un setting global (Settings ▸ **Calendario**, grupo nuevo) define el valor por defecto, y cada vista de calendario puede sobreescribirlo en su propio toolbar (checkboxes), sin necesidad de guardarlo.
 > - **Drag and drop (planeado, no en el primer corte)**: arrastrar un bloque a otra franja reescribe la hora de `scheduled`; redimensionar su borde inferior reescribe la duración. Arrastrar una tarea entre días en Mes/Semana/Semana laboral/Año solo cambia el día de la fecha que la esté posicionando (según la prioridad `scheduled > due > start`). Requiere una capacidad nueva en `TaskWriter` para reescribir en su lugar una línea de tarea existente (hoy solo soporta anexar); comparte esa base con el ítem, también pendiente, de edición nativa de tareas — ver [[Plan de implementación]].
 
-#### 4.4.1 Doble clic para crear tarea (v1.1.9 — diseño, corrige bug)
+#### 4.4.1 Doble clic para crear tarea (v1.1.9 — implementado)
 
-> **Estado**: diseño acordado, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §11.
+> **Estado**: implementado. Mecanismo: [[Arquitectura técnica]] §11.
 
 **Bug actual**: Mes, Semana, Semana laboral y Año crean una tarea al hacer doble clic en una celda vacía (`CalendarView.setupViewSpecificEventListeners()`), pero el selector compartido incluye `.oa-calendar-day-column`, una clase de un diseño anterior de la vista Día que ya no existe en su plantilla actual (hoy usa `.oa-calendar-day-hours`/`.oa-calendar-hour-slot` y la sección "Todo el día"). Por eso el doble clic no hace nada en Día.
 
@@ -111,9 +111,9 @@ Vista de un único día con **24 franjas horarias** (`hourSlots`, cada una con `
 
 1. **Corregir el bug de `modalOptions.today` — decidido: sí.** Se corrige junto con esta fase, afecta también a Mes/Semana/Semana laboral/Año.
 
-#### 4.4.3 Modo de varios días: 1/3/5 (v1.1.10 — diseño, no implementado)
+#### 4.4.3 Modo de varios días: 1/3/5 (v1.1.10 — implementado)
 
-> **Estado**: pospuesto de v1.1.9 a v1.1.10; diseño acordado, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §13.
+> **Estado**: implementado (pospuesto de v1.1.9 a v1.1.10). Mecanismo: [[Arquitectura técnica]] §13.
 
 No es una vista nueva en el selector de §4.8: es un **modo dentro de la vista Día**, con su propio multi-botón (1/3/5) que solo aparece cuando Día está activa — mismo patrón que ya usan Semana/Semana laboral con su selector de estilo de grilla (`#oa-calendar-grid-style`, visible solo dentro de esas plantillas). "1 día" es la vista Día actual sin ningún cambio; "3" y "5" son las opciones nuevas.
 
@@ -260,9 +260,9 @@ Redimensionar arrastrando el borde **superior** (cambiaría la hora de inicio, n
 1. **Ícono + tooltip, no solo ícono — confirmado.** El tooltip con el nombre de la vista es obligatorio, no opcional.
 2. **Set de íconos — confirmado**: Año `calendar-range`, Mes `calendar-days`, Semana `columns-3`, Semana laboral `briefcase`, Día `calendar-clock`. Lista (`list-todo`) se suma en v1.1.10 junto con la vista de lista del calendario; por ahora el grupo tiene 5 botones, no 6.
 
-### 4.9 Manejo de estatus desde el calendario (v1.1.10 — diseño, no implementado)
+### 4.9 Manejo de estatus desde el calendario (v1.1.10 — implementado)
 
-> **Estado**: diseño acordado, nada implementado todavía. Decisiones y símbolos: [[Modelo de datos]] §10 (ADR-S1 a S3). Mecanismo: [[Arquitectura técnica]] §14.
+> **Estado**: implementado. Decisiones y símbolos: [[Modelo de datos]] §10 (ADR-S1 a S3). Mecanismo: [[Arquitectura técnica]] §14.
 
 **Identificación visual**: cada píldora de tarea en el calendario (`.oa-calendar-task`, en Mes/Semana/Semana laboral/Día) muestra el ícono de su estado (⭕🛠️⏸️✅❌🗑️), igual que ya se ve en la vista Tabla — hoy solo se distingue completada/no completada (atenuado vía `.oa-calendar-task--done`).
 
@@ -273,6 +273,26 @@ Redimensionar arrastrando el borde **superior** (cambiaría la hora de inicio, n
 **Efecto al marcar "Hecho"/desmarcar**: igual que el checkbox nativo de Obsidian — agrega la fecha ✅ al marcar `Done`, la quita al cambiar a cualquier otro estado (ADR-S3). No genera ninguna ocurrencia nueva de una tarea recurrente (eso se diseña aparte, ver roadmap de tareas recurrentes).
 
 **Fuera de alcance**: filtrar el calendario por estado (ya existe `calendarShowCompletedTasks` para ocultar completadas); estados personalizados/configurables (ADR-S2).
+
+### 4.10 Vista de lista dentro del calendario (v1.1.10 — implementado)
+
+> **Estado**: implementado. Mecanismo: [[Arquitectura técnica]] §17.
+
+Un 7º botón en el selector segmentado de §4.8, que muestra una fila por día en una ventana continua de días a partir de la fecha de referencia compartida (sin alinear a inicio de semana — confirmado). El tamaño de la ventana es configurable (Settings ▸ Calendario ▸ "Vista de lista: días a mostrar", `calendarListDaysToShow`): mínimo 7, máximo 14, por defecto 14 — revisado de "fijo en 14" a configurable. Cada fila reutiliza exactamente el mismo contenido y clases que ya renderiza una celda de día en Mes/Semana (`.oa-calendar-task`, mismo badge por tipo de fecha, mismo atenuado de completadas), solo que dispuesto como una fila de ancho completo en vez de una casilla de grilla — **sin un mecanismo nuevo de "N more"**: si hay muchas tareas ese día, se ven todas en la fila, igual que hoy pasa en una celda de Mes/Semana (confirmado).
+
+- Imagen de referencia inicial (day-planner): `attachments/vista-lista.png` — se usó solo como inspiración del layout de fila-por-día; el contenido final de cada fila sigue el lenguaje visual existente del calendario (§4.1–§4.4), no el de la imagen.
+- Gestos: mismos que el resto del calendario — clic en una tarea edita, doble clic abre la nota, doble clic en espacio vacío de la fila crea una tarea para ese día, clic en la fecha de la fila navega a la vista Día de ese día (igual que clic en el número de día de Mes/Semana).
+- Drag and drop: igual que Mes/Semana, arrastrar una tarea a otra fila reprograma su fecha ancla (ADR-T4).
+- Navegación ◀▶: desplaza la ventana completa (no día a día).
+
+#### 4.10.1 Fuera de alcance
+Un mecanismo de "N more"/colapsar tareas por fila.
+
+#### 4.10.2 Ajustes posteriores a la primera implementación
+- Ícono `list-todo` para el botón de la vista, ubicado a la izquierda del botón de Día (no al final del grupo).
+- Botón de selector de fecha (popover) agregado también a esta vista y a la vista Día, igual que Mes/Semana/Semana laboral/Año (antes solo Día tenía el modo acoplado del sidebar).
+- Filas al doble de alto que una píldora sola, para que quepan 2 píldoras apiladas antes de necesitar más espacio; el contenedor ajusta su altura a la cantidad de días mostrados en vez de estirarse siempre al 100% del panel.
+- **Fix de gestos**: un clic en una fila recentraba toda la ventana para que empezara en ese día, en vez de solo resaltarlo — corregido separando el inicio de la ventana mostrada de la fecha seleccionada/resaltada, igual que Mes/Semana/Año (la ventana solo se recentra si la fecha seleccionada queda fuera de ella).
 
 ## 5. Timeline View (`timeline-view`) — placeholder
 
@@ -327,9 +347,29 @@ Iteraciones puntuales de "look and feel" a pedido del usuario, tras las revision
 - **Toggle "More fields"**: el caret pasó del lado derecho al izquierdo del texto y se agrandó (`font-size: 1.3rem`).
 - **Botón ✕ del encabezado eliminado**: ver nota en §7.2 — Obsidian ya provee su propio botón de cierre nativo en el `Modal`, hacía el custom redundante.
 
-### 7.5 Campo de estado (v1.1.10 — diseño, no implementado)
+### 7.5 Campo de estado (v1.1.10 — implementado)
 
 Nuevo campo en el formulario del Task Modal, visible tanto al crear como al editar: segmented control de 6 píldoras (mismo lenguaje visual que la prioridad, §7.2), una por Status Type (Todo/En progreso/En espera/Hecho/Cancelada/No es tarea). Al crear una tarea, "Todo" queda preseleccionado por defecto, pero se puede elegir cualquier otro estado antes de guardar. Al editar, refleja el estado actual de la tarea. Mismo efecto de agregar/quitar fecha ✅ que el cambio desde el calendario (ver §4.9).
+
+### 7.6 Selector de fecha unificado (v1.1.10 — implementado)
+
+> **Estado**: implementado. Mecanismo: [[Arquitectura técnica]] §15.
+
+Los campos de fecha 📅 vencimiento, 🛫 inicio y ⏳ programada usan hoy `flatpickr` (librería externa), con un estilo visual distinto al selector construido en v1.1.9 para las vistas de calendario (`CalendarDatePicker`, §4.6.4). Se reemplaza `flatpickr` por ese mismo componente en los 3 campos, abierto como popover anclado a cada botón disparador existente (mismo patrón que `CalendarView.openDatePickerPopover()`).
+
+- Cada campo (due/start/scheduled) abre su propio popover de forma independiente; solo uno puede estar abierto a la vez (se cierra el anterior al abrir otro, igual que ya ocurre entre vistas de calendario).
+- Los días con tareas existentes se marcan con el mismo punto indicador que ya usa el calendario (`hasTasks`), para dar contexto de carga de trabajo al elegir fecha — **confirmado**.
+- La hora (🕐) y la duración (⏱️) conservan sus modales dedicados existentes (`TaskTimePickerModal`, modal de duración); no forman parte de este cambio — **confirmado, alcance limitado a los 3 campos de fecha**.
+- El input de texto subyacente (`#oa-task-due`/`#oa-task-start`/`#oa-task-scheduled`) y su formato (`YYYY-MM-DD`) no cambian, solo la UI para elegirlo.
+
+#### 7.6.1 Fuera de alcance
+El selector de hora/duración y la captura de fecha desde el menú contextual del editor ([[Arquitectura técnica]] §6, inserción de campos) siguen usando `flatpickr`; no se tocan en esta fase. Quitar `flatpickr` como dependencia del proyecto tampoco es parte de esta fase (sigue en uso ahí).
+
+### 7.7 Modal de duración con dial circular (v1.1.10 — implementado)
+
+> **Estado**: implementado. Mecanismo: [[Arquitectura técnica]] §18.
+
+`TaskDurationModal` reemplaza su `<input type="number">` simple por el mismo dial circular que ya usa el Habit Editor para elegir minutos (arrastre, teclado, rueda del mouse), extraído a un componente compartido y reutilizado aquí con una configuración distinta: máximo 420 minutos (7 horas) en vez de 120, y pasos de 5 minutos en vez de 1 — confirmado.
 
 ## 8. Tooltips del plugin
 

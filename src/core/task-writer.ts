@@ -51,4 +51,25 @@ export class TaskWriter {
     await this.app.vault.modify(file, lines.join("\n"));
     return true;
   }
+
+  /**
+   * Inserta `newLine` una línea arriba de `lineNumber` (base 1, como `ITaskLine.number`), sin
+   * modificar el resto del archivo. Usado para escribir la siguiente ocurrencia de una tarea
+   * recurrente al completarla (v1.1.10, ADR-R1). Devuelve `false` sin modificar nada si el
+   * archivo no existe o la línea indicada ya no es una tarea.
+   */
+  async insertLineAbove(filePath: string, lineNumber: number, newLine: string): Promise<boolean> {
+    const normalized = normalizePath(filePath);
+    const file = this.app.vault.getAbstractFileByPath(normalized);
+    if (!(file instanceof TFile)) return false;
+
+    const content = await this.app.vault.read(file);
+    const lines = content.split("\n");
+    const index = lineNumber - 1;
+    if (lines[index] === undefined || !isTaskLine(lines[index])) return false;
+
+    lines.splice(index, 0, newLine);
+    await this.app.vault.modify(file, lines.join("\n"));
+    return true;
+  }
 }

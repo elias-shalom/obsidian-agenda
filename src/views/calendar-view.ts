@@ -1,4 +1,4 @@
-import { WorkspaceLeaf, Plugin, Notice, setIcon } from 'obsidian';
+import { WorkspaceLeaf, Plugin, Notice, setIcon, Menu } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
 import { ITask, CalendarViewData, AgendaPlugin } from '../types/interfaces';
@@ -6,8 +6,10 @@ import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import Handlebars from 'handlebars';
 import { CalendarViewType } from '../types/enums';
+import { CoreTaskStatus, CoreTaskStatusIcon } from '../types/enums';
 import { TaskWriter } from '../core/task-writer';
-import { upsertSimpleDate, upsertScheduledDate } from '../core/task-line-fields';
+import { upsertSimpleDate, upsertScheduledDate, upsertTaskStatus } from '../core/task-line-fields';
+import { buildRecurrenceOccurrence } from '../core/task-recurrence';
 import { EDIT_TASK_MODAL_TYPE } from '../core/modal-manager';
 import { getReferenceDate, setReferenceDate } from '../core/calendar-reference-date';
 import { CalendarDatePicker } from '../core/calendar-date-picker';
@@ -15,6 +17,16 @@ import { clearTooltips } from '../core/tooltips';
 
 /** Espera entre un `click` y un posible segundo `click` antes de asumir que no viene un `dblclick` (ms). */
 const TASK_CLICK_DELAY_MS = 250;
+
+/** Opciones del menú contextual de estado (v1.1.10, Manejo de estatus §14.3), en orden de flujo de trabajo. */
+const STATUS_MENU_OPTIONS: { status: CoreTaskStatus; icon: string; labelKey: string }[] = [
+  { status: CoreTaskStatus.Todo, icon: CoreTaskStatusIcon.Todo, labelKey: 'status_todo' },
+  { status: CoreTaskStatus.InProgress, icon: CoreTaskStatusIcon.InProgress, labelKey: 'status_in_progress' },
+  { status: CoreTaskStatus.OnHold, icon: CoreTaskStatusIcon.OnHold, labelKey: 'status_on_hold' },
+  { status: CoreTaskStatus.Done, icon: CoreTaskStatusIcon.Done, labelKey: 'status_done' },
+  { status: CoreTaskStatus.Cancelled, icon: CoreTaskStatusIcon.Cancelled, labelKey: 'status_cancelled' },
+  { status: CoreTaskStatus.nonTask, icon: CoreTaskStatusIcon.nonTask, labelKey: 'status_non_task' },
+];
 
 export const CALENDAR_VIEW_TYPE = 'calendar-view';
 
@@ -25,6 +37,7 @@ const CALENDAR_VIEW_BUTTON_ICONS: Record<string, string> = {
   week: 'columns-3',
   workweek: 'briefcase',
   day: 'calendar-clock',
+  list: 'list-todo',
 };
 
 /** Payload transportado por `dataTransfer` durante un drag and drop de tarea (v1.1.4, Fase D). */
@@ -372,10 +385,40 @@ export abstract class CalendarView extends BaseView {
       item.addEventListener('dragend', () => {
         item.removeClass('oa-dragging');
       });
+
+      // Menú contextual de estado (v1.1.10, §14.3): clic derecho reescribe el símbolo de la tarea.
+      item.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        const filePath = item.getAttribute('data-file-path');
+        const lineNumberAttr = item.getAttribute('data-line-number');
+        if (!filePath || !lineNumberAttr) return;
+        const lineNumber = Number(lineNumberAttr);
+
+        const menu = new Menu();
+        for (const { status, icon, labelKey } of STATUS_MENU_OPTIONS) {
+          menu.addItem((menuItem) => menuItem
+            .setTitle(`${icon} ${this.i18n.t(labelKey)}`)
+            .onClick(() => {
+              const todayIso = DateTime.now().toFormat('yyyy-MM-dd');
+              const task = this.tasks.find(t => t.file.path === filePath && t.line.number === lineNumber);
+              // Calculado antes de escribir: necesita la recurrencia/fechas tal como están ahora (ADR-R1).
+              const nextOccurrenceLine = task ? buildRecurrenceOccurrence(task, status) : null;
+
+              this.taskWriter.updateTaskLine(filePath, lineNumber, (line) => upsertTaskStatus(line, status, todayIso))
+                .then(async ok => {
+                  if (!ok) return;
+                  if (nextOccurrenceLine) await this.taskWriter.insertLineAbove(filePath, lineNumber, nextOccurrenceLine);
+                  await this.refreshView();
+                })
+                .catch(console.error);
+            }));
+        }
+        menu.showAtMouseEvent(e);
+      });
     });
 
     const dayCells = container.querySelectorAll<HTMLElement>(
-      '.oa-calendar-month-day, .oa-calendar-week-day-container, .oa-calendar-year-day'
+      '.oa-calendar-month-day, .oa-calendar-week-day-container, .oa-calendar-year-day, .oa-calendar-list-row'
     );
 
     dayCells.forEach(cell => {
@@ -430,17 +473,18 @@ export abstract class CalendarView extends BaseView {
       });
     });
 
-    // Clic en el número de día (Mes/Semana/Semana laboral) navega a la vista Día de esa fecha,
-    // igual que ya hace la vista Año con sus números de día.
+    // Clic en el número de día (Mes/Semana/Semana laboral/Lista) navega a la vista Día de esa
+    // fecha, igual que ya hace la vista Año con sus números de día.
     const dayNumbers = container.querySelectorAll<HTMLElement>(
       '.oa-calendar-month-day .oa-calendar-month-day-number, ' +
-      '.oa-calendar-week-day-container .oa-calendar-date'
+      '.oa-calendar-week-day-container .oa-calendar-date, ' +
+      '.oa-calendar-list-row .oa-calendar-list-row-date'
     );
 
     dayNumbers.forEach(numberEl => {
       numberEl.addEventListener('click', (e) => {
         e.stopPropagation(); // evita conflicto con el dblclick de la celda (crear tarea)
-        const cell = numberEl.closest<HTMLElement>('.oa-calendar-month-day, .oa-calendar-week-day-container');
+        const cell = numberEl.closest<HTMLElement>('.oa-calendar-month-day, .oa-calendar-week-day-container, .oa-calendar-list-row');
         const dateStr = cell?.dataset.date;
         if (dateStr) this.navigateToDayView(dateStr);
       });
@@ -516,6 +560,8 @@ export abstract class CalendarView extends BaseView {
         return CalendarViewType.Day;
       case 'year':
         return CalendarViewType.Year;
+      case 'list':
+        return CalendarViewType.List;
       default:
         return CalendarViewType.Month; // Valor por defecto
     }
@@ -546,6 +592,9 @@ export abstract class CalendarView extends BaseView {
         break;
       case CalendarViewType.Day:
         viewId = 'calendar-day-view';
+        break;
+      case CalendarViewType.List:
+        viewId = 'calendar-list-view';
         break;
       default:
         viewId = 'calendar-month-view';

@@ -1,17 +1,20 @@
 import { WorkspaceLeaf, Plugin, setIcon } from "obsidian";
 import { CalendarView } from "./calendar-view";
 import { TaskManager } from "../core/task-manager";
-import { HourSlot, DayViewData, DurationTaskSegment, ITask } from '../types/interfaces';
+import { HourSlot, HourRow, DayColumnData, DaysToShow, DayViewData, DurationTaskSegment, ITask } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import { CalendarViewType } from "../types/enums";
-import { upsertScheduledTime, upsertScheduledDuration } from "../core/task-line-fields";
+import { upsertScheduledDate, upsertScheduledTime, upsertScheduledDuration, clearScheduledTime } from "../core/task-line-fields";
 import { CalendarDatePicker } from "../core/calendar-date-picker";
 
 export const CALENDAR_DAY_VIEW_TYPE = "calendar-day-view";
 
 /** Clave de persistencia del colapso del sidebar del selector de fecha (v1.1.9). */
 const SIDEBAR_COLLAPSED_KEY = 'calendar_day_sidebar_collapsed';
+
+/** Clave de persistencia del modo de varios días (v1.1.10, §4.4.3/§13). */
+const DAYS_TO_SHOW_KEY = 'calendar_day_days_to_show';
 
 /** Medias-horas del día (0–47); cada bloque con duración redondea su fin hacia arriba al siguiente múltiplo de 30 min (v1.1.9, §4.7.2/§4.7.5). */
 const HALF_SLOTS_PER_DAY = 48;
@@ -29,11 +32,61 @@ export class CalendarDayView extends CalendarView {
     return this.i18n.t("day_view_title");
   }
 
+  /** Preferencia de 1/3/5 días persistida en `localStorage` (v1.1.10, mismo patrón que
+   * `calendar-grid-style` de Semana/Semana laboral). */
+  private getDaysToShow(): DaysToShow {
+    const stored = Number(this.app.loadLocalStorage(DAYS_TO_SHOW_KEY));
+    return stored === 3 || stored === 5 ? stored : 1;
+  }
+
   /**
-   * Genera datos para la vista diaria del calendario
+   * Genera datos para la vista diaria del calendario: una columna por día visible (1, 3 o 5),
+   * centradas en la fecha de referencia (v1.1.10, §4.4.3/§13).
    */
   protected generateViewData(): DayViewData {
-    const dayTasks = this.getTasksForDate(this.currentDate);
+    const daysToShow = this.getDaysToShow();
+    const windowStart = this.currentDate.minus({ days: Math.floor(daysToShow / 2) });
+
+    const columns: DayColumnData[] = [];
+    const hourRows: HourRow[] = Array.from({ length: 24 }, (_, hour) => ({
+      hour,
+      formattedHour: this.formatHour(hour),
+      columns: [],
+    }));
+
+    for (let i = 0; i < daysToShow; i++) {
+      const columnDate = windowStart.plus({ days: i });
+      const { column, hourSlotsByHour } = this.buildDayColumn(columnDate);
+      columns.push(column);
+      for (let hour = 0; hour < 24; hour++) {
+        hourRows[hour].columns.push(hourSlotsByHour[hour]);
+      }
+    }
+
+    const windowEnd = windowStart.plus({ days: daysToShow - 1 });
+    const periodName = daysToShow === 1
+      ? this.currentDate.toFormat('EEEE, MMMM d, yyyy')
+      : `${windowStart.toFormat('MMM d')} – ${windowEnd.toFormat('MMM d, yyyy')}`;
+
+    return {
+      viewType: CalendarViewType.Day,
+      date: this.currentDate,
+      weekday: this.currentDate.weekday,
+      dayName: this.currentDate.toFormat('cccc'), // Nombre completo del día
+      isToday: this.currentDate.hasSame(DateTime.now(), 'day'),
+      daysToShow,
+      columns,
+      hourRows,
+      periodName,
+      sidebarCollapsed: this.app.loadLocalStorage(SIDEBAR_COLLAPSED_KEY) === 'true',
+    };
+  }
+
+  /** Genera los datos de una sola columna de día (todo-el-día + segmentos de hora), de forma
+   * independiente: los carriles de solapamiento no se comparten entre columnas (v1.1.10, §13.2). */
+  private buildDayColumn(date: DateTime): { column: DayColumnData; hourSlotsByHour: HourSlot[] } {
+    const dayTasks = this.getTasksForDate(date);
+    const dateIso = date.toISODate() ?? '';
 
     // Tareas ancladas por `scheduled` con hora asignada -> franjas horarias (modo punto/bloque, ADR-T2)
     const scheduledWithTime = dayTasks.filter(task => task.calendarDateType === 'scheduled' && task.date.scheduledTime);
@@ -126,33 +179,30 @@ export class CalendarDayView extends CalendarView {
 
     // Organizar tareas programadas por hora (24 horas); cada hora expone su mitad superior
     // (:00–:29) e inferior (:30–:59) por separado para los bloques con duración.
-    const hourSlots: HourSlot[] = [];
+    const hourSlotsByHour: HourSlot[] = [];
     for (let hour = 0; hour < 24; hour++) {
       const upperHalfSegments = segmentsByHalfSlot[hour * 2] ?? [];
       const lowerHalfSegments = segmentsByHalfSlot[hour * 2 + 1] ?? [];
-      hourSlots.push({
-        hour,
-        formattedHour: this.formatHour(hour),
+      hourSlotsByHour.push({
+        dateIso,
         upperHalfSegments,
         lowerHalfSegments,
         hasDurationSegments: upperHalfSegments.length > 0 || lowerHalfSegments.length > 0,
       });
     }
-    
-    return {
-      viewType: CalendarViewType.Day,
-      date: this.currentDate,
-      weekday: this.currentDate.weekday,
-      dayName: this.currentDate.toFormat('cccc'), // Nombre completo del día
-      isToday: this.currentDate.hasSame(DateTime.now(), 'day'),
-      tasksForDay: dayTasks,
-      hourSlots: hourSlots,
+
+    const column: DayColumnData = {
+      dateIso,
+      dayName: date.toFormat('cccc'),
+      dayOfMonth: date.day,
+      isToday: date.hasSame(DateTime.now(), 'day'),
+      isReferenceDay: date.hasSame(this.currentDate, 'day'),
       allDayDue,
       allDayStart,
       allDayScheduled,
-      periodName: this.currentDate.toFormat('EEEE, MMMM d, yyyy'),
-      sidebarCollapsed: this.app.loadLocalStorage(SIDEBAR_COLLAPSED_KEY) === 'true',
     };
+
+    return { column, hourSlotsByHour };
   }
 
   protected navigateToPrevious(): void {
@@ -204,6 +254,16 @@ export class CalendarDayView extends CalendarView {
     const sidebarToggleIcon = data.sidebarCollapsed ? 'chevron-left' : 'chevron-right';
     if (sidebarToggle) setIcon(sidebarToggle, sidebarToggleIcon);
 
+    // Modo de varios días 1/3/5 (v1.1.10, §4.4.3/§13): preferencia persistida en `localStorage`,
+    // mismo patrón que el selector de estilo de grilla de Semana/Semana laboral.
+    const daysToShowButtons = container.querySelectorAll<HTMLButtonElement>('.oa-calendar-days-to-show-btn');
+    daysToShowButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.app.saveLocalStorage(DAYS_TO_SHOW_KEY, btn.dataset.daysToShow ?? '1');
+        this.refreshCalendar().catch(console.error);
+      });
+    });
+
     // Sección "Todo el día": colapsada por defecto (D10)
     const alldayToggle = container.querySelector<HTMLButtonElement>('.oa-calendar-allday-toggle');
     const alldayContainer = container.querySelector<HTMLElement>('.oa-calendar-allday');
@@ -214,9 +274,10 @@ export class CalendarDayView extends CalendarView {
       alldayToggle.setAttribute('aria-expanded', String(nowExpanded));
     });
 
-    // Drag and drop (v1.1.4, Fase D; snap de media hora en v1.1.9): arrastrar una tarea programada
-    // a otra franja la mueve a la media hora exacta donde se suelta (mitad superior = :00, mitad
-    // inferior = :30), sin importar el minuto original.
+    // Drag and drop (v1.1.4, Fase D; snap de media hora en v1.1.9; varias columnas en v1.1.10):
+    // arrastrar una tarea programada a otra franja la mueve a la media hora exacta donde se suelta
+    // (mitad superior = :00, mitad inferior = :30) y a la fecha de la columna donde se soltó, sin
+    // importar el minuto/día original.
     // Doble clic en una franja vacía crea una tarea con fecha + hora prellenadas (v1.1.9, fix).
     const hourSlots = container.querySelectorAll<HTMLElement>('.oa-calendar-hour-slot');
     hourSlots.forEach(slot => {
@@ -228,7 +289,7 @@ export class CalendarDayView extends CalendarView {
         const hour = Number(hourStr);
         if (Number.isNaN(hour)) return;
 
-        const dateStr = this.currentDate.toISODate();
+        const dateStr = slot.dataset.date;
         if (!dateStr) return;
         this.openCreateTaskForDate(dateStr, `${String(hour).padStart(2, '0')}:00`);
       });
@@ -250,16 +311,50 @@ export class CalendarDayView extends CalendarView {
         const isUpperHalf = this.isPointerOverUpperHalf(e, slot);
         slot.removeClass('oa-calendar-drop-target--upper');
         slot.removeClass('oa-calendar-drop-target--lower');
-        this.handleHourSlotDrop(e, slot.dataset.hour, isUpperHalf ? '00' : '30');
+        this.handleHourSlotDrop(e, slot.dataset.date, slot.dataset.hour, isUpperHalf ? '00' : '30');
       });
     });
 
-    // Doble clic en la sección "Todo el día" crea una tarea sin hora (v1.1.9, fix).
-    const alldayContent = container.querySelector<HTMLElement>('.oa-calendar-allday-content');
-    alldayContent?.addEventListener('dblclick', (e) => {
-      if ((e.target as HTMLElement).closest('.oa-calendar-task')) return;
-      const dateStr = this.currentDate.toISODate();
-      if (dateStr) this.openCreateTaskForDate(dateStr);
+    // Doble clic en la sección "Todo el día" crea una tarea sin hora (v1.1.9, fix). Arrastrar una
+    // tarea programada de una franja horaria de vuelta a "Todo el día" le quita la hora/duración y
+    // la mueve a la fecha de esa columna (v1.1.10): vuelve a aparecer en la fila de "programada sin
+    // hora". El tipo de payload solo se valida en el `drop`: `dataTransfer.getData()` no devuelve
+    // nada durante `dragover` (solo en `dragstart`/`drop`), así que validar aquí impediría llamar a
+    // `preventDefault()` y el navegador rechazaría el drop antes de disparar el evento.
+    const alldayColumns = container.querySelectorAll<HTMLElement>('.oa-calendar-allday-content');
+    alldayColumns.forEach(alldayContent => {
+      alldayContent.addEventListener('dblclick', (e) => {
+        if ((e.target as HTMLElement).closest('.oa-calendar-task')) return;
+        const dateStr = alldayContent.dataset.date;
+        if (dateStr) this.openCreateTaskForDate(dateStr);
+      });
+
+      alldayContent.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        alldayContent.addClass('oa-calendar-drop-target');
+      });
+
+      alldayContent.addEventListener('dragleave', () => {
+        alldayContent.removeClass('oa-calendar-drop-target');
+      });
+
+      alldayContent.addEventListener('drop', (e) => {
+        e.preventDefault();
+        alldayContent.removeClass('oa-calendar-drop-target');
+        const dateStr = alldayContent.dataset.date;
+        const payload = this.parseTaskDragPayload(e);
+        if (!dateStr || !payload || payload.calendarDateType !== 'scheduled') return;
+
+        this.taskWriter.updateTaskLine(payload.filePath, payload.lineNumber, (line) => {
+          const withDate = upsertScheduledDate(line, dateStr);
+          const result = clearScheduledTime(withDate);
+          return result.ok ? result.line : withDate;
+        })
+          .then(ok => {
+            if (ok) this.refreshView().catch(console.error);
+          })
+          .catch(console.error);
+      });
     });
 
     // Redimensionar arrastrando el borde inferior del último segmento de una tarea (v1.1.9, Fase C,
@@ -348,9 +443,10 @@ export class CalendarDayView extends CalendarView {
   }
 
   /** Aplica el drop de una tarea programada sobre una franja horaria: reescribe su hora (🕐) a la
-   * media hora exacta donde se soltó, sin importar el minuto original de la tarea (v1.1.9). */
-  private handleHourSlotDrop(event: DragEvent, hourStr: string | undefined, minutes: '00' | '30'): void {
-    if (hourStr === undefined) return;
+   * media hora exacta donde se soltó y su fecha (⏳) a la columna donde se soltó (v1.1.10; antes
+   * solo la hora, sin importar el minuto original de la tarea, v1.1.9). */
+  private handleHourSlotDrop(event: DragEvent, dateIso: string | undefined, hourStr: string | undefined, minutes: '00' | '30'): void {
+    if (hourStr === undefined || !dateIso) return;
     const payload = this.parseTaskDragPayload(event);
     if (!payload || payload.calendarDateType !== 'scheduled') return;
 
@@ -360,8 +456,9 @@ export class CalendarDayView extends CalendarView {
     const newTime = `${String(hour).padStart(2, '0')}:${minutes}`;
 
     this.taskWriter.updateTaskLine(payload.filePath, payload.lineNumber, (line) => {
-      const result = upsertScheduledTime(line, newTime);
-      return result.ok ? result.line : line;
+      const withDate = upsertScheduledDate(line, dateIso);
+      const result = upsertScheduledTime(withDate, newTime);
+      return result.ok ? result.line : withDate;
     })
       .then(ok => {
         if (ok) this.refreshView().catch(console.error);

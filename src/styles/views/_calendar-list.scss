@@ -1,0 +1,88 @@
+// src/styles/views/_calendar-list.scss
+// Vista de lista dentro del calendario (v1.1.10, §4.10/§17): una fila por día, reutilizando el
+// mismo render de tarea (.oa-calendar-task) que Mes/Semana, sin plantilla ni CSS nuevos para las
+// píldoras en sí (solo el layout de la fila).
+@use '../variables' as *;
+
+.oa-calendar-list-view {
+  display: flex;
+  flex-direction: column;
+  // No usar flex:1 (estirar al 100%): la altura debe ajustarse a la cantidad de días mostrados,
+  // no dejar un margen inferior vacío cuando hay menos filas que el máximo.
+  flex: 0 1 auto;
+  max-height: 100%;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+}
+
+.oa-calendar-list-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  // Doble de alto que una fila de una sola píldora, para que quepan 2 píldoras apiladas.
+  min-height: 76px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  cursor: pointer;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &.oa-calendar-today {
+    background-color: color-mix(in srgb, $today-border-color 8%, transparent);
+  }
+
+  // Fecha de referencia compartida: independiente de "hoy", ambos se aplican si coinciden
+  // (mismo criterio que Mes/Semana/Semana laboral/Año).
+  &.oa-calendar-selected {
+    background-color: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
+
+    .oa-calendar-list-row-date {
+      background-color: var(--interactive-accent);
+      color: var(--text-on-accent);
+    }
+  }
+}
+
+.oa-calendar-list-row-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 110px;
+}
+
+.oa-calendar-list-row-day-name {
+  font-weight: 600;
+  font-size: 0.85em;
+  color: var(--text-muted);
+}
+
+.oa-calendar-list-row-date {
+  font-weight: bold;
+  font-size: 0.9em;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.oa-calendar-list-row-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 6px;
+
+  .oa-calendar-task {
+    @include calendar-task-styles();
+    width: auto;
+    max-width: 280px;
+    margin-bottom: 0;
+  }
+}

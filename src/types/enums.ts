@@ -28,7 +28,8 @@ export enum CoreTaskStatus {
   InProgress = "/",
   Done = "x",
   Cancelled = "-",
-  nonTask = "~"
+  nonTask = "~",
+  OnHold = "?"
 }
 
 export enum CoreTaskStatusIcon {
@@ -36,7 +37,8 @@ export enum CoreTaskStatusIcon {
   InProgress = "🛠️",
   Done = "✅",
   Cancelled = "❌",
-  nonTask = "🗑️"
+  nonTask = "🗑️",
+  OnHold = "⏸️"
 }
 
 export enum OnCompletion {
@@ -83,7 +85,8 @@ export enum CalendarViewType {
   Month = 'month',
   Week = 'week',
   WorkWeek = 'workweek',
-  Day = 'day'
+  Day = 'day',
+  List = 'list'
 }
 
 // Otras enumeraciones pueden ir aquí

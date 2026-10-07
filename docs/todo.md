@@ -231,22 +231,44 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
   - [x] **fix**: la vista Semana laboral tenía un listener de clic propio (`setupTaskInteractionListeners`, código legado) que abría el archivo directamente en vez de editar; eliminado para usar el mismo clic=editar/doble clic=abrir archivo que el resto de las vistas de calendario
   - [x] **fix**: el clic en la manija de redimensionar un bloque con duración disparaba también el clic de la píldora contenedora (abría el modal de edición al soltar); se detiene con `stopPropagation()` en un listener de `click` dedicado en la manija
 
-## 🔮 v1.1.10 (ideas, discusión pendiente)
+## 🎯 Características (v1.1.10)
 
-- [ ] **Manejo de estatus desde el calendario** (pospuesto de v1.1.9; diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.9/§7.5, `Modelo de datos.md` §10 y `Arquitectura técnica.md` §14; fases en `Plan de implementación.md`)
-  - [ ] Sexto estado "En espera" (`?`, ícono ⏸️), sumado a los 5 ya existentes (Todo/En progreso/Hecho/Cancelada/No es tarea)
-  - [ ] Ícono de estado visible en cada píldora del calendario
-  - [ ] Cambiar el estado con clic derecho (menú contextual) sobre la tarea, o desde un nuevo campo en el Task Modal (crear y editar, "Todo" preseleccionado al crear)
-  - [ ] Marcar "Hecho" agrega la fecha ✅; cambiar desde "Hecho" a otro estado la quita — igual que el checkbox nativo de Obsidian
+- [x] **fix**: campo de recurrencia (🔁) del Task Modal sin ayuda alguna para escribir el texto — se agregó autocompletado con una lista curada de patrones que `TaskSection.convertToRRuleFormat()` reconoce correctamente (incluye variantes `when done`), mismo componente visual que las sugerencias de archivo (`.oa-file-suggestions`/`.oa-file-suggestion-item`)
+- [x] **fix**: en la vista Día, las tareas "programadas sin hora" de la sección "Todo el día" ahora son arrastrables a una franja horaria (les asigna esa hora, igual que ya pasaba al arrastrar entre franjas); arrastrar una tarea con hora de vuelta a "Todo el día" le quita la hora y la duración (`clearScheduledTime()`, nuevo en `task-line-fields.ts`). Las tareas de 📅 vencimiento/🛫 inicio no son arrastrables a una franja porque nunca pueden llevar hora (ADR-T1/T2). **fix relacionado**: el `dragover` de la zona "Todo el día" intentaba leer el payload con `dataTransfer.getData()`, que siempre vuelve vacío durante `dragover` (solo funciona en `dragstart`/`drop`) — nunca llamaba a `preventDefault()` y el navegador bloqueaba el drop; corregido para que `dragover` solo resalte la zona sin leer el payload, validando el tipo de tarea únicamente en el `drop`
+- [x] **fix**: las tareas de la sección "Todo el día" (vista Día) no tenían el mismo look de píldora que el resto del calendario — les faltaba el `@include calendar-task-styles()` (fondo, borde de acento, radio de esquina, sombra) que sí aplican las franjas horarias y Mes/Semana/Semana laboral; agregado en `.oa-calendar-allday-row .oa-calendar-task`
+- [x] **Selector de fecha unificado en el Task Modal** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §7.6 y `Arquitectura técnica.md` §15; fases en `Plan de implementación.md`)
+  - [x] Reemplazar `flatpickr` por el componente `CalendarDatePicker` (popover) en los 3 campos de fecha del modal: vencimiento, inicio y programada
+  - [x] Mostrar el punto indicador de días con tareas existentes, igual que en las vistas de calendario
+  - [x] Hora (🕐) y duración (⏱️) conservan sus modales dedicados; sin cambios
+- [x] **Manejo de estatus desde el calendario** (pospuesto de v1.1.9; diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.9/§7.5, `Modelo de datos.md` §10 y `Arquitectura técnica.md` §14; fases en `Plan de implementación.md`)
+  - [x] Sexto estado "En espera" (`?`, ícono ⏸️), sumado a los 5 ya existentes (Todo/En progreso/Hecho/Cancelada/No es tarea)
+  - [x] Ícono de estado visible en cada píldora del calendario
+  - [x] Cambiar el estado con clic derecho (menú contextual) sobre la tarea, o desde un nuevo campo en el Task Modal (crear y editar, "Todo" preseleccionado al crear)
+  - [x] Marcar "Hecho" agrega la fecha ✅; cambiar desde "Hecho" a otro estado la quita — igual que el checkbox nativo de Obsidian (`upsertTaskStatus()`, conectado al menú contextual y al Task Modal)
   - [ ] Estados personalizados/configurables y filtrar el calendario por estado quedan fuera de alcance por ahora
-- [ ] **Fix: `task-filter.ts` compara el símbolo contra el texto del estado** — `isTaskCompleted` compara `state.status` (símbolo literal) contra `'DONE'`/`'CANCELLED'` (valores de `state.text`); nunca es verdadero, el filtro no excluye completadas/canceladas como debería
-- [ ] **Vista Día: modo de varios días 1/3/5** (pospuesto de v1.1.9; diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.4.3 y `Arquitectura técnica.md` §13; fases en `Plan de implementación.md`)
-  - [ ] Multi-botón 1/3/5 solo visible dentro de la vista Día (no en el selector principal de vistas)
-  - [ ] Día de referencia centrado (3: 1 antes/1 después; 5: 2 antes/2 después); ◀▶ desplazan un día a la vez
-  - [ ] Hereda el grid de horas y los bloques con duración/carriles del punto anterior, por columna de día; ninguna tarea cruza entre columnas
-- [ ] Vista de lista dentro del calendario: misma fecha de referencia y días que Mes/Semana/Día, pero en renglones en vez de casillas (ver imagen de referencia en el punto 6 de la discusión; se suma como 7º botón al selector segmentado de v1.1.9 una vez diseñada)
-- [ ] Modal de duración: reusar el dial circular del Habit Editor, en incrementos de 5 min en vez de minuto a minuto, cubriendo hasta el día completo
-- [ ] Compatibilidad con tareas recursivas/repetitivas (🔁) del pluiin tasks (las tareas recursivas se van creando cuando se marca como terminada la misma anterior) — analizar cómo lo resuelve Obsidian Tasks antes de diseñar
+- [x] **Fix: `task-filter.ts` compara el símbolo contra el texto del estado** — `isTaskCompleted` compara `state.status` (símbolo literal) contra `'DONE'`/`'CANCELLED'` (valores de `state.text`); nunca es verdadero, el filtro no excluye completadas/canceladas como debería
+- [x] **Vista Día: modo de varios días 1/3/5** (pospuesto de v1.1.9; diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.4.3 y `Arquitectura técnica.md` §13; fases en `Plan de implementación.md`)
+  - [x] Multi-botón 1/3/5 solo visible dentro de la vista Día (no en el selector principal de vistas)
+  - [x] Día de referencia centrado (3: 1 antes/1 después; 5: 2 antes/2 después); ◀▶ desplazan un día a la vez
+  - [x] Hereda el grid de horas y los bloques con duración/carriles del punto anterior, por columna de día; ninguna tarea cruza entre columnas
+  - [x] **fix relacionado**: arrastrar una tarea a otra columna (franja horaria o "Todo el día" de otro día) ahora también reescribe su fecha, no solo la hora — con una sola columna el drag and drop anterior asumía siempre el mismo día
+- [x] **Vista de lista dentro del calendario** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.10 y `Arquitectura técnica.md` §17; fases en `Plan de implementación.md`)
+  - [x] Cantidad de días configurable (setting `calendarListDaysToShow`, slider 7–14, por defecto 14, en Settings ▸ Calendario) — revisado de "fijo en 14" a configurable
+  - [x] Ventana continua de N días desde la fecha de referencia (sin alinear a inicio de semana); ◀▶ mueve la ventana completa (`CalendarListView.navigateToPrevious()/navigateToNext()`)
+  - [x] Una fila por día (`.oa-calendar-list-row`), reutilizando el mismo render de tarea (`.oa-calendar-task`) que Mes/Semana, sin mecanismo de "N more"
+  - [x] 7º botón en el selector segmentado de vistas (los 6 templates existentes + el nuevo `calendar-list-view.hbs`), con ícono `list-todo` y ubicado a la izquierda del botón de Día
+  - [x] Botón de selector de fecha (popover) agregado también a la vista de Lista y a la vista Día, igual que Mes/Semana/Semana laboral/Año
+  - [x] Filas al doble de alto (para que quepan 2 píldoras apiladas) y el contenedor ajusta su altura a la cantidad de días mostrados, sin dejar margen inferior vacío
+  - [x] **fix**: un clic en una fila ya no recentraba la ventana completa en ese día — se separó el inicio de la ventana (`windowStart`) de la fecha seleccionada/resaltada (`currentDate`), igual que el comportamiento de Mes/Semana
+- [x] **Modal de duración con dial circular** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §7.7 y `Arquitectura técnica.md` §18; fases en `Plan de implementación.md`)
+  - [x] Extraer el dial circular del Habit Editor a un componente compartido (`src/core/time-dial.ts`), parametrizado por máximo y paso
+  - [x] El modal de duración lo reutiliza: máximo 420 minutos (7 horas), pasos de 5 minutos
+- [x] **Compatibilidad con tareas recurrentes (🔁)** (diseño en `docs/agenda-tasks/Modelo de datos.md` §11 y `Arquitectura técnica.md` §16; fases en `Plan de implementación.md`)
+  - [x] Al marcar una tarea recurrente como "Hecho" (manejo de estatus, más arriba), se inserta una línea nueva una línea arriba con la siguiente ocurrencia
+  - [x] Prioridad de fecha para calcular la siguiente ocurrencia: `scheduled > due > start` (ADR-T4 del plugin, no el orden de Tasks)
+  - [x] Soporte del sufijo `when done` (calcula desde la fecha de hoy en vez de la fecha original)
+  - [x] Se eliminan `🆔`/`⛔` en la nueva ocurrencia; el resto de los campos se copian con el mismo desplazamiento relativo de fechas
+  - [x] Delega el cálculo de la siguiente fecha válida en la librería `rrule` (ya es dependencia)
 
 
 ## 📊 Próximas Características (v1.x)
@@ -292,6 +314,7 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 ### Habit Tracker
 - [ ] Refresco automático de la Rutina
 - [ ] las vistas dependientes de la fecha actual a medianoche local, sin requerir interacción ni cambios en el vault.
+- [ ] Tareas activas e inactivas para el porcentaje de completado por fecha o rango de fecha
 
 
 - [ ] Día recomendado, seria los horarios de que hacer a cada hora dependiendo de lo que se debe de hacer entre tareas y habitos.

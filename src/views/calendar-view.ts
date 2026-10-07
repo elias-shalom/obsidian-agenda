@@ -37,6 +37,7 @@ const CALENDAR_VIEW_BUTTON_ICONS: Record<string, string> = {
   week: 'columns-3',
   workweek: 'briefcase',
   day: 'calendar-clock',
+  list: 'list-todo',
 };
 
 /** Payload transportado por `dataTransfer` durante un drag and drop de tarea (v1.1.4, Fase D). */
@@ -417,7 +418,7 @@ export abstract class CalendarView extends BaseView {
     });
 
     const dayCells = container.querySelectorAll<HTMLElement>(
-      '.oa-calendar-month-day, .oa-calendar-week-day-container, .oa-calendar-year-day'
+      '.oa-calendar-month-day, .oa-calendar-week-day-container, .oa-calendar-year-day, .oa-calendar-list-row'
     );
 
     dayCells.forEach(cell => {
@@ -472,17 +473,18 @@ export abstract class CalendarView extends BaseView {
       });
     });
 
-    // Clic en el número de día (Mes/Semana/Semana laboral) navega a la vista Día de esa fecha,
-    // igual que ya hace la vista Año con sus números de día.
+    // Clic en el número de día (Mes/Semana/Semana laboral/Lista) navega a la vista Día de esa
+    // fecha, igual que ya hace la vista Año con sus números de día.
     const dayNumbers = container.querySelectorAll<HTMLElement>(
       '.oa-calendar-month-day .oa-calendar-month-day-number, ' +
-      '.oa-calendar-week-day-container .oa-calendar-date'
+      '.oa-calendar-week-day-container .oa-calendar-date, ' +
+      '.oa-calendar-list-row .oa-calendar-list-row-date'
     );
 
     dayNumbers.forEach(numberEl => {
       numberEl.addEventListener('click', (e) => {
         e.stopPropagation(); // evita conflicto con el dblclick de la celda (crear tarea)
-        const cell = numberEl.closest<HTMLElement>('.oa-calendar-month-day, .oa-calendar-week-day-container');
+        const cell = numberEl.closest<HTMLElement>('.oa-calendar-month-day, .oa-calendar-week-day-container, .oa-calendar-list-row');
         const dateStr = cell?.dataset.date;
         if (dateStr) this.navigateToDayView(dateStr);
       });
@@ -558,6 +560,8 @@ export abstract class CalendarView extends BaseView {
         return CalendarViewType.Day;
       case 'year':
         return CalendarViewType.Year;
+      case 'list':
+        return CalendarViewType.List;
       default:
         return CalendarViewType.Month; // Valor por defecto
     }
@@ -588,6 +592,9 @@ export abstract class CalendarView extends BaseView {
         break;
       case CalendarViewType.Day:
         viewId = 'calendar-day-view';
+        break;
+      case CalendarViewType.List:
+        viewId = 'calendar-list-view';
         break;
       default:
         viewId = 'calendar-month-view';

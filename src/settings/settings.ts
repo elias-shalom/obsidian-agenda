@@ -9,6 +9,8 @@ export interface AgendaPluginSettings {
   calendarShowStartDates: boolean;
   calendarShowScheduledDates: boolean;
   calendarShowCompletedTasks: boolean;
+  /** Días visibles en la vista de lista del calendario (v1.1.10, §4.10): mínimo 7, máximo 14. */
+  calendarListDaysToShow: number;
 
   // Habits settings
   habitFolderPath: string;
@@ -36,6 +38,7 @@ export const DEFAULT_SETTINGS: AgendaPluginSettings = {
   calendarShowStartDates: false,
   calendarShowScheduledDates: true,
   calendarShowCompletedTasks: true,
+  calendarListDaysToShow: 14,
 
   habitFolderPath: "daily plan/daily routine/habit",
   habitDaysToShow: 21,

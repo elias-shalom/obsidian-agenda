@@ -274,19 +274,19 @@ Redimensionar arrastrando el borde **superior** (cambiaría la hora de inicio, n
 
 **Fuera de alcance**: filtrar el calendario por estado (ya existe `calendarShowCompletedTasks` para ocultar completadas); estados personalizados/configurables (ADR-S2).
 
-### 4.10 Vista de lista dentro del calendario (v1.1.10 — diseño, no implementado)
+### 4.10 Vista de lista dentro del calendario (v1.1.10 — implementado)
 
-> **Estado**: diseño acordado, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §17.
+> **Estado**: implementado. Mecanismo: [[Arquitectura técnica]] §17.
 
-Un 7º botón en el selector segmentado de §4.8, que muestra una fila por día en una ventana continua de 14 días a partir de la fecha de referencia compartida (sin alinear a inicio de semana — confirmado). Cada fila reutiliza exactamente el mismo contenido y clases que ya renderiza una celda de día en Mes/Semana (`.oa-calendar-task`, mismo badge por tipo de fecha, mismo atenuado de completadas), solo que dispuesto como una fila de ancho completo en vez de una casilla de grilla — **sin un mecanismo nuevo de "N more"**: si hay muchas tareas ese día, se ven todas en la fila, igual que hoy pasa en una celda de Mes/Semana (confirmado).
+Un 7º botón en el selector segmentado de §4.8, que muestra una fila por día en una ventana continua de días a partir de la fecha de referencia compartida (sin alinear a inicio de semana — confirmado). El tamaño de la ventana es configurable (Settings ▸ Calendario ▸ "Vista de lista: días a mostrar", `calendarListDaysToShow`): mínimo 7, máximo 14, por defecto 14 — revisado de "fijo en 14" a configurable. Cada fila reutiliza exactamente el mismo contenido y clases que ya renderiza una celda de día en Mes/Semana (`.oa-calendar-task`, mismo badge por tipo de fecha, mismo atenuado de completadas), solo que dispuesto como una fila de ancho completo en vez de una casilla de grilla — **sin un mecanismo nuevo de "N more"**: si hay muchas tareas ese día, se ven todas en la fila, igual que hoy pasa en una celda de Mes/Semana (confirmado).
 
 - Imagen de referencia inicial (day-planner): `attachments/vista-lista.png` — se usó solo como inspiración del layout de fila-por-día; el contenido final de cada fila sigue el lenguaje visual existente del calendario (§4.1–§4.4), no el de la imagen.
 - Gestos: mismos que el resto del calendario — clic en una tarea edita, doble clic abre la nota, doble clic en espacio vacío de la fila crea una tarea para ese día, clic en la fecha de la fila navega a la vista Día de ese día (igual que clic en el número de día de Mes/Semana).
 - Drag and drop: igual que Mes/Semana, arrastrar una tarea a otra fila reprograma su fecha ancla (ADR-T4).
-- Navegación ◀▶: desplaza la ventana de 14 días completa (no día a día).
+- Navegación ◀▶: desplaza la ventana completa (no día a día).
 
 #### 4.10.1 Fuera de alcance
-Un mecanismo de "N more"/colapsar tareas por fila; tamaño de ventana configurable (queda fijo en 14 días en esta primera versión).
+Un mecanismo de "N more"/colapsar tareas por fila.
 
 ## 5. Timeline View (`timeline-view`) — placeholder
 
@@ -363,7 +363,7 @@ El selector de hora/duración y la captura de fecha desde el menú contextual de
 
 > **Estado**: diseño acordado, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §18.
 
-`TaskDurationModal` reemplaza su `<input type="number">` simple por el mismo dial circular que ya usa el Habit Editor para elegir minutos (arrastre, teclado, rueda del mouse), extraído a un componente compartido y reutilizado aquí con una configuración distinta: máximo 1440 minutos (un día completo) en vez de 120, y pasos de 5 minutos en vez de 1 — confirmado. Se propone conservar un input numérico visible junto al dial para entrada exacta/accesible, coherente con que el dial ya convive con un valor-label e input oculto en Hábitos (a confirmar al implementar).
+`TaskDurationModal` reemplaza su `<input type="number">` simple por el mismo dial circular que ya usa el Habit Editor para elegir minutos (arrastre, teclado, rueda del mouse), extraído a un componente compartido y reutilizado aquí con una configuración distinta: máximo 420 minutos (7 horas) en vez de 120, y pasos de 5 minutos en vez de 1 — confirmado.
 
 ## 8. Tooltips del plugin
 

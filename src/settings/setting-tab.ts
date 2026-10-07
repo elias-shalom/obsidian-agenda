@@ -112,6 +112,21 @@ export class SettingTab extends PluginSettingTab {
                 }));
             },
           },
+          {
+            name: this.i18n.t('calendar_list_days_to_show'),
+            desc: this.i18n.t('calendar_list_days_to_show_desc'),
+            render: (setting) => {
+              setting.addSlider(slider => slider
+                .setLimits(7, 14, 1)
+                .setValue(this.plugin.settings.calendarListDaysToShow)
+                .setDynamicTooltip()
+                .onChange(async (value) => {
+                  this.plugin.settings.calendarListDaysToShow = value;
+                  await this.plugin.saveSettings();
+                  this.refreshCalendarViews();
+                }));
+            },
+          },
         ],
       },
       {
@@ -277,6 +292,19 @@ export class SettingTab extends PluginSettingTab {
         .setValue(this.plugin.settings.calendarShowCompletedTasks)
         .onChange(async (value) => {
           this.plugin.settings.calendarShowCompletedTasks = value;
+          await this.plugin.saveSettings();
+          this.refreshCalendarViews();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("calendar_list_days_to_show"))
+      .setDesc(this.i18n.t("calendar_list_days_to_show_desc"))
+      .addSlider(slider => slider
+        .setLimits(7, 14, 1)
+        .setValue(this.plugin.settings.calendarListDaysToShow)
+        .setDynamicTooltip()
+        .onChange(async (value) => {
+          this.plugin.settings.calendarListDaysToShow = value;
           await this.plugin.saveSettings();
           this.refreshCalendarViews();
         }));

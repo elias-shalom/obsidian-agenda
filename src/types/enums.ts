@@ -85,7 +85,8 @@ export enum CalendarViewType {
   Month = 'month',
   Week = 'week',
   WorkWeek = 'workweek',
-  Day = 'day'
+  Day = 'day',
+  List = 'list'
 }
 
 // Otras enumeraciones pueden ir aquí

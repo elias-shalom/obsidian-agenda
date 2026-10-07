@@ -247,17 +247,19 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
   - [x] Marcar "Hecho" agrega la fecha ✅; cambiar desde "Hecho" a otro estado la quita — igual que el checkbox nativo de Obsidian (`upsertTaskStatus()`, conectado al menú contextual y al Task Modal)
   - [ ] Estados personalizados/configurables y filtrar el calendario por estado quedan fuera de alcance por ahora
 - [x] **Fix: `task-filter.ts` compara el símbolo contra el texto del estado** — `isTaskCompleted` compara `state.status` (símbolo literal) contra `'DONE'`/`'CANCELLED'` (valores de `state.text`); nunca es verdadero, el filtro no excluye completadas/canceladas como debería
-- [ ] **Vista Día: modo de varios días 1/3/5** (pospuesto de v1.1.9; diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.4.3 y `Arquitectura técnica.md` §13; fases en `Plan de implementación.md`)
-  - [ ] Multi-botón 1/3/5 solo visible dentro de la vista Día (no en el selector principal de vistas)
-  - [ ] Día de referencia centrado (3: 1 antes/1 después; 5: 2 antes/2 después); ◀▶ desplazan un día a la vez
-  - [ ] Hereda el grid de horas y los bloques con duración/carriles del punto anterior, por columna de día; ninguna tarea cruza entre columnas
-- [ ] **Vista de lista dentro del calendario** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.10 y `Arquitectura técnica.md` §17; fases en `Plan de implementación.md`)
-  - [ ] Ventana continua de 14 días desde la fecha de referencia (sin alinear a inicio de semana); ◀▶ mueve la ventana completa
-  - [ ] Una fila por día, reutilizando el mismo render de tarea (`.oa-calendar-task`) que Mes/Semana, sin mecanismo de "N more"
-  - [ ] 7º botón en el selector segmentado de vistas
-- [ ] **Modal de duración con dial circular** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §7.7 y `Arquitectura técnica.md` §18; fases en `Plan de implementación.md`)
-  - [ ] Extraer el dial circular del Habit Editor a un componente compartido (`src/core/time-dial.ts`), parametrizado por máximo y paso
-  - [ ] El modal de duración lo reutiliza: máximo 1440 minutos (un día completo), pasos de 5 minutos
+- [x] **Vista Día: modo de varios días 1/3/5** (pospuesto de v1.1.9; diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.4.3 y `Arquitectura técnica.md` §13; fases en `Plan de implementación.md`)
+  - [x] Multi-botón 1/3/5 solo visible dentro de la vista Día (no en el selector principal de vistas)
+  - [x] Día de referencia centrado (3: 1 antes/1 después; 5: 2 antes/2 después); ◀▶ desplazan un día a la vez
+  - [x] Hereda el grid de horas y los bloques con duración/carriles del punto anterior, por columna de día; ninguna tarea cruza entre columnas
+  - [x] **fix relacionado**: arrastrar una tarea a otra columna (franja horaria o "Todo el día" de otro día) ahora también reescribe su fecha, no solo la hora — con una sola columna el drag and drop anterior asumía siempre el mismo día
+- [x] **Vista de lista dentro del calendario** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §4.10 y `Arquitectura técnica.md` §17; fases en `Plan de implementación.md`)
+  - [x] Cantidad de días configurable (setting `calendarListDaysToShow`, slider 7–14, por defecto 14, en Settings ▸ Calendario) — revisado de "fijo en 14" a configurable
+  - [x] Ventana continua de N días desde la fecha de referencia (sin alinear a inicio de semana); ◀▶ mueve la ventana completa (`CalendarListView.navigateToPrevious()/navigateToNext()`)
+  - [x] Una fila por día (`.oa-calendar-list-row`), reutilizando el mismo render de tarea (`.oa-calendar-task`) que Mes/Semana, sin mecanismo de "N more"
+  - [x] 7º botón en el selector segmentado de vistas (los 6 templates existentes + el nuevo `calendar-list-view.hbs`)
+- [x] **Modal de duración con dial circular** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §7.7 y `Arquitectura técnica.md` §18; fases en `Plan de implementación.md`)
+  - [x] Extraer el dial circular del Habit Editor a un componente compartido (`src/core/time-dial.ts`), parametrizado por máximo y paso
+  - [x] El modal de duración lo reutiliza: máximo 420 minutos (7 horas), pasos de 5 minutos
 - [x] **Compatibilidad con tareas recurrentes (🔁)** (diseño en `docs/agenda-tasks/Modelo de datos.md` §11 y `Arquitectura técnica.md` §16; fases en `Plan de implementación.md`)
   - [x] Al marcar una tarea recurrente como "Hecho" (manejo de estatus, más arriba), se inserta una línea nueva una línea arriba con la siguiente ocurrencia
   - [x] Prioridad de fecha para calcular la siguiente ocurrencia: `scheduled > due > start` (ADR-T4 del plugin, no el orden de Tasks)

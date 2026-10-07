@@ -189,9 +189,9 @@ Redimensionar arrastrando el borde superior (cambia la hora de inicio, no la dur
 - [x] Verificable sola: un clic cambia de vista igual que hoy el dropdown; el botón activo se marca visualmente; los 5 botones caben en el encabezado sin desbordarse.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
-## Próxima fase — v1.1.10: vista Día, modo de varios días 1/3/5 (diseño)
+## Próxima fase — v1.1.10: vista Día, modo de varios días 1/3/5 (implementado)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §4.4.3. Mecanismo: [[Arquitectura técnica]] §13. **Pospuesto de v1.1.9 a v1.1.10. Nada de esta fase está implementado.** Depende de las Fases A/B/C del §4.7 (bloques con duración, carriles y redimensionar) ya implementadas.
+> Comportamiento y decisiones: [[Especificación de vistas]] §4.4.3. Mecanismo: [[Arquitectura técnica]] §13. Dependía de las Fases A/B/C del §4.7 (bloques con duración, carriles y redimensionar), ya implementadas.
 
 ## Próxima fase — v1.1.10: manejo de estatus desde el calendario (diseño)
 
@@ -228,12 +228,13 @@ Redimensionar arrastrando el borde superior (cambia la hora de inicio, no la dur
 Filtrar el calendario por estado; estados personalizados/configurables; generación de nuevas ocurrencias de tareas recurrentes al marcar `Done` (se diseña aparte).
 
 ### Fase Única
-- [ ] Multi-botón 1/3/5 dentro de `calendar-day-view.hbs`, visible solo en esta vista; preferencia persistida en `localStorage`.
-- [ ] `generateViewData()` calcula el rango centrado de fechas según `daysToShow` y genera una columna por día, reutilizando la lógica de segmentos/carriles de duración ya definida para un solo día.
-- [ ] Plantilla: `.oa-calendar-hour-row` con 1 etiqueta de hora compartida + N celdas; sección "todo el día" repetida por columna.
-- [ ] `navigateToPrevious()`/`navigateToNext()` mueven la ventana un día a la vez en este modo.
-- [ ] Verificable sola: con "3" o "5" activos, el día de referencia queda al centro; ninguna tarea ni carril cruza entre columnas; ◀▶ desplazan de a un día.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] Multi-botón 1/3/5 dentro de `calendar-day-view.hbs`, visible solo en esta vista; preferencia persistida en `localStorage`.
+- [x] `generateViewData()` calcula el rango centrado de fechas según `daysToShow` y genera una columna por día (`buildDayColumn()`), reutilizando la lógica de segmentos/carriles de duración ya definida para un solo día; las filas de hora se transponen a `hourRows` (1 por hora, N columnas cada una) para que la plantilla comparta la etiqueta de hora entre columnas.
+- [x] Plantilla: `.oa-calendar-hour-row` con 1 etiqueta de hora compartida + N celdas; sección "todo el día" repetida por columna (`.oa-calendar-allday-columns`).
+- [x] `navigateToPrevious()`/`navigateToNext()` ya movían la ventana un día a la vez (sin cambios, coincidía con el diseño).
+- [x] Verificable sola: con "3" o "5" activos, el día de referencia queda al centro; ninguna tarea ni carril cruza entre columnas; ◀▶ desplazan de a un día.
+- [x] Extra (no estaba en el checklist original, necesario para que el drag and drop siguiera siendo correcto con varias columnas): arrastrar una tarea a otra columna ahora también reescribe su fecha (`upsertScheduledDate`), no solo la hora; antes asumía siempre el mismo día.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance (fecha de referencia y selector de fecha)
 - Seleccionar con clic en una celda, rangos de fechas, escribir la fecha a mano, navegar la rejilla con flechas del teclado, y corregir que Semana use semana ISO en vez de `weekStartDay`.
@@ -253,29 +254,33 @@ Filtrar el calendario por estado; estados personalizados/configurables; generaci
 ### Fuera de alcance
 Quitar `flatpickr` como dependencia del proyecto (sigue en uso en la inserción de campos desde el editor, §6); migrar esa otra superficie al mismo componente.
 
-## Próxima fase — v1.1.10: vista de lista dentro del calendario (diseño)
+## Próxima fase — v1.1.10: vista de lista dentro del calendario (implementado)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §4.10. Mecanismo: [[Arquitectura técnica]] §17. **Nada de esta fase está implementado.**
-
-### Fase Única
-- [ ] Nueva `CalendarListView` + `CALENDAR_LIST_VIEW_TYPE`, registrada en `ViewManager` igual que las otras 5 vistas de calendario.
-- [ ] `generateViewData()`: ventana continua de 14 días desde la fecha de referencia, reutilizando `WeekDayData`/`getTasksForDate()`.
-- [ ] Nueva plantilla `calendar-list-view.hbs`: una fila por día, reutilizando el bloque de renderizado de `.oa-calendar-task` ya usado en Mes/Semana (sin plantilla nueva para las píldoras).
-- [ ] 7º botón en `.oa-calendar-view-segmented` en las 6 plantillas de calendario.
-- [ ] `navigateToPrevious()`/`navigateToNext()` mueven la ventana completa de 14 días.
-- [ ] Verificable sola: la vista muestra 14 filas con sus tareas; clic/doble clic/drag and drop se comportan igual que en Mes/Semana.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
-
-## Próxima fase — v1.1.10: modal de duración con dial circular (diseño)
-
-> Comportamiento y decisiones: [[Especificación de vistas]] §7.7. Mecanismo: [[Arquitectura técnica]] §18. **Nada de esta fase está implementado.**
+> Comportamiento y decisiones: [[Especificación de vistas]] §4.10. Mecanismo: [[Arquitectura técnica]] §17.
 
 ### Fase Única
-- [ ] Extraer `HabitEditorModal.attachTimeDial()` a `src/core/time-dial.ts`, parametrizado por `maxMinutes`/`stepMinutes`.
-- [ ] `HabitEditorModal` usa el componente extraído con los mismos valores que tiene hoy (`120`/`1`), sin cambio de comportamiento.
-- [ ] `TaskDurationModal` usa el componente con `1440`/`5`.
-- [ ] Verificable sola: el Habit Editor se comporta igual que antes; el modal de duración del Task Modal usa el dial en vez del input numérico, con pasos de 5 minutos hasta 1440.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] Nuevo setting `calendarListDaysToShow` (7–14, por defecto 14) en Settings ▸ Calendario (slider, ambas rutas: API declarativa y `display()` legado).
+- [x] Nueva `CalendarListView` + `CALENDAR_LIST_VIEW_TYPE`, registrada en `ViewManager` igual que las otras 5 vistas de calendario.
+- [x] `generateViewData()`: ventana continua de `plugin.settings.calendarListDaysToShow` días desde la fecha de referencia, reutilizando `WeekDayData`/`getTasksForDate()`.
+- [x] Nueva plantilla `calendar-list-view.hbs`: una fila por día, reutilizando el bloque de renderizado de `.oa-calendar-task` ya usado en Mes/Semana (sin plantilla nueva para las píldoras).
+- [x] 7º botón en `.oa-calendar-view-segmented` en las 6 plantillas de calendario.
+- [x] `navigateToPrevious()`/`navigateToNext()` mueven la ventana completa (`calendarListDaysToShow` días).
+- [x] Verificable sola: la vista muestra tantas filas como indique el setting (entre 7 y 14) con sus tareas; clic/doble clic/drag and drop se comportan igual que en Mes/Semana (reutilizan los mismos selectores compartidos de `CalendarView`, sin wiring nuevo); cambiar el setting refresca la vista abierta.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
+
+## Próxima fase — v1.1.10: modal de duración con dial circular (implementado)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §7.7. Mecanismo: [[Arquitectura técnica]] §18.
+
+### Fase Única
+- [x] Extraer `HabitEditorModal.attachTimeDial()` a `src/core/time-dial.ts`, parametrizado por `maxMinutes`/`stepMinutes`.
+- [x] `HabitEditorModal` usa el componente extraído con los mismos valores que tenía antes (`120`/`1`), sin cambio de comportamiento; la plantilla ya no incluye el SVG a mano, `TimeDial.mount()` construye todo el dial.
+- [x] `TaskDurationModal` usa el componente con `420`/`5` (7 horas); reescrito para construir su UI con `createEl`/`createDiv` en vez del input numérico simple (mismo patrón que `TaskTimePickerModal`).
+- [x] Verificable sola: el Habit Editor se comporta igual que antes; el modal de duración del Task Modal usa el dial en vez del input numérico, con pasos de 5 minutos hasta 420 (7 horas).
+- [x] `npm run build` y ESLint sobre los archivos tocados.
+
+### Nota de implementación
+El CSS del dial (`.oa-time-dial*`) se movió de `views/_habit-form.scss` a un archivo compartido `components/_time-dial.scss` (§18.3 del diseño).
 
 ## Próxima fase — v1.1.10: compatibilidad con tareas recurrentes (implementado)
 

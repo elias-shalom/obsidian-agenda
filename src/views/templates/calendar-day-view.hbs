@@ -1,16 +1,28 @@
 <div class="oa-calendar-container">
   <div class="oa-calendar-toolbar">
-    <div class="oa-calendar-current-period">
-      <h2>{{calendar.periodName}}</h2>
+    <div class="oa-calendar-period-group">
+      <button type="button" class="oa-calendar-date-picker-trigger" aria-haspopup="dialog" aria-expanded="false" title="{{t 'open_date_picker'}}" aria-label="{{t 'open_date_picker'}}"></button>
+      <div class="oa-calendar-current-period">
+        <h2>{{calendar.periodName}}</h2>
+      </div>
     </div>
     
     <div class="oa-calendar-nav-container">
+      <div class="oa-calendar-days-to-show-selector">
+        <div class="oa-calendar-view-segmented" role="group" aria-label="{{t 'calendar_days_to_show_label'}}">
+          <button type="button" class="oa-calendar-view-btn oa-calendar-days-to-show-btn {{#equals calendar.daysToShow 1}}oa-active{{/equals}}" data-days-to-show="1" title="{{t 'calendar_days_to_show_1'}}" aria-label="{{t 'calendar_days_to_show_1'}}">1</button>
+          <button type="button" class="oa-calendar-view-btn oa-calendar-days-to-show-btn {{#equals calendar.daysToShow 3}}oa-active{{/equals}}" data-days-to-show="3" title="{{t 'calendar_days_to_show_3'}}" aria-label="{{t 'calendar_days_to_show_3'}}">3</button>
+          <button type="button" class="oa-calendar-view-btn oa-calendar-days-to-show-btn {{#equals calendar.daysToShow 5}}oa-active{{/equals}}" data-days-to-show="5" title="{{t 'calendar_days_to_show_5'}}" aria-label="{{t 'calendar_days_to_show_5'}}">5</button>
+        </div>
+      </div>
+
       <div class="oa-calendar-view-selector">
         <div class="oa-calendar-view-segmented" role="group" aria-label="{{t 'calendar_view_title'}}">
           <button type="button" class="oa-calendar-view-btn {{#equals calendar.viewType "year"}}oa-active{{/equals}}" data-view-type="year" title="{{t 'year_view'}}" aria-label="{{t 'year_view'}}"></button>
           <button type="button" class="oa-calendar-view-btn {{#equals calendar.viewType "month"}}oa-active{{/equals}}" data-view-type="month" title="{{t 'month_view'}}" aria-label="{{t 'month_view'}}"></button>
           <button type="button" class="oa-calendar-view-btn {{#equals calendar.viewType "week"}}oa-active{{/equals}}" data-view-type="week" title="{{t 'week_view'}}" aria-label="{{t 'week_view'}}"></button>
           <button type="button" class="oa-calendar-view-btn {{#equals calendar.viewType "workweek"}}oa-active{{/equals}}" data-view-type="workweek" title="{{t 'workweek_view'}}" aria-label="{{t 'workweek_view'}}"></button>
+          <button type="button" class="oa-calendar-view-btn {{#equals calendar.viewType "list"}}oa-active{{/equals}}" data-view-type="list" title="{{t 'calendar_list_view'}}" aria-label="{{t 'calendar_list_view'}}"></button>
           <button type="button" class="oa-calendar-view-btn {{#equals calendar.viewType "day"}}oa-active{{/equals}}" data-view-type="day" title="{{t 'day_view'}}" aria-label="{{t 'day_view'}}"></button>
         </div>
       </div>
@@ -34,10 +46,13 @@
     <div class="oa-calendar-day-container">
       <div class="oa-calendar-day-main-view">
         <div class="oa-calendar-day-header">
-          <div class="oa-calendar-day-column-header {{#if calendar.isToday}}oa-calendar-today{{/if}}">
-            <div class="oa-calendar-day-name">{{calendar.dayName}}</div>
-            <div class="oa-calendar-date">{{getDayOfMonth calendar.date}}</div>
-          </div>
+          <div class="oa-calendar-hour-label-spacer"></div>
+          {{#each calendar.columns}}
+            <div class="oa-calendar-day-column-header {{#if isToday}}oa-calendar-today{{/if}} {{#if isReferenceDay}}oa-calendar-selected{{/if}}" data-date="{{dateIso}}">
+              <div class="oa-calendar-day-name">{{dayName}}</div>
+              <div class="oa-calendar-date">{{dayOfMonth}}</div>
+            </div>
+          {{/each}}
         </div>
         <div class="oa-calendar-day-body">
           <div class="oa-calendar-allday oa-expanded">
@@ -45,56 +60,62 @@
               <span class="oa-calendar-allday-caret">▸</span>
               {{t "calendar_all_day"}}
             </button>
-            <div class="oa-calendar-allday-content">
-              {{#if calendar.allDayDue.length}}
-                <div class="oa-calendar-allday-row">
-                  {{#each calendar.allDayDue}}
-                    <div class="oa-calendar-task oa-calendar-task--due {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
-                        data-file-path="{{file.path}}"
-                        data-line-number="{{line.number}}"
-                        data-tooltip="{{section.desc}}">
-                      <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
-                      <span class="oa-task-title">{{section.desc}}</span>
+            <div class="oa-calendar-allday-columns">
+              <div class="oa-calendar-hour-label-spacer"></div>
+              {{#each calendar.columns}}
+                <div class="oa-calendar-allday-content" data-date="{{dateIso}}">
+                  {{#if allDayDue.length}}
+                    <div class="oa-calendar-allday-row">
+                      {{#each allDayDue}}
+                        <div class="oa-calendar-task oa-calendar-task--due {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
+                            data-file-path="{{file.path}}"
+                            data-line-number="{{line.number}}"
+                            data-tooltip="{{section.desc}}">
+                          <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
+                          <span class="oa-task-title">{{section.desc}}</span>
+                        </div>
+                      {{/each}}
                     </div>
-                  {{/each}}
-                </div>
-              {{/if}}
-              {{#if calendar.allDayStart.length}}
-                <div class="oa-calendar-allday-row">
-                  {{#each calendar.allDayStart}}
-                    <div class="oa-calendar-task oa-calendar-task--start {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
-                        data-file-path="{{file.path}}"
-                        data-line-number="{{line.number}}"
-                        data-tooltip="{{section.desc}}">
-                      <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
-                      <span class="oa-task-title">{{section.desc}}</span>
+                  {{/if}}
+                  {{#if allDayStart.length}}
+                    <div class="oa-calendar-allday-row">
+                      {{#each allDayStart}}
+                        <div class="oa-calendar-task oa-calendar-task--start {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
+                            data-file-path="{{file.path}}"
+                            data-line-number="{{line.number}}"
+                            data-tooltip="{{section.desc}}">
+                          <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
+                          <span class="oa-task-title">{{section.desc}}</span>
+                        </div>
+                      {{/each}}
                     </div>
-                  {{/each}}
-                </div>
-              {{/if}}
-              {{#if calendar.allDayScheduled.length}}
-                <div class="oa-calendar-allday-row">
-                  {{#each calendar.allDayScheduled}}
-                    <div class="oa-calendar-task oa-calendar-task--scheduled {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
-                        draggable="true"
-                        data-file-path="{{file.path}}"
-                        data-line-number="{{line.number}}"
-                        data-date-type="scheduled"
-                        data-tooltip="{{section.desc}}">
-                      <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
-                      <span class="oa-task-title">{{section.desc}}</span>
+                  {{/if}}
+                  {{#if allDayScheduled.length}}
+                    <div class="oa-calendar-allday-row">
+                      {{#each allDayScheduled}}
+                        <div class="oa-calendar-task oa-calendar-task--scheduled {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
+                            draggable="true"
+                            data-file-path="{{file.path}}"
+                            data-line-number="{{line.number}}"
+                            data-date-type="scheduled"
+                            data-tooltip="{{section.desc}}">
+                          <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
+                          <span class="oa-task-title">{{section.desc}}</span>
+                        </div>
+                      {{/each}}
                     </div>
-                  {{/each}}
+                  {{/if}}
                 </div>
-              {{/if}}
+              {{/each}}
             </div>
           </div>
 
           <div class="oa-calendar-day-hours">
-            {{#each calendar.hourSlots}}
+            {{#each calendar.hourRows}}
               <div class="oa-calendar-hour-row">
                 <div class="oa-calendar-hour-label">{{formattedHour}}</div>
-                <div class="oa-calendar-hour-slot" data-hour="{{hour}}">
+                {{#each columns}}
+                <div class="oa-calendar-hour-slot" data-hour="{{../hour}}" data-date="{{dateIso}}">
                   {{#if hasDurationSegments}}
                   <div class="oa-calendar-duration-track">
                     <div class="oa-calendar-half-slot oa-calendar-half-slot--upper">
@@ -140,6 +161,7 @@
                   </div>
                   {{/if}}
                 </div>
+                {{/each}}
               </div>
             {{/each}}
           </div>

@@ -536,13 +536,13 @@ Se ejecuta automáticamente como parte de cambiar el estado a `Done` (menú cont
 ### 16.6 Fuera de alcance
 Ver [[Modelo de datos]] §11, Fuera de alcance.
 
-## 17. Vista de lista dentro del calendario (v1.1.10, diseño — no implementado)
+## 17. Vista de lista dentro del calendario (v1.1.10, implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §4.10.
 
 ### 17.1 Datos
 
-Nuevo `generateViewData()` análogo al de Semana pero sin alinear a `weekStartDay`: genera 14 `WeekDayData` (mismo shape ya usado por Semana/Semana laboral) a partir de la fecha de referencia hasta referencia + 13 días. Reutiliza `CalendarView.getTasksForDate()` tal cual.
+Nuevo `generateViewData()` análogo al de Semana pero sin alinear a `weekStartDay`: genera `daysToShow` `WeekDayData` (mismo shape ya usado por Semana/Semana laboral) a partir de la fecha de referencia hasta referencia + (`daysToShow` - 1) días, donde `daysToShow = plugin.settings.calendarListDaysToShow` (7–14, por defecto 14 — nuevo setting en Settings ▸ Calendario). Reutiliza `CalendarView.getTasksForDate()` tal cual.
 
 ### 17.2 Plantilla
 
@@ -554,7 +554,7 @@ Nuevo `CalendarListView extends CalendarView` + `CALENDAR_LIST_VIEW_TYPE`, regis
 
 ### 17.4 Navegación
 
-`navigateToPrevious()`/`navigateToNext()` mueven la ventana completa de 14 días (no día a día, a diferencia de Día).
+`navigateToPrevious()`/`navigateToNext()` mueven la ventana completa (`daysToShow` días, no día a día, a diferencia de Día).
 
 ### 17.5 Archivos afectados
 
@@ -563,6 +563,7 @@ Nuevo `CalendarListView extends CalendarView` + `CALENDAR_LIST_VIEW_TYPE`, regis
 | Vista | `src/views/calendar-list-view.ts` (nuevo) |
 | Plantilla | `src/views/templates/calendar-list-view.hbs` (nuevo) |
 | Estilos | `src/styles/views/_calendar-list.scss` (nuevo) |
+| Setting | `src/settings/settings.ts` (`calendarListDaysToShow`, 7–14, por defecto 14), `src/settings/setting-tab.ts` (slider en ambas rutas, declarativa y `display()` legado) |
 | Registro | `src/core/view-manager.ts`, `src/views/index.ts` |
 | Selector segmentado | las 6 plantillas de calendario (7º botón) |
 
@@ -572,7 +573,7 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §7.7.
 
 ### 18.1 Extracción del dial compartido
 
-`HabitEditorModal.attachTimeDial()` (hoy privado e inline, `TIME_DIAL_MAX_MINUTES = 120` fijo) se extrae a `src/core/time-dial.ts`, parametrizado por `maxMinutes` y `stepMinutes` (nuevo), siguiendo el mismo patrón de extracción ya usado para `CalendarDatePicker` (clase con `mount(root)`, callback `onChange`). El Habit Editor pasa `{ maxMinutes: 120, stepMinutes: 1 }` (sin cambios de comportamiento); `TaskDurationModal` pasa `{ maxMinutes: 1440, stepMinutes: 5 }`.
+`HabitEditorModal.attachTimeDial()` (hoy privado e inline, `TIME_DIAL_MAX_MINUTES = 120` fijo) se extrae a `src/core/time-dial.ts`, parametrizado por `maxMinutes` y `stepMinutes` (nuevo), siguiendo el mismo patrón de extracción ya usado para `CalendarDatePicker` (clase con `mount(root)`, callback `onChange`). El Habit Editor pasa `{ maxMinutes: 120, stepMinutes: 1 }` (sin cambios de comportamiento); `TaskDurationModal` pasa `{ maxMinutes: 420, stepMinutes: 5 }` (7 horas).
 
 ### 18.2 Snap a pasos de 5 minutos
 
@@ -584,5 +585,5 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §7.7.
 |---|---|
 | Componente | `src/core/time-dial.ts` (nuevo, extraído de `habit-editor.ts`) |
 | Habit Editor | `src/habits/habit-editor.ts` (usa el componente en vez del código inline) |
-| Modal de duración | `src/modals/task-duration-modal.ts` (usa el componente con `maxMinutes:1440, stepMinutes:5`) |
+| Modal de duración | `src/modals/task-duration-modal.ts` (usa el componente con `maxMinutes:420, stepMinutes:5`) |
 | Estilos | el SCSS del dial (hoy embebido en los estilos de hábitos) se mueve a un archivo compartido |

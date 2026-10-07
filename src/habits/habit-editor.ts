@@ -4,6 +4,7 @@ import type { I18n } from '../core/i18n';
 import type { HabitManager } from './habit-manager';
 import { getAreaLabel } from './habit';
 import type { Daytime, HabitArea, IHabit } from './habit';
+import { TimeDial } from '../core/time-dial';
 
 // @ts-ignore: Plugin de esbuild maneja los archivos .hbs
 import habitEditorTemplate from './templates/habit-editor-modal.hbs';
@@ -426,71 +427,16 @@ export class HabitEditorModal extends Modal {
 
   private attachTimeDial(): void {
     const dial = this.contentEl.querySelector<HTMLElement>('#oa-habit-time-dial');
-    const arc = this.contentEl.querySelector<SVGCircleElement>('#oa-habit-time-dial-arc');
-    const thumb = this.contentEl.querySelector<HTMLElement>('#oa-habit-time-dial-thumb');
-    const valueLabel = this.contentEl.querySelector<HTMLElement>('#oa-habit-time-dial-value');
     const hiddenInput = this.contentEl.querySelector<HTMLInputElement>('#oa-habit-time');
-    if (!dial || !arc || !thumb || !hiddenInput) return;
+    if (!dial || !hiddenInput) return;
 
-    const radius = 52;
-    const circumference = 2 * Math.PI * radius;
-    arc.setCssStyles({ strokeDasharray: `${circumference}` });
-
-    let currentValue = Number(hiddenInput.value) || 0;
-
-    const applyValue = (minutes: number) => {
-      currentValue = Math.max(0, Math.min(TIME_DIAL_MAX_MINUTES, Math.round(minutes)));
-      const percent = currentValue / TIME_DIAL_MAX_MINUTES;
-      const angleDeg = percent * 360 - 90;
-      const angleRad = angleDeg * (Math.PI / 180);
-
-      arc.setCssStyles({ strokeDashoffset: `${circumference * (1 - percent)}` });
-      thumb.setCssStyles({
-        left: `${((60 + radius * Math.cos(angleRad)) / 120) * 100}%`,
-        top: `${((60 + radius * Math.sin(angleRad)) / 120) * 100}%`
-      });
-      if (valueLabel) valueLabel.textContent = String(currentValue);
-      hiddenInput.value = String(currentValue);
-      dial.setAttribute('aria-valuenow', String(currentValue));
-    };
-
-    const setValueFromPointer = (event: PointerEvent) => {
-      const rect = dial.getBoundingClientRect();
-      const dx = event.clientX - (rect.left + rect.width / 2);
-      const dy = event.clientY - (rect.top + rect.height / 2);
-      let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-      if (angle < 0) angle += 360;
-      applyValue((angle / 360) * TIME_DIAL_MAX_MINUTES);
-    };
-
-    let dragging = false;
-    dial.addEventListener('pointerdown', (event) => {
-      dragging = true;
-      dial.setPointerCapture(event.pointerId);
-      setValueFromPointer(event);
-    });
-    dial.addEventListener('pointermove', (event) => {
-      if (dragging) setValueFromPointer(event);
-    });
-    dial.addEventListener('pointerup', (event) => {
-      dragging = false;
-      dial.releasePointerCapture(event.pointerId);
-    });
-    dial.addEventListener('keydown', (event) => {
-      if (event.key === 'ArrowUp' || event.key === 'ArrowRight') {
-        event.preventDefault();
-        applyValue(currentValue + 1);
-      } else if (event.key === 'ArrowDown' || event.key === 'ArrowLeft') {
-        event.preventDefault();
-        applyValue(currentValue - 1);
-      }
-    });
-    dial.addEventListener('wheel', (event) => {
-      event.preventDefault();
-      applyValue(currentValue + (event.deltaY < 0 ? 1 : -1));
-    }, { passive: false });
-
-    applyValue(currentValue);
+    new TimeDial({
+      maxMinutes: TIME_DIAL_MAX_MINUTES,
+      initialMinutes: Number(hiddenInput.value) || 0,
+      unitLabel: this.i18n.t('habit_time_unit_minutes'),
+      ariaLabel: this.i18n.t('habit_field_time'),
+      onChange: (minutes) => { hiddenInput.value = String(minutes); },
+    }).mount(dial);
   }
 
   private readForm(form: HTMLFormElement): HabitFormValues {

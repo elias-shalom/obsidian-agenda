@@ -593,3 +593,342 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §7.7.
 | Habit Editor | `src/habits/habit-editor.ts` (usa el componente en vez del código inline) |
 | Modal de duración | `src/modals/task-duration-modal.ts` (usa el componente con `maxMinutes:420, stepMinutes:5`) |
 | Estilos | el SCSS del dial (hoy embebido en los estilos de hábitos) se mueve a un archivo compartido |
+
+## 19. Modal de novedades al actualizar ("What's New") (v1.1.12, diseño — no implementado)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §10. Investigado y diseñado a partir del mecanismo equivalente del plugin [QuickAdd](https://github.com/chhoumann/quickadd) (`src/main.ts` → `announceUpdate()` + `src/gui/UpdateModal/UpdateModal.ts`), adaptado a las diferencias de este proyecto (ver §19.4).
+
+### 19.1 Disparador y versión vista
+
+Nuevo campo persistido `lastSeenVersion` en `AgendaPluginSettings`/`DEFAULT_SETTINGS` (reutiliza el merge genérico ya existente en `main.ts` → `loadSettings()` — ver nota de memoria del repo sobre el bug de whitelist por campo; **no reintroducirlo**, un campo nuevo solo necesita sumarse a la interfaz + `DEFAULT_SETTINGS`). En `onload()`, después de cargar settings:
+
+- Comparar `this.manifest.version` contra `settings.lastSeenVersion`.
+- Si son iguales, no hacer nada (ya se vio esta versión).
+- Si son distintas: actualizar `settings.lastSeenVersion = manifest.version` y guardar **de inmediato**, antes de decidir si se muestra el modal — igual que QuickAdd: así nunca se repite, aunque el usuario cierre el modal sin leerlo o aunque el ajuste esté desactivado.
+- Si el ajuste **"Mostrar novedades al actualizar"** (`showWhatsNewOnUpdate`, nuevo, default `true`) está desactivado, no se abre el modal — pero el paso anterior ya corrió, así que no se acumula para una futura reactivación del ajuste.
+
+### 19.2 Selección de contenido a mostrar
+
+A diferencia de QuickAdd (que pagina hasta 100 releases desde la API de GitHub y filtra por semver en tiempo de ejecución), este plugin ya mantiene a mano un bloque "News" por versión en `README.md`. Se decide mostrar las entradas de **todas las versiones posteriores a `lastSeenVersion`**, concatenadas de la más reciente a la más antigua — mismo criterio acumulativo que QuickAdd (útil para quien se saltó varias versiones), pero sin ningún fetch de red.
+
+### 19.3 Origen del texto — decisión: embebido y localizado, no fetch a GitHub
+
+QuickAdd trae el texto en vivo desde la API pública de GitHub (`requestUrl` a `/repos/.../releases`, body en inglés, Markdown libre). Se decide **no** replicar ese enfoque aquí, por tres motivos:
+
+1. El plugin ya tiene un sistema real de i18n (6 idiomas) — el *body* de un release de GitHub está siempre en inglés; traerlo en vivo no permite mostrarlo en el idioma de la UI de Obsidian del usuario sin trabajo adicional de traducción en tiempo real.
+2. Evita una dependencia de red en cada arranque (límites de tasa de la API, timeouts, comportamiento con el vault en modo avión/offline).
+3. El changelog por versión ya se redacta a mano en cada release (sección "News" de `README.md`); alcanza con espejar esas mismas entradas (resumidas) en `src/locales/*.json`, una clave por versión, igual que el resto de la UI del plugin.
+
+Implica mantener, por cada versión publicada, una entrada corta equivalente en los 6 locales. Se evalúa en la fase de implementación si esto se automatiza (por ejemplo, un chequeo que valide que toda versión taggeada tiene su clave de "novedades" en los 6 idiomas) o se mantiene manual, igual que el resto del Changelog.
+
+### 19.4 Diferencias deliberadas respecto a QuickAdd
+
+| Aspecto | QuickAdd | Agenda Tasks (decidido) |
+|---|---|---|
+| Origen del texto | Fetch en vivo a GitHub Releases | Texto embebido en `src/locales/*.json`, localizado |
+| Idioma | Solo inglés (el body del release) | Sigue el idioma de la UI de Obsidian (6 idiomas) |
+| Preferencia de usuario | Dropdown de 3 valores (`none`/`major`/todas) | Un toggle simple `showWhatsNewOnUpdate` (se puede refinar después si hace falta) |
+| Render | Markdown completo vía `MarkdownRenderer` (imágenes, video, código) | Texto/lista simple en la plantilla del modal — el contenido se autoría directamente, no se parsea como Markdown libre |
+| Estado de carga | Placeholder "Fetching..." + guard contra cierre anticipado mientras carga | No aplica — sin red, el contenido está disponible de inmediato |
+| Botón de cierre propio | Sí, crítico en iOS (el × del sistema puede caer en zona intocable del notch) | Se adopta igual, por consistencia y accesibilidad, independientemente de la plataforma |
+
+### 19.5 Archivos afectados (estimado, sujeto a ajustes en la fase de implementación)
+
+| Área | Archivos |
+|---|---|
+| Settings | `src/settings/settings.ts` (`lastSeenVersion`, `showWhatsNewOnUpdate`), `src/settings/setting-tab.ts` (toggle en Configuración general) |
+| Modal | nuevo `src/modals/whats-new-modal.ts`, extiende `Modal` de Obsidian |
+| Plantilla | nueva `src/modals/templates/whats-new-modal.hbs` |
+| i18n | nuevas claves de "novedades" por versión en `src/locales/*.json` |
+| Integración | `src/main.ts` → `onload()`, nueva llamada justo después de `loadSettings()` |
+
+### 19.6 Fuera de alcance (v1.1.12)
+
+Fetch en vivo desde GitHub Releases; renderizado de Markdown libre/imágenes/video embebidos; preferencia granular "solo versiones con funcionalidad nueva" (mayor/menor) vs. todas; cualquier mecanismo de feedback tipo formulario (QuickAdd lo incluye, no aplica a este proyecto).
+
+## 20. Kanban View (v1.1.13, con las piezas compartidas en v1.1.12; diseño — no implementado)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §11.
+
+### 20.1 Registro como vista
+
+Nuevo `KanbanView extends BaseView` + `KANBAN_VIEW_TYPE`, registrado en `ViewManager` y en `BaseView.TEMPLATE_LOADERS` (plantilla propia `kanban-view.hbs`), igual que las demás vistas de nivel superior. Nuevo ajuste `showKanbanTab` (default `true`) junto a `showListTab`/`showTableTab`, en ambas rutas de `setting-tab.ts` (declarativa y `display()` legado).
+
+### 20.2 Motor de agrupado compartido
+
+El tipo `GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags'` ya existe en `interfaces.ts` (campo `groupBy?` de la interfaz de filtros), pero no hay una implementación genérica: `ListView` solo agrupa por carpeta, de forma fija (`groupTasksByFolder()`). Se agrega a `TaskSorter` una función `groupTasksByField(tasks, field)` que devuelve grupos ordenados con su clave y etiqueta localizada; el agrupado por área y sub-área (§22.4) se deriva de la ruta del archivo. Kanban la usa para sus columnas; Lista y Tabla pueden adoptarla para ofrecer agrupado real más allá de carpeta. Orden dentro del grupo: `sortTasksByMultipleFields()` ya soporta ascendente/descendente.
+
+Para `status`, las columnas siguen el orden fijo de `CoreTaskStatus` (no el alfabético), e incluyen siempre las 6, aunque estén vacías, para que sean destinos de arrastre válidos. Agrupar por fecha no se ofrece (una columna por fecha distinta dispersa el tablero).
+
+### 20.3 Barra de filtros compartida
+
+La Tabla tiene hoy sus propios controles (`#oa-table-search-input`, `#oa-table-priority-filter`, `#oa-table-status-filter`, `#oa-table-folder-filter`, `#oa-table-due-filter`), con las 6 opciones de estado escritas a mano en `table-view.hbs` y su estado persistido en `localStorage` (`TABLE_VIEW_STATE_KEY`). Se generaliza a una barra reutilizable en `src/core/` (misma idea que `TimeDial`/`CalendarDatePicker`: clase con `mount(root)` y callback `onChange`) que recibe qué controles mostrar y una clave de persistencia propia por vista, y genera las opciones de estado desde `CoreTaskStatus` + i18n. La consumen Lista, Tabla, Kanban y Gantt; un cambio en las opciones se hace en un solo lugar.
+
+### 20.3.1 Helper de gestos de tarea compartido
+
+Hoy el clic (con retardo de 250 ms para distinguirlo del doble clic), el doble clic (abre la nota) y `openEditTaskModal()` están copiados en `calendar-view.ts`, `list-view.ts` y `table-view.ts`, cada uno con su propia constante `TASK_CLICK_DELAY_MS`. Overview solo tiene doble clic (en `BaseView`) y el menú de estado con clic derecho solo existe en el calendario.
+
+Se extrae a `src/core/task-gestures.ts`: `attachTaskGestures(el, { getTask, onChanged, ignoreSelector })`, que cablea clic → modal de edición, doble clic → abrir la nota y clic derecho → menú de estado (con `STATUS_MENU_OPTIONS`, `upsertTaskStatus()` y la ocurrencia recurrente, hoy dentro de `calendar-view.ts`). `onChanged` es el refresco propio de cada vista (`refreshView()` en el calendario, `onOpen()` en Lista y Tabla) y `ignoreSelector` conserva la guarda de Lista y Tabla (`button, a, input, select`). El arrastre queda en cada vista.
+
+Se migra primero el calendario, con la misma lógica de temporizador, y después Lista, Tabla, Kanban y Gantt. Lista y Tabla ganan el clic derecho sin escribir nada más.
+
+### 20.3.2 Identidad de la tarea y escritura segura (v1.1.12, con la Fase A)
+
+**Estado actual.** `Task.id` se arma en `TaskExtractor.createTaskFromLine()` como el `🆔` de la línea si lo tiene y, si no, `ruta-línea`; no se guarda y se recalcula cada vez que se vuelve a extraer el archivo (al modificarse, crearse, borrarse o renombrarse, o con el botón de recarga, que llama a `forceRefreshTasks()` y relee todo el vault; el TTL de 5 minutos solo reconstruye la lista global con las tareas ya extraídas). En la práctica las vistas y los escritores localizan una tarea por `file.path` más `line.number`; `Task.id` solo lo usan el modal (`isAutoId`) y un atributo de la Tabla. Además, `TASKS_UPDATED` se emite al invalidar la caché pero ninguna vista se suscribe, así que una vista abierta conserva los números de línea anteriores a un cambio hasta que se refresca.
+
+**Problemas.** El mismo campo cambia de significado (añadir un `🆔` cambia la identidad de la tarea), dos tareas con el mismo `🆔` (por ejemplo al copiar una línea) comparten id, el separador `-` es ambiguo en rutas como `mi-nota.md-12`, y `updateTaskLine()` e `insertLineAbove()` solo comprueban que la línea indicada sea una tarea, no que sea la misma: si el archivo cambió entre el render y el arrastre, se edita otra tarea.
+
+**Cambios.**
+- **Separar los ids**: `ITask.id` pasa a ser siempre la posición, `ruta#línea` (`#` no se permite en nombres de archivo de Obsidian), y el `🆔` va en `ITaskFlow.id`, como `dependsOn`. El modal lee `flow.id` en lugar de comparar contra `ruta-línea`. No cambia nada visible. `Task.id` no debe guardarse para nada persistente: para eso sirve el `🆔`, o una clave derivada de ruta y hash del texto.
+- **Escritura segura**: `updateTaskLine()` e `insertLineAbove()` reciben el texto esperado de la línea (`task.line.text`, comparado sin espacios en los extremos). Si no coincide, buscan esa misma línea en el archivo: con una sola coincidencia la usan; si hay cero o varias, cancelan con un aviso («la nota cambió, actualiza la vista») y piden refrescar. Afecta a unos 10 sitios que escriben: arrastrar y soltar en Mes, Semana, Semana laboral y Día, redimensionar, el menú de estado y el modal.
+
+Queda fuera, como mejora opcional: que las vistas se refresquen solas al cambiar un archivo (con retardo para no redibujar a cada tecla ni durante un arrastre), que encaja con «Refresco automático de la Rutina» del backlog.
+
+### 20.4 Arrastrar y reordenar
+
+- **Entre columnas (estado)**: reutiliza `upsertTaskStatus()` + `TaskWriter.updateTaskLine()` (v1.1.10, §14) y, al completar, `buildRecurrenceOccurrence()` + `insertLineAbove()` (§16), exactamente como el menú contextual del calendario. El payload de `dragstart` sigue el patrón de `TaskDragPayload` (`filePath`, `lineNumber`); `dragover` solo resalta la columna y llama a `preventDefault()` sin leer el payload (limitación de `dataTransfer.getData()` ya documentada para el calendario), y se valida en `drop`.
+- **Entre columnas (prioridad/etiqueta/carpeta)**: usa `upsertPriority()` para prioridad. Etiqueta y carpeta no tienen todavía una operación de escritura equivalente; mover a otra carpeta implicaría mover la tarea de archivo, algo que el plugin no hace hoy (el campo de archivo es solo lectura al editar). **Decisión pendiente**: restringir el arrastre entre columnas a estado y prioridad, y dejar etiqueta/carpeta como agrupado de solo lectura.
+- **Reordenar dentro de una columna**: requiere un orden manual persistido. La línea de la tarea no tiene un campo de orden y la posición en el archivo no sirve (cada tarea vive en su propia nota). **Decisión pendiente**: persistir el orden en `data.json` del plugin, por clave `ruta:línea` o por `🆔` cuando exista; el riesgo es que la clave `ruta:línea` queda obsoleta si se editan las notas. Se resuelve en la Fase C del plan.
+
+### 20.5 Archivos afectados (estimado)
+
+| Área | Archivos |
+|---|---|
+| Vista | nuevo `src/views/kanban-view.ts` |
+| Plantilla | nuevo `src/views/templates/kanban-view.hbs` |
+| Estilos | nuevo `src/styles/views/_kanban.scss` + `@use` en `styles.scss` |
+| Agrupado | `src/core/task-sorter.ts` (`groupTasksByField()`) |
+| Filtros | nueva barra de filtros en `src/core/` (extraída de `table-view.hbs`), consumida por Lista, Tabla, Kanban y Gantt |
+| Gestos | nuevo `src/core/task-gestures.ts` (§20.3.1), consumido por calendario, Lista, Tabla, Kanban y Gantt |
+| Registro | `src/core/view-manager.ts`, `src/views/index.ts`, `src/views/base-view.ts` (`TEMPLATE_LOADERS`) |
+| Settings | `src/settings/settings.ts` (`showKanbanTab`), `src/settings/setting-tab.ts` |
+| i18n | claves nuevas en los 6 locales (nombre de la vista, selector de agrupado, etiquetas de columna) |
+
+### 20.6 Comparación con Tasks Kanban
+
+| Aspecto | Tasks Kanban | Agenda Tasks (decidido) |
+|---|---|---|
+| Origen de las tarjetas | Tareas reales, vía el plugin Tasks | Tareas reales, vía `TaskExtractor` propio |
+| Columnas | Por estado, o columnas personalizadas que mapean símbolos de estado | Por los 6 estados fijos; personalizables diferido (§11.1) |
+| Agrupado (swimlanes) | Carriles plegables por estado/prioridad/etiqueta/ruta/carpeta/archivo | Selector de agrupado de las columnas por estado/prioridad/etiqueta/carpeta; sin carriles |
+| Filtros | Subconjunto del lenguaje de query de Tasks (texto libre) | `TaskFilter` existente, misma UI que Lista/Tabla |
+| Tableros guardados | Varios, cada uno en su pestaña | Uno solo por ahora |
+| Arrastre | Entre columnas cambia el estado | Entre columnas cambia el estado/prioridad; además reordena dentro de la columna |
+
+### 20.7 Fuera de alcance (v1.1.13)
+
+Tableros múltiples guardados; mini-lenguaje de query propio; carriles (swimlanes) plegables; estados personalizables; unificar las pestañas Lista y Tabla.
+
+## 21. Gantt View (v1.1.13, diseño — no implementado)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §12. Comparte con Kanban el motor de agrupado (§20.2), la barra de filtros (§20.3) y el helper de gestos (§20.3.1).
+
+### 21.1 Punto de partida y registro
+
+`GanttView` existe pero está desconectada: el `registerView` en `view-manager.ts` y el botón de `header.hbs` están comentados, `gantt-view.hbs` está vacía, `onOpen()` no guarda el resultado de `getAllTasks()` y el constructor crea su propio `TaskManager` en vez de recibir el compartido. `TEMPLATE_LOADERS` y las claves i18n `gantt_view_tab`/`gantt_view_title` ya existen. Se reescribe siguiendo el patrón de `KanbanView`/`CalendarListView`: recibe el `taskManager` inyectado, se registra, se descomenta el botón y se agrega `showGanttTab` (default `true`) en ambas rutas de `setting-tab.ts`.
+
+### 21.2 Cálculo de la barra
+
+Función pura `resolveGanttSpan(task)` en `src/core/task-gantt.ts`, sin dependencias de Obsidian (se puede probar con un script de Node, como `task-recurrence.ts`). Devuelve `{ kind: 'bar' | 'milestone' | 'none', start, end, startField, endField, scheduledMark }`. Inicio = `start` y, si falta, `scheduled`; fin = `due` y, si falta, `scheduled`. `startField` y `endField` indican qué campo escribe cada borde al arrastrarlo.
+
+### 21.3 Ventana y escala
+
+`GanttZoom = 7 | 14 | 21 | 'month'`. Para `'month'` la ventana es `startOf('month')` con `daysInMonth` de Luxon (28 a 31); para los demás, N días desde la fecha de referencia (ver decisión abierta 1 en la Especificación). La posición de cada barra se precalcula en TypeScript como porcentaje de la ventana (`left = desfase / N`, `width = días / N`), de modo que el largo del mes no importa y se evita `calc()` con variables anidadas en el SCSS, que el minificador rompe. Navegación: ◀▶ mueven N días, o un mes en modo `'month'`. Usa `getReferenceDate()`/`setReferenceDate()` de `calendar-reference-date.ts`; el zoom se guarda en `localStorage` (`oa_gantt_zoom`).
+
+### 21.4 Agrupado por área y sub-área
+
+`groupTasksByField(tasks, 'area')` (§22.4) devuelve un árbol área → sub-área (anidado por carpeta, sin tope de niveles). La barra resumen de cada grupo es el mínimo de inicios y el máximo de fines de sus tareas con barra. El estado plegado se guarda por grupo en `localStorage` (`oa_gantt_collapsed:<ruta>`), como los grupos de Rutina.
+
+### 21.5 Edición de fechas
+
+Eventos de puntero (no arrastre HTML5), para redimensionar con precisión de un día; mismo enfoque que la manija de redimensionar de la vista Día. Escritura con `TaskWriter.updateTaskLine()`:
+
+- **Redimensionar**: `upsertSimpleDate()` para 🛫/📅 y `upsertScheduledDate()` para ⏳, según `startField`/`endField`.
+- **Mover**: desplaza 🛫, ⏳ y 📅 el mismo número de días. `buildNextOccurrenceLine()` ya desplaza fechas pero también elimina `🆔`/`⛔`, así que se extrae su parte de desplazamiento a `shiftTaskDates(line, deltaDays)`, que no toca ➕ ni ✅.
+- Se bloquea el arrastre que deje el fin antes del inicio. Las manijas llaman a `stopPropagation()` en el clic, como la manija de la vista Día.
+
+### 21.6 Dependencias
+
+`id` y `dependsOn` ya se parsean. En esta versión solo se agrega la insignia 🔗 con la tooltip «depende de». Las flechas requieren una capa SVG recalculada al hacer scroll, cambiar el zoom o plegar grupos, y quedan para una versión posterior.
+
+### 21.7 Archivos afectados (estimado)
+
+| Área | Archivos |
+|---|---|
+| Vista | `src/views/gantt-view.ts` (reescrita) |
+| Plantilla | `src/views/templates/gantt-view.hbs` (hoy vacía) |
+| Estilos | nuevo `src/styles/views/_gantt.scss` + `@use` en `styles.scss` |
+| Lógica | nuevo `src/core/task-gantt.ts`; `shiftTaskDates()` extraída de `src/core/task-recurrence.ts` |
+| Agrupado | `src/core/task-sorter.ts` (árbol para `path`) |
+| Registro | `src/core/view-manager.ts`, `src/views/templates/header.hbs` |
+| Settings | `src/settings/settings.ts` (`showGanttTab`), `src/settings/setting-tab.ts` |
+| i18n | claves nuevas en los 6 locales (zoom, «sin fecha», tooltips de borde) |
+
+### 21.8 Fuera de alcance (v1.1.13)
+
+Flechas de dependencia y aviso de rotura; desplazamiento en cascada de dependientes; zoom por día; Timeline view.
+
+## 22. Áreas y sub-áreas de tareas (v1.1.12, diseño — no implementado)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §13. Lo consumen la barra de filtros (§20.3), Lista, Kanban (§20) y Gantt (§21).
+
+### 22.1 Módulo compartido
+
+La lógica de áreas vive hoy en `src/habits/habit.ts`: `getAreaColor`, `getAreaTextColor`, `getAreaLabel` y `getContrastTextColor`, además de dos normalizaciones casi iguales del nombre (guiones para el color, guión bajo para la clave i18n `habit_area_*`). Se mueve a un módulo neutro `src/core/area.ts`, con una única función de normalización; `habit.ts` la re-exporta para no romper los imports de `src/habits/index.ts`. Las claves i18n `habit_area_*` no se renombran, para no tocar los 6 locales.
+
+Se agrega `resolveTaskArea(filePath)`, pura y sin dependencias de Obsidian: normaliza las barras, parte la ruta y devuelve `{ area, subArea }` según la tabla de [[Especificación de vistas]] §13.1: `area` es el nombre de la primera carpeta y `subArea` la ruta restante completa, sin tope de niveles. No reutiliza `file.root`, que conserva la barra final y devuelve `/` para la raíz.
+
+### 22.2 Criterios en `TaskFilter`
+
+Criterios nuevos `location.area` y `location.subArea`, comparados por nombre normalizado. La sub-área coincide por prefijo: `subArea === sel || subArea.startsWith(sel + '/')`. El criterio `location.folder` (prefijo de ruta) se mantiene.
+
+### 22.3 Barra de filtros
+
+Los combobox de Área y Sub-área forman parte de la barra compartida (§20.3). Las opciones de Área son los nombres de primera carpeta presentes en las tareas cargadas; las de Sub-área, las rutas presentes bajo el área elegida más cada una de sus carpetas contenedoras, ya que la coincidencia es por prefijo. No salen de las carpetas del vault: a diferencia del Habit Editor, que usa `getVaultRootFolders()`/`getSubAreaOptions()` porque ahí se elige un valor, aquí se filtra y una opción sin tareas solo estorba.
+
+La barra filtra sobre los datos con `TaskFilter`. La Tabla hoy filtra ocultando filas del DOM (`filterTasks()` lee `#oa-table-folder-filter` y el texto de `.oa-folder-name`), y ese enfoque no sirve para Kanban ni Gantt. La migración incluye convertir el valor `folder` que la Tabla guarda en `localStorage` (`TABLE_VIEW_STATE_KEY`).
+
+### 22.4 Agrupado
+
+`GroupField` (hoy `'status' | 'priority' | 'dueDate' | 'path' | 'tags'`) gana `'area'` y `'subArea'`, los mismos valores de los combos. `groupTasksByField(tasks, 'area')` devuelve un árbol área → sub-área, ordenado, con el nombre y el color de cada grupo; el árbol anida la sub-área por carpeta, partiendo la ruta por `/`. Con `'subArea'` y sin un área elegida, la clave de grupo incluye el área para no mezclar carpetas homónimas de áreas distintas. Lista deja de usar `groupTasksByFolder()` y consume este árbol, conservando su modo plano. Kanban lo usa para sus columnas y Gantt para sus filas.
+
+### 22.5 Archivos afectados (estimado)
+
+| Área | Archivos |
+|---|---|
+| Módulo | nuevo `src/core/area.ts` (movido desde `src/habits/habit.ts`, más `resolveTaskArea()`) |
+| Hábitos | `src/habits/habit.ts` (re-exporta), `src/habits/index.ts` |
+| Filtro | `src/core/task-filter.ts` (`location.area`, `location.subArea`), tipos en `src/types/interfaces.ts` |
+| Agrupado | `src/core/task-sorter.ts` (`'area'`), `src/types/interfaces.ts` (`GroupField`) |
+| Vistas | `src/views/list-view.ts` (deja `groupTasksByFolder()`), `src/views/table-view.ts` y `table-view.hbs` (filtro de carpeta) |
+| i18n | claves nuevas en los 6 locales (Área, Sub-área, «Sin área») |
+
+### 22.6 Fuera de alcance (v1.1.12)
+
+Área configurable por tarea o por nota; mover tareas entre áreas arrastrando; áreas sin carpeta.
+
+## 23. Lista y Tabla en una sola pestaña (v1.1.12, diseño — no implementado)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14. Se apoya en la barra de filtros (§20.3), el helper de gestos (§20.3.1) y las áreas (§22).
+
+### 23.1 Estado compartido
+
+Nuevo módulo `src/core/task-view-state.ts` con `TaskViewState`: búsqueda, filtros (prioridad, estado, área, sub-área, vencimiento), agrupado, orden (campo y dirección) y modo. Se persiste con `app.saveLocalStorage` bajo una única clave, en lugar de la clave propia de la Tabla (`obsidian-agenda-task-table-state`, hoy en `table-view.ts`). Ambos modos lo leen al abrir y lo escriben al cambiar. Migración: la clave antigua se lee una vez, se convierte (`folder` → `area`, §22.3) y se elimina.
+
+### 23.2 Conmutador de modo
+
+Control segmentado dentro de la barra compartida, solo en Lista y Tabla. Reutiliza los estilos y las clases del selector del calendario (`.oa-calendar-view-segmented`, `.oa-calendar-view-btn`); renombrarlas a un nombre neutro es una limpieza opcional. Íconos `list-todo` y `table`, los mismos de las pestañas actuales, con tooltip. Al hacer clic llama a `leaf.setViewState()` con el otro tipo de vista, como `CalendarView.switchToViewType()`; ambas vistas leen `TaskViewState` al abrir.
+
+### 23.3 Pestaña única
+
+En `header.hbs` los botones de Lista y Tabla se reemplazan por uno, `oa-tasks-view-tab`, que se muestra con `(or settings.showListTab settings.showTableTab)`. `attachEventTabs()` lo apunta al último modo usado (`TaskViewState.mode`), con el mismo patrón que `getDefaultHabitView()`. El resaltado de la pestaña activa necesita una excepción como la que ya existe para `calendar-*` y `habit-*` en `base-view.ts`, porque tanto `list-view` como `table-view` deben iluminar la pestaña «Tareas».
+
+### 23.4 Agrupado y orden
+
+La barra incorpora un combo de agrupado y un control de orden. El agrupado usa `groupTasksByField()` (§22.4); sus valores sustituyen el botón `.oa-view-toggle-button` de la Lista (`isHierarchicalView`). La Tabla recibe filas de cabecera de grupo plegables, con el estado plegado en `localStorage` (`oa_tasks_collapsed:<clave>`). Los encabezados `th.oa-sortable` de la Tabla actualizan el orden compartido en vez de uno propio (`currentSortColumn`/`currentSortDirection`). Los dos modos filtran sobre los datos con `TaskFilter`, no sobre filas del DOM.
+
+### 23.5 Archivos afectados (estimado)
+
+| Área | Archivos |
+|---|---|
+| Estado | nuevo `src/core/task-view-state.ts` |
+| Vistas | `src/views/list-view.ts` y `list-view.hbs` (adopta la barra), `src/views/table-view.ts` y `table-view.hbs` (adopta la barra, agrupado, orden compartido) |
+| Pestaña | `src/views/templates/header.hbs`, `src/views/base-view.ts` (`attachEventTabs()` y resaltado) |
+| Estilos | `_list-view.scss`, `_table-view.scss` (cabeceras de grupo en la Tabla) |
+| i18n | claves nuevas en los 6 locales (pestaña «Tareas», valores del agrupado, orden) |
+
+### 23.6 Fuera de alcance (v1.1.12)
+
+Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones masivas.
+
+## 24. Sincronía con Google Calendar (v1.1.15, diseño — no implementado)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §15. Diseño basado en `pubcyberry/obsidian-google-cal-sync` (inicio de sesión, almacenamiento del token, sincronización incremental) y `mcuste/obsidian-gcal-sync` (permisos mínimos, barreras de seguridad), adaptado a un modelo bidireccional sobre líneas de tarea.
+
+### 24.1 Módulos
+
+Nuevo directorio `src/integrations/google/`, con la lógica pura separada de la que depende de Obsidian para poder probarla con scripts de Node:
+
+| Archivo | Responsabilidad | Pura |
+|---|---|---|
+| `auth.ts` | OAuth con redirección local y PKCE, renovación y revocación del token | no |
+| `crypto.ts` | Cifrado del refresh token con una frase | sí |
+| `client.ts` | Peticiones con `requestUrl`: reintentos, errores, `If-Match`, 410, 412 y 429 | no |
+| `calendar-sync.ts` | Descarga incremental y caché | no |
+| `event-mapping.ts` | Evento de Google ↔ campos de la tarea (§15.3) | sí |
+| `sync-planner.ts` | Compara los dos lados y produce una lista de acciones, con las reglas y las barreras | sí |
+| `managed-notes.ts` | Detecta las notas de sincronización por su frontmatter (`metadataCache`) y escribe en ellas con `TaskWriter` | no |
+
+### 24.2 Autenticación
+
+- Cliente tipo Desktop, flujo de código con **PKCE (S256)** y parámetro `state`. Google no admite `obsidian://` como redirección ni el copiar y pegar manual, y el flujo de dispositivos no permite el permiso de Calendar.
+- Un servidor HTTP local temporal en `127.0.0.1` con puerto aleatorio recibe el código. Se carga con `require` dinámico dentro de `Platform.isDesktop`, se cierra al recibir el código, al cancelar, al salir de los ajustes o a los 2 minutos, e ignora las peticiones sin el `state` de este inicio de sesión.
+- **Permisos mínimos**: `calendar.events`, `calendar.calendarlist.readonly` y `calendar.app.created`. Se descarta el permiso `calendar` completo porque incluye compartir y borrar calendarios enteros, que el plugin no necesita, y porque Google indica que cuantos más permisos se piden menos probable es la aceptación. Google no admite autorización incremental en apps instaladas: ampliar permisos obligaría a reconectar.
+- El access token vive solo en memoria y se renueva 60 segundos antes de caducar o tras un 401; las renovaciones concurrentes comparten una sola petición.
+- Al desconectar se borra el token local y se revoca en `oauth2.googleapis.com/revoke`. Un `invalid_grant` lleva al estado «Token caducado» con un mensaje para volver a conectar.
+
+### 24.2.1 Cifrado del refresh token
+
+`crypto.ts` cifra el token con la frase de sincronización: clave de 256 bits derivada con PBKDF2-HMAC-SHA256 (600.000 iteraciones, sal aleatoria de 16 bytes) y AES-256-GCM con un IV aleatorio de 12 bytes, con sal e IV nuevos en cada escritura. Se guarda como `enc1.<sal>.<iv>.<cifrado>` en base64url. GCM autentica, así que una frase incorrecta se detecta. Todo con `crypto.subtle`, sin librerías. Protege contra quien lea el archivo o una copia sin la frase; no contra quien tenga ambos, y la frase debe ser fuerte.
+
+### 24.3 Almacenamiento
+
+| Dónde | Qué | Se sincroniza |
+|---|---|---|
+| `data.json` | `clientId`, `clientSecret` (Google trata el de una app de escritorio como público), refresh token cifrado, cuenta, catálogo de calendarios (id y nombre), carpeta de creación de notas e intervalo | Sí; se escribe lo menos posible para evitar copias en conflicto |
+| `app.secretStorage` | La frase de sincronización (id en minúsculas, números y guiones) | **No**: es por dispositivo, por lo que el escritorio no le da el token al móvil y cada dispositivo escribe la frase una vez |
+| `localStorage` (por dispositivo) | Caché de eventos, `syncToken` e índice id → ruta de la sincronización anterior | No; cambia en cada sincronización |
+
+`secretStorage` existe desde Obsidian 1.11.4, por eso sube `minAppVersion`.
+
+### 24.4 Descarga
+
+`events.list` con `syncToken` (una petición por calendario con nota de sincronización). La primera descarga cubre de −3 a +6 meses con `singleEvents=true`. Un 410 borra la caché y hace una descarga completa. Los eventos cancelados se descartan. La lista de calendarios se pide al conectar y bajo demanda.
+
+### 24.5 Identidad
+
+- `🆔` toma un solo token sin espacios, pero un id de Tasks admite letras mayúsculas, `_` y `-`, y un id de evento de Google solo `a–v` y `0–9` (de 5 a 1024 caracteres). Para eventos nacidos en Google, el `🆔` es el id del evento tal cual (válido para Tasks). Para tareas locales, el id del evento es un prefijo fijo de al menos 3 caracteres más el hexadecimal del texto del `🆔` en UTF-8, reversible y sin cambiar nunca el `🆔` ni los `⛔` que apuntan a él (Especificación §17.3); una tarea sin `🆔` recibe uno nuevo en el formato de Tasks (base 36, 6 caracteres). Un 409 por id duplicado se resuelve actualizando.
+- Los eventos creados por el plugin llevan una propiedad privada (`extendedProperties.private`) que los marca. Solo esos se borran; los demás solo se desvinculan.
+- La ocurrencia siguiente de una tarea recurrente ya elimina `🆔` (ADR-R4), así que no hereda el id.
+- El vínculo es el par (calendario, `🆔`): un id solo es único dentro de su calendario. El índice de la sincronización anterior se indexa por ese par, y la importación lo consulta sobre todas las notas antes de crear una línea. Un `🆔` repetido en dos líneas se avisa y solo se sincroniza la primera. Una línea está vinculada si existe en la caché de Google un evento del plugin (prefijo y propiedad privada) cuyo id decodificado es su `🆔`; ese conjunto sale de los eventos descargados, no de un índice local (Especificación §17.6). Un solo `🆔` guarda el id de un único sistema; sincronizar una misma tarea con varios sistemas requerirá revisar este formato en esas discusiones.
+
+### 24.6 Planificador
+
+`sync-planner.ts` recibe las líneas gestionadas, la caché de Google y el índice de la sincronización anterior, y devuelve acciones (crear, actualizar o borrar en Google; crear, actualizar o marcar `[-]` en la nota) con sus conteos. Título, inicio y fin tienen dos escritores: el desempate compara el `updated` de Google con la fecha de modificación del archivo. Cada parche lleva `If-Match` con el etag; un 412 refresca y reintenta una vez. Todo lo demás del evento solo lo escribe Google y se conserva. Los parches usan `sendUpdates=none`. Una línea con `🆔` sin evento correspondiente no genera acciones; un evento del plugin que ninguna línea reclama (línea borrada o `🆔` editado) se planifica para borrar y siempre requiere aprobación.
+
+### 24.7 Barreras de seguridad
+
+Aprobación con 5 o más borrados o 25 o más cambios, con un diálogo de revisión; en segundo plano no se aplica nada y se muestra un aviso. Rechazo por encima de 200 cambios. Una nota con una línea inválida se omite entera. Si una nota nunca se leyó bien, no se ejecutan borrados. Los límites son ajustables.
+
+### 24.8 Escritura en las notas
+
+Solo con `TaskWriter` (`updateTaskLine()`, `appendTaskLine()`, `insertLineAbove()`) y los helpers de `task-line-fields.ts`. Solo se tocan las notas de sincronización y las líneas vinculadas (su `🆔` coincide con un evento del plugin, §24.5). Cada nota es una conexión: su frontmatter (`agenda-origin`, `agenda-sync`, `agenda-calendar`, `agenda-allow-edit` y `agenda-account` opcional, Especificación §15.4) se lee de `metadataCache` y se vuelve a leer al cambiar el archivo. Todas las claves llevan el prefijo `agenda-` para no chocar con otros usos del frontmatter. El origen define el comportamiento: en una nota con `agenda-origin: google-calendar` (espejo) se sincronizan todas las líneas con fecha y aterrizan los eventos nuevos; en una con `agenda-origin: agenda-task` (local) solo las líneas vinculadas y no se importa nada. Se saltan con un aviso las notas con el frontmatter inválido o sin `agenda-calendar`, y si dos notas espejo apuntan al mismo calendario solo se sincroniza la primera (las notas locales pueden repetir calendario). Los tokens, la frase y el `syncToken` no van en el frontmatter (§24.3). La carpeta `temporal/agenda/` solo es donde «Añadir calendario» crea las notas espejo; el reconocimiento no depende de la ruta. Estados: un evento cancelado en Google pasa a `[-]` y uno rechazado por el usuario a `[~]`; el resto no recibe estado de Google. Una sola cuenta: `account` se lee pero se ignora hasta soportar varias.
+
+### 24.9 Disparadores
+
+Arranque, intervalo (5 minutos), cambio de una línea gestionada (con retardo de 1 a 1,5 s), el comando «Sincronizar ahora» y el foco de la ventana. Una sincronización a la vez (peticiones compartidas) y un mínimo de 30 s entre automáticas.
+
+### 24.10 Escritorio y móvil
+
+Un solo paquete, con `isDesktopOnly: false`. Lo único exclusivo del escritorio es el servidor local, protegido con `Platform.isDesktop`; todo lo demás usa `requestUrl`. La pantalla de ajustes tiene una rama por plataforma: en móvil muestra «Inicia sesión en el escritorio» o «Escribe la frase de sincronización». Hay que comprobar que `esbuild.config.mjs` no empaquete `http` para móvil.
+
+### 24.11 Pruebas
+
+El repo no tiene pruebas automatizadas y un error de sincronización escribe en datos reales, así que esta función las necesita desde el inicio: scripts de Node (como los de `task-recurrence.ts`) para los módulos puros (mapeo, planificador, cifrado con ida y vuelta y frase incorrecta, PKCE) y un transporte falso de Google inyectado en `client.ts` para probar la descarga, los 410, 412 y 409 y las barreras.
+
+### 24.12 Archivos afectados (estimado)
+
+| Área | Archivos |
+|---|---|
+| Integración | nuevo `src/integrations/google/` (§24.1) |
+| Ajustes | `src/settings/settings.ts`, `src/settings/setting-tab.ts` (grupo Integraciones, ambas rutas) |
+| Comandos y menú | `src/main.ts` («Sincronizar ahora», «Enviar a Google Calendar»), `src/core/task-field-menu.ts` |
+| Modal | `src/modals/task-modal.ts` (elige el calendario destino y lo guarda en el frontmatter de la nota) |
+| Versión mínima | `manifest.json` y `versions.json` (`minAppVersion` 1.11.4) |
+| Compilación | `src/esbuild.config.mjs` (`http` fuera del paquete de móvil) |
+| i18n | claves nuevas en los 6 locales |
+| Docs | README: declaración del uso de red |
+
+### 24.13 Fuera de alcance (v1.1.15)
+
+Google Tasks, Microsoft y el plugin Tasks; varias cuentas de Google; `🔁` ↔ RRULE; el botón directo sin credenciales propias; inicio de sesión por copiar y pegar en móvil.

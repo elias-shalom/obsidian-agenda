@@ -83,6 +83,14 @@
       max-width: 100%; // Permite que se ajuste al espacio disponible
     }
 
+    // En tema oscuro, las pestañas inactivas usan el mismo color que la activa
+    .theme-dark & {
+      svg,
+      .tab-text {
+        color: var(--text-normal);
+      }
+    }
+
     &:hover {  
       svg {
         color: var(--text-normal) !important; // Cambia el color del ícono

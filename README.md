@@ -2,11 +2,11 @@
 
 > A comprehensive task management and calendar plugin for Obsidian
 
-[![Release](https://img.shields.io/badge/version-1.1.10-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
+[![Release](https://img.shields.io/badge/version-1.1.11-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Obsidian](https://img.shields.io/badge/Obsidian-0.13.0+-purple.svg)](https://obsidian.md)
+[![Obsidian](https://img.shields.io/badge/Obsidian-1.8.7+-purple.svg)](https://obsidian.md)
 
-> 🆕 **What's New in v1.1.10** — A new List view inside the calendar, multi-day (1/3/5) mode for the Day view, task status management from the calendar, recurring tasks, a unified date picker in the Task Modal, and a circular dial for the duration modal. [See details](#news) · [Full changelog](#changelog).
+> 🆕 **What's New in v1.1.11** — A maintenance release: layout fixes for Android phones and tablets (calendar buttons and date picker, Habit Routine, Grid and Weekly), readable header tabs in dark themes, a month label in the calendar's List view, a leaner Table, dependency updates and corrected documentation. [See details](#news) · [Full changelog](#changelog).
 
 ## Overview
 
@@ -40,7 +40,16 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 
 ## 🆕 News
 
-### v1.1.10 (latest)
+### v1.1.11 (latest)
+- **Android phone and tablet layout fixes**: Obsidian's mobile styles were distorting several controls. Fixed the calendar view-type buttons (their icons were invisible), the date picker (clipped on the right), the Day view sidebar toggle, the Habit Routine completion circle (oval), Habit Grid and Weekly cells (rectangular cells, shifted and cut streak pills), and buttons in the Task Modal, the Habit Editor and the Table
+- **Habit Routine** on narrow screens: habit names are visible again, long area tags no longer overflow their pill, and clicking a habit name opens the Habit Editor (double-click opens its note), like Grid, Weekly and List; the hover-only action buttons are hidden on touch devices
+- **Dark themes**: header tab labels and icons are readable without hovering
+- **Calendar List view**: each row shows the month abbreviation, so a window that crosses a month boundary stays clear
+- **Table**: the File column was removed, and the row-number and date columns are narrower to reduce horizontal scrolling
+- The List view descriptions in this README and the user guide now match what the view does
+- Updated dependencies (including a security fix in Handlebars) and fixed new lint findings
+
+### v1.1.10
 - New **List view** inside the calendar: one row per day in a continuous, configurable 7–14 day window (default 14, Settings ▸ Calendar), reusing the same task pills as Month/Week — no "N more" collapsing
 - **Day view** now supports a 1/3/5-day mode, with the reference day centered and its own hour grid, duration blocks and lanes per column; dragging a task to another column reschedules it to that day
 - **Task status management from the calendar**: a new "On Hold" status, a status icon on every calendar task pill, and a right-click context menu (or a Task Modal field) to change a task's status — marking "Done" adds the completion date, same as the native checkbox
@@ -110,12 +119,10 @@ See the [full changelog](#changelog) below for older versions.
 - Customizable widgets
 
 #### List View
-- Customizable task listing with multiple columns
-- Advanced filtering by date, project, priority, and tags
-- Group tasks by date, folder, status, or custom attributes
-- Inline task editing
-- Collapsible task groups
-- Bulk actions for multiple tasks
+- Compact task rows with priority cues and a clear folder hierarchy
+- Hierarchical (folder tree) or flat view, switched with one button
+- Collapsible folder groups
+- Click a task to edit it in the task modal; double-click to open its note
 
 #### Table View
 - Spreadsheet-style task management
@@ -344,6 +351,16 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 
 ## 📋 Changelog
 
+### Version 1.1.11 🛠️
+- **Android layout fixes**: Obsidian's mobile and tablet styles pad every `<button>` with 20 px on each side and give it a taller height, which broke fixed-size and icon buttons. Overrode that padding on the calendar view-type switcher (icons were collapsing to zero width), the date picker cells and header, the Day view sidebar toggle, the Habit Routine completion circle, the Habit Grid and Weekly cells, the Task Modal priority/status pills, date triggers and advanced-fields toggle, the Habit Editor chip remove button, the Table search clear button and the habit "+" and related-file buttons
+- **Habit Routine**: hover-only action buttons are hidden on touch devices and no longer reserve space that left habit names empty on narrow screens; clicking a habit name opens the Habit Editor and double-clicking opens the note; priority, area and daytime tags no longer wrap inside their fixed-height pills, and long area tags are truncated with an ellipsis
+- **Calendar List view**: a localized month abbreviation is shown on each row
+- **Header tabs** are readable in dark themes without hovering
+- **Table view**: removed the File column; the row-number column is capped at 50 px and the dates column at 80–120 px
+- Corrected the List view descriptions in the README and the user guide (no advanced filtering, custom columns, grouping by date/status or bulk actions)
+- **Dependencies** updated within their ranges (Handlebars 4.7.10 fixes a critical advisory; production `npm audit` now reports no vulnerabilities); `esbuild-sass-plugin` stays on the 3.3 series because newer versions require esbuild 0.27+
+- Fixed lint findings from the updated rules: `no-base-to-string` in the habit parser and the `concat` template helper (non-text frontmatter values are no longer printed as `[object Object]`), and removed the deprecated `setDynamicTooltip()` from settings sliders (on Obsidian versions that predate the inline value display, sliders no longer show their value while dragging)
+
 ### Version 1.1.10 📋
 - **Calendar List view**: one row per day in a continuous window, with a new **Settings ▸ Calendar ▸ List view: days to show** slider (7–14, default 14); rows reuse the same task-pill rendering as Month/Week, no "N more" collapsing
 - List view gestures match the rest of the calendar: click a pill to edit, double-click to open the note, right-click for the status menu, click a row to select/highlight that day without moving the displayed window, double-click empty row space to create a task
@@ -489,12 +506,13 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 
 ## 🗓️ Planned for Future Versions
 
-- ⬜ Advanced task creation/editing UI
-- ⬜ Time-of-day task scheduling
-- ⬜ Custom status implementation
-- ⬜ Time blocks and scheduling
-- ⬜ Advanced dashboard widgets
-- ⬜ Integration with external calendar services
+- ⬜ Areas and sub-areas for tasks, based on folders
+- ⬜ One "Tasks" tab combining the List and Table views, with search, filters, grouping and sorting
+- ⬜ Table: customizable columns and layout, and CSV export
+- ⬜ "What's new" notice after updating
+- ⬜ Kanban and Gantt views
+- ⬜ Custom task statuses and closer compatibility with the Tasks plugin
+- ⬜ Google Calendar sync, followed by Google Tasks and Microsoft
 
 ---
 

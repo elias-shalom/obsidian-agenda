@@ -119,7 +119,7 @@
   outline: none !important;
   box-shadow: none !important;
   border-top: 1px solid var(--background-modifier-border);
-  padding: 0.7rem 0 0.2rem;
+  padding: 0.7rem 0 0.2rem !important; // `.is-tablet button` de Obsidian sangraba 20 px el título
   margin-top: 0.2rem;
   cursor: pointer;
   color: var(--text-muted);
@@ -169,7 +169,7 @@
 .oa-priority-pill {
   flex: 0 0 auto;
   width: 2rem;
-  padding: 0.35rem 0;
+  padding: 0.35rem 0 !important; // `.is-tablet button` de Obsidian impone 20 px laterales y dejaba el emoji sin ancho
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
@@ -255,7 +255,7 @@
 }
 
 .oa-date-trigger {
-  padding: 0;
+  padding: 0 !important; // `.is-tablet button` de Obsidian impone 20 px laterales
   border: none !important;
   outline: none !important;
   box-shadow: none !important;

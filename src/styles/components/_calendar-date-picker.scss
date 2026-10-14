@@ -47,7 +47,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
+  padding: 4px !important; // `.is-tablet button:not(.clickable-icon)` de Obsidian impone 20 px laterales y gana por especificidad
+  height: auto; // en móvil Obsidian da 44 px de alto a todo <button>
   color: var(--text-muted);
   border-radius: 4px;
 
@@ -71,7 +72,8 @@
   border: none;
   cursor: pointer;
   border-radius: 4px;
-  padding: 2px 4px;
+  padding: 2px 4px !important;
+  height: auto;
 
   &:hover {
     background-color: var(--background-modifier-hover);
@@ -131,6 +133,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0 !important; // sin esto, en tableta cada celda mide 40 px o más y la cuadrícula de 7 columnas desborda el popover
+  height: auto; // que la celda ocupe su fila de 28 px y no los 44 px de un <button> en móvil
+  min-width: 0;
   cursor: pointer;
   font-size: 10px;
   font-weight: 500;
@@ -185,6 +190,7 @@
 /* Botón de apertura del popover en el encabezado del calendario (Mes/Semana/Semana laboral/Año). */
 .oa-calendar-date-picker-trigger {
   @include interactive-control;
+  @include round-icon-button;
   display: flex;
   align-items: center;
   justify-content: center;

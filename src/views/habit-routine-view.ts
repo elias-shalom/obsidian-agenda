@@ -308,6 +308,31 @@ export class HabitRoutineView extends HabitView {
         if (target) this.openTaskFile(target.path).catch(console.error);
       });
     });
+
+    // Mismos gestos que Grid, Semana y Lista: clic abre el editor y doble clic abre la nota; en táctil no hay hover para las acciones.
+    container.querySelectorAll<HTMLElement>('.oa-habit-routine-habit-title').forEach(title => {
+      let pendingClickTimer: number | null = null;
+
+      title.addEventListener('click', () => {
+        if (pendingClickTimer !== null) return;
+
+        pendingClickTimer = window.setTimeout(() => {
+          pendingClickTimer = null;
+          const habit = this.findHabitByRowId(title.getAttribute('data-habit-id'));
+          if (habit) this.habitManager.openEditor(habit);
+        }, 250);
+      });
+
+      title.addEventListener('dblclick', () => {
+        if (pendingClickTimer !== null) {
+          window.clearTimeout(pendingClickTimer);
+          pendingClickTimer = null;
+        }
+
+        const habit = this.findHabitByRowId(title.getAttribute('data-habit-id'));
+        if (habit) this.openTaskFile(habit.file.path).catch(console.error);
+      });
+    });
   }
 
   private findHabitByRowId(rowId: string | null) {

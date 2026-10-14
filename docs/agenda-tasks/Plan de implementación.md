@@ -53,8 +53,8 @@ tags:
 
 ## Deuda técnica / trabajo incompleto (estado actual del código)
 
-- [ ] **Timeline view**: registrada en `ViewManager` y renderiza, pero sin lógica de posicionamiento temporal — pendiente de diseño de datos (eje de tiempo, agrupación por rango) y de plantilla propia.
-- [ ] **Gantt view**: mismo estado; pendiente cálculo de duración (`start`→`due`) y representación de `dependsOn` como dependencias visuales entre barras.
+- [ ] **Timeline view**: no registrada — el registro en `ViewManager` y el botón del encabezado (`header.hbs`) están comentados; sin lógica de posicionamiento temporal. Pendiente de diseño de datos (eje de tiempo, agrupación por rango) y de plantilla propia.
+- [ ] **Gantt view**: no registrada (registro y botón comentados, plantilla `gantt-view.hbs` vacía, `onOpen()` descarta el resultado de `getAllTasks()`). Se rediseña en v1.1.13, ver [[Especificación de vistas]] §12.
 - [x] **Edición de tareas existentes** desde el modal (`"edit-task"`): implementada (2026-09-27) reutilizando `TaskModal`/`TaskWriter.updateTaskLine`; ver [[Especificación de vistas]] §7.3. Origen: clic simple sobre una tarea en las vistas de calendario (doble clic sigue abriendo el archivo).
 - [ ] Tests unitarios: siguen sin existir en el repo para este módulo (igual que para hábitos).
 
@@ -296,3 +296,224 @@ El CSS del dial (`.oa-time-dial*`) se movió de `views/_habit-form.scss` a un ar
 
 ### Fuera de alcance
 Configurar el orden de inserción (arriba/abajo); recurrencia "para X veces" o "hasta una fecha"; generar la ocurrencia al completar desde el checkbox nativo de Obsidian fuera del plugin.
+
+## Fase v1.1.11: mantenimiento (fixes y dependencias) (implementado)
+
+> Versión sin funcionalidad nueva: aísla las actualizaciones de dependencias, que afectan a todo el plugin, de las funcionalidades de v1.1.12 en adelante. Reparto completo por versiones en `docs/todo.md`. Publicada como 1.1.11; el ajuste de las columnas de la Tabla al ancho disponible pasa a v1.1.12 (fase U3).
+
+### Fixes
+- [x] Pestañas del encabezado ilegibles en tema oscuro (`_header.scss`, `.theme-dark`).
+- [x] Mes de cada día en la vista de lista del calendario (`monthAbbr`).
+- [x] Error `no-base-to-string` del helper `concat` en `base-view.ts` y los 7 de `habit-parser.ts` que destapó `typescript-eslint` 8.71 (función `toText()`).
+- [x] Ancho de las filas de la Tabla: quitar la columna Archivo y reducir número de fila (máx. 50 px) y Fechas (80–120 px); el ajuste de las columnas al ancho disponible del contenedor (ventana en escritorio, ancho del dispositivo en tableta y teléfono) pasa a v1.1.12 (fase U3).
+- [x] Vistas en Android: causa en el relleno de 20 px laterales y los 44 px de alto que Obsidian aplica a todo `<button>` en tableta y móvil; se corrigió el multibotón del calendario, el selector de fecha, el conmutador del sidebar de Día, Rutina (círculo, acciones, nombres y etiquetas), las celdas de Grid y Semana y los botones de tamaño fijo del Task Modal, el editor de hábitos, la Tabla y Hábitos (detalle en `docs/todo.md`); pruebas manuales hechas, y lo que aparezca se corrige en versiones siguientes.
+- [x] Texto del README, del manual de usuario y de `todo.md` que decía que la Lista tiene filtrado avanzado, columnas personalizables, agrupado por fecha/estado y acciones masivas; corregido.
+- [x] Aviso `prefer-create-el`: cerrado como no reproducible; `npx eslint src` termina limpio tras actualizar el plugin de reglas.
+
+### Dependencias
+- [x] Etiqueta `1.1.10`: ya está en el remoto (merge de la PR #54 en `main`); solo falta alinear la etiqueta local con la del remoto.
+- [x] Actualizado dentro del rango: `handlebars` 4.7.10, `luxon` 3.7.2, `winston` 3.19.0, `esbuild` 0.25.12, `obsidian` (tipos) 1.14.4, `eslint-plugin-obsidianmd` 0.4.2, `typescript-eslint` 8.71.1, `eslint` 9.39.5 y las menores; `esbuild-sass-plugin` se queda en `~3.3.1` porque la 3.6 y la 3.7 exigen `esbuild >= 0.27`.
+- [x] Pins de `@typescript-eslint/eslint-plugin` y `@typescript-eslint/parser` subidos de 8.32.1 a 8.71.1 (`eslint.config.mts` importa el parser directamente).
+- [x] 5 avisos por `setDynamicTooltip()` obsoleto: se quitan las llamadas en `setting-tab.ts`.
+- [x] No actualizar ahora: ESLint 10, TypeScript 7, esbuild 0.28 y `@types/node` 26.
+- [x] Verificado: `npm run build` y `npx eslint src` sin errores ni avisos; `npm audit --omit=dev` sin vulnerabilidades; prueba manual en Obsidian hecha en escritorio, en modo móvil y en los dispositivos reales.
+- [x] Versión subida a 1.1.11 en `package.json`, `package-lock.json`, `manifest.json` y `versions.json` (`minAppVersion` sigue en 1.8.7).
+
+## Próxima fase — v1.1.11: manual de usuario (implementado)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §9.
+
+### Fase Única
+- [x] Nueva carpeta `docs/user_guide/`, separada de la documentación de desarrollo (`docs/agenda-tasks/`, `docs/habit-tracker-agenda/`).
+- [x] Dos versiones completas y paralelas: `en/` y `es/`, 10 capítulos idénticos en estructura y orden (Introducción, Instalación, Primeros pasos, Vistas generales, Vistas de calendario, Seguimiento de hábitos, Formato de tareas y metadatos, Gestos e interacciones, Configuración, Preguntas frecuentes y soporte).
+- [x] `docs/user_guide/README.md`: índice con enlaces a ambas versiones y guía para agregar un nuevo idioma (duplicar una carpeta de idioma y traducir, manteniendo nombres de archivo).
+- [x] Verificable sola: cada capítulo enlaza correctamente al siguiente/anterior y a otros capítulos relacionados; el contenido refleja la versión 1.1.10 del plugin (settings, gestos y vistas vigentes al momento de escribirlo).
+
+### Fuera de alcance
+Un paso de build/generación de los manuales (son Markdown plano, sin plantilla ni paso de compilación); idiomas adicionales a inglés/español (quedan documentados como extensión futura siguiendo el mismo patrón).
+
+## Próxima fase — v1.1.12: modal de novedades al actualizar (diseño)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §10. Mecanismo: [[Arquitectura técnica]] §19. **Nada de esta fase está implementado.**
+
+### Fase A — Settings y disparador
+- [ ] Nuevo campo `lastSeenVersion` (string) en `AgendaPluginSettings`/`DEFAULT_SETTINGS`.
+- [ ] Nuevo campo `showWhatsNewOnUpdate` (boolean, default `true`) en `AgendaPluginSettings`/`DEFAULT_SETTINGS`, con su toggle en **Configuración general** (ambas rutas: API declarativa y `display()` legado).
+- [ ] `main.ts` → `onload()`: tras `loadSettings()`, comparar `manifest.version` contra `settings.lastSeenVersion`; si difieren, actualizar y guardar `lastSeenVersion` de inmediato (antes de decidir si se muestra el modal).
+
+### Fase B — Contenido localizado (depende de A)
+- [ ] Nuevas claves de "novedades" por versión en `src/locales/*.json` (6 idiomas), espejando (resumido) el bloque "News" que ya se redacta a mano en `README.md` por cada release.
+- [ ] Función que, dado `lastSeenVersion`, resuelve la lista de versiones posteriores con contenido a mostrar, de la más reciente a la más antigua (acumulativo, no solo la última versión).
+
+### Fase C — Modal (depende de A y B)
+- [ ] Nuevo `src/modals/whats-new-modal.ts` + `src/modals/templates/whats-new-modal.hbs`.
+- [ ] Botón de cierre propio, visible dentro del contenido (no depende únicamente del cierre nativo del modal de Obsidian).
+- [ ] Si `showWhatsNewOnUpdate` es `false`, el modal no se abre (pero `lastSeenVersion` ya se actualizó en la Fase A).
+- [ ] Verificable sola: al simular un cambio de versión (editar `lastSeenVersion` manualmente a una versión anterior y recargar el plugin), el modal se abre una sola vez con el contenido correcto en el idioma activo de Obsidian; con el ajuste desactivado, no se abre pero tampoco vuelve a aparecer al reactivarlo.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fuera de alcance
+Fetch en vivo desde GitHub Releases; renderizado de Markdown libre (imágenes, video, bloques de código embebidos); preferencia granular "solo versiones con funcionalidad nueva" (mayor/menor) vs. todas; cualquier mecanismo de feedback tipo formulario.
+
+## Próxima fase — v1.1.13: Kanban view (diseño; la Fase A, las piezas compartidas, va en v1.1.12)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §11. Mecanismo: [[Arquitectura técnica]] §20. **Nada de esta fase está implementado.** Dos decisiones de diseño técnico siguen abiertas (arrastre por etiqueta/carpeta y persistencia del orden manual, ver §20.4).
+
+### Fase A — Piezas compartidas (base para Kanban y Gantt, sin vista nueva)
+- [ ] `TaskSorter.groupTasksByField(tasks, field)` genérico, con las columnas de estado en el orden fijo de `CoreTaskStatus` (siempre las 6, aunque estén vacías). Para `path` devuelve un árbol de carpetas, reutilizando `ListView.groupTasksByFolder()`.
+- [ ] Barra de filtros reutilizable en `src/core/` ([[Arquitectura técnica]] §20.3), con opciones de estado generadas desde `CoreTaskStatus` + i18n y persistencia por vista; reemplaza los controles hardcodeados de `table-view.hbs`.
+- [ ] `attachTaskGestures()` en `src/core/task-gestures.ts` ([[Arquitectura técnica]] §20.3.1): se migra primero el calendario, con la misma lógica de temporizador, y después Lista y Tabla.
+- [ ] Separar los ids ([[Arquitectura técnica]] §20.3.2): `ITask.id` siempre `ruta#línea`, el `🆔` en `ITaskFlow.id`; ajustar el extractor, el modal (`isAutoId`) y el atributo `data-task-id` de la Tabla.
+- [ ] Escritura segura: `updateTaskLine()` e `insertLineAbove()` con el texto esperado de la línea, búsqueda de la línea exacta y aviso si no se encuentra; actualizar los ~10 sitios que escriben (arrastrar, redimensionar, estado y modal) y probar el cálculo con scripts de Node.
+- [ ] Verificable sola: el calendario, la Lista y la Tabla se comportan igual que antes; la Tabla filtra con la barra nueva; Lista y Tabla ganan el menú de estado con clic derecho.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fase B — Vista Kanban (depende de A)
+- [ ] `KanbanView` + `KANBAN_VIEW_TYPE`, registrada en `ViewManager`/`index.ts`/`TEMPLATE_LOADERS`, con `kanban-view.hbs` y `_kanban.scss`.
+- [ ] Ajuste `showKanbanTab` (default `true`) en `AgendaPluginSettings`/`DEFAULT_SETTINGS`, con su toggle en ambas rutas de `setting-tab.ts`, y la pestaña en el encabezado.
+- [ ] Selector de agrupado de columnas: estado (por defecto), prioridad, etiqueta, carpeta; orden ascendente/descendente con `TaskSorter`.
+- [ ] Arrastre entre columnas por estado con `upsertTaskStatus()` + `updateTaskLine()`, incluida la ocurrencia siguiente de tareas recurrentes; por prioridad con `upsertPriority()`.
+- [ ] Gestos de tarjeta iguales al resto del plugin (clic edita, doble clic abre la nota, clic derecho abre el menú de estado).
+- [ ] Claves i18n nuevas en los 6 locales.
+- [ ] Verificable sola: arrastrar una tarjeta a "Hecho" agrega ✅ en el archivo y refresca el tablero; arrastrarla de vuelta lo quita.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fase C — Reordenar dentro de una columna (depende de B)
+- [ ] Resolver dónde se persiste el orden manual (candidato: `data.json`, por `ruta:línea` o `🆔`) y cómo se invalida cuando cambia el archivo.
+- [ ] Arrastrar una tarjeta a otra posición de la misma columna y conservar el orden entre recargas.
+
+### Fuera de alcance
+Tableros múltiples guardados; mini-lenguaje de query propio; carriles (swimlanes) plegables; estados personalizables (candidato a v1.1.14); unificar las pestañas Lista y Tabla.
+
+## Próxima fase — v1.1.13: Gantt view (diseño)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §12. Mecanismo: [[Arquitectura técnica]] §21. **Nada de esta fase está implementado.** Depende de la Fase A de Kanban (piezas compartidas). Tres decisiones menores siguen abiertas (Especificación §12.7).
+
+### Fase G1 — Gantt de lectura (depende de la Fase A de Kanban)
+- [ ] `resolveGanttSpan(task)` en `src/core/task-gantt.ts`: barra, hito o ninguna, según [[Especificación de vistas]] §12.1.
+- [ ] Reescribir `GanttView` con el `taskManager` inyectado; registrarla en `ViewManager`, descomentar el botón de `header.hbs` y agregar `showGanttTab` (default `true`) en ambas rutas de `setting-tab.ts`.
+- [ ] Plantilla y estilos: cabecera con pestañas de mes, año, franja de días, bandas de semana y línea de «hoy»; barras, hitos y muesca de `scheduled`.
+- [ ] Zoom 7/14/21/mes natural con posiciones precalculadas en porcentaje; ◀▶ por ventana o por mes; zoom recordado en `localStorage`.
+- [ ] Agrupado por área y sub-área (anidado por carpeta), plegable, con barra resumen por grupo.
+- [ ] Contador «N tareas sin fecha» y barras recortadas cuando salen de la ventana.
+- [ ] Insignia 🔗 con la tooltip «depende de» en las tareas con `🆔`/`⛔`.
+- [ ] Barra de filtros compartida y gestos con `attachTaskGestures()`.
+- [ ] Claves i18n nuevas en los 6 locales.
+- [ ] Verificable sola: con tareas de una, dos y tres fechas se ven hitos y barras correctas; cambiar de zoom y de mes (28 a 31 días) mantiene las posiciones.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fase G2 — Edición de fechas (depende de G1)
+- [ ] Extraer `shiftTaskDates(line, deltaDays)` de `task-recurrence.ts`, sin tocar ➕ ni ✅.
+- [ ] Mover la barra o el hito, y redimensionar cada borde, con eventos de puntero y pasos de un día; escritura con `updateTaskLine()`.
+- [ ] Tooltip que indica qué campo escribe cada borde; bloquear fin anterior al inicio.
+- [ ] Verificable sola: arrastrar un borde cambia solo el campo indicado en la nota; mover la barra desplaza las tres fechas sin tocar `🆔`/`⛔`.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fuera de alcance
+Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de dependientes; zoom por día; Timeline view.
+
+## Próxima fase — v1.1.12: áreas y sub-áreas de tareas (diseño)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §13. Mecanismo: [[Arquitectura técnica]] §22. **Nada de esta fase está implementado.** Resuelve la idea de «Grupos de tareas». Una decisión menor sigue abierta (Especificación §13.4).
+
+### Fase AR1 — Núcleo (independiente de las demás)
+- [ ] Mover la lógica de áreas de `src/habits/habit.ts` a `src/core/area.ts`, con una única normalización del nombre; `habit.ts` la re-exporta.
+- [ ] `resolveTaskArea(filePath)` según la tabla de [[Especificación de vistas]] §13.1: área = primera carpeta, sub-área = resto de la ruta sin tope de niveles, y el grupo «Sin área» para la raíz del vault.
+- [ ] Criterios `location.area` y `location.subArea` en `TaskFilter`, con coincidencia de sub-área por prefijo.
+- [ ] Verificable sola: un script de Node confirma `resolveTaskArea()` para las cinco rutas de la tabla y el filtro por prefijo; Hábitos se ve igual que antes.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fase AR2 — Filtro y agrupado (depende de AR1 y de la Fase A de Kanban)
+- [ ] Combobox de Área y de Sub-área (en cascada, oculto sin área elegida) en la barra de filtros compartida, con opciones tomadas de las tareas cargadas.
+- [ ] La Tabla pasa a filtrar sobre datos con `TaskFilter`; se convierte el valor `folder` guardado en `localStorage`.
+- [ ] La Tabla reemplaza la columna de carpeta por dos, Área y Sub-área (propuesta, sin confirmar).
+- [ ] `GroupField` gana `'area'` y `'subArea'`; `groupTasksByField(tasks, 'area')` devuelve el árbol área → sub-área.
+- [ ] Lista agrupa por área y sub-área (anidada por carpeta) y conserva el modo plano.
+- [ ] Color por área en las cabeceras de grupo (`getAreaColor`).
+- [ ] Claves i18n nuevas en los 6 locales.
+- [ ] Verificable sola: elegir un área muestra el combobox de sub-área con solo sus sub-áreas; cambiar de área lo reinicia; Lista y Tabla filtran igual.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fuera de alcance
+Área configurable por tarea o por nota; mover tareas entre áreas arrastrando; áreas sin carpeta.
+
+## Próxima fase — v1.1.12: Lista y Tabla en una sola pestaña (diseño)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §14. Mecanismo: [[Arquitectura técnica]] §23. **Nada de esta fase está implementado.** Depende de la Fase A de Kanban (barra de filtros y helper de gestos) y de la fase AR2 (áreas).
+
+### Fase U1 — Estado compartido y barra (depende de la Fase A de Kanban)
+- [ ] `src/core/task-view-state.ts` con `TaskViewState` y su persistencia en una sola clave; migración de la clave antigua de la Tabla.
+- [ ] La barra de filtros incorpora el combo de agrupado y el control de orden (campo y dirección).
+- [ ] Verificable sola: el estado se guarda y se restaura entre recargas, y el valor `folder` antiguo se convierte o se reinicia.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fase U2 — Lista adopta la barra (depende de U1)
+- [ ] La Lista usa la barra: gana búsqueda, filtros y orden, que hoy no tiene.
+- [ ] El botón jerárquico/plano pasa a ser valores del combo de agrupado: Área y sub-área (anidado), Carpeta (plano) y Sin agrupar.
+- [ ] Verificable sola: filtrar y ordenar en la Lista funciona y el agrupado conserva el comportamiento anterior.
+
+### Fase U3 — Tabla adopta la barra (depende de U1)
+- [ ] La Tabla filtra sobre datos con `TaskFilter` en lugar de ocultar filas del DOM.
+- [ ] Agrupado en la Tabla con filas de cabecera plegables y estado recordado.
+- [ ] Los encabezados ordenables actualizan el orden compartido.
+- [ ] Ajustar las columnas al ancho disponible del contenedor en `resizeColumns()`: las flexibles se reducen en proporción sin bajar de su mínimo, con la ventana como referencia en escritorio y el ancho del dispositivo en tableta y teléfono; afinar los máximos de Tarea, Carpeta y Etiquetas y dejar que la Tarea se parta en dos líneas.
+- [ ] Verificable sola: la Tabla se comporta como antes sin agrupar, y agrupa y pliega al elegir un agrupado.
+
+### Fase U4 — Pestaña única y conmutador (depende de U2 y U3)
+- [ ] Conmutador segmentado Lista | Tabla, con las clases del selector del calendario, íconos `list-todo` y `table` y tooltip; cambia de vista con `leaf.setViewState()`.
+- [ ] `header.hbs`: un solo botón «Tareas» visible si `showListTab` o `showTableTab`; abre el último modo usado.
+- [ ] Excepción de resaltado de pestaña activa en `base-view.ts` para `list-view` y `table-view`.
+- [ ] Claves i18n nuevas en los 6 locales.
+- [ ] Verificable sola: cambiar de modo conserva búsqueda, filtros, agrupado y orden; la pestaña se ilumina en ambos modos.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fase U5 — Funciones anunciadas de la Tabla (por diseñar, depende de U3)
+- [ ] Diseñar y agregar columnas y diseño personalizables de la Tabla (Especificación §14.3).
+- [ ] Diseñar y agregar la exportación a CSV (Especificación §14.3).
+- [ ] Verificable sola: el README y el manual de usuario dicen lo mismo que hace la Tabla.
+
+### Fuera de alcance
+Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones masivas.
+
+## Próxima fase — v1.1.15: sincronía con Google Calendar (diseño)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §15. Mecanismo: [[Arquitectura técnica]] §24. **Nada de esta fase está implementada.** Sin decisiones de diseño abiertas (Especificación §15.8). Como el repo no tiene pruebas automatizadas, cada fase incluye sus scripts de prueba de Node.
+
+### Fase GC1 — Conexión
+- [ ] Subir `minAppVersion` a 1.11.4 en `manifest.json` y `versions.json`.
+- [ ] Grupo **Integraciones** en los ajustes (ambas rutas), con la sincronía apagada por defecto y la lista de pasos para crear las credenciales.
+- [ ] `auth.ts`: servidor local en `Platform.isDesktop`, PKCE, `state`, cierre a los 2 minutos, renovación del token y revocación.
+- [ ] `crypto.ts`: cifrado con la frase, y la frase en `app.secretStorage`; estados Sin sesión, Bloqueado, Conectado, Token caducado e Iniciar sesión en el escritorio.
+- [ ] README: declaración del uso de red.
+- [ ] Verificable sola: iniciar sesión en escritorio, reiniciar y seguir conectado; con una frase incorrecta queda Bloqueado. Pruebas de Node del cifrado y de PKCE.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fase GC2 — Descarga y caché (depende de GC1)
+- [ ] `client.ts` con reintentos y manejo de 401, 410, 412 y 429; `calendar-sync.ts` con `syncToken` y ventana de −3 a +6 meses.
+- [ ] `event-mapping.ts` (§15.3) con sus pruebas de Node, incluidos los eventos de varios días completos y la derivación reversible del id del evento a partir del `🆔` (§17.3), con ids de Tasks que incluyan mayúsculas, `_` y `-`.
+- [ ] Lista de calendarios de la cuenta (solo catálogo) con el botón «Añadir calendario», que crea la nota espejo con su frontmatter (`agenda-origin: google-calendar`; carpeta por defecto `temporal/agenda/`).
+- [ ] Detección de las notas de sincronización por frontmatter (`agenda-origin`, `agenda-sync`, `agenda-calendar`, `agenda-account` opcional, `agenda-allow-edit`), con avisos por frontmatter inválido o por dos espejo del mismo calendario.
+- [ ] Importación a la nota espejo con el `🆔` del evento en cada línea, buscando antes el par (calendario, `🆔`) en todo el vault para no duplicar una tarea que ya vive en una nota local; aviso por `🆔` repetido.
+- [ ] Verificable sola: los eventos aparecen como líneas con fecha, hora y duración; una segunda sincronización no duplica nada.
+
+### Fase GC3 — Envío (depende de GC2)
+- [ ] Calendario dedicado creado por el plugin y propiedad privada que marca los eventos propios.
+- [ ] Acción «Enviar a Google Calendar» (menú contextual y Task Modal): escribe el `🆔` en la línea (lo genera si falta) sin moverla y crea el evento en el calendario de la nota con el id derivado del `🆔`; si la nota no declara origen y calendario, pregunta y los guarda en su frontmatter (`agenda-origin: agenda-task`). Una línea está vinculada si su `🆔` coincide con un evento del plugin (Especificación §17.6).
+- [ ] Parches de título, inicio y fin con `If-Match` y `sendUpdates=none`; `agenda-allow-edit` en el frontmatter de cada nota (`false` por defecto, `true` en la del calendario dedicado).
+- [ ] Verificable sola: crear una tarea con hora y enviarla crea el evento; cambiar la hora en la nota lo actualiza en Google sin tocar su descripción ni sus invitados.
+
+### Fase GC4 — Planificador y barreras (depende de GC3)
+- [ ] `sync-planner.ts` con el desempate por última modificación; un evento cancelado queda como `[-]` y uno rechazado como `[~]` en la nota.
+- [ ] Diálogo de revisión (5 o más borrados, 25 o más cambios), rechazo por encima de 200, notas con líneas inválidas omitidas.
+- [ ] Disparadores y comando «Sincronizar ahora».
+- [ ] Pruebas con un transporte falso de Google: 410, 412, 409 y las barreras.
+- [ ] Verificable sola: un cambio en ambos lados gana el más reciente con aviso; borrar muchas líneas pide aprobación.
+
+### Fase GC5 — Móvil (depende de GC1)
+- [ ] Rama de ajustes para móvil con los estados «Inicia sesión en el escritorio» y «Escribe la frase».
+- [ ] Comprobar que `esbuild.config.mjs` deja `http` fuera del paquete de móvil.
+- [ ] Verificable sola: en iOS y Android, tras iniciar sesión en el escritorio y escribir la frase, la sincronización funciona sin pantalla de inicio de sesión.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fuera de alcance
+Google Tasks, Microsoft y el plugin Tasks; varias cuentas de Google; `🔁` ↔ RRULE; el botón directo sin credenciales propias; inicio de sesión por copiar y pegar en móvil.

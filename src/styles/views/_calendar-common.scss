@@ -82,6 +82,13 @@
       margin-bottom: 4px;
     }
   }
+
+  .oa-calendar-prev,
+  .oa-calendar-next {
+    width: var(--input-height, 2rem); // cuadrado igual al alto de un <button> (30 px en escritorio, 44 px en móvil) para que el borde redondeado dé un círculo
+    height: var(--input-height, 2rem);
+    padding: 0 !important;
+  }
 }
 
 .oa-calendar-today {
@@ -249,6 +256,11 @@
     display: flex;
     gap: 4px;
 
+    .oa-calendar-prev,
+    .oa-calendar-next {
+      @include round-icon-button;
+    }
+
     button {
       @include interactive-control;
       display: flex;
@@ -279,9 +291,8 @@
 
 .oa-calendar-view-btn {
   @include interactive-control;
+  @include round-icon-button;
   flex: 0 0 auto;
-  width: 2rem;
-  padding: 0.35rem 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -299,6 +310,7 @@
   }
 
   svg {
+    flex: 0 0 auto; // en móvil el contenido del botón queda a 0 px y el flex encogía el ícono hasta ocultarlo
     width: 16px;
     height: 16px;
   }

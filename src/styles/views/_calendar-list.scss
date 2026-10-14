@@ -50,7 +50,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  flex: 0 0 110px;
+  flex: 0 0 130px;
 }
 
 .oa-calendar-list-row-day-name {
@@ -69,6 +69,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.oa-calendar-list-row-month {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  text-transform: capitalize;
 }
 
 .oa-calendar-list-row-content {

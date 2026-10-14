@@ -286,3 +286,12 @@ $breakpoints: (
     box-shadow: 0 0 0 2px color-mix(in srgb,$active-border-color 50%, transparent);
   }
 }
+
+// Botón circular: ancho = alto = `--input-height` (30 px en escritorio, 44 px en móvil), para que se vea redondo en ambos.
+@mixin round-icon-button {
+  width: var(--input-height);
+  min-width: var(--input-height);
+  height: var(--input-height);
+  padding: 0 !important; // `.is-tablet button:not(.clickable-icon)` de Obsidian impone 20 px laterales y gana por especificidad
+  border-radius: 50%;
+}

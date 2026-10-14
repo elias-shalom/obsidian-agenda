@@ -88,7 +88,7 @@
   justify-content: center;
   width: 1.1rem;
   height: 1.1rem;
-  padding: 0;
+  padding: 0 !important; // `.is-tablet button` de Obsidian impone 20 px laterales y ovalaba el botón
   border: none;
   border-radius: 50%;
   background: transparent;

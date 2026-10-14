@@ -28,7 +28,7 @@
     .oa-habit-new-btn {
       @include interactive-control;
       border-radius: 6px;
-      padding: 2px 10px;
+      padding: 2px 10px !important; // `.is-tablet button` de Obsidian impone 20 px laterales
       font-weight: 700;
       font-size: 1rem;
       line-height: 1.4;

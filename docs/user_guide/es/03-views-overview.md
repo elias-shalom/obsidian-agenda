@@ -14,13 +14,12 @@ Un resumen estilo panel de tus tareas, pensado para ser lo primero que revisas. 
 
 ## Vista de lista (List)
 
-Una lista de tareas flexible y detallada, ideal para trabajar una por una sobre un subconjunto filtrado de las tareas de tu bóveda.
+Una lista compacta de tareas agrupadas por carpeta, ideal para trabajar una por una sobre las tareas de tu bóveda.
 
-- Columnas personalizables.
-- Filtrado avanzado por fecha, proyecto, prioridad y etiquetas.
-- Agrupación por fecha, carpeta, estado o atributos personalizados, con grupos contraíbles.
-- Haz clic en una tarea para editarla en línea o en el modal (ver [8. Gestos e interacciones](07-gestures.md)).
-- Acciones masivas para varias tareas a la vez.
+- Filas compactas con indicadores de prioridad y una jerarquía de carpetas clara.
+- Vista jerárquica (árbol de carpetas) o plana, que se cambia con un botón.
+- Grupos de carpeta contraíbles.
+- Haz clic en una tarea para editarla en el modal; doble clic abre su nota (ver [8. Gestos e interacciones](07-gestures.md)).
 
 ## Vista de tabla (Table)
 

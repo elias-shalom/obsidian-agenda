@@ -228,12 +228,14 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
 }
 
 .oa-habit-routine-habit-meta {
   display: flex;
+  flex-wrap: wrap; // si no caben, las etiquetas pasan a otra línea en vez de encogerse
   align-items: center;
-  gap: 8px;
+  gap: 4px 8px;
   margin-top: 2px;
   font-size: var(--font-smaller, 0.75rem);
   color: var(--text-muted);
@@ -241,6 +243,7 @@
 
 .oa-habit-routine-priority-badge {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   min-width: 20px;
@@ -263,11 +266,15 @@
 }
 
 .oa-habit-routine-area-tag {
-  display: inline-flex;
-  align-items: center;
+  display: block; // `text-overflow` no actúa en un contenedor flex; el alto de 18 px se centra con line-height
+  line-height: 18px;
+  max-width: 100%;
   height: 18px;
   padding: 0 6px;
   border-radius: 9px;
+  overflow: hidden;
+  white-space: nowrap; // con alto fijo de 18 px, partir el texto en dos líneas lo desbordaba
+  text-overflow: ellipsis;
   font-size: 0.6rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -276,10 +283,12 @@
 
 .oa-habit-routine-daytime-tag {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   height: 18px;
   padding: 0 6px;
   border-radius: 9px;
+  white-space: nowrap;
   background: var(--background-modifier-border);
   color: var(--text-muted);
   font-size: 0.6rem;
@@ -303,6 +312,17 @@
 
 .oa-habit-routine-habit:hover .oa-habit-routine-habit-actions {
   opacity: 1;
+}
+
+// Sin hover (móvil y táctil) las acciones quedaban invisibles pero ocupaban ancho y dejaban el título sin espacio.
+body.is-mobile .oa-habit-routine-habit-actions {
+  display: none;
+}
+
+@media (hover: none) {
+  .oa-habit-routine-habit-actions {
+    display: none;
+  }
 }
 
 .oa-habit-routine-action-btn {

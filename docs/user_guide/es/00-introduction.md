@@ -11,7 +11,7 @@
 - Añade sus propias extensiones opcionales sobre ese formato: hora y duración programadas, un estado con 6 valores (incluyendo "En espera") y generación automática de la siguiente ocurrencia para tareas recurrentes.
 - Ofrece cinco familias de vistas, cada una pensada para una forma distinta de trabajar:
   - **Vista general** — un panel con métricas clave y acceso rápido a tareas próximas/vencidas.
-  - **Lista** — una lista de tareas flexible y filtrable.
+  - **Lista** — una lista compacta de tareas agrupadas por carpeta.
   - **Tabla** — una cuadrícula de tareas estilo hoja de cálculo, ordenable.
   - **Calendario** — seis diseños (Día, Semana, Semana laboral, Mes, Año, Lista) para ver las tareas en una línea de tiempo.
   - **Seguimiento de hábitos** — un módulo independiente (Cuadrícula, Rutina diaria, Dashboard, Semanal, Tabla) para seguir hábitos recurrentes, separado de las tareas.

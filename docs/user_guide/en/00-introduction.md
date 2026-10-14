@@ -11,7 +11,7 @@
 - Adds its own optional extensions on top of that format: a scheduled time and duration, a 6-state status (including "On Hold"), and automatic next-occurrence generation for recurring tasks.
 - Offers five view families, each suited to a different way of working:
   - **Overview** — a dashboard with key metrics and quick access to upcoming/overdue tasks.
-  - **List** — a flexible, filterable list of tasks.
+  - **List** — a compact list of tasks grouped by folder.
   - **Table** — a spreadsheet-style, sortable grid of tasks.
   - **Calendar** — six layouts (Day, Week, Work Week, Month, Year, List) to see tasks against a timeline.
   - **Habit Tracker** — a separate module (Grid, Daily Routine, Dashboard, Weekly, Table) to track recurring habits, independent from tasks.

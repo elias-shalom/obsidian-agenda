@@ -466,6 +466,11 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [ ] Verificable sola: cambiar de modo conserva búsqueda, filtros, agrupado y orden; la pestaña se ilumina en ambos modos.
 - [ ] `npm run build` y ESLint sobre los archivos tocados.
 
+### Fase U5 — Funciones anunciadas de la Tabla (por diseñar, depende de U3)
+- [ ] Diseñar y agregar columnas y diseño personalizables de la Tabla (Especificación §14.3).
+- [ ] Diseñar y agregar la exportación a CSV (Especificación §14.3).
+- [ ] Verificable sola: el README y el manual de usuario dicen lo mismo que hace la Tabla.
+
 ### Fuera de alcance
 Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones masivas.
 

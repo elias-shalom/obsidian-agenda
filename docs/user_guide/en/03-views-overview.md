@@ -14,13 +14,12 @@ A dashboard-style summary of your tasks, meant to be the first thing you check. 
 
 ## List view
 
-A flexible, detailed list of tasks, best for working through a filtered subset of your vault's tasks one by one.
+A compact list of tasks grouped by folder, best for working through your vault's tasks one by one.
 
-- Customizable columns.
-- Advanced filtering by date, project, priority, and tags.
-- Grouping by date, folder, status, or custom attributes, with collapsible groups.
-- Click a task to edit it inline or in the modal (see [8. Gestures and Interactions](07-gestures.md)).
-- Bulk actions for multiple tasks at once.
+- Compact rows with priority cues and a clear folder hierarchy.
+- Hierarchical (folder tree) or flat view, switched with one button.
+- Collapsible folder groups.
+- Click a task to edit it in the modal; double-click to open its note (see [8. Gestures and Interactions](07-gestures.md)).
 
 ## Table view
 

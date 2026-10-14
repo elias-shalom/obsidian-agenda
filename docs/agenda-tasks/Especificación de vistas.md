@@ -543,6 +543,10 @@ Se mantienen registrados los dos tipos de vista (`list-view` y `table-view`) y e
 ### 14.2 Fuera de alcance
 Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones masivas.
 
+### 14.3 Funciones de la Tabla ya anunciadas (por diseñar)
+
+El README y el manual de usuario anuncian para la Tabla **columnas y diseño personalizables** y **exportación a CSV**, que no existen en el código. Se decidió agregarlos en v1.1.12 como parte de las actualizaciones de Lista y Tabla. Sin diseño todavía; a decidir: qué columnas se pueden mostrar, ocultar y reordenar, dónde se guarda esa elección (hoy el estado de la Tabla va en `TABLE_VIEW_STATE_KEY`, §3), qué filas y columnas exporta el CSV (todas o solo las visibles tras filtrar), el separador y la codificación, y dónde se guarda o descarga el archivo.
+
 ## 15. Sincronía con Google Calendar (v1.1.15 — diseño, no implementado)
 
 > **Estado**: diseño acordado en sesión de discusión, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §24. Referencias estudiadas: Full Calendar (remastered), `pubcyberry/obsidian-google-cal-sync` y `mcuste/obsidian-gcal-sync`.

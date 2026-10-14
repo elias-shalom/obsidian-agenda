@@ -110,12 +110,10 @@ See the [full changelog](#changelog) below for older versions.
 - Customizable widgets
 
 #### List View
-- Customizable task listing with multiple columns
-- Advanced filtering by date, project, priority, and tags
-- Group tasks by date, folder, status, or custom attributes
-- Inline task editing
-- Collapsible task groups
-- Bulk actions for multiple tasks
+- Compact task rows with priority cues and a clear folder hierarchy
+- Hierarchical (folder tree) or flat view, switched with one button
+- Collapsible folder groups
+- Click a task to edit it in the task modal; double-click to open its note
 
 #### Table View
 - Spreadsheet-style task management

@@ -37,13 +37,13 @@ Implementa `ITask`. Es el objeto final que consumen las vistas.
 
 | Propiedad | Tipo | Descripción |
 |---|---|---|
-| `id` | `string` | Identificador único de la tarea (derivado de archivo + línea, o del campo `🆔`). |
+| `id` | `string` | Identificador de posición de la tarea: siempre `ruta#línea` (v1.1.12; antes era el `🆔` si existía y `ruta-línea` si no). Se recalcula al volver a extraer el archivo, por lo que no debe guardarse. El `🆔` va en `flow.id`. |
 | `file` | `ITaskFile` | Metadatos del archivo donde vive la tarea. |
 | `line` | `ITaskLine` | Número de línea (`number`) y texto crudo (`text`). |
 | `state` | `ITaskState` | Estado (`status`, `emoji`, `text`, `priority`, `isValid`). |
 | `date` | `ITaskDate` | Fechas: `due`, `start`, `scheduled`, `created`, `done`, `cancelled` (todas `DateTime \| null`). |
 | `section` | `ITaskSection` | Contenido: `header`, `desc`, `tags[]`, `fields[]` (campos crudos sin procesar). |
-| `flow` | `ITaskFlow` | Control: `repeat`, `blockLink`, `dependsOn[]`, `onCompletion`. |
+| `flow` | `ITaskFlow` | Control: `id` (el `🆔`, v1.1.12), `repeat`, `blockLink`, `dependsOn[]`, `onCompletion`. |
 | `groupLabel?` | `string` | Etiqueta opcional usada al agrupar tareas en una vista. |
 
 **Métodos estáticos clave:**
@@ -220,7 +220,7 @@ type GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags';
 
 - **Decisión (revisada, 2026-09-27)**: `🕐` y `⏱️` son campos de primer nivel propios (igual que `📅`/`🛫`/`⏳`/prioridad/etc.), detectados en **cualquier posición del renglón**, no ligados por posición al icono de fecha que los precede. Semánticamente solo tienen sentido junto a `scheduled`, así que siempre se escriben en `taskData.scheduledTime`/`taskData.scheduledDuration` sin importar dónde aparezcan en la línea ni en qué orden estén entre ellos.
 - **Decisión original (superada)**: la primera versión los interpretaba como modificadores del icono de fecha inmediatamente anterior (p. ej. `⏳ 2026-10-01 🕐 15:00 ⏱️ 90m`), reutilizando el mismo mecanismo de "todo el texto hasta el siguiente emoji reconocido" que usan los demás campos de fecha. Esto resultó frágil: si el usuario los escribía en otro orden, o cualquier otro icono se colaba entre medio, el campo completo (incluida la fecha) se invalidaba y la tarea desaparecía del calendario (ver corrección de 2026-09-27 más abajo, ya incorporada a esta decisión revisada).
-- **Racional (se mantiene)**: si un usuario tiene instalado el plugin real **Obsidian Tasks** (que no soporta hora en sus campos de fecha), este sigue leyendo correctamente `⏳ 2026-10-01` y simplemente ignora/muestra como texto suelto el resto — no se rompe la interoperabilidad. Hora y duración son estrictamente **opcionales y aditivas**: una tarea sin ellas se comporta exactamente igual que hoy. Un `🕐`/`⏱️` con formato inválido tampoco invalida la tarea completa (mismo criterio que la recurrencia, `🔁`): simplemente se ignora ese valor puntual.
+- **Racional (se mantiene)**: si un usuario tiene instalado el plugin real **Obsidian Tasks** (que no soporta hora en sus campos de fecha), este sigue leyendo correctamente `⏳ 2026-10-01` y simplemente ignora/muestra como texto suelto el resto — no se rompe la interoperabilidad. **Verificado el 2026-10-09** en un vault con Tasks instalado: con `⏳ 2026-10-19 🕐 09:00 ⏱️ 30m` al final de la línea, Tasks sigue reconociendo `📅` y `⏳`. Hora y duración son estrictamente **opcionales y aditivas**: una tarea sin ellas se comporta exactamente igual que hoy. Un `🕐`/`⏱️` con formato inválido tampoco invalida la tarea completa (mismo criterio que la recurrencia, `🔁`): simplemente se ignora ese valor puntual.
 - **Zona horaria**: `🕐 HH:mm` se interpreta siempre en hora **local del vault** (la misma zona que usa Luxon en el resto del plugin, ej. `toLocalMidnight`); no se guarda ningún offset de zona horaria en el texto.
 
 ### ADR-T4 — Qué fechas se muestran en el calendario, y con qué prioridad

@@ -175,7 +175,7 @@
   height: 22px;
   min-width: 22px;
   min-height: 22px;
-  padding: 0;
+  padding: 0 !important; // `.is-tablet button:not(.clickable-icon)` de Obsidian impone 20 px laterales y gana por especificidad
   margin: 0;
   appearance: none;
   -webkit-appearance: none;

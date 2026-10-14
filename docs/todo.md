@@ -270,31 +270,152 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
   - [x] Se eliminan `🆔`/`⛔` en la nueva ocurrencia; el resto de los campos se copian con el mismo desplazamiento relativo de fechas
   - [x] Delega el cálculo de la siguiente fecha válida en la librería `rrule` (ya es dependencia)
 
+## 🔮 v1.1.11 (mantenimiento: fixes y dependencias)
+
+- [x] **Manual de usuario** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §9; fases en `Plan de implementación.md`) — nueva carpeta `docs/user_guide/` con dos versiones completas y paralelas (inglés/`en`, español/`es`), 10 capítulos cada una, separado de la documentación de desarrollo
+- [x] **fix**: la vista de lista del calendario no mostraba el mes de cada día — al cruzar un límite de mes (p. ej. ventana del 28 de octubre al 3 de noviembre) no había forma de saber a qué mes pertenecía cada fila; se agregó `monthAbbr` (abreviatura de mes localizada, ej. "oct"/"nov") a `WeekDayData`, poblado en `CalendarListView.generateViewData()` con `currentDay.setLocale(getLanguage()).toFormat('MMM')` (mismo patrón ya usado en `calendar-date-picker.ts`/`calendar-year-view.ts`/`overview-view.ts`), y renderizado en `.oa-calendar-list-row-month` junto a la fecha de cada fila
+- [x] **fix**: en tema oscuro, las pestañas principales del encabezado (General, Lista, Tabla, Calendario, Hábitos) no se distinguían hasta pasar el ratón por encima, porque el texto y el ícono de las pestañas inactivas usaban `var(--color-base-70)` (casi igual al fondo en algunos temas); en `.theme-dark` ahora usan el mismo color que la pestaña seleccionada (`var(--text-normal)`), en `src/styles/components/_header.scss`; el tema claro no cambia
+- [ ] **fix (lint)**: advertencia `obsidianmd/prefer-create-el` ("usa `document.createElement` en vez de los helpers `createEl` de Obsidian"), 5 ocurrencias
+  - [ ] `src/core/tooltips.ts` líneas 86 y 87
+  - [ ] `src/habits/habit-editor.ts` líneas 283, 360 y 363
+  - [ ] Nota: ESLint sobre esos dos archivos termina sin avisos, así que se cierra como no reproducible salvo que reaparezca tras actualizar `eslint-plugin-obsidianmd`
+- [ ] **fix (lint)**: error `no-base-to-string` en el helper `concat` de `src/views/base-view.ts` (ya existía antes de esta versión)
+- [ ] **fix**: ancho de las filas de la tabla en la vista de tablas (viene de "Correcciones Pendientes" más abajo): aparece scroll horizontal porque las columnas pueden sumar hasta ~1800 px
+  - [x] Se quita la columna **Archivo** (ya no se usa: plantilla, orden por archivo y estilos); el número de fila pasa a máximo 50 px y Fechas a 80–120 px (`resizeColumns()` en `table-view.ts`, `_table-view.scss`); un `sortColumn` guardado con `file` se ignora porque ya no está en la lista de columnas ordenables
+  - [ ] Por decidir: bajar los máximos del resto (Tarea 440, Carpeta 280, Etiquetas 280), ajustar las columnas flexibles al ancho disponible del contenedor y dejar que la Tarea se parta en dos líneas en lugar de recortarse; la columna Carpeta se sustituye por Área y Sub-área en v1.1.12
+- [ ] **fix**: arreglar las vistas en Android (teléfono Motorola y tableta Samsung; en PC se ven bien) — síntomas reportados, todos visuales (recortes de texto, botones de distintas dimensiones); causa aún sin confirmar
+  - [x] Calendario: los íconos del multibotón de vistas (año, mes, semana, semana laboral, lista, día) no se veían. Causa: en móvil el contenido del botón (`.oa-calendar-view-btn` en `_calendar-common.scss`) quedaba a 0 px de ancho y, al ser el `<svg>` un elemento flex que se puede encoger, midía `0 × 16`; se corrigió con `flex: 0 0 auto` en el `svg` y con `padding: 0.35rem 0 !important` en el botón (causa de fondo: el relleno de Obsidian en tableta, ver más abajo) y se verificó en `app.emulateMobile(true)`. Los botones siguen siendo más grandes que en escritorio por los estilos de `button` de Obsidian móvil (44 px de alto)
+  - [x] Calendario: el selector de fecha (popover de 290 px) aparecía recortado a la derecha y con las filas montadas. Causa: días, meses y años son `<button>` (`.oa-date-picker-cell`) sin relleno ni alto propios, así que en tableta recibían el relleno de 20 px laterales (mínimo ~40 px por celda, 7 columnas desbordan los 290 px) y los 44 px de alto de Obsidian móvil sobre filas de 28 px; se corrigió con `padding: 0 !important`, `height: auto` y `min-width: 0` en las celdas y `!important` en el relleno de los botones del encabezado (`_calendar-date-picker.scss`); el popover ya estaba en `document.body` con límites de pantalla, así que la hipótesis del `overflow: hidden` del contenedor era falsa\n  - [x] Calendario, vista Día: el botón para colapsar el sidebar del selector de fecha (`.oa-calendar-sidebar-toggle`, 16 px de ancho) no mostraba su ícono; misma causa: el relleno de 20 px laterales de Obsidian en tableta le dejaba el contenido a 0 px y el `svg` flex se encogía; se corrigió con `padding: 0 !important` y `flex: 0 0 auto` en el `svg` (`_calendar-day.scss`)
+  - [x] Hábitos, vista Rutina: el círculo de completado salía ovalado (40×22 px en lugar de 22×22). Causa: esos 20 px laterales de relleno de Obsidian en tableta, que con `box-sizing: border-box` fijan un ancho mínimo de 40 px; se corrigió con `padding: 0 !important` en `.oa-habit-routine-checkbox`
+  - [x] Hábitos, vistas Semana y Grid: las celdas salían rectangulares, las píldoras de racha desplazadas o cortadas y los círculos del borde derecho incompletos. Causa: las celdas (`.oa-habit-grid-cell`, `.oa-habit-weekly-cell`) son `<button>` de 22 px con `padding: 0` y en tableta Obsidian les impone 20 px laterales, así que medían 40 px o más sobre columnas de 22 px y la racha, dibujada con un `::after` relativo a la celda, se desplazaba; se corrigió con `padding: 0 !important` y `min-width: 0` en las dos clases
+  - [ ] Verificado en el CSS de Obsidian (1.x de escritorio): en `.is-mobile`, `--input-height` vale 44 px (`--touch-size-m`) y `--input-radius` sale de `--touch-radius-m`; la regla base `button` aplica `height: var(--input-height)`, `border-radius: var(--button-radius)` (igual a `--input-radius`) y `padding: var(--size-4-1) var(--size-4-3)`; en tableta, `.is-tablet button:not(.clickable-icon)` (`app.css`) pone `padding: var(--size-4-1) var(--size-4-5)` (4 px y 20 px laterales) y gana por especificidad a nuestras reglas de una sola clase. Cualquier `<button>` nuestro que no fije alto, radio y relleno se ve más alto y redondeado en móvil
+  - [ ] Revisar el resto de botones propios que fijan su relleno (los del mixin `interactive-control`, la navegación del calendario, Rutina, Hábitos y Tabla) por el mismo relleno de tableta, y la regla equivalente de `.is-phone`; no se puede poner `!important` en el mixin porque los componentes lo sobrescriben después
+  - [ ] Vista Rutina en ventana estrecha (modo teléfono, `is-phone`): varios nombres de hábito no se ven (por ejemplo «wake up time», «estudiar», «agua», «breathing», «desayuno», «dog time») y la fila queda con el hueco; en ventana ancha (`is-tablet`) sí se ven; causa sin investigar
+  - [ ] Vista Rutina en ventana ancha (`is-tablet`): las etiquetas de área con texto largo («PHYSICAL - TRAINING», «INTELLECTUAL - SKILL - LANGUAGE») se parten en dos líneas y desbordan su píldora de 18 px de alto (`.oa-habit-routine-area-tag`, sin `white-space: nowrap`); el `<html>` escala su tamaño de letra con `--preferred-text-scale`, así que los elementos de alto fijo se desbordan
+  - [ ] Nota de prueba: en `app.emulateMobile(true)` la ventana estrecha activa `is-phone` y la ancha `is-tablet`; la regla de relleno de Obsidian solo existe en tableta, así que hay que comprobar ambos anchos
+  - [ ] Pendiente de revisar en el teléfono real: si en Grid y Semana aparecen huecos entre tramos de racha por anchos fraccionarios de píxel en pantallas de alta densidad (hipótesis, sin verificar)
+  - [ ] Reproducible en escritorio con `app.emulateMobile(true)` en la consola de desarrollador de Obsidian (las capturas reportadas son de ese modo); para las rachas puede hacer falta además depuración remota del WebView de Android
+  - [ ] **Por discutir**: un reinicio común de los botones bajo `.is-mobile`, `.is-phone` y `.is-tablet` frente a arreglar componente por componente; un popover anclado al `body` con límites de pantalla; rachas con un solo elemento por tramo; cómo probar en el dispositivo real
+- [ ] **fix (docs)**: el README y la sección de características de este archivo dicen que la Lista ya tiene filtrado avanzado; en el código no es así (solo tiene el conmutador jerárquico/plano). Se corrige el texto ahora; la Lista gana búsqueda, filtros y orden con la unión Lista y Tabla de v1.1.12
+- [ ] **Actualizar dependencias** (fases y alcance en `Plan de implementación.md`): dentro del rango permitido, más los pins de `@typescript-eslint/*` (8.32.1); `npm audit` marca 1 vulnerabilidad crítica de producción (`handlebars`) y 21 de desarrollo
+  - [ ] `handlebars` 4.7.10, `luxon` 3.7.2, `winston` 3.19.0, `esbuild` 0.25.12, `esbuild-sass-plugin` 3.7.0, `obsidian` (tipos) 1.14.4, `eslint-plugin-obsidianmd` 0.4.2, `typescript-eslint` 8.71.1 y las menores (`@types/luxon`, `globals`, `jiti`, `eslint` 9.39.5)
+  - [ ] No se actualizan ahora: ESLint 10 (el plugin de Obsidian probablemente no lo soporta), TypeScript 7, esbuild 0.28 y `@types/node` 26
+  - [ ] Verificación: `npm run build`, ESLint, `npm audit` sin críticos de producción y prueba manual en Obsidian (plantillas Handlebars, fechas con Luxon, CSS); revisar los avisos nuevos que traiga el plugin de reglas
+  - [ ] Antes de empezar: subir la etiqueta `1.1.10` (pendiente por una incidencia de GitHub)
+
+## 🔮 Planificación v1.1.12 en adelante (diseño, discusión pendiente)
+
+Cada ítem lleva su versión entre corchetes. El reparto sigue dependencias: las piezas compartidas y las áreas primero, luego las vistas nuevas, luego las integraciones locales y por último las que usan la red.
+
+| Versión | Contenido |
+|---|---|
+| v1.1.12 | Piezas compartidas (agrupado, barra de filtros, gestos), áreas y sub-áreas, Lista y Tabla en una pestaña, modal de novedades |
+| v1.1.13 | Kanban y Gantt |
+| v1.1.14 | Estados personalizados y compatibilidad con el plugin Tasks (alcance por diseñar) |
+| v1.1.15 | Sincronía con Google Calendar |
+| v1.1.16 | Sincronía con Google Tasks |
+| v1.1.17 | Sincronía con Microsoft |
+
+- [ ] **[v1.1.12] Modal de "novedades" al actualizar** ("What's New", diseño en `docs/agenda-tasks/Especificación de vistas.md` §10 y `Arquitectura técnica.md` §19; fases en `Plan de implementación.md`) — investigado a partir del mecanismo equivalente del plugin [QuickAdd](https://github.com/chhoumann/quickadd); decidido **no** replicar su fetch en vivo a GitHub Releases, sino embeber el contenido localizado en `src/locales/*.json`
+  - [ ] Nuevo setting `lastSeenVersion` (comparado contra `manifest.version` en `onload()`) y `showWhatsNewOnUpdate` (toggle, default activado)
+  - [ ] Se muestra una sola vez por versión, acumulando las novedades de todas las versiones saltadas (no solo la última)
+  - [ ] Contenido localizado (6 idiomas), sin dependencia de red
+- [ ] **[v1.1.13; las piezas compartidas, en v1.1.12] Kanban view** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §11 y `Arquitectura técnica.md` §20; fases A–C en `Plan de implementación.md`; investigado a partir del plugin [Tasks Kanban](https://community.obsidian.md/plugins/tasks-kanban); entrada original en "Próximas Características" más abajo, sección Task Management Views)
+  - [ ] Ubicación: nueva pestaña de nivel superior, junto a Overview/Lista/Tabla/Calendario/Hábitos — mismo patrón de registro en `ViewManager` + tab de visibilidad propio que el resto de vistas
+  - [ ] Columnas: por los 6 estados fijos actuales (`CoreTaskStatus`), más la opción de agrupar por prioridad/etiqueta/carpeta — sin estados personalizables en esta fase (ver más abajo)
+  - [ ] Motor de filtros/orden: reutilizar `TaskFilter`/`TaskSorter` (no un mini-lenguaje de query nuevo); `TaskSorter.sortTasksByMultipleFields()` ya soporta ascendente/descendente por campo
+  - [ ] Nueva función genérica `groupTasksByField(tasks, field)` (el tipo `GroupField` ya existe en `interfaces.ts`, falta la implementación genérica — hoy `ListView` solo agrupa por carpeta de forma hardcodeada); reutilizable por Kanban (columnas) y por Lista/Tabla (agrupado real más allá de carpeta)
+  - [ ] Barra de filtros compartida entre Lista, Tabla, Kanban y Gantt (no una distinta por vista), con el filtro por estado generado desde `CoreTaskStatus`; sustituye los controles hardcodeados que hoy tiene la Tabla
+  - [ ] Helper de gestos compartido (`attachTaskGestures()`): hoy clic/doble clic/modal de edición están copiados en calendario, Lista y Tabla; se extraen y se agrega el clic derecho de estado a Lista y Tabla (se migra primero el calendario)
+  - [ ] Separar los ids (v1.1.12, Arquitectura §20.3.2): `Task.id` pasa a ser siempre la posición (`ruta#línea`) y el `🆔` va en su propio campo (`flow.id`); hoy el mismo campo vale el `🆔` si existe y `ruta-línea` si no
+  - [ ] Escritura segura (v1.1.12): los escritores comprueban el texto de la línea antes de escribir y, si no coincide, buscan la línea exacta o cancelan con aviso; evita editar otra tarea cuando el archivo cambió entre el render y la acción
+  - [ ] Opcional, sin decidir: que las vistas se refresquen solas al cambiar un archivo (ninguna vista se suscribe hoy a `TASKS_UPDATED`)
+  - [ ] Tableros múltiples guardados: no en esta fase — un solo tablero con los filtros actuales del plugin; varios tableros queda para una versión futura
+  - [ ] Reordenar tarjetas dentro de una columna: sí, por arrastre — implica un orden manual persistido
+  - [ ] **Decisión técnica pendiente**: dónde persistir el orden manual (candidato: `data.json` por `ruta:línea` o `🆔`; la clave `ruta:línea` queda obsoleta si se editan las notas) — Fase C del plan
+  - [ ] **Decisión técnica pendiente**: el arrastre entre columnas por etiqueta/carpeta no tiene operación de escritura equivalente (mover de carpeta implicaría mover la tarea de archivo); propuesta: arrastre solo para estado y prioridad, etiqueta/carpeta como agrupado de solo lectura
+  - [ ] **Estados personalizados/configurables** (tipo [Custom Statuses de Tasks](https://publish.obsidian.md/tasks/Getting+Started/Statuses/Custom+Statuses)) — diferido, **no** es prerequisito de Kanban v1; anotado para evaluar como ítem propio de v1.1.14 (ver nota en "Próximas Características")
+- [ ] **[v1.1.12] Lista y Tabla en una sola pestaña** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §14 y `Arquitectura técnica.md` §23; fases U1–U4 en `Plan de implementación.md`; depende de las piezas compartidas de Kanban y de las áreas)
+  - [ ] Una pestaña «Tareas» con conmutador segmentado Lista | Tabla, como el selector del calendario (íconos con tooltip); cambiar de modo conserva búsqueda, filtros, agrupado y orden
+  - [ ] Opción A: se mantienen registrados `list-view` y `table-view` y el conmutador cambia de uno a otro (no rompe los espacios de trabajo guardados); una clase única queda como mejora posterior
+  - [ ] Barra común: búsqueda, filtros (estado, prioridad, Área, Sub-área, vencimiento), agrupado y orden; Lista gana lo que hoy no tiene (búsqueda, filtros y orden)
+  - [ ] El botón jerárquico/plano de Lista pasa a ser valores del combo de agrupado; la Tabla puede agrupar con cabeceras plegables
+  - [ ] `showListTab`/`showTableTab` se conservan como visibilidad de cada modo; la pestaña abre el último modo usado
+  - [ ] Kanban y Gantt siguen en sus propias pestañas
+  - [ ] Nota: el README y la sección de características de este archivo dicen que la Lista ya tiene filtrado avanzado; en el código no es así
+- [ ] **[v1.1.15] Sincronía con Google Calendar** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §15 y `Arquitectura técnica.md` §24; fases GC1–GC5 en `Plan de implementación.md`; referencias estudiadas: Full Calendar (remastered), pubcyberry/obsidian-google-cal-sync y mcuste/obsidian-gcal-sync; entrada original en "Próximas Características" más abajo, sección External Integrations) — Google Tasks, Microsoft, el plugin Tasks y TaskNotes son ítems aparte (más abajo; TaskNotes, en el backlog)
+  - [ ] Bidireccional desde la primera versión; es la primera vez que el plugin usa la red (sincronía apagada por defecto y uso de red declarado en el README)
+  - [ ] Credenciales propias de cada usuario (Client ID de Google Cloud, cliente tipo Desktop) con una lista de pasos en los ajustes, incluido publicar la app para evitar tokens de 7 días; el botón directo sin credenciales exigiría verificar la app y queda para después
+  - [ ] Inicio de sesión solo en escritorio (redirección local con PKCE); el móvil reutiliza la sesión: el refresh token viaja cifrado en `data.json` (PBKDF2 + AES-GCM) y cada dispositivo escribe una vez una frase guardada en `secretStorage`, que no se sincroniza
+  - [ ] `minAppVersion` sube a 1.11.4 (`secretStorage`)
+  - [ ] Permisos mínimos: `calendar.events`, `calendar.calendarlist.readonly` y `calendar.app.created`
+  - [ ] Leer cualquier calendario; escribir por defecto solo en un calendario dedicado creado por el plugin, con `agenda-allow-edit` en el frontmatter de cada nota (`false` por defecto, `true` en la del calendario dedicado); solo se borran los eventos marcados como propios
+  - [ ] Una sola cuenta de Google por ahora; el campo `agenda-account` del frontmatter es opcional y queda reservado para varias cuentas
+  - [ ] El `🆔` de la tarea es el id del evento para los eventos nacidos en Google; para las tareas locales el id del evento se deriva del `🆔` de forma reversible (prefijo más hexadecimal, Especificación §17.3) porque los ids de Tasks admiten letras fuera de `a–v`; solo se sincronizan título, inicio y fin (el resto del evento se conserva); conflicto: gana el cambio más reciente con aviso
+  - [ ] Notas de sincronización con el frontmatter prefijado `agenda-` (el vault comparte ese espacio): nota **espejo** (`agenda-origin: google-calendar`, una por calendario, creada con «Añadir calendario» en `temporal/agenda/`, área `temporal` y sub-área `agenda`, carpeta configurable) y nota **local** (`agenda-origin: agenda-task` más `agenda-sync: google-calendar`, en cualquier parte del vault); claves `agenda-calendar`, `agenda-allow-edit` y `agenda-account` opcional; una nota = un calendario; tokens, frase y `syncToken` no van al frontmatter; duplicados e inválidos se saltan con aviso
+  - [ ] Una tarea enviada es un evento en Google (sin estado) y sigue siendo la misma línea en Obsidian: el `🆔` se escribe en la línea sin moverla, así la tarea conserva su origen y aparece una sola vez en las vistas; la importación busca el par (calendario, `🆔`) en todo el vault antes de crear una línea y un `🆔` repetido se avisa; en la nota local solo se sincronizan las líneas vinculadas (su `🆔` coincide con un evento del plugin, Especificación §17.6); recurrentes: instancias individuales, la serie se edita en Google
+  - [ ] Eventos de varios días completos: el fin de Google es exclusivo, se resta un día al importar y se suma al enviar
+  - [ ] Eventos cancelados en Google se quedan como `[-]` Cancelada y los rechazados por el usuario como `[~]` No es tarea; la línea nunca desaparece
+  - [ ] Barreras: aprobación con 5 o más borrados o 25 o más cambios, rechazo por encima de 200, nota con línea inválida omitida; sin notificar a los invitados
+  - [ ] El repo no tiene pruebas automatizadas: la sincronización necesita scripts de Node y un transporte falso de Google desde el inicio
+  - [ ] Regla de «enviada»: una línea está enviada si existe un evento del plugin cuyo id deriva de su `🆔`; la acción explícita «Enviar a Google Calendar» genera el `🆔` si falta y crea el evento; tener `🆔` por sí solo no envía nada; un evento del plugin sin línea se borra siempre con aprobación; sin reglas automáticas por nota, etiqueta o área por ahora (Especificación §17.6)
+  - [ ] Sin decisiones de diseño abiertas
+- [ ] **[v1.1.16] Sincronía con Google Tasks** (idea, discusión pendiente, ítem aparte con su propio diseño; la API y el permiso (`tasks`) son distintos a los de Calendar; las tareas de Google solo tienen fecha de vencimiento y dos estados)
+- [ ] **[v1.1.17] Sincronía con Microsoft** (Outlook Calendar y Microsoft To Do; idea, discusión pendiente, ítem aparte con su propio diseño)
+- [ ] **[v1.1.14] Compatibilidad con el plugin Tasks** (diseño preliminar en `docs/agenda-tasks/Especificación de vistas.md` §17; no es una sincronía: mismo archivo y mismo formato de línea; arquitectura y plan por escribir al cerrar el diseño)
+  - [ ] Ya coincide: emojis, Dataview, nueva ocurrencia una línea arriba, eliminación de `🆔`/`⛔` al repetir y `when done`
+  - [ ] Fecha de referencia de la recurrencia: se mantiene la nuestra (`scheduled > due > start`) aunque Tasks use `due > scheduled > start`; se advierte en el manual
+  - [x] Verificado: con `🕐 hora ⏱️ duración` al final de la línea, Tasks sigue reconociendo `📅` y `⏳`; sin cambios
+  - [ ] `🆔` y Google Calendar: el `🆔` es el vínculo (id del evento derivado de él) y una línea está enviada si existe un evento del plugin con ese id (Especificación §17.3 y §17.6)
+  - [x] Filtro global de Tasks: **descartado**, no se incluye
+  - [ ] `🏁 delete`/`keep`: se implementa al completar una tarea (menú de estado del calendario y modal), con una **advertencia en el modal**, al crear y al editar, de que la línea se borrará del archivo si se elige `delete`; requiere un método para borrar líneas en `TaskWriter` y pruebas de Node del cálculo de líneas
+  - [ ] Botón **Generar** en el campo `🆔` del modal (formato de Tasks, base 36 de 6 caracteres, sin repetir ids del vault); el modal no asigna `🆔` por defecto
+  - [ ] Estados personalizados: se configuran en los ajustes y se pueden importar una vez desde los ajustes de Tasks con un botón
+- [ ] **[v1.1.14] Estados personalizados** (ver "Advanced Features" más abajo y la nota en Kanban; encaja con la compatibilidad con el plugin Tasks, que define el modelo)
+- [ ] **[sin versión] Discusión: Obsidian Bases** (núcleo de Obsidian que convierte notas en bases de datos con filtros, orden, agrupado, fórmulas y vistas en archivos `.base`; TaskNotes lo usa para todas sus vistas; para valorar más adelante)
+  - [ ] La API de Obsidian ya expone `registerBasesView`, `BasesView` y `BasesViewRegistration` (desde 1.10.0, presentes en los tipos instalados): un plugin puede registrar sus propias vistas dentro de Bases
+  - [ ] Bases trabaja con **notas** (filas = archivos con propiedades), no con líneas: las tareas en línea no son registros de Bases; sí lo son las notas de hábitos (frontmatter) y las de TaskNotes
+  - [ ] A evaluar: hábitos como registros de Bases, registrar vistas propias (calendario, Kanban, Gantt) como vistas de Bases, y el efecto sobre `minAppVersion` (hoy 1.8.7; sube a 1.11.4 con Google Calendar)
+  - [ ] Leer las tareas de TaskNotes no requiere Bases: se leen las notas con `metadataCache`
+- [ ] **[v1.1.13] Vista Gantt** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §12 y `Arquitectura técnica.md` §21; fases G1–G2 en `Plan de implementación.md`; referencia visual: Timelineal; entrada original en "Próximas Características" más abajo, sección Timeline & Planning Views) — hoy **no está registrada ni visible** (registro y botón del encabezado comentados, plantilla `gantt-view.hbs` vacía); corrige una nota anterior que la daba por registrada
+  - [ ] Pestaña de nivel superior con `showGanttTab`; mismos filtros que Tabla y Kanban (barra compartida) y mismos gestos que el calendario (helper compartido)
+  - [ ] Dos o más fechas: barra (inicio = `start` o `scheduled`, fin = `due` o `scheduled`); una sola fecha: hito; ninguna: contador «sin fecha»
+  - [ ] Zoom 7/14/21 días o mes natural (la ventana usa los días reales del mes, 28 a 31); cabecera con pestañas de mes, año, franja de días, bandas de semana y línea de «hoy»
+  - [ ] Agrupado por área y sub-área (nombre de la primera carpeta y resto de la ruta, anidado), plegable, con barra resumen por grupo
+  - [ ] Editar fechas desde la vista: mover la barra, redimensionar cada borde (reescribe el campo que define ese borde) y mover hitos
+  - [ ] Dependencias: solo una insignia 🔗; las flechas entre barras quedan para una versión posterior
+  - [ ] **Decisión abierta**: alinear las ventanas de 7/14/21 días al inicio de semana configurado (propuesto, sin confirmar)
+  - [ ] **Decisión abierta**: convertir un hito en barra arrastrando; fin anterior al inicio en datos escritos a mano
+- [ ] **[v1.1.12] Áreas y sub-áreas de tareas** (reemplaza la idea de «Grupos de tareas»; diseño en `docs/agenda-tasks/Especificación de vistas.md` §13 y `Arquitectura técnica.md` §22; fases AR1–AR2 en `Plan de implementación.md`; entrada original en "Próximas Características" más abajo, sección Características Experimentales)
+  - [ ] Mismo concepto que en Hábitos, con distinto origen: en hábitos es configurable (frontmatter); en tareas **no**, la ubicación física de la nota es su área
+  - [ ] Área = nombre de la primera carpeta; sub-área = la ruta de carpetas sin la primera, completa y sin tope de niveles (`b` o `b/c/d`); archivos en la raíz del vault: «Sin área»
+  - [ ] Filtros Área y Sub-área en la barra compartida (la sub-área aparece al elegir un área y se reinicia al cambiarla); reemplazan el filtro de carpeta de la Tabla
+  - [ ] Área y sub-área son campos de agrupado (los mismos valores de los dos combos); Lista, Kanban y Gantt agrupan por ellos; Lista conserva el modo plano y su profundidad actual
+  - [ ] Color por área en las cabeceras de grupo, como en Hábitos; la lógica de áreas se mueve de `src/habits/habit.ts` a un módulo compartido
+  - [ ] **Decisión abierta**: la Tabla reemplaza la columna de carpeta por dos, Área y Sub-área (propuesta, sin confirmar)
+
 
 ## 📊 Próximas Características (v1.x)
 
-[Google Calendar](https://community.obsidian.md/plugins/google-calendar)
 [Day Planner](https://community.obsidian.md/plugins/obsidian-day-planner)
 [Timelineal](https://timelineal.com/)
 [FullCalendar](https://community.obsidian.md/plugins/full-calendar-remastered)
-[kanban task](https://community.obsidian.md/plugins/tasks-kanban)
 
 ### Core Tasks
 - [ ] Configuración de tareas por nota o multiples tareas por nota (reconocimiento)
 
 ### Task Management Views
-- [ ] Kanban view
+- [ ] Kanban view — discusión y diseño rastreados en v1.1.13 (más arriba); referencia: [Tasks Kanban](https://community.obsidian.md/plugins/tasks-kanban)
 - [ ] To do view
 - [ ] Agenda view ![vista agenda ](attachments/agenda-view.png)
 
 ### Timeline & Planning Views
-- [ ] List View. Vista de lista mejorada ![vista lista ](attachments/vista-lista.png) — la variante dentro del calendario queda rastreada aparte en v1.1.10 (más arriba)
-- [ ] Gantt view
+- [ ] Gantt view — discusión y diseño rastreados en v1.1.13 (más arriba)
 - [ ] Timeline view
 
 ### Características Experimentales (Futuro)
 - [ ] Tareas seriadas (esto lo debo hacer con los id, depende de)
-- [ ] Grupos de tareas (aqui lo vamos a resolver por carpeta o por archivo, es decir, los grupos seran así)
+- [ ] Grupos de tareas — se resuelve como áreas y sub-áreas por carpeta; diseño rastreado en v1.1.12 (más arriba)
 
 ### UX Improvements
 - [ ] Configuración de sonidos de notificaciones
@@ -319,6 +440,25 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 
 - [ ] Día recomendado, seria los horarios de que hacer a cada hora dependiendo de lo que se debe de hacer entre tareas y habitos.
 
+### ⚡ **Mejoras UX Expandidas**
+- [ ] Tutorial de incorporación interactivo
+- [ ] Plantillas de configuración rápida
+- [ ] Atajos personalizables
+- [ ] Temas específicos para planificación
+- [ ] Captura rápida desde cualquier vista
+- [ ] Búsqueda semántica de tareas
+
+### External Integrations
+- [ ] Importar y exportar tareas de Google, Microsoft, etc — Google Calendar: diseño rastreado en v1.1.15 (más arriba); Google Tasks (v1.1.16), Microsoft (v1.1.17) y el plugin Tasks (v1.1.14), pendientes de discusión; TaskNotes, más abajo en este apartado; referencia: [Full Calendar (remastered)](https://github.com/obsidian-full-calendar-remastered/plugin-full-calendar)
+- [ ] **[backlog, sin versión] Tareas de TaskNotes** ([TaskNotes](https://github.com/callumalpass/tasknotes); plugin distinto del plugin Tasks; diseño preliminar en `docs/agenda-tasks/Especificación de vistas.md` §16, sin arquitectura ni plan) — se reevalúa cuando estén listos el Kanban y el Gantt
+  - [ ] Idea: quien ya usa TaskNotes ve sus tareas en las vistas de este plugin; la dirección es migrar hacia este plugin, no al revés
+  - [ ] Solo lectura si se retoma: la edición se descartó por ahora porque exige una clave de tarea común y operaciones semánticas de escritura que cambian mucho el código (§16.8); desde la píldora siempre se puede abrir la nota con doble clic
+  - [ ] La nota es la tarea: sin copia ni vínculo, identidad = ruta del archivo; se reconocen por etiqueta o por propiedad (como TaskNotes), no por carpeta; el área sigue la regla de ubicación física y `projects` y `contexts` son campos de agrupado y filtro
+  - [ ] Recurrencia (§16.5.1): se muestra la próxima ocurrencia con la insignia `🔁`, sin proyectar las futuras; una nota de ocurrencia oculta la entrada de la serie para esa fecha
+  - [ ] Fuera de la primera versión: crear notas de TaskNotes, toda edición y completar series, migrar de TaskNotes a este plugin (nota → línea), API HTTP, seguimiento de tiempo y Pomodoro
+  - [ ] Motivos del backlog: la lógica es muy distinta, TaskNotes publica versiones casi semanalmente (hay que mantener el mapeo) y en solo lectura el valor es limitado frente a funcionalidades propias
+  - [ ] Si se retoma: decidir qué hacer con los checkboxes del cuerpo de una nota-tarea, el mapeo de estados (depende de los estados personalizados), los nombres de las propiedades, dependencias y jerarquía, y revisar la especificación formal
+
 ## 🔄 **Revisión y Reflexión (v2.x - v3.x)**
 - [ ] Plantillas de revisión diaria/semanal/mensual
 - [ ] Analíticas de progreso y métricas
@@ -327,11 +467,8 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 
 ## 🔗 Integraciones y Características Avanzadas (v3.x)
 
-### External Integrations
-- [ ] Importar y exportar tareas de Google, Microsoft, etc
-
 ### Advanced Features
-- [ ] Implementación de estados personalizados (estados de las tareas personalizados acorde a tasks)
+- [ ] Implementación de estados personalizados (estados de las tareas personalizados acorde a Tasks) — planificado en **v1.1.14**, surgido de la discusión de Kanban view (v1.1.13, más arriba); referencia: [Custom Statuses de Tasks](https://publish.obsidian.md/tasks/Getting+Started/Statuses/Custom+Statuses) (modelo: símbolo + nombre + próximo símbolo + `type` de 6 valores fijos TODO/IN_PROGRESS/ON_HOLD/DONE/CANCELLED/NON_TASK)
 - [ ] Funciones avanzadas de calendario con bloques de tiempo
 - [ ] Manejar contexto o áreas
 - [ ] Carpeta de 'Archive' para las tareas archivadas
@@ -356,8 +493,6 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [ ] Programación de bloques de trabajo profundo
 - [ ] Períodos de bloqueo de distracciones
 
-
-
 ## 🤝 **Colaboración y Equipos (v3.x)**
 - [ ] Calendarios/agendas compartidas
 - [ ] Delegación de tareas
@@ -376,14 +511,6 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - [ ] Reconocimiento de patrones en productividad
 - [ ] Auto-categorización de tareas
 - [ ] Duración predictiva de tareas
-
-## ⚡ **Mejoras UX Expandidas**
-- [ ] Tutorial de incorporación interactivo
-- [ ] Plantillas de configuración rápida
-- [ ] Atajos personalizables
-- [ ] Temas específicos para planificación
-- [ ] Captura rápida desde cualquier vista
-- [ ] Búsqueda semántica de tareas
 
 ## 📈 **Mejoras de Calendario Robustas**
 - [ ] Soporte para múltiples calendarios

@@ -197,7 +197,7 @@ export class TableView extends BaseView {
         }
       }
 
-      const sortableColumns = ['priority', 'status', 'description', 'folder', 'file', 'due', 'tags'];
+      const sortableColumns = ['priority', 'status', 'description', 'folder', 'due', 'tags'];
       if (state.sortColumn && sortableColumns.includes(state.sortColumn) &&
           (state.sortDirection === 'asc' || state.sortDirection === 'desc')) {
         this.currentSortColumn = state.sortColumn;
@@ -460,13 +460,12 @@ export class TableView extends BaseView {
     const visibleRows = Array.from(table.querySelectorAll<HTMLTableRowElement>('tbody tr.oa-task-row:not(.oa-hidden)'));
     const allRows = Array.from(table.querySelectorAll<HTMLTableRowElement>('tbody tr.oa-task-row'));
     const limits = [
-      { min: 44, max: 64 },
+      { min: 44, max: 50 },
       { min: 48, max: 76 },
       { min: 48, max: 76 },
       { min: 200, max: 440 },
       { min: 100, max: 280 },
-      { min: 120, max: 300 },
-      { min: 150, max: 300 },
+      { min: 80, max: 120 },
       { min: 96, max: 280 },
     ];
 
@@ -618,11 +617,6 @@ export class TableView extends BaseView {
         case 'folder':
           valueA = a.querySelector('.oa-folder-name')?.textContent || '';
           valueB = b.querySelector('.oa-folder-name')?.textContent || '';
-          break;
-          
-        case 'file':
-          valueA = a.querySelector('.oa-file-name')?.textContent || '';
-          valueB = b.querySelector('.oa-file-name')?.textContent || '';
           break;
           
         case 'due': {

@@ -283,7 +283,7 @@
 }
 
 .oa-table-col-due {
-  min-width: 150px;
+  min-width: 80px;
   width: auto;
   
   &.oa-overdue {
@@ -351,27 +351,6 @@
   }
 
   .oa-folder-name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-}
-
-.oa-table-col-file {
-  min-width: 150px;
-
-  .oa-task-file {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    min-width: 0;
-    
-    .oa-file-icon {
-      opacity: 0.7;
-    }
-  }
-
-  .oa-file-name {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

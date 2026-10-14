@@ -293,14 +293,15 @@ Un mecanismo de "N more"/colapsar tareas por fila.
 - Botón de selector de fecha (popover) agregado también a esta vista y a la vista Día, igual que Mes/Semana/Semana laboral/Año (antes solo Día tenía el modo acoplado del sidebar).
 - Filas al doble de alto que una píldora sola, para que quepan 2 píldoras apiladas antes de necesitar más espacio; el contenedor ajusta su altura a la cantidad de días mostrados en vez de estirarse siempre al 100% del panel.
 - **Fix de gestos**: un clic en una fila recentraba toda la ventana para que empezara en ese día, en vez de solo resaltarlo — corregido separando el inicio de la ventana mostrada de la fecha seleccionada/resaltada, igual que Mes/Semana/Año (la ventana solo se recentra si la fecha seleccionada queda fuera de ella).
+- **Fix (v1.1.11)**: la ventana continua puede cruzar un límite de mes (p. ej. 28 de octubre a 3 de noviembre) sin ninguna indicación de a qué mes pertenece cada fila; se agrega la abreviatura de mes localizada junto a la fecha de cada fila (`.oa-calendar-list-row-month`).
 
 ## 5. Timeline View (`timeline-view`) — placeholder
 
 **Icono**: `calendar-check`. Estado: **incompleto**. `onOpen()` sólo carga todas las tareas (`getAllTasks`) y las pasa tal cual a su plantilla (`{ tasks }`), sin ningún cálculo de posicionamiento temporal, agrupación por fecha ni eje visual propio.
 
-## 6. Gantt View (`gantt-view`) — placeholder
+## 6. Gantt View (`gantt-view`) — placeholder (rediseño en §12)
 
-**Icono**: `calendar-days`. Estado: **incompleto**, mismo patrón que Timeline. Falta calcular duración (`start` → `due`), posicionar barras en un eje temporal y representar `dependsOn` visualmente.
+Estado: **sin registrar ni visible**. La clase `GanttView` existe, pero su registro en `ViewManager` y su botón en `header.hbs` están comentados, la plantilla `gantt-view.hbs` está vacía y `onOpen()` descarta el resultado de `getAllTasks()`, así que renderizaría una lista vacía. Se reconstruye según §12 (v1.1.13).
 
 ## 7. Task Modal — creación/edición (`src/modals/task-modal.ts`)
 
@@ -374,3 +375,410 @@ El selector de hora/duración y la captura de fecha desde el menú contextual de
 ## 8. Tooltips del plugin
 
 Las vistas renderizadas por `BaseView` y el modal de tareas convierten sus atributos `title` en tooltips propios del plugin. Se muestran al pasar el puntero o enfocar con teclado, incluyen una tarjeta temática con flecha y texto explicativo, y no modifican los tooltips del resto de Obsidian. La relación con el control se expone mediante `aria-describedby`; no incluyen acciones ni botones.
+
+## 9. Manual de usuario (v1.1.11 — implementado)
+
+Manual de usuario final (distinto de esta documentación de desarrollo), en `docs/user_guide/`, en dos versiones completas y paralelas — inglés (`en/`) y español (`es/`) — con 10 capítulos idénticos en estructura: Introducción, Instalación, Primeros pasos, Vistas generales, Vistas de calendario, Seguimiento de hábitos, Formato de tareas y metadatos, Gestos e interacciones, Configuración, y Preguntas frecuentes y soporte. Un `docs/user_guide/README.md` enlaza ambas versiones y documenta cómo agregar un nuevo idioma (duplicar una carpeta de idioma y traducir manteniendo los mismos nombres de archivo). No requiere ningún cambio en el plugin: es documentación en Markdown plano, sin paso de build ni empaquetado — "generar" una versión es simplemente leer/exportar los archivos de esa carpeta.
+
+## 10. Modal de novedades al actualizar ("What's New") (v1.1.12 — diseño, no implementado)
+
+> **Estado**: diseño acordado, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §19.
+
+Tras actualizar el plugin a una versión nueva, en el primer arranque se abre **una sola vez** un modal con las novedades desde la última versión que el usuario tenía instalada — si se saltó varias versiones, se muestran todas acumuladas, de la más reciente a la más antigua (no solo la última). El contenido está **localizado** (sigue el idioma de la interfaz de Obsidian, igual que el resto del plugin) y **no requiere conexión a internet** (ver justificación y comparación con el plugin que inspiró esta función, QuickAdd, en [[Arquitectura técnica]] §19).
+
+- Un nuevo ajuste **"Mostrar novedades al actualizar"** (activado por defecto, en Configuración general) permite desactivar el modal por completo.
+- El modal siempre tiene un botón de cierre propio, visible dentro del contenido (no depende únicamente del cierre nativo del modal de Obsidian).
+- Si el ajuste está desactivado, el modal simplemente no se abre — pero la versión "vista" se actualiza igual, para que no vuelva a aparecer al reactivar el ajuste más adelante (evita mostrar de golpe el historial acumulado).
+
+### 10.1 Fuera de alcance
+Traer el contenido en vivo desde los releases de GitHub; renderizado de Markdown libre (imágenes, video, bloques de código embebidos); una preferencia granular de "solo versiones con funcionalidad nueva" (mayor/menor) vs. todas (puede evaluarse más adelante); cualquier mecanismo de feedback tipo formulario.
+
+## 11. Kanban View (v1.1.13, con las piezas compartidas en v1.1.12 — diseño, no implementado)
+
+> **Estado**: diseño acordado en sesión de discusión, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §20. Referencia investigada: el plugin [Tasks Kanban](https://community.obsidian.md/plugins/tasks-kanban) (ver comparación en §20.6).
+
+Un tablero donde cada tarjeta es una tarea real del vault (la misma `.oa-calendar-task`-style de las demás vistas, no una copia ni una nota aparte) y cada columna agrupa tareas por un criterio. Mover una tarjeta reescribe la línea de la tarea en su archivo origen.
+
+- **Ubicación**: nueva pestaña de nivel superior, junto a Overview/Lista/Tabla/Calendario/Hábitos, con su propio ajuste de visibilidad (mismo patrón que `showListTab`/`showTableTab`).
+- **Columnas**: por defecto, una por cada uno de los 6 estados fijos (`CoreTaskStatus`: Todo, En progreso, En espera, Hecho, Cancelada, No es tarea). Un selector permite agrupar en cambio por **prioridad**, **etiqueta** o **área** (con sus sub-áreas, ver §13).
+- **Filtros y orden**: los mismos que ya usan Lista/Tabla (`TaskFilter`/`TaskSorter`), incluyendo orden ascendente/descendente. No hay un lenguaje de query propio.
+- **Filtros**: una barra compartida y configurable, usada por Lista, Tabla, Kanban y Gantt, que incluye el filtro por estado (hoy la Tabla tiene sus propios controles, hardcodeados en su plantilla; se reemplazan por esta barra común).
+- **Arrastrar entre columnas** (agrupando por estado): cambia el estado de la tarea al de la columna destino, con el mismo efecto que el menú contextual del calendario (§4.9): marcar "Hecho" agrega ✅, salir de "Hecho" lo quita, y completar una tarea recurrente genera su siguiente ocurrencia.
+- **Arrastrar entre columnas** (agrupando por prioridad/etiqueta/carpeta): cambia el campo correspondiente de la tarea. El detalle por criterio (¿cómo se "mueve" una tarea a otra etiqueta o carpeta?) queda por resolver en la fase de diseño técnico.
+- **Reordenar dentro de una columna**: sí, arrastrando una tarjeta a otra posición de la misma columna. Requiere persistir un orden manual (ver §20.4, decisión pendiente).
+- **Gestos de tarjeta**: iguales al resto del plugin — clic edita, doble clic abre la nota, clic derecho abre el menú de estado.
+- **Un solo tablero**: sin tableros guardados/nombrados múltiples por ahora.
+
+### 11.1 Estados personalizables (relacionado, fuera de alcance)
+Kanban v1 usa solo los 6 estados fijos. Que el usuario defina estados propios (símbolo + nombre + `type`, como los [Custom Statuses de Tasks](https://publish.obsidian.md/tasks/Getting+Started/Statuses/Custom+Statuses)) es un ítem propio, candidato a v1.1.14. A favor de este plugin: sus vistas dibujan sus propios íconos, así que un estado personalizado no necesita que el usuario instale un tema CSS (a diferencia de Tasks). En contra: el enum fijo está repetido en el Task Modal, el menú contextual, el badge del calendario, el filtro de Tabla y las claves i18n, y los nombres personalizados no se pueden traducir.
+
+### 11.2 Fuera de alcance
+Tableros múltiples guardados/nombrados; mini-lenguaje de query propio; estados personalizables (§11.1); agrupar por fecha (una columna por fecha distinta dispersa el tablero); unificar las pestañas Lista y Tabla (ver `docs/todo.md`, se evalúa aparte).
+
+## 12. Gantt View (v1.1.13 — diseño, no implementado)
+
+> **Estado**: diseño acordado en sesión de discusión, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §21. Reemplaza al placeholder de §6. Referencia visual: la vista de semanas y estancias del plugin Timelineal (captura aportada en la discusión, no incluida en el repositorio).
+
+Un diagrama de tareas sobre un eje de tiempo, pensado para proyectos largos: una fila por tarea, con una barra que va de su fecha de inicio a su fecha de fin. Mismos filtros y orden que Tabla y Kanban (barra de filtros compartida, §11), y los mismos gestos de tarea que el calendario.
+
+- **Ubicación**: pestaña de nivel superior, con ajuste de visibilidad `showGanttTab`. El botón ya existe comentado en `header.hbs` (ícono `chart-gantt`).
+
+### 12.1 Qué se dibuja para cada tarea
+
+La barra necesita dos fechas, pero la mayoría de las tareas solo tiene una (el Task Modal solo precarga `scheduled`). Por eso una tarea con una fecha no se oculta:
+
+| Fechas presentes | Resultado |
+|---|---|
+| `start` y `due` (con o sin `scheduled`) | Barra de `start` a `due`; si hay `scheduled`, una muesca dentro de la barra |
+| `start` y `scheduled` | Barra de `start` a `scheduled` |
+| `scheduled` y `due` | Barra de `scheduled` a `due` |
+| Una sola de las tres | Hito (marcador sin duración) en esa fecha |
+| Ninguna | Fuera del diagrama; un contador «N tareas sin fecha» con un toggle para mostrarlas aparte |
+
+Regla general: el **inicio** es 🛫 `start` y, si falta, ⏳ `scheduled`; el **fin** es 📅 `due` y, si falta, ⏳ `scheduled`. La hora y la duración de `scheduled` se ignoran: en una escala de días no se ven. Una barra cuyo inicio y fin caen el mismo día ocupa una columna.
+
+El calendario ancla una tarea a un día con la prioridad `scheduled` > `due` > `start` (ADR-T4). El Gantt dibuja un rango, no un día, y por eso usa esta regla propia; no es una inconsistencia.
+
+### 12.2 Escala y navegación
+
+- **Zoom**: 7, 14 o 21 días, o **mes natural**. No hay zoom por día: un Gantt sirve para proyectos largos.
+- **Mes natural**: la ventana tiene los días reales del mes (28, 29, 30 o 31). Las columnas se reparten el ancho disponible, así que el largo del mes no rompe nada. ◀▶ y las pestañas de mes se mueven por mes.
+- **7/14/21 días**: ◀▶ mueven la ventana completa.
+- **Cabecera** (tomada de la referencia): pestañas de mes con el actual subrayado, año con flechas, franja de números de día con hoy resaltado, bandas de semana con su número y una línea vertical de «hoy».
+- Una barra que sale de la ventana se recorta e indica que continúa.
+- La ventana parte de la fecha de referencia compartida (v1.1.9) y el zoom se recuerda, igual que el modo 1/3/5 de la vista Día.
+
+### 12.3 Agrupado por área y sub-área
+
+Según §13: el grupo principal es el **área** (nombre de la primera carpeta) y debajo van las **sub-áreas** (el resto de la ruta, anidado por carpeta). Cada grupo es plegable, recuerda su estado y muestra en su cabecera una barra resumen, del inicio más temprano al fin más tardío de sus tareas. Las tareas de archivos sin carpeta van a un grupo propio.
+
+### 12.4 Editar fechas desde la vista
+
+- **Mover la barra**: arrastrarla desplaza el mismo número de días las fechas 🛫, ⏳ y 📅 que tenga la tarea. No se tocan ➕ creada ni ✅ hecha.
+- **Redimensionar**: arrastrar el borde izquierdo o derecho reescribe el campo que define ese borde. Una tooltip indica cuál (por ejemplo «📅 vencimiento»), para que no se edite `scheduled` sin que el usuario lo sepa.
+- **Hito**: arrastrarlo mueve su única fecha.
+- No se permite dejar el fin antes del inicio.
+- Todo en pasos de un día.
+
+### 12.5 Gestos
+
+Iguales a los del calendario, mediante el helper compartido ([[Arquitectura técnica]] §20.3.1): clic edita, doble clic abre la nota, clic derecho abre el menú de estado. Las manijas de redimensionar detienen la propagación del clic para no abrir el modal al soltar.
+
+### 12.6 Dependencias
+
+Una insignia 🔗 en la barra de las tareas con `🆔`/`⛔`, con una tooltip «depende de: …». Las flechas entre barras y el aviso de dependencias rotas quedan fuera de esta versión.
+
+### 12.7 Decisiones abiertas
+
+1. Alineación de las ventanas de 7/14/21 días: propuesta de que empiecen en el inicio de semana configurado (`weekStartDay`) que contiene la fecha de referencia, para que coincidan con las bandas de semana. Sin confirmar.
+2. Convertir un hito en barra arrastrando. Mientras tanto, la segunda fecha se agrega desde el modal de edición (clic).
+3. Fin anterior al inicio en datos ya escritos a mano: propuesta de tratarlo como hito en `start` con un aviso.
+
+### 12.8 Fuera de alcance
+Flechas de dependencia y su aviso de rotura; desplazar en cascada las tareas dependientes; zoom por día; tareas de varios archivos o proyectos como entidad propia (el agrupado se resuelve con áreas y sub-áreas, §13).
+
+## 13. Áreas y sub-áreas de tareas (v1.1.12 — diseño, no implementado)
+
+> **Estado**: diseño acordado en sesión de discusión, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §22. Resuelve la idea de «Grupos de tareas» de `docs/todo.md`.
+
+Las tareas y los hábitos comparten el concepto de **área** y **sub-área** para agrupar y filtrar, con una diferencia de origen:
+
+- **Hábitos**: configurable. El área y la sub-área se eligen en el Habit Editor y se guardan en el frontmatter, porque un hábito vive en `daily plan` pero apunta a otra área.
+- **Tareas**: no configurable. La ubicación física de la nota es su área; no hay frontmatter ni campo nuevo en la línea. Mover una nota de carpeta cambia el área de sus tareas.
+
+### 13.1 Regla para tareas
+
+Partiendo de la ruta del archivo:
+
+| Ruta | Área | Sub-área |
+|---|---|---|
+| `nota.md` (raíz del vault) | «Sin área» | — |
+| `A/nota.md` | `A` | — |
+| `A/B/nota.md` | `A` | `B` |
+| `A/B/C/nota.md` | `A` | `B/C` |
+| `A/B/C/D/nota.md` | `A` | `B/C/D` |
+
+El **área** es solo el nombre de la primera carpeta; la **sub-área** es la ruta de carpetas sin la primera, completa y sin tope de niveles. A diferencia del combobox de sub-área de Hábitos (2.º y 3.er nivel), aquí no se recorta nada. Ambos valores se usan tal cual en los filtros y en el agrupado. La comparación usa el nombre normalizado (`daily plan` y `daily-plan` son la misma área) y se muestra el nombre original o su etiqueta localizada.
+
+### 13.2 Filtros
+
+La barra de filtros compartida (§11, §20.3) incluye:
+
+- **Área**: un combobox con «Todas» más el nombre de la primera carpeta de cada área que tiene tareas.
+- **Sub-área**: un segundo combobox, con la ruta sin la primera carpeta. Aparece solo cuando se elige un área y ofrece las sub-áreas de esa área: cada ruta presente y también sus carpetas contenedoras (con tareas en `B/C/D` se ofrecen `B`, `B/C` y `B/C/D`). Se reinicia al cambiar de área y se oculta si el área no tiene sub-áreas. Elegir `B` incluye las tareas de `B` y de `B/*`; elegir `B/C` solo las de `B/C` y `B/C/*`.
+- Reemplaza al filtro de «carpeta» de la Tabla, que hoy es un filtro plano por carpeta de primer nivel. El valor que la Tabla tenía guardado se convierte al área equivalente, o se reinicia si no coincide.
+- Se usa en Lista, Tabla, Kanban y Gantt, y se recuerda por vista.
+
+### 13.3 Agrupado y color
+
+- **Área** y **sub-área** son dos campos de agrupado, los mismos valores de los combos. Lista, Kanban y Gantt agrupan por área y, dentro de cada una, por sub-área anidada según las carpetas de la ruta. Agrupar solo por sub-área sin un área elegida distingue los grupos por área y sub-área (etiqueta «Área · sub-área»), para no mezclar dos carpetas que se llamen igual en áreas distintas. Lista conserva su modo plano y su profundidad actual, con el área como grupo principal.
+- La cabecera de cada grupo usa el color del área, igual que en Hábitos.
+
+### 13.4 Decisiones abiertas
+1. Qué muestra la Tabla en lugar de la columna de carpeta: propuesta de dos columnas, Área (chip con el color del área) y Sub-área, con los mismos valores que los combos. Sin confirmar.
+
+### 13.5 Fuera de alcance
+Área configurable por tarea o por nota (frontmatter, etiqueta o campo en la línea); mover tareas entre áreas arrastrando (implicaría mover la tarea de archivo); áreas sin carpeta.
+
+## 14. Lista y Tabla en una sola pestaña (v1.1.12 — diseño, no implementado)
+
+> **Estado**: diseño acordado en sesión de discusión, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §23. Depende de la barra de filtros compartida (§11, §20.3) y de las áreas (§13).
+
+**Situación actual**: Lista y Tabla son dos pestañas con sus propios controles. La Tabla tiene búsqueda, cuatro filtros, orden por encabezado y un estado propio guardado. La Lista solo tiene el botón que alterna entre vista jerárquica y plana: no tiene búsqueda, filtros ni orden.
+
+**Diseño**: una sola pestaña, **Tareas**, con un control segmentado de modo, **Lista | Tabla**, igual que el selector de vistas del calendario: botones pegados con ícono y tooltip, con el modo activo resaltado. Cambiar de modo conserva la búsqueda, los filtros, el agrupado y el orden.
+
+- **Barra común** a ambos modos: búsqueda, filtros (estado, prioridad, Área, Sub-área, vencimiento), agrupado y orden (campo y ascendente/descendente). Lista gana así lo que no tenía.
+- **Agrupado**: un combo. El botón jerárquico/plano de la Lista pasa a ser valores de este combo: Área y sub-área (anidado, por defecto), Carpeta (plano, ruta completa) y Sin agrupar. La Tabla puede agrupar por primera vez: muestra una fila de cabecera plegable por grupo.
+- **Orden**: un solo orden compartido. Clic en un encabezado de la Tabla actualiza ese orden; en Lista se aplica dentro de cada grupo.
+- **Pestaña y ajustes**: `showListTab` y `showTableTab` se conservan como visibilidad de cada modo. La pestaña se muestra si alguno está activo y abre el último modo usado, igual que la pestaña de Hábitos.
+- **Gestos**: los mismos en los dos modos, mediante el helper compartido (§20.3.1).
+- **Propio de cada modo**: redimensionar columnas (Tabla) y plegar grupos con el estado recordado.
+- **Kanban y Gantt** siguen en sus propias pestañas (§11, §12); no son modos de este conmutador.
+
+### 14.1 Decisión de implementación
+
+Se mantienen registrados los dos tipos de vista (`list-view` y `table-view`) y el conmutador cambia de uno a otro, como `switchToViewType()` en el calendario. Así no cambia el tipo de vista que Obsidian guarda en los espacios de trabajo. El costo es que cambiar de modo recrea la vista, con su pantalla de carga. Fusionarlas en una clase con el modo por dentro queda como mejora posterior si el cambio se siente lento.
+
+### 14.2 Fuera de alcance
+Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones masivas.
+
+## 15. Sincronía con Google Calendar (v1.1.15 — diseño, no implementado)
+
+> **Estado**: diseño acordado en sesión de discusión, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §24. Referencias estudiadas: Full Calendar (remastered), `pubcyberry/obsidian-google-cal-sync` y `mcuste/obsidian-gcal-sync`.
+
+Sincronía **bidireccional desde la primera versión** entre Google Calendar y las tareas del plugin. Google Tasks, Microsoft y el plugin Tasks quedan para después, sobre la misma arquitectura. Es la primera vez que el plugin usa la red.
+
+### 15.1 Conexión
+
+- Un grupo **Integraciones** en los ajustes, con la sincronía **apagada por defecto**.
+- **Credenciales propias de cada usuario**: un Client ID (y el Client Secret, si Google lo exige para ese tipo de cliente) de un proyecto de Google Cloud, con un cliente tipo «Desktop app». Se incluye una lista de pasos en los ajustes: crear el proyecto, activar la API de Calendar, configurar la pantalla de consentimiento, **publicar la app** (un proyecto externo en estado «Testing» recibe tokens que caducan a los 7 días) y crear el cliente. Un botón directo «Conectar con Google» sin credenciales propias exigiría verificar la app ante Google y queda para más adelante.
+- Botones **Conectar** y **Desconectar** (revoca el token en Google). El estado siempre es visible: Sin sesión, Bloqueado (falta la frase de sincronización), Conectado, Token caducado, o Iniciar sesión en el escritorio.
+- **Inicio de sesión solo en escritorio.** El móvil reutiliza esa sesión: el token viaja cifrado con la sincronización de la bóveda y en cada dispositivo se escribe una vez una **frase de sincronización** elegida por el usuario. Un flujo de copiar y pegar para iniciar sesión desde el móvil queda para después.
+- Requiere **Obsidian 1.11.4 o superior** (`secretStorage`); `minAppVersion` pasa de 1.8.7 a 1.11.4 al implementarse.
+- **Una sola cuenta de Google** en esta versión. El campo `agenda-account` del frontmatter (§15.4) es opcional y queda reservado para soportar varias cuentas más adelante sin cambiar el formato.
+
+### 15.2 Calendarios
+
+Una cuenta de Google puede tener varios calendarios: el principal (su id es el correo), los propios, los compartidos y los suscritos. Los ajustes muestran la lista de calendarios de la cuenta solo como **catálogo**, con un botón **Añadir calendario** que crea la nota espejo de ese calendario (§15.4). Una nota espejo existe = ese calendario se sincroniza; no hay interruptor de visibilidad. Se puede **leer** cualquier calendario. La **escritura** va por defecto solo a un **calendario dedicado** que crea el plugin (por ejemplo «Obsidian Agenda»); «Añadir calendario» también ofrece crearlo. El permiso de edición de cada calendario es `agenda-allow-edit` en el frontmatter de su nota y empieza en `false`, salvo en el calendario dedicado del plugin, cuya nota se crea con `true`.
+
+### 15.3 Correspondencia evento ↔ tarea
+
+| Evento de Google | Línea de tarea |
+|---|---|
+| Título | Descripción de la tarea |
+| Inicio y fin con hora | `⏳` fecha, `🕐` hora y `⏱️` duración |
+| Un día completo | `⏳` sin hora |
+| Varios días completos | Rango `🛫` → `📅`; el fin de Google es exclusivo (un evento del 10 al 12 llega con fin el 13), así que se resta un día al importar y se suma al enviar |
+| Id del evento | `🆔`: el id tal cual para los eventos nacidos en Google; para las tareas locales, el id del evento se deriva del `🆔` (§17.3) |
+| Descripción, lugar, invitados, recordatorios, enlace de Meet, color | No se guardan en la línea; se conservan en Google porque solo se parchean los campos propios |
+
+### 15.4 Qué va a Google
+
+Solo las líneas de las **notas de sincronización**, que declaran en su frontmatter de dónde vienen sus tareas. Todas las claves llevan el prefijo `agenda-` porque el frontmatter es un espacio compartido por todo el vault y claves como `calendar` u `origin` podrían chocar con otros usos. Hay dos tipos de nota.
+
+**Nota espejo** (origen `google-calendar`): una por calendario, la crea «Añadir calendario» en `temporal/agenda/` (carpeta configurable; área `temporal` y sub-área `agenda`, §13). Ejemplo, `temporal/agenda/Personal.md`:
+
+```yaml
+---
+agenda-origin: google-calendar
+agenda-calendar: abc123@group.calendar.google.com
+agenda-allow-edit: false
+---
+```
+
+Allí aterrizan los eventos nuevos del calendario, y se sincronizan todas sus líneas con fecha.
+
+**Nota local** (origen `agenda-task`): cualquier nota del vault donde nacen tareas del plugin y que quiere reflejarlas en Google. Ejemplo, `proyectos/viaje.md`:
+
+```yaml
+---
+agenda-origin: agenda-task
+agenda-sync: google-calendar
+agenda-calendar: abc123@group.calendar.google.com
+---
+```
+
+Solo se sincronizan las líneas vinculadas (aquellas cuyo `🆔` coincide con un evento del plugin en ese calendario, §17.6) y no se importan eventos a ella. La línea nunca se mueve: conserva su origen, su jerarquía de subtareas y sus enlaces.
+
+Claves:
+- `agenda-origin`: dónde nacen las tareas de la nota, `google-calendar` o `agenda-task`.
+- `agenda-sync`: el sistema con el que se sincroniza; solo hace falta en las notas locales (en una espejo vale lo mismo que el origen). El valor lo reservan las sincronías futuras (Google Tasks, Microsoft).
+- `agenda-calendar`: el id del calendario de Google.
+- `agenda-account`: opcional; hoy hay una sola cuenta.
+- `agenda-allow-edit`: si el plugin puede escribir en ese calendario (`false` por defecto).
+
+Una nota = un calendario. Si en una misma nota se quieren tareas para calendarios distintos, hace falta otra nota.
+
+No van al frontmatter los tokens ni la frase de cifrado (siguen en `data.json` cifrado y en `secretStorage`), ni el `syncToken` de Google, que es estado por dispositivo y generaría conflictos al sincronizar la nota entre dispositivos.
+
+Hay como máximo una nota espejo por calendario (si hay dos, se avisa y solo se sincroniza la primera) y puede haber varias notas locales que envíen al mismo calendario. Si el frontmatter es inválido o falta `agenda-calendar`, la nota se salta con un aviso y no se borra nada.
+
+**Enviar una tarea.** «Enviar a Google Calendar» (menú contextual y Task Modal) escribe el `🆔` en la línea (si no lo tenía, lo genera) sin moverla y crea el evento en el calendario de la nota, con el id derivado del `🆔` (§17.3). Si la nota aún no declara origen y calendario, la acción pregunta el calendario (por defecto el dedicado del plugin) y los guarda en su frontmatter. Un evento de Google no es una tarea de Google (no tiene estado): la tarea sigue siendo la línea de Obsidian y el evento es su reflejo, de modo que en las vistas aparece una sola vez. Las tareas de Google Tasks, que sí tienen estado, son otra sincronía (ítem aparte).
+
+**Sin duplicados.** El `🆔` es el vínculo entre la línea y el evento. Al importar, antes de crear una línea se busca el id (con su calendario) en todo el vault: si ya existe en una nota local, no se crea otra en la espejo. Si el mismo `🆔` aparece en dos líneas (por ejemplo al copiar una línea), se avisa y solo se sincroniza la primera. El `🆔` nace en la nota: se escribe primero y el evento se crea con un id derivado de él (§17.3), así dos dispositivos que lo intenten a la vez no duplican el evento. No se exportan todas las tareas con fecha.
+
+### 15.5 Reglas de sincronía
+
+- **Campos que se sincronizan**: título, inicio y fin. Todo lo demás del evento se conserva.
+- **Conflictos**: sin fusión; si cambió el mismo campo en ambos lados desde la última sincronización gana el cambio más reciente, y se avisa.
+- **Recurrentes**: las instancias se importan como líneas individuales dentro de la ventana de descarga; la serie se edita solo en Google. No se convierte `🔁` ↔ RRULE.
+- **Estado**: los eventos no tienen «hecho», así que `[x]` no se sincroniza.
+- **Cancelados y rechazados**: un evento cancelado o borrado en Google se queda en la nota con el estado `[-]` Cancelada, y uno que el usuario rechazó con el estado `[~]` No es tarea; en ningún caso desaparece la línea.
+- **Borrados desde la nota**: si se borra la línea, solo se borra el evento si lo creó el plugin; los demás se desvinculan.
+- **Barreras de seguridad**: 5 o más borrados, o 25 o más cambios, esperan la aprobación del usuario en un diálogo con los conteos (una sincronización en segundo plano no cambia nada y avisa). Más de 200 cambios se rechazan. Una nota con una línea inválida se omite sin borrar nada. Nunca se notifica a los invitados.
+
+### 15.6 Cuándo se sincroniza
+
+Al arrancar, cada 5 minutos, poco después de cambiar una línea gestionada y con el comando «Sincronizar ahora». Una sincronización a la vez, y las automáticas esperan al menos 30 segundos entre sí.
+
+### 15.7 Red y privacidad
+
+El plugin contacta solo con Google (`accounts.google.com`, `oauth2.googleapis.com` y `www.googleapis.com/calendar/v3`), sin telemetría ni servidor propio. A Google solo viajan el título, el inicio, el fin, la zona horaria y el id. El README debe declarar este uso de red.
+
+### 15.8 Decisiones abiertas
+1. Ninguna. Decidido: una línea está enviada si existe un evento del plugin cuyo id deriva de su `🆔`, mediante la acción explícita «Enviar a Google Calendar» (§17.6).
+
+Decidido: notas de sincronización con frontmatter prefijado `agenda-`, de dos tipos según el origen (espejo `google-calendar` y local `agenda-task`); la línea nunca se mueve; una nota = un calendario; las espejo en `temporal/agenda/` por defecto; una sola cuenta por ahora; fin exclusivo de los eventos de varios días (restar un día al importar, sumarlo al enviar); cancelados como `[-]` y rechazados como `[~]`.
+
+### 15.9 Fuera de alcance
+Google Tasks, Microsoft y el plugin Tasks; varias cuentas de Google; conversión `🔁` ↔ RRULE y edición de series; invitados, recordatorios y enlaces de reunión; el botón «Conectar con Google» sin credenciales propias (requiere verificación); inicio de sesión por copiar y pegar en móvil; sincronizar el estado hecho.
+
+---
+
+## 16. Tareas de TaskNotes (backlog, sin versión — diseño preliminar, no implementado)
+
+> **Estado**: movido al backlog tras la discusión. Se conserva todo lo decidido por si se retoma (§16.8). Basado en el README y la documentación de TaskNotes 4.13.8 (tasknotes.dev), sin revisar aún su especificación formal. TaskNotes es un plugin distinto del plugin Tasks. No hay arquitectura ni plan escritos.
+
+Idea: quien ya usa TaskNotes podría **ver sus tareas en las vistas de este plugin**, para poder usarlo más. La dirección es migrar hacia este plugin, no al revés. Si se retoma, empieza **solo en lectura** (§16.8); la edición se descartó por ahora.
+
+### 16.1 Qué es TaskNotes
+
+Cada tarea es una nota Markdown con frontmatter (`title`, `status`, `priority`, `due`, `scheduled` con fecha o fecha y hora, `contexts`, `projects`, `timeEstimate` en minutos, `recurrence` en RRULE con `complete_instances`). Los nombres de las propiedades, los estados y las prioridades son configurables. Sus vistas son consultas de Obsidian Bases. La nota es la tarea: no hay dos copias que vincular, a diferencia de Google Calendar (§15).
+
+### 16.2 Alcance
+
+- **Solo lectura** en la primera versión; **no** se crean notas de TaskNotes desde este plugin. Las tareas nuevas se siguen creando como líneas.
+- Una tarea de TaskNotes aparece **una sola vez** en las vistas (calendario, Lista/Tabla, Kanban, Gantt); su identidad es la ruta del archivo, sin número de línea ni `🆔`.
+- Como no se escribe, no se edita desde las vistas: el clic abre el archivo en lugar del modal de edición, no hay arrastre ni menú de estado, y se muestra una marca visual para que se entienda por qué. Desde la píldora siempre se puede abrir la nota con doble clic.
+
+### 16.3 Cómo se reconocen
+
+Igual que TaskNotes: por **etiqueta** (por ejemplo `task`) o por **propiedad** (por ejemplo `isTask: true`), no por carpeta, con carpetas excluidas. Las notas pueden estar en cualquier parte del vault: la carpeta por defecto de TaskNotes (`TaskNotes/Tasks/`) admite variables como `{{currentNotePath}}` y fechas, y las tareas archivadas se mueven a otra carpeta.
+
+### 16.4 Área y sub-área
+
+Se aplica la regla de §13 sin excepción: la ubicación física de la nota. Si las notas están concentradas (por defecto `TaskNotes/Tasks/`), el área es `TaskNotes` y la sub-área `Tasks`; si están repartidas, el área es su primera carpeta y la sub-área el resto de la ruta. `projects` y `contexts` quedan como campos de agrupado y filtro (§11, §14), no como áreas.
+
+### 16.5 Mapeo de campos (preliminar)
+
+| TaskNotes | Tarea de este plugin |
+|---|---|
+| `title` | Descripción |
+| `status` | Estado (depende de los estados personalizados, v1.1.14) |
+| `priority` | Prioridad |
+| `due` | `📅` vencimiento |
+| `scheduled` | `⏳` programada, con hora si trae hora |
+| `timeEstimate` | `⏱️` duración en minutos |
+| `tags`, `projects`, `contexts` | Etiquetas y campos de agrupado |
+| `recurrence` + `complete_instances` | Próxima ocurrencia con la insignia `🔁` (§16.5.1) |
+
+Los nombres de las propiedades se configuran en los ajustes, con los de TaskNotes como valores por defecto. No se ha confirmado un equivalente de `🛫` inicio.
+
+### 16.5.1 Recurrencia
+
+TaskNotes guarda **una sola nota por serie**: `recurrence` es una regla RRULE con `DTSTART` (por ejemplo `DTSTART:20250804T090000Z;FREQ=DAILY`), `scheduled` es la próxima ocurrencia pendiente (se puede reprogramar incluso fuera del patrón) y el historial va en `complete_instances` y `skipped_instances`. Completar no crea nada: añade la fecha a `complete_instances` y avanza `scheduled`; este plugin, en cambio, inserta una línea nueva. Existen además notas por ocurrencia (tareas normales con `recurrence_parent` y `occurrence_date`), que TaskNotes usa en lugar de la ocurrencia virtual de la serie para esa fecha.
+
+- **Lectura**: la tarea se muestra en su próxima ocurrencia (`scheduled`) como una tarea normal, con la insignia `🔁` y la regla en el tooltip. **No se proyectan** las ocurrencias futuras, igual que con las tareas de línea (este plugin solo calcula la siguiente, con `rrule`).
+- **Notas de ocurrencia**: se leen como tareas normales. Si existe una para la fecha de la próxima ocurrencia de la serie, la entrada de la serie se oculta para no verla duplicada.
+- **Regla**: se reutiliza `buildRRuleWithDtStart`; hay que aceptar el formato `DTSTART:...;FREQ=...` de TaskNotes, tratar las fechas como UTC sin desfases de día, usar `scheduled` como ancla si la regla no trae `DTSTART` y, con el formato de objeto antiguo, mostrar solo la próxima ocurrencia sin regla.
+- **Edición**: ninguna en la primera versión (solo lectura), tampoco mover la próxima ocurrencia ni cambiar la regla.
+- **Completar la serie**: queda fuera con la edición. Si algún día se retoma, añade la fecha a `complete_instances` y avanza `scheduled` a la siguiente ocurrencia no completada, en el mismo archivo y sin crear líneas ni notas, y solo si el cálculo se **valida contra las pruebas de conformidad** del repositorio de TaskNotes (directorio `conformance`), porque un cálculo distinto haría que los dos plugins escriban resultados diferentes.
+- **Fuera de la primera versión**: todo lo que escribe (completar, mover, omitir ocurrencias con `skipped_instances`, editar la regla, mantener el desplazamiento del vencimiento al avanzar) y completar una nota de ocurrencia (exige actualizar la serie y la nota a la vez, y TaskNotes podría no generar la siguiente nota que su política «crear la siguiente al completar» produce).
+
+### 16.6 Decisiones abiertas
+1. **Recurrentes**: lectura decidida en §16.5.1. Si se retoma la escritura, queda comprobar que la validación contra `conformance` es viable y decidir el desplazamiento del vencimiento.
+2. **Estados**: cómo se mapean los estados personalizados de TaskNotes a los de este plugin; depende de los estados personalizados (v1.1.14, antes).
+3. **Nombres de propiedades**: si se leen de la configuración de TaskNotes o solo de la propia.
+4. **Dependencias y jerarquía**: la relación con `⛔` y con las subtareas.
+5. **Modelo interno**: en solo lectura basta con un extractor de notas y protecciones en los gestos (§16.8); la escritura exigiría una clave de tarea común y operaciones semánticas de escritura.
+6. **Distinción visual** entre una tarea de línea y una de nota.
+7. Revisar la especificación formal de TaskNotes antes de cerrar el mapeo.
+
+### 16.7 Fuera de la primera versión
+
+Crear notas de TaskNotes; toda edición (§16.5.1); **migrar** de TaskNotes a este plugin (nota → línea, por ejemplo con un comando «Migrar tareas de TaskNotes»), previsto para una versión posterior; la API HTTP de TaskNotes; sus tiempos de seguimiento y su temporizador Pomodoro; sus sincronías de calendario.
+
+### 16.8 Modelo interno y decisión de backlog
+
+**Modelo actual.** Una tarea (`ITask`) agrupa `file`, `line` (con `number` y `text`), `state`, `date`, `section` y `flow`; su identidad es archivo más número de línea (`id = ruta-línea`). `TaskExtractor` lee los `listItems` de `metadataCache` y la caché es por archivo; `TaskWriter` reescribe una línea con `updateTaskLine(ruta, número de línea, transform)` y `vault.modify`; las vistas localizan una tarea con `data-file-path` y `data-line-number` (unas 40 apariciones en 9 plantillas y 6 búsquedas en las vistas); el modal de edición construye la línea completa y la sustituye.
+
+**Lo que no encaja con una nota-tarea**: la identidad (solo el archivo), la lectura (frontmatter en lugar de `listItems`), la escritura (propiedades en lugar de reescribir una línea), los campos (`due`, `scheduled`, `status` en lugar de emojis) y el abrir (el archivo, sin línea).
+
+**Si se escribiera** habría que cambiar bastante: una clave de tarea común (`source` y `key`) con `data-task-key` en las plantillas; **escritura semántica** (la vista dice «pon la fecha programada de esta tarea en X» con algo como `taskService.update(task, { scheduled })` y cada origen decide cómo escribirlo, con `upsertScheduledDate` en una línea o con la propiedad `scheduled` del frontmatter en una nota), que toca unos 10 sitios (arrastrar, redimensionar, estado, menú contextual, modal); un escritor de frontmatter con `processFrontMatter` en una sola llamada por edición (ya hubo un bug de YAML duplicado en hábitos al combinarlo con `vault.process`); y que el modal produzca un conjunto de cambios en lugar de una línea. Esos cambios tocan el mismo código que la Fase A de v1.1.12.
+
+**Si solo se lee** el coste baja mucho: un extractor que reconozca las notas por etiqueta o propiedad (leyendo el frontmatter del contenido, como en hábitos, para no depender de la actualización asíncrona de `metadataCache`), protecciones en los gestos centralizadas en la Fase A y una marca visual. El `line.number` puede quedar en 0 porque nunca se escribe con él.
+
+**Pregunta pendiente si se retoma**: una nota de TaskNotes puede tener checkboxes en su cuerpo, que hoy se leerían como tareas de línea independientes; decidir si se dejan o se excluyen.
+
+**Decisión**: se descarta la edición por ahora y el resto pasa al backlog sin versión. Motivos: la lógica es muy distinta a la de este plugin; TaskNotes publica versiones casi semanalmente (más de 150 hasta ahora), así que el mapeo habría que mantenerlo; en solo lectura el valor es limitado (no se podría completar, mover ni editar nada) y compite con funcionalidades propias. Se reevalúa cuando estén listos el Kanban y el Gantt, para ver si hay demanda y si entonces hay más que ofrecer a quien venga de TaskNotes.
+
+---
+
+## 17. Compatibilidad con el plugin Tasks (v1.1.14 — diseño preliminar, no implementado)
+
+> **Estado**: decisiones de la discusión; falta cerrar el filtro global (§17.4). Basado en la documentación del plugin Tasks (publish.obsidian.md/tasks) y en el código de este plugin. Arquitectura y plan por escribir al cerrar el diseño.
+
+No hay sincronía que construir: el plugin Tasks y este escriben en el mismo archivo con el mismo formato de línea. El trabajo es de **compatibilidad de comportamiento**, para que quien use los dos obtenga los mismos resultados.
+
+### 17.1 Lo que ya coincide
+
+Los emojis de fechas, prioridades, `🔁`, `🆔`, `⛔` y `🏁`; el formato Dataview; la nueva ocurrencia una línea arriba (valor por defecto de Tasks); la eliminación de `🆔` y `⛔` en la nueva ocurrencia (ADR-R4, igual que Tasks, que lo hace para no duplicar ids y bloquear para siempre a las tareas dependientes); y `when done`.
+
+### 17.2 Decisiones
+
+| Punto | Decisión |
+|---|---|
+| Alcance | El ítem pasa a llamarse **compatibilidad con el plugin Tasks**; no es una sincronía. |
+| Fecha de referencia de la recurrencia | **Se mantiene la nuestra** (`scheduled > due > start`, ADR-R2). Tasks usa `due > scheduled > start`; con reglas como `every month on the last` y fechas distintas, completar la misma tarea en uno u otro plugin puede dar fechas distintas. Se advierte en el manual de usuario. |
+| `🕐` y `⏱️` al final de la línea | **Verificado** el 2026-10-09 en un vault con Tasks instalado: con `⏳ 2026-10-19 🕐 09:00 ⏱️ 30m` al final, Tasks sigue reconociendo `📅` y `⏳`. No hay cambio. |
+| `🆔` y Google Calendar | El `🆔` sigue siendo el vínculo, con el id del evento derivado de él (§17.3); una línea está **enviada** si existe un evento del plugin cuyo id deriva de su `🆔` (§17.6). |
+| Id interno de la tarea y escritura segura | **Se hacen en v1.1.12** con la Fase A: `Task.id` pasa a ser siempre la posición (`ruta#línea`), el `🆔` va en su propio campo (`flow.id`) y los escritores comprueban el texto de la línea antes de escribir (Arquitectura §20.3.2). |
+| Filtro global de Tasks | **Descartado**: no se incluye (§17.4). |
+| `🏁 delete` y `🏁 keep` | **Se implementan**, con una advertencia en el modal al elegir `delete` (§17.5). |
+| Estados personalizados | Ítem propio de v1.1.14, con el modelo de Tasks (símbolo, nombre, siguiente símbolo y tipo): se **configuran** en los ajustes y se pueden **importar** una vez desde los ajustes de Tasks con un botón; la importación no se mantiene sincronizada y, si no reconoce el formato, avisa sin romper nada. |
+| `🆔` al crear una tarea | El modal **no** asigna `🆔`: se genera cuando hace falta (enviar a Google, elegir una dependencia), como Tasks. El campo `🆔` del modal tiene un botón **Generar** (§17.5). |
+| Ajustes menores de Tasks (insertar la nueva ocurrencia debajo, quitar la fecha programada al repetir, añadir `➕`) | Fuera de alcance. |
+
+### 17.3 El `🆔` y los ids de evento de Google
+
+Un `id` de Tasks admite letras mayúsculas y minúsculas, dígitos, `_` y `-`; un id de evento de Google solo admite `a–v` y `0–9`, de 5 a 1024 caracteres. Los ids que genera Tasks son de base 36 (por ejemplo `4ijuhy`, `hftw84745`, `0h17ye`), así que muchos no caben como id de evento.
+
+Regla: para una tarea que nace en Obsidian, el id del evento es un **prefijo fijo** (de al menos 3 caracteres, para cumplir el mínimo de 5) seguido del **hexadecimal** del texto del `🆔` en UTF-8. El hexadecimal conserva las mayúsculas, solo usa `0–9` y `a–f`, y se decodifica de vuelta. Los eventos creados por el plugin se reconocen por el prefijo y por la propiedad privada que ya los marca (§15.5). Los eventos nacidos en Google conservan su id tal cual como `🆔`, que ya es válido para Tasks. Una tarea local sin `🆔` recibe uno nuevo en el formato que usa Tasks (base 36, 6 caracteres). Así el `🆔` y los `⛔` que apuntan a él no cambian nunca y siguen siendo válidos para Tasks.
+
+### 17.4 Filtro global de Tasks (descartado)
+
+El filtro global es un texto, normalmente una etiqueta como `#task`, con el que Tasks solo trata como tarea los checkboxes que lo contienen. Se valoró darle soporte (añadirlo al crear una tarea y, opcionalmente, mostrar solo los checkboxes que lo contienen), pero **se decidió no incluirlo**. Efecto conocido: quien lo use en Tasks verá en las vistas de este plugin todos los checkboxes, y las tareas creadas en nuestro modal no llevarán la etiqueta.
+
+### 17.5 `🏁 delete`, `🏁 keep` y el botón Generar del `🆔`
+
+**`🏁`**: se implementa. Hoy se lee y se escribe, pero nada lo ejecuta al completar. Al completar una tarea (menú de estado del calendario y modal), con `🏁 delete` se borra la línea de la tarea completada (solo esa línea; las subtareas indentadas quedan en el archivo); con `keep` o sin campo no cambia nada. En una recurrente se inserta primero la nueva ocurrencia y después se borra la original, ajustando el número de línea que cambia al insertar. Requiere un método para borrar líneas en `TaskWriter` y pruebas de Node del cálculo de líneas, porque la operación es destructiva y no se puede probar con Tasks.
+
+**Advertencia en el modal**: al elegir `delete` en el campo de finalización, tanto al crear como al editar una tarea, el modal muestra que la línea se borrará del archivo cuando la tarea se complete.
+
+**Botón Generar**: el campo `🆔` del modal tiene un botón que genera uno válido, por si el usuario quiere tenerlo desde el inicio. Usa el formato de Tasks (base 36, 6 caracteres) y comprueba que no exista ya en el vault. El modal no asigna `🆔` por defecto: ensuciaría todas las líneas, las recurrentes lo pierden en la nueva ocurrencia y las tareas escritas a mano o por Tasks seguirían sin él.
+
+### 17.6 Regla de «enviada» y mecanismo de envío a Google
+
+El `🆔` también lo asigna el plugin Tasks (para dependencias) y lo genera el botón Generar del modal, así que **tener `🆔` no significa estar enviada**. Se descartó la regla original «una línea está enviada si lleva `🆔`» y también un campo propio para el vínculo (`🔗 gcal:<id>`), que añadía un campo más a la línea.
+
+**Regla**: una línea está **enviada** si existe en Google un evento creado por este plugin cuyo id se deriva de su `🆔` (§17.3). El mecanismo es explícito:
+1. La acción «Enviar a Google Calendar» escribe el `🆔` en la línea si le faltaba, crea el evento con el id derivado en el calendario de la nota y lo marca como propio.
+2. En cada sincronización se descargan los eventos, se reconocen los del plugin por el prefijo y la propiedad privada, y se decodifican sus `🆔`. Las líneas cuyo `🆔` está en ese conjunto están **vinculadas**: su título, inicio y fin se sincronizan en los dos sentidos.
+3. Un `🆔` sin evento correspondiente no hace nada; es solo un id de dependencias.
+
+En las notas espejo siguen sincronizándose todas las líneas con fecha (§15.4). Nada se envía sin una acción explícita; las reglas automáticas por nota, etiqueta o área quedan descartadas por ahora.
+
+Ventajas: no hay marca extra en la línea, el `🆔` se puede crear libremente, funciona entre dispositivos porque el vínculo está en Google y no en un índice local, y las vistas pueden mostrar una insignia de «sincronizada» calculada sin tocar la línea.
+
+Límites: un evento fuera de la ventana descargada (de −3 a +6 meses) no se reconoce como vinculado, lo que solo afecta a eventos lejanos que de todos modos no se sincronizan; y si se edita a mano el `🆔` de una línea ya enviada, el evento queda huérfano. Un evento del plugin sin ninguna línea que lo reclame (línea borrada o `🆔` editado) se borra de Google, y esa operación siempre pide aprobación.

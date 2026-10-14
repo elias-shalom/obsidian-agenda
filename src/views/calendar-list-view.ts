@@ -1,4 +1,4 @@
-import { WorkspaceLeaf, Plugin } from "obsidian";
+import { WorkspaceLeaf, Plugin, getLanguage } from "obsidian";
 import { CalendarView } from "./calendar-view";
 import { TaskManager } from "../core/task-manager";
 import { WeekDayData, CalendarListViewData, AgendaPlugin } from '../types/interfaces';
@@ -52,6 +52,7 @@ export class CalendarListView extends CalendarView {
 
     const days: WeekDayData[] = [];
     let currentDay = this.windowStart;
+    const locale = getLanguage() || 'en';
 
     for (let i = 0; i < daysToShow; i++) {
       const dayTasks = this.getTasksForDate(currentDay);
@@ -65,6 +66,8 @@ export class CalendarListView extends CalendarView {
         dayOfWeek: currentDay.weekday,
         dayName: localizedDayNames[dayIndex],
         formattedDate: `${localizedDayNames[dayIndex]} ${currentDay.day}`,
+        // La ventana de días puede cruzar un límite de mes (fix v1.1.11, §4.10).
+        monthAbbr: currentDay.setLocale(locale).toFormat('MMM'),
         tasksForDay: dayTasks,
       });
 

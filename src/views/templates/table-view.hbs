@@ -67,9 +67,6 @@
           <th class="oa-table-col-folder oa-sortable" data-sort="folder">
             <span class="oa-sort-indicator">{{t 'folder'}}</span>
           </th>
-          <th class="oa-table-col-file oa-sortable" data-sort="file">
-            <span class="oa-sort-indicator">{{t 'file'}}</span>
-          </th>
           <th class="oa-table-col-due oa-sortable" data-sort="due">
             <span class="oa-sort-indicator">{{t 'dates'}}</span>
           </th>
@@ -115,12 +112,6 @@
             <div class="oa-task-folder">
               <span class="oa-folder-icon">📁</span>
               <span class="oa-folder-name">{{file.root}}</span>
-            </div>
-          </td>
-          <td class="oa-table-col-file">
-            <div class="oa-task-file">
-              <span class="oa-file-icon">📄</span>
-              <span class="oa-file-name">{{file.basename}}</span>
             </div>
           </td>
           <td class="oa-table-col-due {{#if isOverdue}}oa-overdue{{/if}} {{#if isDueToday}}oa-due-today{{/if}}">

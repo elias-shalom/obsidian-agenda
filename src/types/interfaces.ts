@@ -26,6 +26,9 @@ export interface WeekDayData {
   dayName: string;
   formattedDate: string;
   tasksForDay: ITask[];
+  /** Mes abreviado y localizado (p. ej. "oct"); solo lo usa la vista de Lista (v1.1.11, fix), ya
+   * que su ventana de días puede cruzar un límite de mes y Semana/Semana laboral no lo necesitan. */
+  monthAbbr?: string;
 }
 
 /**

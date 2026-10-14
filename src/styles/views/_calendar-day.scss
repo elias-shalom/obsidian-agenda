@@ -487,11 +487,17 @@
   @include interactive-control;
   flex-shrink: 0;
   width: 16px;
-  padding: 0;
+  padding: 0 !important; // `.is-tablet button:not(.clickable-icon)` de Obsidian impone 20 px laterales y dejaba el ícono sin ancho
   display: flex;
   align-items: center;
   justify-content: center;
   align-self: stretch;
+
+  svg {
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+  }
 }
 
 .oa-calendar-day-main-view {

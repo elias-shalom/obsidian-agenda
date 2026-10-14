@@ -106,7 +106,8 @@ $habit-weekly-pill-cap-inset: 3px;
   align-self: center;
   box-sizing: border-box;
   margin: 0;
-  padding: 0;
+  padding: 0 !important; // `.is-tablet button:not(.clickable-icon)` de Obsidian impone 20 px laterales y ensanchaba la celda sobre su columna
+  min-width: 0;
   border: none;
   border-radius: 0;
   background-color: transparent !important;

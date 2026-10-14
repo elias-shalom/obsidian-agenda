@@ -251,7 +251,7 @@ export abstract class BaseView extends ItemView {
     Handlebars.registerHelper("concat", function(...values: unknown[]): string {
       // El último argumento es el objeto de opciones del helper
       const parts = values.slice(0, -1);
-      return parts.map(part => (part === null || part === undefined) ? '' : String(part)).join('');
+      return parts.map(part => (typeof part === 'string' || typeof part === 'number' || typeof part === 'boolean') ? String(part) : '').join('');
     });
   }
 

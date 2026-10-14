@@ -151,19 +151,23 @@ function normalizeRelated(value: unknown): string[] {
     .filter(Boolean))];
 }
 
+function toText(value: unknown, fallback = ''): string {
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : fallback;
+}
+
 export function parseHabit(
   file: TFile,
   fm: Record<string, unknown>,
   settings: AgendaPluginSettings,
   bodyDescription?: string
 ): IHabit | null {
-  const rawStatus = String(fm.status ?? 'active').trim().toLowerCase();
+  const rawStatus = toText(fm.status, 'active').trim().toLowerCase();
   const status = rawStatus === 'inactive' || rawStatus === 'archived' || rawStatus === 'disabled' ? 'inactive' : 'active';
 
-  const area = String(fm.area ?? '').trim() || 'temporal';
+  const area = toText(fm.area).trim() || 'temporal';
   const related = normalizeRelated(fm.related);
 
-  const title = String(fm.title ?? fm.name ?? file.basename ?? 'Habit').trim() || file.basename || 'Habit';
+  const title = (toText(fm.title) || toText(fm.name)).trim() || file.basename || 'Habit';
   const maxGapValue = Number(fm.maxGap ?? settings.habitDefaultMaxGap);
   const daytimes = normalizeDaytimes(fm.daytime ?? fm.daytimes ?? ['morning']);
 
@@ -179,18 +183,18 @@ export function parseHabit(
 
   return {
     file,
-    name: String(fm.name ?? file.basename ?? title).trim() || file.basename || title,
+    name: toText(fm.name, file.basename).trim() || file.basename || title,
     title,
-    description: bodyDescription?.trim() || String(fm.description ?? '').trim(),
+    description: bodyDescription?.trim() || toText(fm.description).trim(),
     time: Number(fm.time ?? 0),
     area,
-    subArea: String(fm['sub-area'] ?? '').trim(),
+    subArea: toText(fm['sub-area']).trim(),
     related,
     relatedFile: related[0] ?? '',
     frequencySet: normalizeFrequencySet(fm.frequency),
     priority: normalizePriority(fm.priority ?? settings.habitDefaultPriority),
     daytimes,
-    color: String(fm.color ?? settings.habitDefaultColor ?? '').trim(),
+    color: toText(fm.color, toText(settings.habitDefaultColor)).trim(),
     maxGap: Number.isFinite(maxGapValue) ? Math.max(0, Math.round(maxGapValue)) : 0,
     status,
     completions,

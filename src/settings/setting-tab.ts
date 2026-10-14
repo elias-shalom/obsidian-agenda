@@ -3,6 +3,7 @@ import { App, PluginSettingTab, Setting, SettingDefinitionItem } from 'obsidian'
 import { I18n } from "../core/i18n";
 import { BaseView } from '../views/base-view';
 import type { AgendaPluginSettings } from './settings';
+import { DEFAULT_SETTINGS } from './settings';
 
 const CALENDAR_VIEW_TYPES = ['calendar-month-view', 'calendar-year-view', 'calendar-week-view', 'calendar-workweek-view', 'calendar-day-view'];
 
@@ -119,7 +120,6 @@ export class SettingTab extends PluginSettingTab {
               setting.addSlider(slider => slider
                 .setLimits(7, 14, 1)
                 .setValue(this.plugin.settings.calendarListDaysToShow)
-                .setDynamicTooltip()
                 .onChange(async (value) => {
                   this.plugin.settings.calendarListDaysToShow = value;
                   await this.plugin.saveSettings();
@@ -302,7 +302,6 @@ export class SettingTab extends PluginSettingTab {
       .addSlider(slider => slider
         .setLimits(7, 14, 1)
         .setValue(this.plugin.settings.calendarListDaysToShow)
-        .setDynamicTooltip()
         .onChange(async (value) => {
           this.plugin.settings.calendarListDaysToShow = value;
           await this.plugin.saveSettings();
@@ -315,7 +314,7 @@ export class SettingTab extends PluginSettingTab {
       .setName(this.i18n.t("habit_folder_path"))
       .setDesc(this.i18n.t("habit_folder_path_desc"))
       .addText(text => text
-        .setPlaceholder("daily plan/daily routine/habit")
+        .setPlaceholder(DEFAULT_SETTINGS.habitFolderPath)
         .setValue(this.plugin.settings.habitFolderPath)
         .onChange(async (value) => {
           this.plugin.settings.habitFolderPath = value;
@@ -327,7 +326,6 @@ export class SettingTab extends PluginSettingTab {
       .addSlider(slider => slider
         .setLimits(7, 90, 1)
         .setValue(this.plugin.settings.habitDaysToShow)
-        .setDynamicTooltip()
         .onChange(async (value) => {
           this.plugin.settings.habitDaysToShow = value;
           await this.plugin.saveSettings();
@@ -358,7 +356,6 @@ export class SettingTab extends PluginSettingTab {
       .addSlider(slider => slider
         .setLimits(0, 30, 1)
         .setValue(this.plugin.settings.habitDefaultMaxGap)
-        .setDynamicTooltip()
         .onChange(async (value) => {
           this.plugin.settings.habitDefaultMaxGap = value;
           await this.plugin.saveSettings();
@@ -369,7 +366,6 @@ export class SettingTab extends PluginSettingTab {
       .addSlider(slider => slider
         .setLimits(1, 5, 1)
         .setValue(this.plugin.settings.habitDefaultPriority)
-        .setDynamicTooltip()
         .onChange(async (value) => {
           this.plugin.settings.habitDefaultPriority = value;
           await this.plugin.saveSettings();

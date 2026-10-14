@@ -304,18 +304,19 @@ Configurar el orden de inserción (arriba/abajo); recurrencia "para X veces" o "
 ### Fixes
 - [x] Pestañas del encabezado ilegibles en tema oscuro (`_header.scss`, `.theme-dark`).
 - [x] Mes de cada día en la vista de lista del calendario (`monthAbbr`).
-- [ ] Error `no-base-to-string` del helper `concat` en `base-view.ts`.
+- [x] Error `no-base-to-string` del helper `concat` en `base-view.ts` y los 7 de `habit-parser.ts` que destapó `typescript-eslint` 8.71 (función `toText()`).
 - [ ] Ancho de las filas de la Tabla: hecho quitar la columna Archivo y reducir número de fila (máx. 50 px) y Fechas (80–120 px); por decidir bajar el resto de máximos y ajustar las columnas al ancho disponible (ver `docs/todo.md`).
 - [ ] Vistas en Android (síntomas e hipótesis en `docs/todo.md`, por discutir antes de implementar): íconos del multibotón del calendario, selector de fecha recortado, círculo de completado ovalado en Rutina y relleno irregular de las rachas en Semana y Grid de Hábitos; reproducir con `app.emulateMobile(true)` y con depuración remota.
 - [ ] Texto del README y de `todo.md` que dice que la Lista tiene filtrado avanzado.
-- [ ] Aviso `prefer-create-el`: ESLint no lo reproduce hoy; cerrar como no reproducible o revisarlo tras actualizar el plugin de reglas.
+- [x] Aviso `prefer-create-el`: cerrado como no reproducible; `npx eslint src` termina limpio tras actualizar el plugin de reglas.
 
 ### Dependencias
-- [ ] Subir la etiqueta `1.1.10` antes de empezar (pendiente por una incidencia de GitHub).
-- [ ] Actualizar dentro del rango: `handlebars`, `luxon`, `winston`, `esbuild`, `esbuild-sass-plugin`, `obsidian` (tipos), `eslint-plugin-obsidianmd`, `typescript-eslint`, `@types/luxon`, `globals`, `jiti`, `eslint` 9.x.
-- [ ] Subir o quitar los pins de `@typescript-eslint/eslint-plugin` y `@typescript-eslint/parser` (8.32.1), tras comprobar que `eslint.config.mts` no los importa directamente.
+- [x] Etiqueta `1.1.10`: ya está en el remoto (merge de la PR #54 en `main`); solo falta alinear la etiqueta local con la del remoto.
+- [x] Actualizado dentro del rango: `handlebars` 4.7.10, `luxon` 3.7.2, `winston` 3.19.0, `esbuild` 0.25.12, `obsidian` (tipos) 1.14.4, `eslint-plugin-obsidianmd` 0.4.2, `typescript-eslint` 8.71.1, `eslint` 9.39.5 y las menores; `esbuild-sass-plugin` se queda en `~3.3.1` porque la 3.6 y la 3.7 exigen `esbuild >= 0.27`.
+- [x] Pins de `@typescript-eslint/eslint-plugin` y `@typescript-eslint/parser` subidos de 8.32.1 a 8.71.1 (`eslint.config.mts` importa el parser directamente).
+- [x] 5 avisos por `setDynamicTooltip()` obsoleto: se quitan las llamadas en `setting-tab.ts`.
 - [ ] No actualizar ahora: ESLint 10, TypeScript 7, esbuild 0.28 y `@types/node` 26.
-- [ ] Verificable sola: `npm run build`, ESLint y `npm audit` sin críticos de producción; prueba manual en Obsidian (plantillas Handlebars, fechas con Luxon, CSS) y revisar los avisos nuevos del plugin de reglas.
+- [x] Verificado: `npm run build` y `npx eslint src` sin errores ni avisos; `npm audit --omit=dev` sin vulnerabilidades. Pendiente la prueba manual en Obsidian (plantillas Handlebars, fechas con Luxon, CSS) en escritorio y en modo móvil.
 - [ ] Commit aparte `chore(deps)`.
 
 ## Próxima fase — v1.1.11: manual de usuario (implementado)

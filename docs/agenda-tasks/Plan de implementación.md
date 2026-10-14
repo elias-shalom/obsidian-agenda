@@ -297,17 +297,17 @@ El CSS del dial (`.oa-time-dial*`) se movió de `views/_habit-form.scss` a un ar
 ### Fuera de alcance
 Configurar el orden de inserción (arriba/abajo); recurrencia "para X veces" o "hasta una fecha"; generar la ocurrencia al completar desde el checkbox nativo de Obsidian fuera del plugin.
 
-## Próxima fase — v1.1.11: mantenimiento (fixes y dependencias)
+## Fase v1.1.11: mantenimiento (fixes y dependencias) (implementado)
 
-> Versión sin funcionalidad nueva: aísla las actualizaciones de dependencias, que afectan a todo el plugin, de las funcionalidades de v1.1.12 en adelante. Reparto completo por versiones en `docs/todo.md`.
+> Versión sin funcionalidad nueva: aísla las actualizaciones de dependencias, que afectan a todo el plugin, de las funcionalidades de v1.1.12 en adelante. Reparto completo por versiones en `docs/todo.md`. Publicada como 1.1.11; el ajuste de las columnas de la Tabla al ancho disponible pasa a v1.1.12 (fase U3).
 
 ### Fixes
 - [x] Pestañas del encabezado ilegibles en tema oscuro (`_header.scss`, `.theme-dark`).
 - [x] Mes de cada día en la vista de lista del calendario (`monthAbbr`).
 - [x] Error `no-base-to-string` del helper `concat` en `base-view.ts` y los 7 de `habit-parser.ts` que destapó `typescript-eslint` 8.71 (función `toText()`).
-- [ ] Ancho de las filas de la Tabla: hecho quitar la columna Archivo y reducir número de fila (máx. 50 px) y Fechas (80–120 px); por decidir bajar el resto de máximos y ajustar las columnas al ancho disponible (ver `docs/todo.md`).
-- [ ] Vistas en Android (síntomas e hipótesis en `docs/todo.md`, por discutir antes de implementar): íconos del multibotón del calendario, selector de fecha recortado, círculo de completado ovalado en Rutina y relleno irregular de las rachas en Semana y Grid de Hábitos; reproducir con `app.emulateMobile(true)` y con depuración remota.
-- [ ] Texto del README y de `todo.md` que dice que la Lista tiene filtrado avanzado.
+- [x] Ancho de las filas de la Tabla: quitar la columna Archivo y reducir número de fila (máx. 50 px) y Fechas (80–120 px); el ajuste de las columnas al ancho disponible del contenedor (ventana en escritorio, ancho del dispositivo en tableta y teléfono) pasa a v1.1.12 (fase U3).
+- [x] Vistas en Android: causa en el relleno de 20 px laterales y los 44 px de alto que Obsidian aplica a todo `<button>` en tableta y móvil; se corrigió el multibotón del calendario, el selector de fecha, el conmutador del sidebar de Día, Rutina (círculo, acciones, nombres y etiquetas), las celdas de Grid y Semana y los botones de tamaño fijo del Task Modal, el editor de hábitos, la Tabla y Hábitos (detalle en `docs/todo.md`); pruebas manuales hechas, y lo que aparezca se corrige en versiones siguientes.
+- [x] Texto del README, del manual de usuario y de `todo.md` que decía que la Lista tiene filtrado avanzado, columnas personalizables, agrupado por fecha/estado y acciones masivas; corregido.
 - [x] Aviso `prefer-create-el`: cerrado como no reproducible; `npx eslint src` termina limpio tras actualizar el plugin de reglas.
 
 ### Dependencias
@@ -315,9 +315,9 @@ Configurar el orden de inserción (arriba/abajo); recurrencia "para X veces" o "
 - [x] Actualizado dentro del rango: `handlebars` 4.7.10, `luxon` 3.7.2, `winston` 3.19.0, `esbuild` 0.25.12, `obsidian` (tipos) 1.14.4, `eslint-plugin-obsidianmd` 0.4.2, `typescript-eslint` 8.71.1, `eslint` 9.39.5 y las menores; `esbuild-sass-plugin` se queda en `~3.3.1` porque la 3.6 y la 3.7 exigen `esbuild >= 0.27`.
 - [x] Pins de `@typescript-eslint/eslint-plugin` y `@typescript-eslint/parser` subidos de 8.32.1 a 8.71.1 (`eslint.config.mts` importa el parser directamente).
 - [x] 5 avisos por `setDynamicTooltip()` obsoleto: se quitan las llamadas en `setting-tab.ts`.
-- [ ] No actualizar ahora: ESLint 10, TypeScript 7, esbuild 0.28 y `@types/node` 26.
-- [x] Verificado: `npm run build` y `npx eslint src` sin errores ni avisos; `npm audit --omit=dev` sin vulnerabilidades. Pendiente la prueba manual en Obsidian (plantillas Handlebars, fechas con Luxon, CSS) en escritorio y en modo móvil.
-- [ ] Commit aparte `chore(deps)`.
+- [x] No actualizar ahora: ESLint 10, TypeScript 7, esbuild 0.28 y `@types/node` 26.
+- [x] Verificado: `npm run build` y `npx eslint src` sin errores ni avisos; `npm audit --omit=dev` sin vulnerabilidades; prueba manual en Obsidian hecha en escritorio, en modo móvil y en los dispositivos reales.
+- [x] Versión subida a 1.1.11 en `package.json`, `package-lock.json`, `manifest.json` y `versions.json` (`minAppVersion` sigue en 1.8.7).
 
 ## Próxima fase — v1.1.11: manual de usuario (implementado)
 
@@ -456,6 +456,7 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [ ] La Tabla filtra sobre datos con `TaskFilter` en lugar de ocultar filas del DOM.
 - [ ] Agrupado en la Tabla con filas de cabecera plegables y estado recordado.
 - [ ] Los encabezados ordenables actualizan el orden compartido.
+- [ ] Ajustar las columnas al ancho disponible del contenedor en `resizeColumns()`: las flexibles se reducen en proporción sin bajar de su mínimo, con la ventana como referencia en escritorio y el ancho del dispositivo en tableta y teléfono; afinar los máximos de Tarea, Carpeta y Etiquetas y dejar que la Tarea se parta en dos líneas.
 - [ ] Verificable sola: la Tabla se comporta como antes sin agrupar, y agrupa y pliega al elegir un agrupado.
 
 ### Fase U4 — Pestaña única y conmutador (depende de U2 y U3)

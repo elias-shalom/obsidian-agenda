@@ -134,8 +134,6 @@ export class TaskModal extends Modal {
     const dueIso = task.date.due?.toISODate() ?? "";
     const startIso = task.date.start?.toISODate() ?? "";
     const scheduledIso = task.date.scheduled?.toISODate() ?? "";
-    // El id cae a `path-línea` cuando la tarea no tiene 🆔 explícito (ver task-extractor.ts): no lo prefilled como si fuera real.
-    const isAutoId = task.id === `${task.file.path}-${task.line.number}`;
 
     return {
       headerTitle: this.i18n.t("edit_task"),
@@ -153,7 +151,7 @@ export class TaskModal extends Modal {
       recurrenceValue: task.flow.repeat ?? "",
       dependsValue: (task.flow.dependsOn ?? []).join(", "),
       onCompletionValue: task.flow.onCompletion ?? "",
-      idValue: isAutoId ? "" : task.id,
+      idValue: task.flow.id,
     };
   }
 
@@ -568,10 +566,10 @@ export class TaskModal extends Modal {
           const nextOccurrenceLine = buildRecurrenceOccurrence(editingTask, selectedStatus);
           try {
             console.debug(`Actualizando línea ${editingTask.line.number} de ${editingTask.file.path}: ${line}`); // Debugging line
-            const ok = await this.taskWriter.updateTaskLine(editingTask.file.path, editingTask.line.number, () => line);
-            if (ok) {
+            const written = await this.taskWriter.updateTaskLine(editingTask.file.path, editingTask.line.number, editingTask.line.text, () => line);
+            if (written) {
               if (nextOccurrenceLine) {
-                await this.taskWriter.insertLineAbove(editingTask.file.path, editingTask.line.number, nextOccurrenceLine);
+                await this.taskWriter.insertLineAbove(editingTask.file.path, written.lineNumber, written.text, nextOccurrenceLine);
               }
               new Notice(this.i18n.t("task_updated"));
               this.notifySaved();

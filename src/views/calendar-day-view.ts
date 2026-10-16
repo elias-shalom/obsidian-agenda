@@ -345,13 +345,13 @@ export class CalendarDayView extends CalendarView {
         const payload = this.parseTaskDragPayload(e);
         if (!dateStr || !payload || payload.calendarDateType !== 'scheduled') return;
 
-        this.taskWriter.updateTaskLine(payload.filePath, payload.lineNumber, (line) => {
+        this.writeTaskLine(payload.filePath, payload.lineNumber, (line) => {
           const withDate = upsertScheduledDate(line, dateStr);
           const result = clearScheduledTime(withDate);
           return result.ok ? result.line : withDate;
         })
-          .then(ok => {
-            if (ok) this.refreshView().catch(console.error);
+          .then(written => {
+            if (written) this.refreshView().catch(console.error);
           })
           .catch(console.error);
       });
@@ -400,12 +400,12 @@ export class CalendarDayView extends CalendarView {
       tooltip = null;
 
       if (liveDuration === initialDuration) return;
-      this.taskWriter.updateTaskLine(filePath, lineNumber, (line) => {
+      this.writeTaskLine(filePath, lineNumber, (line) => {
         const result = upsertScheduledDuration(line, liveDuration);
         return result.ok ? result.line : line;
       })
-        .then(ok => {
-          if (ok) this.refreshView().catch(console.error);
+        .then(written => {
+          if (written) this.refreshView().catch(console.error);
         })
         .catch(console.error);
     };
@@ -455,13 +455,13 @@ export class CalendarDayView extends CalendarView {
 
     const newTime = `${String(hour).padStart(2, '0')}:${minutes}`;
 
-    this.taskWriter.updateTaskLine(payload.filePath, payload.lineNumber, (line) => {
+    this.writeTaskLine(payload.filePath, payload.lineNumber, (line) => {
       const withDate = upsertScheduledDate(line, dateIso);
       const result = upsertScheduledTime(withDate, newTime);
       return result.ok ? result.line : withDate;
     })
-      .then(ok => {
-        if (ok) this.refreshView().catch(console.error);
+      .then(written => {
+        if (written) this.refreshView().catch(console.error);
       })
       .catch(console.error);
   }

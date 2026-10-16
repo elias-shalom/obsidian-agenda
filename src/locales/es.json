@@ -224,7 +224,7 @@
   "task_duration_modal_title": "Establecer duración",
   "task_duration_modal_label": "Duración (minutos)",
   "task_duration_invalid": "Ingresa un número entero de minutos mayor que 0",
-  "task_drag_drop_error": "No se pudo mover la tarea (puede que el archivo haya cambiado)",
+  "task_line_changed": "No se pudo actualizar la tarea: la nota cambió. Actualiza la vista e inténtalo de nuevo",
   "task_due_date": "Fecha de vencimiento",
   "task_advanced_toggle_show": "Más campos",
   "task_recurrence": "Recurrencia",

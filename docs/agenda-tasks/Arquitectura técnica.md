@@ -222,7 +222,7 @@ Desglose de tareas de esta decisión: ver [[Plan de implementación]] — Fase B
 Se usa la [Drag and Drop API nativa del navegador](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API) (`draggable`, `dragstart`/`dragover`/`drop`), no una librería externa — el plugin no la tenía como dependencia y el caso de uso (arrastrar una píldora a una celda dentro del mismo contenedor renderizado) no la necesita.
 
 - **Origen del drag** (común a Mes/Semana/Semana laboral/Día, cableado una sola vez en `CalendarView.setupViewSpecificEventListeners`): cada `.oa-calendar-task` con `draggable="true"` serializa en `dataTransfer` (`application/json`) un payload `TaskDragPayload` — `filePath`, `lineNumber`, `calendarDateType` (`due`/`start`/`scheduled`, tomado de `data-date-type`) y `scheduledTime` (tomado de `data-scheduled-time`, solo presente en las franjas horarias de Día). `CalendarView.parseTaskDragPayload()` es el único punto que deserializa y valida ese payload.
-- **Destino en Mes/Semana/Semana laboral** (`CalendarView`, clase base): las celdas de día (`.oa-calendar-month-day`, `.oa-calendar-week-day-container`) aceptan el drop y llaman a `handleTaskDayDrop()`, que resuelve la transformación de línea según `calendarDateType` (`due`/`start` → `upsertSimpleDate`, `scheduled` → `upsertScheduledDate`, preservando hora/duración ya existentes) y la aplica con `TaskWriter.updateTaskLine()`. Si la escritura falla (línea ya no válida), se muestra un `Notice` (`task_drag_drop_error`) en vez de fallar silenciosamente.
+- **Destino en Mes/Semana/Semana laboral** (`CalendarView`, clase base): las celdas de día (`.oa-calendar-month-day`, `.oa-calendar-week-day-container`) aceptan el drop y llaman a `handleTaskDayDrop()`, que resuelve la transformación de línea según `calendarDateType` (`due`/`start` → `upsertSimpleDate`, `scheduled` → `upsertScheduledDate`, preservando hora/duración ya existentes) y la aplica con `TaskWriter.updateTaskLine()`. Si la escritura falla (línea que ya no se puede localizar), se muestra un `Notice` (`task_line_changed`) en vez de fallar silenciosamente.
 - **Destino en Día** (`CalendarDayView`, sobrescribe el mismo patrón): las franjas horarias (`.oa-calendar-hour-slot`) solo aceptan payloads con `calendarDateType === 'scheduled'` y llaman a `handleHourSlotDrop()`, que arma la nueva hora `HH:mm` combinando la hora de la franja destino con los minutos originales del payload, y la aplica con `upsertScheduledTime()`.
 - Tras un drop exitoso, cada vista llama a `this.refreshView()` (mismo patrón que el resto de acciones del calendario) para re-renderizar con los datos actualizados del vault.
 
@@ -594,7 +594,7 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §7.7.
 | Modal de duración | `src/modals/task-duration-modal.ts` (usa el componente con `maxMinutes:420, stepMinutes:5`) |
 | Estilos | el SCSS del dial (hoy embebido en los estilos de hábitos) se mueve a un archivo compartido |
 
-## 19. Modal de novedades al actualizar ("What's New") (v1.1.12, diseño — no implementado)
+## 19. Modal de novedades al actualizar ("What's New") (v1.1.13, diseño — no implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §10. Investigado y diseñado a partir del mecanismo equivalente del plugin [QuickAdd](https://github.com/chhoumann/quickadd) (`src/main.ts` → `announceUpdate()` + `src/gui/UpdateModal/UpdateModal.ts`), adaptado a las diferencias de este proyecto (ver §19.4).
 
@@ -672,7 +672,9 @@ Se extrae a `src/core/task-gestures.ts`: `attachTaskGestures(el, { getTask, onCh
 
 Se migra primero el calendario, con la misma lógica de temporizador, y después Lista, Tabla, Kanban y Gantt. Lista y Tabla ganan el clic derecho sin escribir nada más.
 
-### 20.3.2 Identidad de la tarea y escritura segura (v1.1.12, con la Fase A)
+### 20.3.2 Identidad de la tarea y escritura segura (v1.1.12, con la Fase A; implementado)
+
+> Implementado: la ubicación de la línea es `locateTaskLine()` (`src/core/task-line-locator.ts`); `updateTaskLine()` devuelve el número y texto escritos para encadenar `insertLineAbove()`; en el calendario, `CalendarView.writeTaskLine()` toma el texto esperado de la tarea dibujada y avisa con `task_line_changed`. De paso se corrigió la numeración de líneas del extractor de respaldo. El texto de abajo describe el estado previo y el diseño.
 
 **Estado actual.** `Task.id` se arma en `TaskExtractor.createTaskFromLine()` como el `🆔` de la línea si lo tiene y, si no, `ruta-línea`; no se guarda y se recalcula cada vez que se vuelve a extraer el archivo (al modificarse, crearse, borrarse o renombrarse, o con el botón de recarga, que llama a `forceRefreshTasks()` y relee todo el vault; el TTL de 5 minutos solo reconstruye la lista global con las tareas ya extraídas). En la práctica las vistas y los escritores localizan una tarea por `file.path` más `line.number`; `Task.id` solo lo usan el modal (`isAutoId`) y un atributo de la Tabla. Además, `TASKS_UPDATED` se emite al invalidar la caché pero ninguna vista se suscribe, así que una vista abierta conserva los números de línea anteriores a un cambio hasta que se refresca.
 

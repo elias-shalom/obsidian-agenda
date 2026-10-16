@@ -81,11 +81,12 @@ export class TaskExtractor {
    */
   private extractTasksTraditionally(file: TFile, content: string, frontmatter: FrontMatterCache | undefined): ITask[] {
     //console.debug(`Usando método tradicional para ${file.path}`);
-    const lines = content.split("\n").filter(line => line.match(TaskSection.taskFormatRegex)); 
+    const lines = content.split("\n");
     const tasks: ITask[] = [];
 
+    // El número de línea es la posición real en el archivo (antes se filtraba primero y contaba solo las tareas).
     lines.forEach((line, lineNumber) => {
-      if (line) {
+      if (line && line.match(TaskSection.taskFormatRegex)) {
         //console.debug(`Líneas de tareas encontradas en ${file.path}:`, line);
         const task = this.createTaskFromLine(file, line, lineNumber,frontmatter);
         if (task) {
@@ -116,7 +117,7 @@ export class TaskExtractor {
 
       // Crear la nueva estructura optimizada
       return Task.create({
-        id: (typeof taskSection.taskData.id === 'string' ? taskSection.taskData.id : null) || `${file.path}-${lineNumber + 1}`,
+        id: `${file.path}#${lineNumber + 1}`,
         
         file: {
           path: file.path,
@@ -161,6 +162,7 @@ export class TaskExtractor {
         },
         
         flow: {
+          id: taskSection.extractString(taskSection.taskData.id),
           repeat: taskSection.extractString(taskSection.taskData.recurrence),
           blockLink: taskSection.blockLink,
           dependsOn: taskSection.extractDependencies(taskSection.taskData.dependsOn),

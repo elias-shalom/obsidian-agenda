@@ -224,7 +224,7 @@
   "task_duration_modal_title": "Définir la durée",
   "task_duration_modal_label": "Durée (minutes)",
   "task_duration_invalid": "Entrez un nombre entier de minutes supérieur à 0",
-  "task_drag_drop_error": "Impossible de déplacer la tâche (le fichier a peut-être changé)",
+  "task_line_changed": "Impossible de mettre à jour la tâche : la note a changé. Actualisez la vue et réessayez",
   "task_due_date": "Date d'échéance",
   "task_advanced_toggle_show": "Plus de champs",
   "task_recurrence": "Récurrence",

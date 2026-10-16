@@ -7,7 +7,7 @@ import { DateTime } from 'luxon';
 import Handlebars from 'handlebars';
 import { CalendarViewType } from '../types/enums';
 import { CoreTaskStatus, CoreTaskStatusIcon } from '../types/enums';
-import { TaskWriter } from '../core/task-writer';
+import { TaskWriter, TaskLineWrite } from '../core/task-writer';
 import { upsertSimpleDate, upsertScheduledDate, upsertTaskStatus } from '../core/task-line-fields';
 import { buildRecurrenceOccurrence } from '../core/task-recurrence';
 import { EDIT_TASK_MODAL_TYPE } from '../core/modal-manager';
@@ -404,10 +404,10 @@ export abstract class CalendarView extends BaseView {
               // Calculado antes de escribir: necesita la recurrencia/fechas tal como están ahora (ADR-R1).
               const nextOccurrenceLine = task ? buildRecurrenceOccurrence(task, status) : null;
 
-              this.taskWriter.updateTaskLine(filePath, lineNumber, (line) => upsertTaskStatus(line, status, todayIso))
-                .then(async ok => {
-                  if (!ok) return;
-                  if (nextOccurrenceLine) await this.taskWriter.insertLineAbove(filePath, lineNumber, nextOccurrenceLine);
+              this.writeTaskLine(filePath, lineNumber, (line) => upsertTaskStatus(line, status, todayIso))
+                .then(async written => {
+                  if (!written) return;
+                  if (nextOccurrenceLine) await this.taskWriter.insertLineAbove(filePath, written.lineNumber, written.text, nextOccurrenceLine);
                   await this.refreshView();
                 })
                 .catch(console.error);
@@ -521,15 +521,28 @@ export abstract class CalendarView extends BaseView {
     const transform = this.buildDateFieldTransform(payload.calendarDateType, newIsoDate);
     if (!transform) return;
 
-    this.taskWriter.updateTaskLine(payload.filePath, payload.lineNumber, transform)
-      .then(ok => {
-        if (ok) {
-          this.refreshView().catch(console.error);
-        } else {
-          new Notice(this.i18n.t('task_drag_drop_error'));
-        }
+    this.writeTaskLine(payload.filePath, payload.lineNumber, transform)
+      .then(written => {
+        if (written) this.refreshView().catch(console.error);
       })
       .catch(console.error);
+  }
+
+  /**
+   * Reescribe una tarea de la vista con escritura segura: el texto esperado es el de la tarea tal
+   * como se dibujó. Si la nota cambió y no se puede localizar la línea, avisa y no escribe nada.
+   */
+  protected async writeTaskLine(
+    filePath: string,
+    lineNumber: number,
+    transform: (line: string) => string
+  ): Promise<TaskLineWrite | null> {
+    const task = this.tasks.find(t => t.file.path === filePath && t.line.number === lineNumber);
+    const written = task
+      ? await this.taskWriter.updateTaskLine(filePath, lineNumber, task.line.text, transform)
+      : null;
+    if (!written) new Notice(this.i18n.t('task_line_changed'));
+    return written;
   }
 
   /** Construye la transformación de línea correspondiente al tipo de fecha que ancla la tarea. */

@@ -224,7 +224,7 @@
   "task_duration_modal_title": "Dauer festlegen",
   "task_duration_modal_label": "Dauer (Minuten)",
   "task_duration_invalid": "Gib eine ganze Zahl von Minuten größer als 0 ein",
-  "task_drag_drop_error": "Aufgabe konnte nicht verschoben werden (Datei hat sich möglicherweise geändert)",
+  "task_line_changed": "Aufgabe konnte nicht aktualisiert werden: Die Notiz hat sich geändert. Ansicht aktualisieren und erneut versuchen",
   "task_due_date": "Fälligkeitsdatum",
   "task_advanced_toggle_show": "Weitere Felder",
   "task_recurrence": "Wiederholung",

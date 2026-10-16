@@ -332,7 +332,7 @@ Configurar el orden de inserción (arriba/abajo); recurrencia "para X veces" o "
 ### Fuera de alcance
 Un paso de build/generación de los manuales (son Markdown plano, sin plantilla ni paso de compilación); idiomas adicionales a inglés/español (quedan documentados como extensión futura siguiendo el mismo patrón).
 
-## Próxima fase — v1.1.12: modal de novedades al actualizar (diseño)
+## Próxima fase — v1.1.13: modal de novedades al actualizar (diseño)
 
 > Comportamiento y decisiones: [[Especificación de vistas]] §10. Mecanismo: [[Arquitectura técnica]] §19. **Nada de esta fase está implementado.**
 
@@ -363,8 +363,8 @@ Fetch en vivo desde GitHub Releases; renderizado de Markdown libre (imágenes, v
 - [ ] `TaskSorter.groupTasksByField(tasks, field)` genérico, con las columnas de estado en el orden fijo de `CoreTaskStatus` (siempre las 6, aunque estén vacías). Para `path` devuelve un árbol de carpetas, reutilizando `ListView.groupTasksByFolder()`.
 - [ ] Barra de filtros reutilizable en `src/core/` ([[Arquitectura técnica]] §20.3), con opciones de estado generadas desde `CoreTaskStatus` + i18n y persistencia por vista; reemplaza los controles hardcodeados de `table-view.hbs`.
 - [ ] `attachTaskGestures()` en `src/core/task-gestures.ts` ([[Arquitectura técnica]] §20.3.1): se migra primero el calendario, con la misma lógica de temporizador, y después Lista y Tabla.
-- [ ] Separar los ids ([[Arquitectura técnica]] §20.3.2): `ITask.id` siempre `ruta#línea`, el `🆔` en `ITaskFlow.id`; ajustar el extractor, el modal (`isAutoId`) y el atributo `data-task-id` de la Tabla.
-- [ ] Escritura segura: `updateTaskLine()` e `insertLineAbove()` con el texto esperado de la línea, búsqueda de la línea exacta y aviso si no se encuentra; actualizar los ~10 sitios que escriben (arrastrar, redimensionar, estado y modal) y probar el cálculo con scripts de Node.
+- [x] Separar los ids ([[Arquitectura técnica]] §20.3.2): `ITask.id` siempre `ruta#línea`, el `🆔` en `ITaskFlow.id`; ajustar el extractor, el modal (`isAutoId`) y el atributo `data-task-id` de la Tabla (el atributo conserva `{{id}}`, que ahora es la posición; nada lo lee).
+- [x] Escritura segura: `updateTaskLine()` e `insertLineAbove()` con el texto esperado de la línea, búsqueda de la línea exacta y aviso si no se encuentra (`locateTaskLine()` en `src/core/task-line-locator.ts`; `updateTaskLine()` devuelve dónde escribió y la ocurrencia recurrente se inserta con ese resultado; `CalendarView.writeTaskLine()` toma el texto esperado de la tarea dibujada y avisa con `task_line_changed`); actualizar los ~10 sitios que escriben (arrastrar, redimensionar, estado y modal) y probar el cálculo con scripts de Node.
 - [ ] Verificable sola: el calendario, la Lista y la Tabla se comportan igual que antes; la Tabla filtra con la barra nueva; Lista y Tabla ganan el menú de estado con clic derecho.
 - [ ] `npm run build` y ESLint sobre los archivos tocados.
 

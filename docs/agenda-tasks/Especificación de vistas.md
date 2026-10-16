@@ -380,7 +380,7 @@ Las vistas renderizadas por `BaseView` y el modal de tareas convierten sus atrib
 
 Manual de usuario final (distinto de esta documentación de desarrollo), en `docs/user_guide/`, en dos versiones completas y paralelas — inglés (`en/`) y español (`es/`) — con 10 capítulos idénticos en estructura: Introducción, Instalación, Primeros pasos, Vistas generales, Vistas de calendario, Seguimiento de hábitos, Formato de tareas y metadatos, Gestos e interacciones, Configuración, y Preguntas frecuentes y soporte. Un `docs/user_guide/README.md` enlaza ambas versiones y documenta cómo agregar un nuevo idioma (duplicar una carpeta de idioma y traducir manteniendo los mismos nombres de archivo). No requiere ningún cambio en el plugin: es documentación en Markdown plano, sin paso de build ni empaquetado — "generar" una versión es simplemente leer/exportar los archivos de esa carpeta.
 
-## 10. Modal de novedades al actualizar ("What's New") (v1.1.12 — diseño, no implementado)
+## 10. Modal de novedades al actualizar ("What's New") (v1.1.13 — diseño, no implementado)
 
 > **Estado**: diseño acordado, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §19.
 

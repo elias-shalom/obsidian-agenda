@@ -113,6 +113,8 @@ export interface ITaskSection {
  * Configuración de flow de la tarea
  */
 export interface ITaskFlow {
+  /** Valor de 🆔 (cadena vacía si la línea no lo tiene); no identifica la posición, para eso está `ITask.id`. */
+  id: string;
   repeat: string;
   blockLink: string;
   dependsOn: string[];
@@ -123,6 +125,7 @@ export interface ITaskFlow {
  * Nueva interfaz principal para una tarea optimizada
  */
 export interface ITask {
+  /** Posición de la tarea, `ruta#línea` (línea en base 1); cambia si la línea se mueve, no se guarda. */
   id: string;
   file: ITaskFile;
   line: ITaskLine;

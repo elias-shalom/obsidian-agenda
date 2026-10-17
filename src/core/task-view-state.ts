@@ -26,7 +26,7 @@ export interface TaskViewState {
   subArea: string;
   /** `'all'` o un valor de `DUE_FILTER_VALUES`. */
   due: string;
-  /** Agrupado elegido entre los que ofrece la vista; `'none'` = sin agrupar. */
+  /** Agrupado elegido entre los que ofrece la vista; vacío = el que cada vista usa por defecto. */
   group: string;
   /** Columna o campo de orden, entre los que ofrece la vista. */
   sortColumn: string;
@@ -40,7 +40,7 @@ export const DEFAULT_TASK_VIEW_STATE: Readonly<TaskViewState> = {
   area: '',
   subArea: '',
   due: 'all',
-  group: 'none',
+  group: '',
   sortColumn: 'priority',
   sortDirection: 'desc',
 };
@@ -61,7 +61,7 @@ export function parseTaskViewState(raw: unknown): TaskViewState {
     area: text(source.area, defaults.area),
     subArea: text(source.subArea, defaults.subArea),
     due: source.due === 'all' || isOneOf(DUE_FILTER_VALUES, source.due) ? source.due : defaults.due,
-    group: text(source.group, defaults.group) || defaults.group,
+    group: text(source.group, defaults.group),
     sortColumn: text(source.sortColumn, defaults.sortColumn) || defaults.sortColumn,
     sortDirection: source.sortDirection === 'asc' || source.sortDirection === 'desc' ? source.sortDirection : defaults.sortDirection,
   };

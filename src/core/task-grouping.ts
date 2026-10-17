@@ -3,6 +3,7 @@
 // técnica.md §20.2). Lo consumen Lista y Tabla y, en v1.1.13, Kanban y Gantt.
 import { ITask, GroupField, FolderNode } from "../types/interfaces";
 import { STATUS_OPTIONS } from "./task-status-options";
+import { getAreaColor } from "./area";
 
 export interface TaskGroup {
   /** Clave estable del grupo (para recordar su estado plegado o su orden). */
@@ -11,8 +12,15 @@ export interface TaskGroup {
   label: string;
   /** Tareas del propio grupo, en el orden recibido (sin las de los hijos). */
   tasks: ITask[];
-  /** Subgrupos anidados; solo con `path`. */
+  /** Subgrupos anidados; solo con `path` y `area`. */
   children?: TaskGroup[];
+  /** Color del área; solo con `area`, y no en el grupo «Sin área». */
+  color?: string;
+}
+
+/** Todas las tareas del grupo y de sus descendientes. */
+export function collectGroupTasks(group: TaskGroup): ITask[] {
+  return [...group.tasks, ...(group.children ?? []).flatMap(collectGroupTasks)];
 }
 
 /** De mayor a menor; lo que no coincide (`undefined`) va al final. */
@@ -21,6 +29,8 @@ const PRIORITY_ORDER = ["highest", "high", "medium", "normal", "low", "lowest"];
 const NO_PRIORITY_KEY = "undefined";
 const NO_TAG_KEY = "";
 const NO_DATE_KEY = "";
+/** Clave y nombre con que `groupTasksByFolder()` agrupa las notas de la raíz del vault. */
+const ROOT_FOLDER_KEY = "Root";
 
 /** Árbol de carpetas de las notas de las tareas: `A/B/nota.md` cuelga de `A` → `B`; una nota en la raíz va a «Root». */
 export function groupTasksByFolder(tasks: ITask[]): Record<string, FolderNode> {
@@ -31,8 +41,8 @@ export function groupTasksByFolder(tasks: ITask[]): Record<string, FolderNode> {
 
     const folders = task.file.path.split("/").slice(0, -1);
     if (folders.length === 0) {
-      rootFolders["Root"] ??= { name: "Root", fullPath: "Root", tasks: [], subfolders: {} };
-      rootFolders["Root"].tasks.push(task);
+      rootFolders[ROOT_FOLDER_KEY] ??= { name: ROOT_FOLDER_KEY, fullPath: ROOT_FOLDER_KEY, tasks: [], subfolders: {} };
+      rootFolders[ROOT_FOLDER_KEY].tasks.push(task);
       continue;
     }
 
@@ -87,6 +97,7 @@ function groupByKey(
  * - `dueDate`: por día de vencimiento ascendente, «sin fecha» al final.
  * - `tags`: por la primera etiqueta de la tarea, alfabético, «sin etiqueta» al final.
  * - `path`: árbol de carpetas (`children`), alfabético.
+ * - `area`: el mismo árbol con el color del área; las notas de la raíz van al final como «Sin área».
  */
 export function groupTasksByField(
   tasks: ITask[],
@@ -140,5 +151,15 @@ export function groupTasksByField(
       return Object.values(groupTasksByFolder(tasks))
         .sort((a, b) => a.name.localeCompare(b.name))
         .map(folderNodeToGroup);
+
+    case "area": {
+      // Área = primera carpeta y sub-áreas anidadas por carpeta; las notas de la raíz van al final, sin color.
+      const withColor = (group: TaskGroup, color: string | undefined): TaskGroup =>
+        ({ ...group, color, children: group.children?.map(child => withColor(child, color)) });
+      const groups = groupTasksByField(tasks, "path", translate);
+      const areas = groups.filter(group => group.key !== ROOT_FOLDER_KEY).map(group => withColor(group, getAreaColor(group.label)));
+      const root = groups.filter(group => group.key === ROOT_FOLDER_KEY).map(group => withColor({ ...group, label: translate("no_area") }, undefined));
+      return [...areas, ...root];
+    }
   }
 }

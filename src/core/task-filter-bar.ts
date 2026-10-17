@@ -110,8 +110,9 @@ export class TaskFilterBar {
       this.addSelect(filters, 'group_by', groupOptions, this.state.group, value => this.update({ group: value }));
     }
     if (sortOptions) {
-      this.sortSelect = this.addSelect(filters, 'sort_by', sortOptions, this.state.sortColumn,
-        value => this.update({ sortColumn: value }));
+      this.sortSelect = this.addSelect(filters, 'sort_by',
+        sortOptions.map(option => ({ value: option.value, label: `${i18n.t('sort_by')}: ${option.label}` })),
+        this.state.sortColumn, value => this.update({ sortColumn: value }));
       this.sortDirectionButton = filters.createEl('button', { cls: 'oa-filter-bar__sort-direction', attr: { type: 'button' } });
       this.sortDirectionButton.addEventListener('click', () => {
         this.update({ sortDirection: this.state.sortDirection === 'asc' ? 'desc' : 'asc' });

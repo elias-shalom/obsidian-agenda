@@ -800,6 +800,8 @@ La barra filtra sobre los datos con `TaskFilter`. La Tabla hoy filtra ocultando 
 
 ### 22.4 Agrupado
 
+> Implementado en la Lista (v1.1.12): `groupTasksByField(tasks, 'area')` reutiliza el árbol de carpetas, pone el color del área en cada grupo y deja «Sin área» al final. `'subArea'` queda para Kanban y Gantt.
+
 `GroupField` (hoy `'status' | 'priority' | 'dueDate' | 'path' | 'tags'`) gana `'area'` y `'subArea'`, los mismos valores de los combos. `groupTasksByField(tasks, 'area')` devuelve un árbol área → sub-área, ordenado, con el nombre y el color de cada grupo; el árbol anida la sub-área por carpeta, partiendo la ruta por `/`. Con `'subArea'` y sin un área elegida, la clave de grupo incluye el área para no mezclar carpetas homónimas de áreas distintas. Lista deja de usar `groupTasksByFolder()` y consume este árbol, conservando su modo plano. Kanban lo usa para sus columnas y Gantt para sus filas.
 
 ### 22.5 Archivos afectados (estimado)
@@ -836,6 +838,8 @@ Control segmentado dentro de la barra compartida, solo en Lista y Tabla. Reutili
 En `header.hbs` los botones de Lista y Tabla se reemplazan por uno, `oa-tasks-view-tab`, que se muestra con `(or settings.showListTab settings.showTableTab)`. `attachEventTabs()` lo apunta al último modo usado (`TaskViewState.mode`), con el mismo patrón que `getDefaultHabitView()`. El resaltado de la pestaña activa necesita una excepción como la que ya existe para `calendar-*` y `habit-*` en `base-view.ts`, porque tanto `list-view` como `table-view` deben iluminar la pestaña «Tareas».
 
 ### 23.4 Agrupado y orden
+
+> La Lista ya usa la barra con agrupado y orden (v1.1.12): el agrupado vacío en `TaskViewState` significa «el de cada vista» (Área en la Lista), `sortTasksByColumn()` (`src/core/task-column-sort.ts`) ordena sobre datos y, al cambiar un control, `ListView.refreshBody()` redibuja solo el cuerpo. La Tabla falta (U3).
 
 La barra incorpora un combo de agrupado y un control de orden. El agrupado usa `groupTasksByField()` (§22.4); sus valores sustituyen el botón `.oa-view-toggle-button` de la Lista (`isHierarchicalView`). La Tabla recibe filas de cabecera de grupo plegables, con el estado plegado en `localStorage` (`oa_tasks_collapsed:<clave>`). Los encabezados `th.oa-sortable` de la Tabla actualizan el orden compartido en vez de uno propio (`currentSortColumn`/`currentSortDirection`). Los dos modos filtran sobre los datos con `TaskFilter`, no sobre filas del DOM.
 

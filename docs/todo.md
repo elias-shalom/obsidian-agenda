@@ -323,14 +323,14 @@ Orden de trabajo por dependencias: piezas compartidas, áreas, Lista y Tabla y d
   - [ ] Mismo concepto que en Hábitos, con distinto origen: en hábitos es configurable (frontmatter); en tareas **no**, la ubicación física de la nota es su área
   - [x] Área = nombre de la primera carpeta; sub-área = la ruta de carpetas sin la primera, completa y sin tope de niveles (`b` o `b/c/d`); archivos en la raíz del vault: «Sin área» (núcleo hecho: `resolveTaskArea()` y criterios de `TaskFilter`; la etiqueta «Sin área» va con la interfaz)
   - [x] Filtros Área y Sub-área en la barra compartida (la sub-área aparece al elegir un área y se reinicia al cambiarla); reemplazan el filtro de carpeta de la Tabla
-  - [ ] Área y sub-área son campos de agrupado (los mismos valores de los dos combos); Lista agrupa por ellos y conserva el modo plano y su profundidad actual; Kanban y Gantt los usarán en v1.1.13
-  - [ ] Color por área en las cabeceras de grupo, como en Hábitos; la lógica de áreas ya se movió de `src/habits/habit.ts` a `src/core/area.ts` (hecho en el paso 2; falta usar el color en las cabeceras)
+  - [x] Área y sub-área son campos de agrupado: la Lista agrupa por área (sub-áreas anidadas) y conserva el modo plano y su profundidad actual (hecho en el paso 6); Kanban y Gantt los usarán en v1.1.13, junto con el agrupado plano por sub-área
+  - [x] Color por área en las cabeceras de grupo, como en Hábitos; la lógica de áreas se movió de `src/habits/habit.ts` a `src/core/area.ts` (pasos 2 y 6)
   - [ ] **Decisión abierta**: la Tabla reemplaza la columna de carpeta por dos, Área y Sub-área (propuesta, sin confirmar)
 - [ ] **Lista y Tabla en una sola pestaña** (diseño en `Especificación de vistas.md` §14 y `Arquitectura técnica.md` §23; fases U1–U4 en `Plan de implementación.md`; depende de las piezas compartidas y de las áreas)
   - [ ] Una pestaña «Tareas» con conmutador segmentado Lista | Tabla, como el selector del calendario (íconos con tooltip); cambiar de modo conserva búsqueda, filtros, agrupado y orden
   - [ ] Opción A: se mantienen registrados `list-view` y `table-view` y el conmutador cambia de uno a otro (no rompe los espacios de trabajo guardados); una clase única queda como mejora posterior
-  - [ ] Barra común: búsqueda, filtros (estado, prioridad, Área, Sub-área, vencimiento), agrupado y orden; Lista gana lo que hoy no tiene (búsqueda, filtros y orden)
-  - [ ] El botón jerárquico/plano de Lista pasa a ser valores del combo de agrupado; la Tabla puede agrupar con cabeceras plegables
+  - [ ] Barra común: búsqueda, filtros (estado, prioridad, Área, Sub-área, vencimiento), agrupado y orden; Lista ya gana lo que no tenía (búsqueda, filtros y orden; paso 6) y falta la Tabla con el agrupado
+  - [ ] El botón jerárquico/plano de Lista pasa a ser valores del combo de agrupado (hecho en la Lista, paso 6); la Tabla puede agrupar con cabeceras plegables (pendiente)
   - [ ] `showListTab`/`showTableTab` se conservan como visibilidad de cada modo; la pestaña abre el último modo usado
   - [ ] Kanban y Gantt siguen en sus propias pestañas
   - [ ] Tabla: ajustar las columnas al ancho disponible (viene de v1.1.11): a la ventana en escritorio y al ancho del dispositivo en tableta y teléfono, es decir, al ancho real del contenedor; las columnas flexibles se reducen en proporción sin bajar de su mínimo (la suma de mínimos es ~800 px, así que en un teléfono estrecho sigue habiendo scroll); se implementa en `resizeColumns()` de `table-view.ts` (Especificación §14.3 y fase U3); los máximos de Tarea (440), Carpeta (280) y Etiquetas (280) y el partido de la Tarea en dos líneas se afinan con ese ajuste, y la columna Carpeta se sustituye por Área y Sub-área

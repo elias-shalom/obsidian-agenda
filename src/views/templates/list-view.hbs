@@ -1,99 +1,70 @@
-<div class="oa-view-controls">
-  <button class="oa-view-toggle-button clickable">
-    {{#if isHierarchicalView}}
-      {{t "show_flat_view"}}
-    {{else}}
-      {{t "show_hierarchical_view"}}
-    {{/if}}
-  </button>
-</div>
-
-{{#if tasks.length}}
-  {{#if isHierarchicalView}}
-    {{!-- Vista jerárquica (existente) --}}
-    {{#each groupedTasks as |folder folderName|}}
-      <div class="oa-folder-structure">
-        {{> folderTemplate folder level=0}}
+{{!-- Plantillas internas: una tarea y un grupo (recursivo, para el agrupado por área y sub-área). --}}
+{{#*inline "taskItem"}}
+  <li class="oa-task-item" data-file-path="{{file.path}}" data-line-number="{{line.number}}" data-priority="{{state.priority}}">
+    <div class="oa-task-priority">{{priorityIcon state.priority}}</div>
+    <div class="oa-task-content">
+      <div class="oa-task-description">
+        {{section.desc}}
+        {{#if date.due}}
+          <span class="oa-task-due-date">📅 {{formatDate date.due}}</span>
+        {{/if}}
       </div>
-    {{/each}}
-  {{else}}
-    {{!-- Vista plana (nueva) --}}
-    {{#each flattenedTasks as |folder folderName|}}
-      <div class="oa-folder-structure">
-        <div class="oa-folder-group" data-folder="{{folderName}}" data-folder-path="{{folderName}}">
-          <h3 class="oa-folder-name">
-            <span class="oa-folder-toggle" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right">
-                <path d="m9 18 6-6-6-6"/>
-              </svg>
-            </span>
-            <span class="oa-folder-title">{{folderName}}</span>
-            <span class="oa-task-count">({{folder.tasks.length}})</span>
-          </h3>
-          <ul class="oa-folder-tasks">
-            {{#each folder.tasks}}
-              <li class="oa-task-item" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}" data-priority="{{this.state.priority}}">
-                <div class="oa-task-priority">{{priorityIcon this.state.priority}}</div>
-                <div class="oa-task-content">
-                  <div class="oa-task-description">
-                    {{this.section.desc}}
-                    {{#if this.date.due}}
-                      <span class="oa-task-due-date">📅 {{formatDate this.date.due}}</span>
-                    {{/if}}
-                  </div>
-                  <div class="oa-task-metadata">
-                    <span class="oa-task-path">📄 {{this.file.path}}</span>
-                  </div>
-                </div>
-              </li>
-            {{/each}}
-          </ul>
+      {{#if @root.showPath}}
+        <div class="oa-task-metadata">
+          <span class="oa-task-path">📄 {{file.path}}</span>
         </div>
-      </div>
-    {{/each}}
-  {{/if}}
-{{else}}
-  <p>{{t "no_tasks"}}</p>
-{{/if}}
+      {{/if}}
+    </div>
+  </li>
+{{/inline}}
 
-{{!-- Mantener el helper inline para la vista jerárquica --}}
-{{#*inline "folderTemplate"}}
-  <div class="oa-folder-group" data-folder="{{name}}" data-folder-path="{{fullPath}}">
+{{#*inline "groupTemplate"}}
+  <div class="oa-folder-group" data-folder="{{label}}" data-folder-path="{{storageKey}}" {{#if color}}data-group-color="{{color}}"{{/if}}>
     <h3 class="oa-folder-name">
       <span class="oa-folder-toggle" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right">
           <path d="m9 18 6-6-6-6"/>
         </svg>
       </span>
-      <span class="oa-folder-title">{{name}}</span>
-      <span class="oa-task-count">({{totalTaskCount this}})</span>
+      <span class="oa-folder-title">{{label}}</span>
+      <span class="oa-task-count">({{count}})</span>
     </h3>
     <ul class="oa-folder-tasks">
       {{#each tasks}}
-        <li class="oa-task-item" data-file-path="{{this.file.path}}" data-line-number="{{this.line.number}}" data-priority="{{this.state.priority}}">
-          <div class="oa-task-priority">{{priorityIcon this.state.priority}}</div>
-          <div class="oa-task-content">
-            <div class="oa-task-description">
-              {{this.section.desc}}
-              {{#if this.date.due}}
-                <span class="oa-task-due-date">📅 {{formatDate this.date.due}}</span>
-              {{/if}}
-            </div>
-            <div class="oa-task-metadata">
-            
-            </div>
-          </div>
-        </li>
+        {{> taskItem}}
       {{/each}}
     </ul>
-    
-    {{#if subfolders}}
+
+    {{#if children.length}}
       <div class="oa-subfolders-container">
-        {{#each subfolders as |subfolder subfolderName|}}
-          {{> folderTemplate subfolder level=(add level 1)}}
+        {{#each children}}
+          {{> groupTemplate}}
         {{/each}}
       </div>
     {{/if}}
   </div>
 {{/inline}}
 
+<div class="oa-list-toolbar"></div>
+
+<div class="oa-list-body">
+  {{#if tasks.length}}
+    {{#if groups.length}}
+      {{#each groups}}
+        <div class="oa-folder-structure">
+          {{> groupTemplate}}
+        </div>
+      {{/each}}
+    {{else}}
+      <div class="oa-folder-structure">
+        <ul class="oa-folder-tasks">
+          {{#each flatTasks}}
+            {{> taskItem}}
+          {{/each}}
+        </ul>
+      </div>
+    {{/if}}
+  {{else}}
+    <p>{{#if vaultHasTasks}}{{t "no_tasks_match_filters"}}{{else}}{{t "no_tasks"}}{{/if}}</p>
+  {{/if}}
+</div>

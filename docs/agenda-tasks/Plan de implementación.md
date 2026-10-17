@@ -427,9 +427,9 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [x] Combobox de Área y de Sub-área (en cascada, oculto sin área elegida) en la barra de filtros compartida, con opciones tomadas de las tareas cargadas.
 - [x] La Tabla pasa a filtrar sobre datos con `TaskFilter`; se convierte el valor `folder` guardado en `localStorage`.
 - [ ] La Tabla reemplaza la columna de carpeta por dos, Área y Sub-área (propuesta, sin confirmar).
-- [ ] `GroupField` gana `'area'` y `'subArea'`; `groupTasksByField(tasks, 'area')` devuelve el árbol área → sub-área.
-- [ ] Lista agrupa por área y sub-área (anidada por carpeta) y conserva el modo plano.
-- [ ] Color por área en las cabeceras de grupo (`getAreaColor`).
+- [x] `GroupField` gana `'area'`; `groupTasksByField(tasks, 'area')` devuelve el árbol área → sub-área (las notas de la raíz, como «Sin área», al final). `'subArea'` (grupos planos «Área · sub-área») queda para Kanban y Gantt (v1.1.13).
+- [x] Lista agrupa por área y sub-área (anidada por carpeta) y conserva el modo plano (valor «Carpeta» del combo).
+- [x] Color por área en las cabeceras de grupo (`getAreaColor`, franja a la izquierda; los hijos heredan el color).
 - [ ] Claves i18n nuevas en los 6 locales.
 - [ ] Verificable sola: elegir un área muestra el combobox de sub-área con solo sus sub-áreas; cambiar de área lo reinicia; Lista y Tabla filtran igual.
 - [ ] `npm run build` y ESLint sobre los archivos tocados.
@@ -448,9 +448,9 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [ ] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase U2 — Lista adopta la barra (depende de U1)
-- [ ] La Lista usa la barra: gana búsqueda, filtros y orden, que hoy no tiene.
-- [ ] El botón jerárquico/plano pasa a ser valores del combo de agrupado: Área y sub-área (anidado), Carpeta (plano) y Sin agrupar.
-- [ ] Verificable sola: filtrar y ordenar en la Lista funciona y el agrupado conserva el comportamiento anterior.
+- [x] La Lista usa la barra: gana búsqueda, filtros y orden, que hoy no tiene. El orden usa `sortTasksByColumn()` (`src/core/task-column-sort.ts`, las columnas de la Tabla; sin fecha de vencimiento siempre al final) y el estado se lee al abrir y se escribe al cambiar. Al cambiar un control solo se redibuja el cuerpo de la lista, no la barra.
+- [x] El botón jerárquico/plano pasa a ser valores del combo de agrupado: Área y sub-área (anidado, por defecto), Carpeta (plano), Sin agrupar, y además Estado, Prioridad, Etiqueta y Vencimiento. El agrupado guardado vacío significa «el de cada vista»; las claves de plegado de las carpetas se conservan.
+- [ ] Verificable sola: filtrar y ordenar en la Lista funciona y el agrupado conserva el comportamiento anterior (comprobado con script de Node: árbol, orden y plantilla; falta la comprobación visual en Obsidian).
 
 ### Fase U3 — Tabla adopta la barra (depende de U1)
 - [x] La Tabla filtra sobre datos con `TaskFilter` en lugar de ocultar filas del DOM (las filas se identifican con `data-task-id`).

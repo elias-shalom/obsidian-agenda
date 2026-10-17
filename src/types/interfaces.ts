@@ -320,7 +320,7 @@ export interface ModalOptions {
 
 export type SortField = 'dueDate' | 'startDate' | 'scheduledDate' | 'doneDate' | 'createdDate' | 'priority' | 'status' | 'text' | 'path';
 
-export type GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags';
+export type GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags' | 'area';
 
 export type ModalType = "create-task" | "edit-task" | "quick-capture"; // Extensible
 
@@ -446,14 +446,31 @@ export interface OverviewViewData {
   projectTasks: { project: string; tasks: ITask[]; }[];
 }
 
+/** Grupo de la Lista listo para dibujar: un `TaskGroup` con su total y la clave con que se recuerda su pliegue. */
+export interface ListGroupViewModel {
+  label: string;
+  /** Clave del estado plegado en `localStorage`; las carpetas conservan la ruta de siempre. */
+  storageKey: string;
+  color?: string;
+  /** Tareas del grupo y de sus descendientes. */
+  count: number;
+  tasks: ITask[];
+  children: ListGroupViewModel[];
+}
+
 /**
  * Datos para la vista de lista
  */
 export interface ListViewData {
   tasks: ITask[];
-  groupedTasks: Record<string, FolderNode>;
-  flattenedTasks: Record<string, FolderNode> | null;
-  isHierarchicalView: boolean;
+  /** Grupos a dibujar; vac\u00edo si no se agrupa (entonces se usa `flatTasks`). */
+  groups: ListGroupViewModel[];
+  /** Tareas filtradas y ordenadas, sin agrupar. */
+  flatTasks: ITask[];
+  /** Mostrar la ruta de la nota en cada tarea: solo cuando el grupo no la implica. */
+  showPath: boolean;
+  /** Hay tareas en el vault, aunque los filtros las oculten (cambia el mensaje de lista vac\u00eda). */
+  vaultHasTasks: boolean;
 }
 
 /**

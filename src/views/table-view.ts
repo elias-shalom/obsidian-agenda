@@ -9,16 +9,7 @@ import { TaskWriter } from '../core/task-writer';
 import { attachTaskGestures, TASK_GESTURE_IGNORE_SELECTOR } from '../core/task-gestures';
 import { TaskFilterBar } from '../core/task-filter-bar';
 import { TaskViewState, DEFAULT_TASK_VIEW_STATE, loadTaskViewState, saveTaskViewState, filterTasksByViewState } from '../core/task-view-state';
-
-/** Columnas por las que se puede ordenar, con la clave de traducción de su nombre. */
-const SORTABLE_COLUMNS = [
-  { value: 'priority', labelKey: 'title_priority' },
-  { value: 'status', labelKey: 'task_status' },
-  { value: 'description', labelKey: 'task' },
-  { value: 'folder', labelKey: 'folder' },
-  { value: 'due', labelKey: 'dates' },
-  { value: 'tags', labelKey: 'tags' },
-];
+import { TASK_SORT_COLUMNS } from '../core/task-column-sort';
 
 export const TABLE_VIEW_TYPE = 'table-view';
 
@@ -51,7 +42,7 @@ export class TableView extends BaseView {
 
     // El estado se comparte con otras vistas de tareas: se lee al abrir y se escribe al cambiar.
     this.viewState = loadTaskViewState(this.app);
-    if (!SORTABLE_COLUMNS.some(column => column.value === this.viewState.sortColumn)) {
+    if (!TASK_SORT_COLUMNS.some(column => column.value === this.viewState.sortColumn)) {
       this.viewState.sortColumn = DEFAULT_TASK_VIEW_STATE.sortColumn;
     }
 
@@ -93,7 +84,7 @@ export class TableView extends BaseView {
         i18n: this.i18n,
         tasks: this.tasks,
         state: this.viewState,
-        sortOptions: SORTABLE_COLUMNS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
+        sortOptions: TASK_SORT_COLUMNS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
         onChange: (state) => {
           const sortChanged = state.sortColumn !== this.viewState.sortColumn || state.sortDirection !== this.viewState.sortDirection;
           this.viewState = state;

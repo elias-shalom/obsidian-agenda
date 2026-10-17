@@ -656,6 +656,8 @@ Nuevo `KanbanView extends BaseView` + `KANBAN_VIEW_TYPE`, registrado en `ViewMan
 
 ### 20.2 Motor de agrupado compartido
 
+> Implementado (v1.1.12) en `src/core/task-grouping.ts`: `groupTasksByField(tasks, field, translate?)` devuelve `TaskGroup[]` (`key`, `label`, `tasks` y, solo con `path`, `children`), y `TaskSorter.groupTasksByField()` delega en él. `status`: los 6 estados en orden de flujo de trabajo, siempre; `priority`: de mayor a menor, solo los presentes, «sin prioridad» al final; `dueDate`: por día, «sin fecha» al final; `tags`: por la primera etiqueta; `path`: árbol de carpetas. `area` y `subArea` llegan con la fase AR2.
+
 El tipo `GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags'` ya existe en `interfaces.ts` (campo `groupBy?` de la interfaz de filtros), pero no hay una implementación genérica: `ListView` solo agrupa por carpeta, de forma fija (`groupTasksByFolder()`). Se agrega a `TaskSorter` una función `groupTasksByField(tasks, field)` que devuelve grupos ordenados con su clave y etiqueta localizada; el agrupado por área y sub-área (§22.4) se deriva de la ruta del archivo. Kanban la usa para sus columnas; Lista y Tabla pueden adoptarla para ofrecer agrupado real más allá de carpeta. Orden dentro del grupo: `sortTasksByMultipleFields()` ya soporta ascendente/descendente.
 
 Para `status`, las columnas siguen el orden fijo de `CoreTaskStatus` (no el alfabético), e incluyen siempre las 6, aunque estén vacías, para que sean destinos de arrastre válidos. Agrupar por fecha no se ofrece (una columna por fecha distinta dispersa el tablero).

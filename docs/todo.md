@@ -312,7 +312,7 @@ Alcance: las piezas compartidas (Fase A), las áreas y sub-áreas y la unión de
 Orden de trabajo por dependencias: piezas compartidas, áreas, Lista y Tabla y documentación.
 
 - [ ] **Piezas compartidas** (Fase A; diseño en `Arquitectura técnica.md` §20; las usan Lista, Tabla y, después, Kanban y Gantt)
-  - [ ] Nueva función genérica `groupTasksByField(tasks, field)` (el tipo `GroupField` ya existe en `interfaces.ts`, falta la implementación genérica; hoy `ListView` solo agrupa por carpeta de forma hardcodeada); reutilizable por Lista y Tabla (agrupado real más allá de carpeta) y, en v1.1.13, por Kanban (columnas)
+  - [x] Nueva función genérica `groupTasksByField(tasks, field)` (el tipo `GroupField` ya existe en `interfaces.ts`, falta la implementación genérica; hoy `ListView` solo agrupa por carpeta de forma hardcodeada); reutilizable por Lista y Tabla (agrupado real más allá de carpeta) y, en v1.1.13, por Kanban (columnas)
   - [ ] Barra de filtros compartida entre Lista, Tabla, Kanban y Gantt (no una distinta por vista), con el filtro por estado generado desde `CoreTaskStatus`; sustituye los controles hardcodeados que hoy tiene la Tabla; reutiliza `TaskFilter`/`TaskSorter`
   - [x] Helper de gestos compartido (`attachTaskGestures()`): hoy clic/doble clic/modal de edición están copiados en calendario, Lista y Tabla; se extraen y se agrega el clic derecho de estado a Lista y Tabla (se migra primero el calendario)
   - [x] Separar los ids (Arquitectura §20.3.2): `Task.id` pasa a ser siempre la posición (`ruta#línea`) y el `🆔` va en su propio campo (`flow.id`); hoy el mismo campo vale el `🆔` si existe y `ruta-línea` si no

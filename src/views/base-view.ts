@@ -8,6 +8,7 @@ import { TaskPriorityEmoji } from '../types/enums';
 import headerTemplate from './templates/header.hbs';
 import { AgendaPluginSettings } from '../settings/settings';
 import { clearTooltips, installTooltips } from '../core/tooltips';
+import { groupTasksByFolder } from '../core/task-grouping';
 
 // Type declaration for handlebars template
 type HandlebarsTemplate = (data: ViewData) => string;
@@ -37,73 +38,7 @@ export abstract class BaseView extends ItemView {
   }
 
   protected groupTasksByFolder(tasks: ITask[]): Record<string, FolderNode> {
-    const rootFolders: Record<string, FolderNode> = {};
-    
-    tasks.forEach(task => {
-      if (!task.file.path) return;
-      
-      // Dividir la ruta del archivo en partes
-      const pathParts = task.file.path.split('/');
-      
-      // Si no hay partes de ruta, asignar a "Root"
-      if (pathParts.length === 1) {
-        if (!rootFolders['Root']) {
-          rootFolders['Root'] = {
-            name: 'Root',
-            fullPath: 'Root',
-            tasks: [],
-            subfolders: {}
-          };
-        }
-        rootFolders['Root'].tasks.push(task);
-        return;
-      }
-      
-      // Procesar la jerarquía de carpetas
-      let currentLevel = rootFolders;
-      let currentPath = '';
-      
-      // Iterar por cada nivel de carpeta (excepto el último que es el archivo)
-      for (let i = 0; i < pathParts.length - 1; i++) {
-        const folderName = pathParts[i];
-        currentPath = currentPath ? `${currentPath}/${folderName}` : folderName;
-        
-        // Para el primer nivel, crear en rootFolders si no existe
-        if (i === 0) {
-          if (!currentLevel[folderName]) {
-            currentLevel[folderName] = {
-              name: folderName,
-              fullPath: folderName,
-              tasks: [],
-              subfolders: {}
-            };
-          }
-          // Si es el último nivel de carpeta, añadir la tarea aquí
-          if (i === pathParts.length - 2) {
-            currentLevel[folderName].tasks.push(task);
-          }
-          currentLevel = currentLevel[folderName].subfolders;
-        } 
-        // Para niveles subsecuentes
-        else {
-          if (!currentLevel[folderName]) {
-            currentLevel[folderName] = {
-              name: folderName,
-              fullPath: currentPath,
-              tasks: [],
-              subfolders: {}
-            };
-          }
-          // Si es el último nivel de carpeta, añadir la tarea aquí
-          if (i === pathParts.length - 2) {
-            currentLevel[folderName].tasks.push(task);
-          }
-          currentLevel = currentLevel[folderName].subfolders;
-        }
-      }
-    });
-    
-    return rootFolders;
+    return groupTasksByFolder(tasks);
   }
 
   /**

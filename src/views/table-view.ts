@@ -5,9 +5,9 @@ import { ITask, TableViewData, AgendaPlugin } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import Handlebars from 'handlebars';
 import { TaskDateType } from '../types/enums';
-import { EDIT_TASK_MODAL_TYPE } from '../core/modal-manager';
+import { TaskWriter } from '../core/task-writer';
+import { attachTaskGestures, TASK_GESTURE_IGNORE_SELECTOR } from '../core/task-gestures';
 
-const TASK_CLICK_DELAY_MS = 250;
 const TABLE_VIEW_STATE_KEY = 'obsidian-agenda-task-table-state';
 
 interface TaskTableViewState {
@@ -26,9 +26,11 @@ export class TableView extends BaseView {
   private tasks: ITask[] = []; // Lista de tareas
   private currentSortColumn = 'priority'; // Columna actualmente ordenada
   private currentSortDirection: 'asc' | 'desc' = 'desc'; // Dirección de la ordenación
+  private taskWriter: TaskWriter;
 
   constructor(leaf: WorkspaceLeaf, private plugin: Plugin, private i18n: I18n, private taskManager: TaskManager) {
     super(leaf);
+    this.taskWriter = new TaskWriter(this.app);
   }
 
   getViewType(): string {
@@ -138,36 +140,20 @@ export class TableView extends BaseView {
     tableRows.forEach(row => {
       // Añadir indicador visual
       row.addClass('clickable');
-      let pendingClickTimer: number | null = null;
-      
-      // Evento de doble clic para abrir el archivo
-      row.addEventListener('dblclick', () => {
-        if (pendingClickTimer !== null) {
-          window.clearTimeout(pendingClickTimer);
-          pendingClickTimer = null;
-        }
 
-        const filePath = row.getAttribute('data-file-path');
-        const lineNumber = row.getAttribute('data-line-number');
-        
-        if (filePath) {
-          this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined).catch(console.error);
-        }
-      });
-
-      row.addEventListener('click', (event) => {
-        if ((event.target as HTMLElement).closest('button, a, input, select')) return;
-        if (pendingClickTimer !== null) return;
-
-        pendingClickTimer = window.setTimeout(() => {
-          pendingClickTimer = null;
+      // Clic edita, doble clic abre el archivo y clic derecho cambia el estado (gestos compartidos).
+      attachTaskGestures(row as HTMLElement, {
+        plugin: this.plugin as AgendaPlugin,
+        i18n: this.i18n,
+        taskWriter: this.taskWriter,
+        getTask: () => {
           const filePath = row.getAttribute('data-file-path');
-          const lineNumber = row.getAttribute('data-line-number');
-          const task = this.tasks.find(candidate =>
-            candidate.file.path === filePath && candidate.line.number === Number(lineNumber)
-          );
-          if (task) this.openEditTaskModal(task);
-        }, TASK_CLICK_DELAY_MS);
+          const lineNumber = Number(row.getAttribute('data-line-number'));
+          return this.tasks.find(candidate => candidate.file.path === filePath && candidate.line.number === lineNumber);
+        },
+        onChanged: () => this.refreshView(),
+        openFile: (filePath, lineNumber) => this.openTaskFile(filePath, lineNumber),
+        ignoreSelector: TASK_GESTURE_IGNORE_SELECTOR,
       });
     });
 
@@ -222,14 +208,6 @@ export class TableView extends BaseView {
       sortDirection: this.currentSortDirection,
     };
     this.app.saveLocalStorage(TABLE_VIEW_STATE_KEY, JSON.stringify(state));
-  }
-
-  private openEditTaskModal(task: ITask): void {
-    const plugin = this.plugin as AgendaPlugin;
-    plugin.modalManager.openModal(EDIT_TASK_MODAL_TYPE, {
-      task,
-      onSaved: () => this.onOpen().catch(console.error),
-    });
   }
 
   /**

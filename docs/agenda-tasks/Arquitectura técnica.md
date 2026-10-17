@@ -666,6 +666,8 @@ La Tabla tiene hoy sus propios controles (`#oa-table-search-input`, `#oa-table-p
 
 ### 20.3.1 Helper de gestos de tarea compartido
 
+> Implementado (v1.1.12): `attachTaskGestures(el, opciones)` en `src/core/task-gestures.ts`, usado por calendario, Lista y Tabla. Recibe el plugin, `i18n`, el `TaskWriter`, `getTask`, `onChanged`, `openFile` e `ignoreSelector`; exporta `TASK_CLICK_DELAY_MS` y `TASK_GESTURE_IGNORE_SELECTOR`. El cambio de estado avisa con `task_line_changed` si la nota cambió. Overview, Kanban y Gantt aún no lo usan.
+
 Hoy el clic (con retardo de 250 ms para distinguirlo del doble clic), el doble clic (abre la nota) y `openEditTaskModal()` están copiados en `calendar-view.ts`, `list-view.ts` y `table-view.ts`, cada uno con su propia constante `TASK_CLICK_DELAY_MS`. Overview solo tiene doble clic (en `BaseView`) y el menú de estado con clic derecho solo existe en el calendario.
 
 Se extrae a `src/core/task-gestures.ts`: `attachTaskGestures(el, { getTask, onChanged, ignoreSelector })`, que cablea clic → modal de edición, doble clic → abrir la nota y clic derecho → menú de estado (con `STATUS_MENU_OPTIONS`, `upsertTaskStatus()` y la ocurrencia recurrente, hoy dentro de `calendar-view.ts`). `onChanged` es el refresco propio de cada vista (`refreshView()` en el calendario, `onOpen()` en Lista y Tabla) y `ignoreSelector` conserva la guarda de Lista y Tabla (`button, a, input, select`). El arrastre queda en cada vista.

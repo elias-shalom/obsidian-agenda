@@ -4,19 +4,20 @@ import { TaskManager } from '../core/task-manager';
 import { ITask, FolderNode, ListViewData, AgendaPlugin } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import Handlebars from 'handlebars';
-import { EDIT_TASK_MODAL_TYPE } from '../core/modal-manager';
-
-const TASK_CLICK_DELAY_MS = 250;
+import { TaskWriter } from '../core/task-writer';
+import { attachTaskGestures, TASK_GESTURE_IGNORE_SELECTOR } from '../core/task-gestures';
 
 export const LIST_VIEW_TYPE = 'list-view';
 
 export class ListView extends BaseView {
   private tasks: ITask[] = []; // Lista de tareas
   private isHierarchicalView: boolean = true; // Modo predeterminado: jerárquico
+  private taskWriter: TaskWriter;
 
   constructor(leaf: WorkspaceLeaf, private plugin: AgendaPlugin, private i18n: I18n, private taskManager: TaskManager) {
     // Constructor de la clase ListView
     super(leaf); 
+    this.taskWriter = new TaskWriter(this.app);
   }
 
   getViewType(): string {
@@ -126,25 +127,24 @@ export class ListView extends BaseView {
     taskItems.forEach(item => {
       // Añadir indicador visual
       item.addClass('clickable');
-      let pendingClickTimer: number | null = null;
 
-      // Evento de doble clic para abrir el archivo
-      item.addEventListener('dblclick', () => {
-        if (pendingClickTimer !== null) {
-          window.clearTimeout(pendingClickTimer);
-          pendingClickTimer = null;
-        }
-
-        const filePath = item.getAttribute('data-file-path');
-        const lineNumber = item.getAttribute('data-line-number');
-
-        if (filePath) {
-          this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined).catch(console.error);
-        }
+      // Clic edita, doble clic abre el archivo y clic derecho cambia el estado (gestos compartidos).
+      attachTaskGestures(item as HTMLElement, {
+        plugin: this.plugin,
+        i18n: this.i18n,
+        taskWriter: this.taskWriter,
+        getTask: () => {
+          const filePath = item.getAttribute('data-file-path');
+          const lineNumber = Number(item.getAttribute('data-line-number'));
+          return this.tasks.find(candidate => candidate.file.path === filePath && candidate.line.number === lineNumber);
+        },
+        onChanged: () => this.refreshView(),
+        openFile: (filePath, lineNumber) => this.openTaskFile(filePath, lineNumber),
+        ignoreSelector: TASK_GESTURE_IGNORE_SELECTOR,
       });
 
       item.addEventListener('click', (event) => {
-        if ((event.target as HTMLElement).closest('button, a, input, select')) return;
+        if ((event.target as HTMLElement).closest(TASK_GESTURE_IGNORE_SELECTOR)) return;
 
         // Remover selección previa
         container.querySelectorAll('.oa-task-item.selected').forEach(el => {
@@ -153,27 +153,9 @@ export class ListView extends BaseView {
 
         // Marcar como seleccionada
         item.addClass('selected');
-
-        if (pendingClickTimer !== null) return;
-        pendingClickTimer = window.setTimeout(() => {
-          pendingClickTimer = null;
-          const filePath = item.getAttribute('data-file-path');
-          const lineNumber = item.getAttribute('data-line-number');
-          const task = this.tasks.find(candidate =>
-            candidate.file.path === filePath && candidate.line.number === Number(lineNumber)
-          );
-          if (task) this.openEditTaskModal(task);
-        }, TASK_CLICK_DELAY_MS);
       });
     });
 
-  }
-
-  private openEditTaskModal(task: ITask): void {
-    this.plugin.modalManager.openModal(EDIT_TASK_MODAL_TYPE, {
-      task,
-      onSaved: () => this.onOpen().catch(console.error),
-    });
   }
 
   /**

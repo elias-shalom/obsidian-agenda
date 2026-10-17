@@ -770,7 +770,9 @@ Eventos de puntero (no arrastre HTML5), para redimensionar con precisión de un 
 
 Flechas de dependencia y aviso de rotura; desplazamiento en cascada de dependientes; zoom por día; Timeline view.
 
-## 22. Áreas y sub-áreas de tareas (v1.1.12, diseño — no implementado)
+## 22. Áreas y sub-áreas de tareas (v1.1.12, diseño — núcleo implementado)
+
+> Implementado el núcleo (fase AR1): `src/core/area.ts` con `normalizeAreaName()`, `resolveTaskArea()`, `matchesTaskArea()` y la paleta y colores movidos desde `habit.ts`, y los criterios `location.area`/`location.subArea` de `TaskFilter`. Pendiente la fase AR2 (barra, agrupado y vistas). Para la raíz del vault `resolveTaskArea()` devuelve cadenas vacías; la etiqueta «Sin área» la pone la interfaz.
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §13. Lo consumen la barra de filtros (§20.3), Lista, Kanban (§20) y Gantt (§21).
 

@@ -280,6 +280,8 @@ export interface TaskFilterCriteria {
   // Filtros de ubicación
   location?: {
     folder?: string;                   // Carpeta donde se encuentra la tarea
+    area?: string;                     // Área: primera carpeta de la ruta de la nota
+    subArea?: string;                  // Sub-área: resto de la ruta de carpetas; coincide por prefijo
     file?: string;                     // Archivo específico
   };
   

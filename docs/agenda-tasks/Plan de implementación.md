@@ -417,10 +417,10 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 > Comportamiento y decisiones: [[Especificación de vistas]] §13. Mecanismo: [[Arquitectura técnica]] §22. **Nada de esta fase está implementado.** Resuelve la idea de «Grupos de tareas». Una decisión menor sigue abierta (Especificación §13.4).
 
 ### Fase AR1 — Núcleo (independiente de las demás)
-- [ ] Mover la lógica de áreas de `src/habits/habit.ts` a `src/core/area.ts`, con una única normalización del nombre; `habit.ts` la re-exporta.
-- [ ] `resolveTaskArea(filePath)` según la tabla de [[Especificación de vistas]] §13.1: área = primera carpeta, sub-área = resto de la ruta sin tope de niveles, y el grupo «Sin área» para la raíz del vault.
-- [ ] Criterios `location.area` y `location.subArea` en `TaskFilter`, con coincidencia de sub-área por prefijo.
-- [ ] Verificable sola: un script de Node confirma `resolveTaskArea()` para las cinco rutas de la tabla y el filtro por prefijo; Hábitos se ve igual que antes.
+- [x] Mover la lógica de áreas de `src/habits/habit.ts` a `src/core/area.ts`, con una única normalización del nombre (`normalizeAreaName()`); `habit.ts` la re-exporta. Se eliminó `HABIT_AREA_TEXT_COLORS` (obsoleta y sin usos).
+- [x] `resolveTaskArea(filePath)` según la tabla de [[Especificación de vistas]] §13.1: área = primera carpeta, sub-área = resto de la ruta sin tope de niveles; para la raíz del vault devuelve cadenas vacías y el grupo «Sin área» es cosa de la interfaz (AR2).
+- [x] Criterios `location.area` y `location.subArea` en `TaskFilter` (vía `matchesTaskArea()`), con coincidencia de sub-área por prefijo de carpeta.
+- [x] Verificable sola: un script de Node confirma `resolveTaskArea()` para las cinco rutas de la tabla y el filtro por prefijo; Hábitos se ve igual que antes (comprobado en el script: etiquetas y colores sin cambios; falta la comprobación visual en Obsidian).
 - [ ] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase AR2 — Filtro y agrupado (depende de AR1 y de la Fase A de Kanban)

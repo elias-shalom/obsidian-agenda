@@ -410,8 +410,28 @@ export type DurationTaskSegment = ITask & {
  * Datos para la vista de tabla
  */
 export interface TableViewData {
+  /** Tareas filtradas y ordenadas. */
   tasks: ITask[];
+  /** Filas a dibujar: cabeceras de grupo y tareas numeradas, en orden. */
+  rows: TableRow[];
+  /** Hay tareas en el vault, aunque los filtros las oculten (cambia el mensaje de tabla vacía). */
+  vaultHasTasks: boolean;
 }
+
+/** Cabecera de grupo plegable de la Tabla; `level` es la profundidad (0 = primer nivel). */
+export interface TableGroupRow {
+  isGroup: true;
+  label: string;
+  storageKey: string;
+  color?: string;
+  count: number;
+  level: number;
+}
+
+/** Fila de tarea: la tarea con su número de fila. */
+export type TableTaskRow = ITask & { isGroup: false; number: number };
+
+export type TableRow = TableGroupRow | TableTaskRow;
 
 /**
  * Interfaz extendida para tareas con edad calculada
@@ -447,7 +467,7 @@ export interface OverviewViewData {
 }
 
 /** Grupo de la Lista listo para dibujar: un `TaskGroup` con su total y la clave con que se recuerda su pliegue. */
-export interface ListGroupViewModel {
+export interface TaskGroupViewModel {
   label: string;
   /** Clave del estado plegado en `localStorage`; las carpetas conservan la ruta de siempre. */
   storageKey: string;
@@ -455,7 +475,7 @@ export interface ListGroupViewModel {
   /** Tareas del grupo y de sus descendientes. */
   count: number;
   tasks: ITask[];
-  children: ListGroupViewModel[];
+  children: TaskGroupViewModel[];
 }
 
 /**
@@ -464,7 +484,7 @@ export interface ListGroupViewModel {
 export interface ListViewData {
   tasks: ITask[];
   /** Grupos a dibujar; vac\u00edo si no se agrupa (entonces se usa `flatTasks`). */
-  groups: ListGroupViewModel[];
+  groups: TaskGroupViewModel[];
   /** Tareas filtradas y ordenadas, sin agrupar. */
   flatTasks: ITask[];
   /** Mostrar la ruta de la nota en cada tarea: solo cuando el grupo no la implica. */

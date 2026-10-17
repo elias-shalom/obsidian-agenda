@@ -1,7 +1,7 @@
 import { WorkspaceLeaf, Plugin } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask, TableViewData, AgendaPlugin } from '../types/interfaces';
+import { ITask, TableRow, TableViewData, TaskGroupViewModel, AgendaPlugin } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import Handlebars from 'handlebars';
 import { TaskDateType } from '../types/enums';
@@ -9,14 +9,30 @@ import { TaskWriter } from '../core/task-writer';
 import { attachTaskGestures, TASK_GESTURE_IGNORE_SELECTOR } from '../core/task-gestures';
 import { TaskFilterBar } from '../core/task-filter-bar';
 import { TaskViewState, DEFAULT_TASK_VIEW_STATE, loadTaskViewState, saveTaskViewState, filterTasksByViewState } from '../core/task-view-state';
-import { TASK_SORT_COLUMNS } from '../core/task-column-sort';
+import { TASK_SORT_COLUMNS, sortTasksByColumn } from '../core/task-column-sort';
+import { TASK_GROUP_OPTIONS, groupTasksForView, toGroupViewModels } from '../core/task-grouping';
 
 export const TABLE_VIEW_TYPE = 'table-view';
+
+/** Agrupado que usa la Tabla cuando el usuario aún no eligió uno. */
+const TABLE_DEFAULT_GROUP = 'none';
+
+/** Ancho mínimo y máximo (px) de cada columna, en el orden de la tabla. */
+const COLUMN_LIMITS = [
+  { min: 44, max: 50 },
+  { min: 48, max: 76 },
+  { min: 48, max: 76 },
+  { min: 200, max: 520 },
+  { min: 80, max: 160 },
+  { min: 80, max: 120 },
+  { min: 96, max: 240 },
+];
 
 export class TableView extends BaseView {
   private tasks: ITask[] = []; // Lista de tareas
   private viewState: TaskViewState = { ...DEFAULT_TASK_VIEW_STATE };
   private filterBar: TaskFilterBar | null = null;
+  private content: HTMLElement | null = null;
   private taskWriter: TaskWriter;
 
   constructor(leaf: WorkspaceLeaf, private plugin: Plugin, private i18n: I18n, private taskManager: TaskManager) {
@@ -41,12 +57,58 @@ export class TableView extends BaseView {
     this.tasks = await this.getAllTasks(this.taskManager);
 
     // El estado se comparte con otras vistas de tareas: se lee al abrir y se escribe al cambiar.
-    this.viewState = loadTaskViewState(this.app);
-    if (!TASK_SORT_COLUMNS.some(column => column.value === this.viewState.sortColumn)) {
-      this.viewState.sortColumn = DEFAULT_TASK_VIEW_STATE.sortColumn;
+    const saved = loadTaskViewState(this.app);
+    if (!TASK_SORT_COLUMNS.some(column => column.value === saved.sortColumn)) {
+      saved.sortColumn = DEFAULT_TASK_VIEW_STATE.sortColumn;
     }
 
-    await this.render(TABLE_VIEW_TYPE, { tasks: this.tasks }, this.i18n, this.plugin as AgendaPlugin, this.leaf);
+    // La barra se crea antes de dibujar porque reajusta el área guardada si ya no tiene tareas.
+    this.filterBar = new TaskFilterBar({
+      i18n: this.i18n,
+      tasks: this.tasks,
+      state: { ...saved, group: saved.group || TABLE_DEFAULT_GROUP },
+      groupOptions: TASK_GROUP_OPTIONS.map(({ value, labelKey }) => ({
+        value,
+        label: value === 'none' ? this.i18n.t(labelKey) : `${this.i18n.t('group_by')}: ${this.i18n.t(labelKey)}`,
+      })),
+      sortOptions: TASK_SORT_COLUMNS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
+      onChange: (state) => {
+        this.viewState = state;
+        saveTaskViewState(this.app, state);
+        this.refreshRows().catch(console.error);
+      },
+    });
+    this.viewState = this.filterBar.getState();
+
+    await this.render(TABLE_VIEW_TYPE, this.buildViewData(), this.i18n, this.plugin as AgendaPlugin, this.leaf);
+  }
+
+  /** Aplica búsqueda, filtros, orden y agrupado del estado compartido y numera las filas. */
+  private buildViewData(): TableViewData {
+    const sorted = sortTasksByColumn(
+      filterTasksByViewState(this.tasks, this.viewState),
+      this.viewState.sortColumn,
+      this.viewState.sortDirection
+    );
+    const group = this.viewState.group || TABLE_DEFAULT_GROUP;
+    const groups = toGroupViewModels(groupTasksForView(sorted, group, key => this.i18n.t(key)), group);
+
+    const rows: TableRow[] = [];
+    let number = 0;
+    const addTask = (task: ITask): void => {
+      number += 1;
+      rows.push({ ...task, isGroup: false, number });
+    };
+    const addGroup = (group: TaskGroupViewModel, level: number): void => {
+      rows.push({ isGroup: true, label: group.label, storageKey: group.storageKey, color: group.color, count: group.count, level });
+      group.tasks.forEach(addTask);
+      group.children.forEach(child => addGroup(child, level + 1));
+    };
+
+    if (groups.length === 0) sorted.forEach(addTask);
+    else groups.forEach(topGroup => addGroup(topGroup, 0));
+
+    return { tasks: sorted, rows, vaultHasTasks: this.tasks.length > 0 };
   }
 
   protected registerViewSpecificHelpers(_i18n: I18n): void {
@@ -76,25 +138,11 @@ export class TableView extends BaseView {
   }
 
   protected setupViewSpecificEventListeners(container: HTMLElement, _data: TableViewData): void {
-    // Barra compartida: búsqueda, filtros y orden. Se monta primero porque reajusta el área guardada
-    // si ya no tiene tareas, y la tabla filtra con el estado resultante.
+    this.content = container;
+
+    // Barra compartida: búsqueda, filtros, agrupado y orden
     const toolbar = container.querySelector<HTMLElement>('.oa-table-toolbar');
-    if (toolbar) {
-      this.filterBar = new TaskFilterBar({
-        i18n: this.i18n,
-        tasks: this.tasks,
-        state: this.viewState,
-        sortOptions: TASK_SORT_COLUMNS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
-        onChange: (state) => {
-          const sortChanged = state.sortColumn !== this.viewState.sortColumn || state.sortDirection !== this.viewState.sortDirection;
-          this.viewState = state;
-          if (sortChanged) this.applyCurrentSort(container);
-          this.applyFilters(container);
-        },
-      });
-      this.filterBar.mount(toolbar);
-      this.viewState = this.filterBar.getState();
-    }
+    if (toolbar) this.filterBar?.mount(toolbar);
 
     // Listener para ordenar columnas
     const sortableHeaders = container.querySelectorAll('th.oa-sortable');
@@ -110,14 +158,46 @@ export class TableView extends BaseView {
       });
     });
 
-    const tableRows = container.querySelectorAll('tr.oa-task-row');
-  
-    tableRows.forEach(row => {
+    this.wireRows(container);
+  }
+
+  /** Vuelve a dibujar solo las filas (no la barra ni el encabezado) tras un cambio de filtro, orden o agrupado. */
+  private async refreshRows(): Promise<void> {
+    const container = this.content;
+    if (!container) return;
+
+    const staging = createDiv();
+    await this.renderTemplate(staging, TABLE_VIEW_TYPE, this.buildViewData());
+    const nextBody = staging.querySelector('tbody');
+    const nextEmpty = staging.querySelector('.oa-empty-table-message');
+    if (!nextBody || !nextEmpty) return;
+
+    container.querySelector('tbody')?.replaceWith(nextBody);
+    container.querySelector('.oa-empty-table-message')?.replaceWith(nextEmpty);
+    this.wireRows(container);
+  }
+
+  private wireRows(container: HTMLElement): void {
+    this.updateSortIndicators(container);
+
+    container.querySelectorAll<HTMLElement>('tr.oa-group-row').forEach(row => {
+      const color = row.dataset.groupColor;
+      if (color) row.setCssProps({ '--oa-group-color': color });
+
+      row.toggleClass('oa-collapsed', this.app.loadLocalStorage(this.collapsedKey(row)) === 'true');
+      row.addEventListener('click', () => {
+        row.toggleClass('oa-collapsed', !row.hasClass('oa-collapsed'));
+        this.app.saveLocalStorage(this.collapsedKey(row), String(row.hasClass('oa-collapsed')));
+        this.applyCollapse(container);
+      });
+    });
+
+    container.querySelectorAll<HTMLElement>('tr.oa-task-row').forEach(row => {
       // Añadir indicador visual
       row.addClass('clickable');
 
       // Clic edita, doble clic abre el archivo y clic derecho cambia el estado (gestos compartidos).
-      attachTaskGestures(row as HTMLElement, {
+      attachTaskGestures(row, {
         plugin: this.plugin as AgendaPlugin,
         i18n: this.i18n,
         taskWriter: this.taskWriter,
@@ -132,36 +212,36 @@ export class TableView extends BaseView {
       });
     });
 
-    this.applyCurrentSort(container);
-    this.applyFilters(container);
+    const totalRowCount = container.querySelector('#oa-total-row-count');
+    if (totalRowCount) totalRowCount.textContent = `(${container.querySelectorAll('tr.oa-task-row').length})`;
+
+    this.applyCollapse(container);
   }
 
-  private applyFilters(container: HTMLElement): void {
-    const visibleIds = new Set(filterTasksByViewState(this.tasks, this.viewState).map(task => task.id));
-    const tableRows = container.querySelectorAll<HTMLElement>('tr.oa-task-row');
+  /** Misma clave que usa la Lista para recordar el plegado de un grupo. */
+  private collapsedKey(groupRow: HTMLElement): string {
+    return `folder_${groupRow.dataset.folderPath ?? ''}_collapsed`;
+  }
 
-    let visibleCount = 0;
-    tableRows.forEach(row => {
-      const visible = visibleIds.has(row.dataset.taskId ?? '');
-      row.classList.toggle('oa-hidden', !visible);
-      if (visible) {
-        visibleCount += 1;
-        const rowNumber = row.querySelector('.oa-row-number');
-        if (rowNumber) rowNumber.textContent = String(visibleCount);
+  /** Oculta las filas bajo una cabecera plegada, hasta la siguiente cabecera del mismo nivel o superior. */
+  private applyCollapse(container: HTMLElement): void {
+    let hiddenFromLevel: number | null = null;
+
+    container.querySelectorAll<HTMLElement>('tbody tr').forEach(row => {
+      if (row.hasClass('oa-group-row')) {
+        const level = Number(row.dataset.level);
+        if (hiddenFromLevel !== null && level <= hiddenFromLevel) hiddenFromLevel = null;
+        row.toggleClass('oa-group-hidden', hiddenFromLevel !== null);
+        if (hiddenFromLevel === null && row.hasClass('oa-collapsed')) hiddenFromLevel = level;
+      } else {
+        row.toggleClass('oa-group-hidden', hiddenFromLevel !== null);
       }
     });
 
-    const totalRowCountElement = container.querySelector('#oa-total-row-count');
-    if (totalRowCountElement) {
-      totalRowCountElement.textContent = `(${visibleCount})`;
-    }
-
-    container.querySelector('.oa-empty-table-message')?.classList.toggle('oa-visible', visibleCount === 0);
-
-    saveTaskViewState(this.app, this.viewState);
     this.resizeColumns(container);
   }
 
+  /** Mide el contenido visible de cada columna y reparte el ancho: si no caben, las columnas se reducen en proporción sin bajar de su mínimo. */
   private resizeColumns(container: HTMLElement): void {
     const table = container.querySelector<HTMLTableElement>('.oa-tasks-table');
     if (!table) return;
@@ -172,33 +252,48 @@ export class TableView extends BaseView {
     if (!context) return;
 
     const headers = Array.from(table.querySelectorAll<HTMLTableCellElement>('thead th'));
-    const visibleRows = Array.from(table.querySelectorAll<HTMLTableRowElement>('tbody tr.oa-task-row:not(.oa-hidden)'));
+    const visibleRows = Array.from(table.querySelectorAll<HTMLTableRowElement>('tbody tr.oa-task-row:not(.oa-group-hidden)'));
     const allRows = Array.from(table.querySelectorAll<HTMLTableRowElement>('tbody tr.oa-task-row'));
-    const limits = [
-      { min: 44, max: 50 },
-      { min: 48, max: 76 },
-      { min: 48, max: 76 },
-      { min: 200, max: 440 },
-      { min: 100, max: 280 },
-      { min: 80, max: 120 },
-      { min: 96, max: 280 },
-    ];
+    const limitsOf = (columnIndex: number): { min: number; max: number } => COLUMN_LIMITS[columnIndex] ?? { min: 80, max: 280 };
 
-    headers.forEach((header, columnIndex) => {
-      const { min, max } = limits[columnIndex] || { min: 80, max: 280 };
+    // La ruta bajo la tarea se corta con puntos suspensivos: no cuenta para el ancho de la columna.
+    const measurable = (cell: HTMLTableCellElement): HTMLElement[] => {
+      const description = cell.querySelector<HTMLElement>('.oa-task-description');
+      return description ? [description] : [cell];
+    };
+
+    const widths = headers.map((header, columnIndex) => {
+      const { min, max } = limitsOf(columnIndex);
       let measuredWidth = 0;
       const cells = [header, ...visibleRows.map(row => row.cells.item(columnIndex)).filter((cell): cell is HTMLTableCellElement => cell !== null)];
 
       for (const cell of cells) {
-        context.font = window.getComputedStyle(cell).font;
-        const text = (cell.textContent || '').trim().replace(/\s+/g, ' ');
-        measuredWidth = Math.max(measuredWidth, context.measureText(text).width);
+        for (const element of measurable(cell)) {
+          context.font = window.getComputedStyle(element).font;
+          const text = (element.textContent || '').trim().replace(/\s+/g, ' ');
+          measuredWidth = Math.max(measuredWidth, context.measureText(text).width);
+        }
         if (measuredWidth >= max - 28) break;
       }
 
-      const width = Math.ceil(Math.min(max, Math.max(min, measuredWidth + 28)));
+      return Math.ceil(Math.min(max, Math.max(min, measuredWidth + 28)));
+    });
+
+    // Ajuste al ancho real del contenedor: la ventana en escritorio y el ancho del dispositivo en tableta y teléfono.
+    const available = container.querySelector<HTMLElement>('.oa-table-container')?.clientWidth ?? 0;
+    const total = widths.reduce((sum, width) => sum + width, 0);
+    if (available > 0 && total > available) {
+      const slack = widths.map((width, columnIndex) => width - limitsOf(columnIndex).min);
+      const totalSlack = slack.reduce((sum, value) => sum + value, 0);
+      const shrink = totalSlack > 0 ? Math.min(1, (total - available) / totalSlack) : 0;
+      widths.forEach((width, columnIndex) => {
+        widths[columnIndex] = Math.floor(width - slack[columnIndex] * shrink);
+      });
+    }
+
+    headers.forEach((header, columnIndex) => {
       const columnCells = [header, ...allRows.map(row => row.cells.item(columnIndex)).filter((cell): cell is HTMLTableCellElement => cell !== null)];
-      columnCells.forEach(cell => cell.setCssStyles({ width: `${width}px`, minWidth: `${width}px` }));
+      columnCells.forEach(cell => cell.setCssStyles({ width: `${widths[columnIndex]}px`, minWidth: `${widths[columnIndex]}px` }));
     });
   }
 
@@ -210,23 +305,8 @@ export class TableView extends BaseView {
     const direction = this.viewState.sortColumn === sortBy && this.viewState.sortDirection === 'asc' ? 'desc' : 'asc';
     this.viewState = { ...this.viewState, sortColumn: sortBy, sortDirection: direction };
     this.filterBar?.setSort(sortBy, direction);
-
-    const container = header.closest<HTMLElement>('.oa-table-view-container');
-    if (!container) return;
-
-    this.applyCurrentSort(container);
-    // Renumera las filas en el nuevo orden y guarda el estado
-    this.applyFilters(container);
-  }
-
-  private applyCurrentSort(container: HTMLElement): void {
-    this.updateSortIndicators(container);
-    const tableBody = container.querySelector('tbody');
-    if (!tableBody) return;
-
-    const rows = Array.from(tableBody.querySelectorAll('tr.oa-task-row'));
-    const sortedRows = this.sortRows(rows, this.viewState.sortColumn, this.viewState.sortDirection);
-    sortedRows.forEach(row => tableBody.appendChild(row));
+    saveTaskViewState(this.app, this.viewState);
+    this.refreshRows().catch(console.error);
   }
 
   private updateSortIndicators(container: Element): void {
@@ -249,103 +329,6 @@ export class TableView extends BaseView {
         indicator.classList.add(this.viewState.sortDirection === 'asc' ? 'oa-sort-asc' : 'oa-sort-desc');
       }
     }
-  }
-
-  private sortRows(rows: Element[], sortBy: string, direction: 'asc' | 'desc'): Element[] {
-    const tasksByRow = new Map(
-      this.tasks.map(task => [`${task.file.path}\u0000${task.line.number}`, task])
-    );
-    const getTaskForRow = (row: Element): ITask | undefined => {
-      const filePath = row.getAttribute('data-file-path');
-      const lineNumber = row.getAttribute('data-line-number');
-      return filePath && lineNumber
-        ? tasksByRow.get(`${filePath}\u0000${Number(lineNumber)}`)
-        : undefined;
-    };
-
-    return [...rows].sort((a, b) => {
-      let valueA: string | number;
-      let valueB: string | number;
-      
-      // Extraer valores según el tipo de columna
-      switch(sortBy) {
-        case 'priority': {
-          // Mapa de prioridades para ordenación
-          const priorityMap: Record<string, number> = {
-            'highest': 6, 'high': 5, 'medium': 4, 'normal': 3, 'low': 2, 'lowest': 1, 'none': 0
-          };
-          
-          // Obtener clases de prioridad
-          const priorityClassA = a.querySelector('.oa-task-priority')?.classList.toString() || '';
-          const priorityClassB = b.querySelector('.oa-task-priority')?.classList.toString() || '';
-          
-          // Extraer el nivel de prioridad de la clase
-          const priorityA = Object.keys(priorityMap).find(p => priorityClassA.includes(`priority-${p}`)) || 'none';
-          const priorityB = Object.keys(priorityMap).find(p => priorityClassB.includes(`priority-${p}`)) || 'none';
-          
-          valueA = priorityMap[priorityA];
-          valueB = priorityMap[priorityB];
-          break;
-        }
-          
-        case 'status': {
-          // Mapa de estados para ordenación
-          const statusMap: Record<string, number> = {
-            'Todo': 4, 'InProgress': 3, 'Done': 2, 'Cancelled': 1, 'nonTask': 0
-          };
-          
-          const statusA = a.querySelector('.oa-status-icon')?.getAttribute('data-status') || '';
-          const statusB = b.querySelector('.oa-status-icon')?.getAttribute('data-status') || '';
-          
-          valueA = statusMap[statusA] || 0;
-          valueB = statusMap[statusB] || 0;
-          break;
-        }
-          
-        case 'description':
-          valueA = a.querySelector('.oa-task-description')?.textContent || '';
-          valueB = b.querySelector('.oa-task-description')?.textContent || '';
-          break;
-          
-        case 'folder':
-          valueA = a.querySelector('.oa-folder-name')?.textContent || '';
-          valueB = b.querySelector('.oa-folder-name')?.textContent || '';
-          break;
-          
-        case 'due': {
-          const dueDateA = getTaskForRow(a)?.date.due;
-          const dueDateB = getTaskForRow(b)?.date.due;
-          valueA = dueDateA?.toMillis() ?? (direction === 'asc' ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER);
-          valueB = dueDateB?.toMillis() ?? (direction === 'asc' ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER);
-          break;
-        }
-        case 'tags':
-          valueA = Array.from(a.querySelectorAll('.oa-task-tag'))
-            .map(tag => tag.textContent)
-            .join(',') || '';
-          valueB = Array.from(b.querySelectorAll('.oa-task-tag'))
-            .map(tag => tag.textContent)
-            .join(',') || '';
-          break;
-          
-        default:
-          valueA = '';
-          valueB = '';
-      }
-      
-      // Comparar valores
-      if (typeof valueA === 'string' && typeof valueB === 'string') {
-        return direction === 'asc' 
-          ? valueA.localeCompare(valueB) 
-          : valueB.localeCompare(valueA);
-      } else {
-        const numA = Number(valueA);
-        const numB = Number(valueB);
-        return direction === 'asc' 
-          ? (numA - numB) 
-          : (numB - numA);
-      }
-    });
   }
 
   async onClose(): Promise<void> {

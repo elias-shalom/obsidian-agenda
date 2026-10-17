@@ -1,30 +1,19 @@
 import { WorkspaceLeaf } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask, GroupField, ListGroupViewModel, ListViewData, AgendaPlugin } from '../types/interfaces';
+import { ITask, ListViewData, AgendaPlugin } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { TaskWriter } from '../core/task-writer';
 import { attachTaskGestures, TASK_GESTURE_IGNORE_SELECTOR } from '../core/task-gestures';
 import { TaskFilterBar } from '../core/task-filter-bar';
 import { TaskViewState, loadTaskViewState, saveTaskViewState, filterTasksByViewState } from '../core/task-view-state';
 import { TASK_SORT_COLUMNS, sortTasksByColumn } from '../core/task-column-sort';
-import { TaskGroup, collectGroupTasks, groupTasksByField } from '../core/task-grouping';
+import { TASK_GROUP_OPTIONS, groupTasksForView, toGroupViewModels } from '../core/task-grouping';
 
 export const LIST_VIEW_TYPE = 'list-view';
 
 /** Agrupado que usa la Lista cuando el usuario aún no eligió uno (el árbol de carpetas de siempre). */
 const LIST_DEFAULT_GROUP = 'area';
-
-/** Valores del combo de agrupado; `folder` es el modo plano (una sola lista por primera carpeta). */
-const LIST_GROUPS = [
-  { value: 'none', labelKey: 'group_none' },
-  { value: 'area', labelKey: 'group_area' },
-  { value: 'folder', labelKey: 'folder' },
-  { value: 'status', labelKey: 'task_status' },
-  { value: 'priority', labelKey: 'task_priority' },
-  { value: 'tags', labelKey: 'tags' },
-  { value: 'dueDate', labelKey: 'due_date' },
-];
 
 export class ListView extends BaseView {
   private tasks: ITask[] = []; // Lista de tareas
@@ -65,7 +54,7 @@ export class ListView extends BaseView {
       i18n: this.i18n,
       tasks: this.tasks,
       state: { ...saved, group: saved.group || LIST_DEFAULT_GROUP },
-      groupOptions: LIST_GROUPS.map(({ value, labelKey }) => ({
+      groupOptions: TASK_GROUP_OPTIONS.map(({ value, labelKey }) => ({
         value,
         label: value === 'none' ? this.i18n.t(labelKey) : `${this.i18n.t('group_by')}: ${this.i18n.t(labelKey)}`,
       })),
@@ -89,39 +78,15 @@ export class ListView extends BaseView {
       this.viewState.sortDirection
     );
     const group = this.viewState.group || LIST_DEFAULT_GROUP;
+    const groups = groupTasksForView(sorted, group, key => this.i18n.t(key));
 
     return {
       tasks: sorted,
-      groups: this.groupTasks(sorted, group).map(taskGroup => this.toViewModel(taskGroup, group)).filter(taskGroup => taskGroup.count > 0),
+      groups: toGroupViewModels(groups, group),
       flatTasks: sorted,
       // El árbol de áreas ya indica dónde está cada nota; los demás agrupados no.
       showPath: group !== 'area',
       vaultHasTasks: this.tasks.length > 0,
-    };
-  }
-
-  private groupTasks(tasks: ITask[], group: string): TaskGroup[] {
-    if (group === 'none') return [];
-
-    const translate = (key: string): string => this.i18n.t(key);
-    if (group === 'folder') {
-      // Plano: cada área con todas sus tareas, sin sub-áreas anidadas
-      return groupTasksByField(tasks, 'area', translate)
-        .map(areaGroup => ({ ...areaGroup, tasks: collectGroupTasks(areaGroup), children: undefined }));
-    }
-    return groupTasksByField(tasks, group as GroupField, translate);
-  }
-
-  private toViewModel(group: TaskGroup, field: string): ListGroupViewModel {
-    const children = (group.children ?? []).map(child => this.toViewModel(child, field)).filter(child => child.count > 0);
-    return {
-      label: group.label,
-      // Las carpetas conservan la ruta como clave para no perder lo que el usuario ya tenía plegado.
-      storageKey: field === 'area' || field === 'folder' ? group.key : `${field}:${group.key}`,
-      color: group.color,
-      count: group.tasks.length + children.reduce((total, child) => total + child.count, 0),
-      tasks: group.tasks,
-      children,
     };
   }
 

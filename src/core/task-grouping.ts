@@ -1,7 +1,7 @@
 // src/core/task-grouping.ts
 // Agrupado genérico de tareas por campo (v1.1.12, Fase A; ver docs/agenda-tasks/Arquitectura
 // técnica.md §20.2). Lo consumen Lista y Tabla y, en v1.1.13, Kanban y Gantt.
-import { ITask, GroupField, FolderNode } from "../types/interfaces";
+import { ITask, GroupField, FolderNode, TaskGroupViewModel } from "../types/interfaces";
 import { STATUS_OPTIONS } from "./task-status-options";
 import { getAreaColor } from "./area";
 
@@ -21,6 +21,48 @@ export interface TaskGroup {
 /** Todas las tareas del grupo y de sus descendientes. */
 export function collectGroupTasks(group: TaskGroup): ITask[] {
   return [...group.tasks, ...(group.children ?? []).flatMap(collectGroupTasks)];
+}
+
+/** Valores del combo de agrupado de Lista y Tabla, con la clave de traducción de su nombre. */
+export const TASK_GROUP_OPTIONS: readonly { value: string; labelKey: string }[] = [
+  { value: 'none', labelKey: 'group_none' },
+  { value: 'area', labelKey: 'group_area' },
+  { value: 'folder', labelKey: 'folder' },
+  { value: 'status', labelKey: 'task_status' },
+  { value: 'priority', labelKey: 'task_priority' },
+  { value: 'tags', labelKey: 'tags' },
+  { value: 'dueDate', labelKey: 'due_date' },
+];
+
+/**
+ * Grupos de la vista para un valor de `TASK_GROUP_OPTIONS`: `none` no agrupa y `folder` es el modo
+ * plano (cada área con todas sus tareas, sin sub-áreas anidadas).
+ */
+export function groupTasksForView(tasks: ITask[], group: string, translate: (key: string) => string): TaskGroup[] {
+  if (group === 'none') return [];
+  if (group === 'folder') {
+    return groupTasksByField(tasks, 'area', translate)
+      .map(areaGroup => ({ ...areaGroup, tasks: collectGroupTasks(areaGroup), children: undefined }));
+  }
+  return groupTasksByField(tasks, group as GroupField, translate);
+}
+
+/** Grupos listos para dibujar, sin los vacíos. El estado plegado se recuerda por `storageKey`. */
+export function toGroupViewModels(groups: TaskGroup[], field: string): TaskGroupViewModel[] {
+  return groups.flatMap(group => {
+    const children = toGroupViewModels(group.children ?? [], field);
+    const count = group.tasks.length + children.reduce((total, child) => total + child.count, 0);
+    if (count === 0) return [];
+    return [{
+      label: group.label,
+      // Las carpetas conservan la ruta como clave para no perder lo que el usuario ya tenía plegado.
+      storageKey: field === 'area' || field === 'folder' ? group.key : `${field}:${group.key}`,
+      color: group.color,
+      count,
+      tasks: group.tasks,
+      children,
+    }];
+  });
 }
 
 /** De mayor a menor; lo que no coincide (`undefined`) va al final. */

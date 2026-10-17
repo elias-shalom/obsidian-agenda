@@ -18,7 +18,7 @@
             <span class="oa-sort-indicator">{{t 'task'}}</span>
           </th>
           <th class="oa-table-col-folder oa-sortable" data-sort="folder">
-            <span class="oa-sort-indicator">{{t 'folder'}}</span>
+            <span class="oa-sort-indicator">{{t 'area'}}</span>
           </th>
           <th class="oa-table-col-due oa-sortable" data-sort="due">
             <span class="oa-sort-indicator">{{t 'dates'}}</span>
@@ -29,10 +29,25 @@
         </tr>
       </thead>
       <tbody>
-        {{#each tasks}}
+        {{#each rows}}
+        {{#if isGroup}}
+        <tr class="oa-group-row" data-level="{{level}}" data-folder-path="{{storageKey}}" {{#if color}}data-group-color="{{color}}"{{/if}}>
+          <td colspan="7">
+            <div class="oa-group-row-title">
+              <span class="oa-folder-toggle" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right">
+                  <path d="m9 18 6-6-6-6"/>
+                </svg>
+              </span>
+              <span class="oa-folder-title">{{label}}</span>
+              <span class="oa-task-count">({{count}})</span>
+            </div>
+          </td>
+        </tr>
+        {{else}}
         <tr class="oa-task-row {{#if completed}}oa-task-completed{{/if}} {{priorityClass}}" data-task-id="{{id}}" data-file-path="{{this.file.path}}" data-line-number="{{line.number}}">
           <td class="oa-table-col-row-number">
-            <span class="oa-row-number"></span>
+            <span class="oa-row-number">{{number}}</span>
           </td>
           <td class="oa-table-col-priority">
               {{#if state.priority}}
@@ -52,6 +67,7 @@
           </td>
           <td class="oa-table-col-task">
             <div class="oa-task-description">{{section.desc}}</div>
+            <div class="oa-task-file-path" title="{{file.path}}">{{file.path}}</div>
             {{#if subtasks}}
             <div class="oa-task-subtasks-indicator">
               <span class="oa-subtasks-count">{{subtasksCompletedCount}}/{{subtasksCount}}</span>
@@ -64,7 +80,7 @@
           <td class="oa-table-col-folder">
             <div class="oa-task-folder">
               <span class="oa-folder-icon">📁</span>
-              <span class="oa-folder-name">{{file.root}}</span>
+              <span class="oa-folder-name">{{#if (eq file.root 'root')}}{{t 'no_area'}}{{else}}{{file.root}}{{/if}}</span>
             </div>
           </td>
           <td class="oa-table-col-due {{#if isOverdue}}oa-overdue{{/if}} {{#if isDueToday}}oa-due-today{{/if}}">
@@ -120,15 +136,14 @@
             </div>
           </td>
         </tr>
+        {{/if}}
         {{/each}}
       </tbody>
     </table>
   </div>
   
-  {{#unless tasks.length}}
-  <div class="oa-empty-table-message">
-    <p>{{t 'no_tasks_match_filters'}}</p>
+  <div class="oa-empty-table-message {{#unless tasks.length}}oa-visible{{/unless}}">
+    <p>{{#if vaultHasTasks}}{{t 'no_tasks_match_filters'}}{{else}}{{t 'no_tasks'}}{{/if}}</p>
   </div>
-  {{/unless}}
 </div>
 

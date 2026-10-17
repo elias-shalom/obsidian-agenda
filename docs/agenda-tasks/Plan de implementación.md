@@ -426,7 +426,7 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 ### Fase AR2 — Filtro y agrupado (depende de AR1 y de la Fase A de Kanban)
 - [x] Combobox de Área y de Sub-área (en cascada, oculto sin área elegida) en la barra de filtros compartida, con opciones tomadas de las tareas cargadas.
 - [x] La Tabla pasa a filtrar sobre datos con `TaskFilter`; se convierte el valor `folder` guardado en `localStorage`.
-- [ ] La Tabla reemplaza la columna de carpeta por dos, Área y Sub-área (propuesta, sin confirmar).
+- [x] La Tabla conserva la columna de carpeta, renombrada Área (sin columna de Sub-área); la ruta del archivo va pequeña bajo la tarea.
 - [x] `GroupField` gana `'area'`; `groupTasksByField(tasks, 'area')` devuelve el árbol área → sub-área (las notas de la raíz, como «Sin área», al final). `'subArea'` (grupos planos «Área · sub-área») queda para Kanban y Gantt (v1.1.13).
 - [x] Lista agrupa por área y sub-área (anidada por carpeta) y conserva el modo plano (valor «Carpeta» del combo).
 - [x] Color por área en las cabeceras de grupo (`getAreaColor`, franja a la izquierda; los hijos heredan el color).
@@ -454,10 +454,10 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 
 ### Fase U3 — Tabla adopta la barra (depende de U1)
 - [x] La Tabla filtra sobre datos con `TaskFilter` en lugar de ocultar filas del DOM (las filas se identifican con `data-task-id`).
-- [ ] Agrupado en la Tabla con filas de cabecera plegables y estado recordado.
-- [x] Los encabezados ordenables actualizan el orden compartido.
-- [ ] Ajustar las columnas al ancho disponible del contenedor en `resizeColumns()`: las flexibles se reducen en proporción sin bajar de su mínimo, con la ventana como referencia en escritorio y el ancho del dispositivo en tableta y teléfono; afinar los máximos de Tarea, Carpeta y Etiquetas y dejar que la Tarea se parta en dos líneas.
-- [ ] Verificable sola: la Tabla se comporta como antes sin agrupar, y agrupa y pliega al elegir un agrupado.
+- [x] Agrupado en la Tabla con filas de cabecera plegables y estado recordado (mismos valores que la Lista; por defecto sin agrupar; el plegado comparte clave con la Lista).
+- [x] Los encabezados ordenables actualizan el orden compartido. La Tabla ordena y agrupa sobre datos con `sortTasksByColumn()` y `groupTasksForView()` y redibuja solo las filas (`refreshRows()`); la columna Carpeta ordena ahora por área y luego por ruta.
+- [x] Ajustar las columnas al ancho disponible del contenedor en `resizeColumns()`: las flexibles se reducen en proporción sin bajar de su mínimo, con la ventana como referencia en escritorio y el ancho del dispositivo en tableta y teléfono; máximos afinados (Tarea 520, Área 160, Etiquetas 240) y la ruta bajo la tarea no cuenta para el ancho.
+- [ ] Verificable sola: la Tabla se comporta como antes sin agrupar, y agrupa y pliega al elegir un agrupado (comprobado con script de Node: orden, filas y plantilla; falta la comprobación visual en Obsidian, incluido el ajuste de ancho en tableta y teléfono).
 
 ### Fase U4 — Pestaña única y conmutador (depende de U2 y U3)
 - [ ] Conmutador segmentado Lista | Tabla, con las clases del selector del calendario, íconos `list-todo` y `table` y tooltip; cambia de vista con `leaf.setViewState()`.

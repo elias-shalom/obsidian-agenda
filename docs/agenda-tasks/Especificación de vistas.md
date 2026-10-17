@@ -55,9 +55,9 @@ Interacciones: el botón superior alterna entre jerarquía de carpetas y vista p
 
 **Icono**: `table`. Rol: tabla ordenable/filtrable de tareas.
 
-Estado interno: `currentSortColumn`, `currentSortDirection` (`'asc' | 'desc'`). Datos expuestos: `tasks`, `uniqueFolders` (para el filtro por carpeta). Helpers: `equals`, `not`, `contains`, `inRange`, `dateTypeIcon` (mapea `TaskDateType` a su emoji). Interacciones: los encabezados ordenables (`th.oa-sortable`) cambian el orden ascendente/descendente con clic o con Enter/Espacio; el encabezado activo expone `aria-sort`. Búsqueda y filtros de prioridad, estado, carpeta y fecha se aplican en el cliente.
+Estado interno: el estado compartido de las vistas de tareas (`TaskViewState`: búsqueda, filtros, agrupado y orden, v1.1.12). Datos expuestos: `tasks`, `rows` (cabeceras de grupo y tareas numeradas) y `vaultHasTasks`. Helpers: `equals`, `not`, `contains`, `inRange`, `dateTypeIcon` (mapea `TaskDateType` a su emoji). Interacciones: los encabezados ordenables (`th.oa-sortable`) cambian el orden ascendente/descendente con clic o con Enter/Espacio; el encabezado activo expone `aria-sort`. Búsqueda y filtros de prioridad, estado, área, sub-área y fecha se aplican sobre los datos con la barra compartida.
 
-El estado de búsqueda, filtros y orden se guarda en el almacenamiento local de Obsidian y se restaura al volver a la vista, incluso después de editar una tarea. Las anchuras de las columnas se recalculan según el contenido de las filas visibles, con límites para evitar columnas desproporcionadas; en pantallas estrechas se conserva el desplazamiento horizontal. Columnas (v1.1.11): número de fila (44–50 px), prioridad, estado, tarea, carpeta, fechas (80–120 px) y etiquetas; la columna Archivo se quitó en v1.1.11. Pendiente: ajustar las columnas al ancho real del contenedor (v1.1.12, §14.3 y `docs/todo.md`). La presentación usa filas alternas sutiles, estados y prioridades diferenciados, fechas agrupadas y etiquetas compactas.
+El estado de búsqueda, filtros y orden se guarda en el almacenamiento local de Obsidian y se restaura al volver a la vista, incluso después de editar una tarea. Las anchuras de las columnas se recalculan según el contenido de las filas visibles, con límites para evitar columnas desproporcionadas; en pantallas estrechas se conserva el desplazamiento horizontal. Columnas (v1.1.11): número de fila (44–50 px), prioridad, estado, tarea, área (antes carpeta, desde v1.1.12), fechas (80–120 px) y etiquetas; la columna Archivo se quitó en v1.1.11. Las columnas se ajustan al ancho real del contenedor (v1.1.12). La presentación usa filas alternas sutiles, estados y prioridades diferenciados, fechas agrupadas y etiquetas compactas.
 
 ## 4. Calendar View (abstracta, `calendar-view.ts`)
 
@@ -515,7 +515,7 @@ La barra de filtros compartida (§11, §20.3) incluye:
 - La cabecera de cada grupo usa el color del área, igual que en Hábitos.
 
 ### 13.4 Decisiones abiertas
-1. Qué muestra la Tabla en lugar de la columna de carpeta: propuesta de dos columnas, Área (chip con el color del área) y Sub-área, con los mismos valores que los combos. Sin confirmar.
+Ninguna. Decidido: la Tabla conserva la columna de carpeta, renombrada **Área** (primera carpeta; la raíz del vault muestra «Sin área»), y no tiene columna de Sub-área: la ruta del archivo va pequeña bajo la tarea y el filtro, el agrupado y el orden cubren la sub-área.
 
 ### 13.5 Fuera de alcance
 Área configurable por tarea o por nota (frontmatter, etiqueta o campo en la línea); mover tareas entre áreas arrastrando (implicaría mover la tarea de archivo); áreas sin carpeta.

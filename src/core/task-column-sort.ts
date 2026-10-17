@@ -3,13 +3,14 @@
 // después, la Tabla. Las columnas son las de la Tabla; el orden por defecto es el de `TaskViewState`.
 import { ITask } from '../types/interfaces';
 import { STATUS_OPTIONS } from './task-status-options';
+import { resolveTaskArea } from './area';
 
 /** Columnas ordenables, con la clave de traducción de su nombre. */
 export const TASK_SORT_COLUMNS: readonly { value: string; labelKey: string }[] = [
   { value: 'priority', labelKey: 'title_priority' },
   { value: 'status', labelKey: 'task_status' },
   { value: 'description', labelKey: 'task' },
-  { value: 'folder', labelKey: 'folder' },
+  { value: 'folder', labelKey: 'area' },
   { value: 'due', labelKey: 'dates' },
   { value: 'tags', labelKey: 'tags' },
 ];
@@ -30,8 +31,11 @@ function compareByColumn(a: ITask, b: ITask, column: string): number {
       return (STATUS_RANK.get(a.state.status) ?? 0) - (STATUS_RANK.get(b.state.status) ?? 0);
     case 'description':
       return byText(a.section.desc, b.section.desc);
-    case 'folder':
-      return byText(a.file.path, b.file.path);
+    case 'folder': {
+      // La columna Carpeta es ahora Área: primero por área y, dentro de ella, por ruta
+      const byArea = byText(resolveTaskArea(a.file.path).area, resolveTaskArea(b.file.path).area);
+      return byArea !== 0 ? byArea : byText(a.file.path, b.file.path);
+    }
     case 'tags':
       return byText(a.section.tags.join(','), b.section.tags.join(','));
     default:

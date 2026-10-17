@@ -18,6 +18,7 @@
   
   .oa-tasks-table {
     width: 100%;
+    table-layout: fixed; // los anchos los fija `resizeColumns()`; el texto largo se corta en vez de ensanchar la columna
     border-collapse: separate;
     border-spacing: 0;
     color: var(--text-normal);
@@ -106,6 +107,55 @@
         display: none;
       }
     }
+
+    .oa-group-row {
+      cursor: pointer;
+
+      td {
+        padding: 6px 10px;
+        background-color: var(--background-secondary);
+      }
+
+      &:hover td {
+        background-color: var(--background-modifier-hover);
+      }
+
+      &[data-group-color] td {
+        box-shadow: inset 3px 0 0 var(--oa-group-color);
+      }
+
+      .oa-group-row-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 0.9em;
+        color: var(--text-normal);
+      }
+
+      .oa-task-count {
+        margin-left: 0;
+        color: var(--text-faint);
+        font-size: 0.85em;
+        font-variant-numeric: tabular-nums;
+      }
+
+      // Sangría por nivel de sub-área
+      @for $level from 1 through 5 {
+        &[data-level="#{$level}"] .oa-group-row-title {
+          padding-left: #{$level * 18}px;
+          font-weight: 500;
+        }
+      }
+
+      &.oa-collapsed .oa-folder-toggle {
+        transform: rotate(-90deg);
+      }
+    }
+
+    .oa-group-hidden {
+      display: none;
+    }
   }
 }
 
@@ -188,6 +238,15 @@
     font-weight: 500;
     line-height: 1.4;
     overflow-wrap: anywhere;
+  }
+
+  .oa-task-file-path {
+    margin-top: 2px;
+    overflow: hidden;
+    color: var(--text-faint);
+    font-size: 0.75em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .oa-task-subtasks-indicator {
@@ -415,10 +474,6 @@
 @media (max-width: 768px) {
   .oa-table-container {
     overflow-x: auto;
-    
-    .oa-tasks-table {
-      min-width: 760px;
-    }
   }
 }
 

@@ -8,73 +8,6 @@
   gap: 12px;
 }
 
-.oa-table-toolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
-  gap: 10px;
-  align-items: center;
-  padding: 8px 0;
-
-  .oa-table-filters {
-    display: flex;
-    min-width: 0;
-    flex-wrap: wrap;
-    gap: 6px;
-
-    .oa-table-filter-dropdown {
-      @include interactive-control;
-      max-width: 100%;
-      min-width: 0;
-      height: 32px;
-      padding: 4px 26px 4px 9px;
-      border-radius: 4px;
-      font-size: 0.88em;
-    }
-  }
-
-  .oa-table-search {
-    position: relative;
-    display: flex;
-    min-width: 0;
-
-    .oa-search-input {
-      @include interactive-control;
-      width: 100%;
-      min-width: 0;
-      height: 32px;
-      padding: 5px 34px 5px 10px;
-      text-align: left;
-    }
-
-    .oa-search-clear-button {
-      position: absolute;
-      top: 50%;
-      right: 7px;
-      display: none;
-      width: 22px;
-      height: 22px;
-      align-items: center;
-      justify-content: center;
-      padding: 0 !important; // `.is-tablet button` de Obsidian impone 20 px laterales y ovalaba el botón
-      transform: translateY(-50%);
-      border: 0;
-      border-radius: 4px;
-      background: transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-
-      &.oa-visible {
-        display: flex;
-      }
-
-      &:hover {
-        background: var(--background-modifier-hover);
-        color: var(--text-normal);
-      }
-    }
-  }
-}
-
 .oa-table-container {
   flex: 1;
   overflow: auto;
@@ -480,14 +413,6 @@
 }
 
 @media (max-width: 768px) {
-  .oa-table-toolbar {
-    grid-template-columns: minmax(0, 1fr);
-
-    .oa-table-search {
-      width: 100%;
-    }
-  }
-  
   .oa-table-container {
     overflow-x: auto;
     

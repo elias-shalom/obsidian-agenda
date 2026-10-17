@@ -7,25 +7,25 @@ import Handlebars from 'handlebars';
 import { TaskDateType } from '../types/enums';
 import { TaskWriter } from '../core/task-writer';
 import { attachTaskGestures, TASK_GESTURE_IGNORE_SELECTOR } from '../core/task-gestures';
+import { TaskFilterBar } from '../core/task-filter-bar';
+import { TaskViewState, DEFAULT_TASK_VIEW_STATE, loadTaskViewState, saveTaskViewState, filterTasksByViewState } from '../core/task-view-state';
 
-const TABLE_VIEW_STATE_KEY = 'obsidian-agenda-task-table-state';
-
-interface TaskTableViewState {
-  search: string;
-  priority: string;
-  status: string;
-  folder: string;
-  due: string;
-  sortColumn: string;
-  sortDirection: 'asc' | 'desc';
-}
+/** Columnas por las que se puede ordenar, con la clave de traducción de su nombre. */
+const SORTABLE_COLUMNS = [
+  { value: 'priority', labelKey: 'title_priority' },
+  { value: 'status', labelKey: 'task_status' },
+  { value: 'description', labelKey: 'task' },
+  { value: 'folder', labelKey: 'folder' },
+  { value: 'due', labelKey: 'dates' },
+  { value: 'tags', labelKey: 'tags' },
+];
 
 export const TABLE_VIEW_TYPE = 'table-view';
 
 export class TableView extends BaseView {
   private tasks: ITask[] = []; // Lista de tareas
-  private currentSortColumn = 'priority'; // Columna actualmente ordenada
-  private currentSortDirection: 'asc' | 'desc' = 'desc'; // Dirección de la ordenación
+  private viewState: TaskViewState = { ...DEFAULT_TASK_VIEW_STATE };
+  private filterBar: TaskFilterBar | null = null;
   private taskWriter: TaskWriter;
 
   constructor(leaf: WorkspaceLeaf, private plugin: Plugin, private i18n: I18n, private taskManager: TaskManager) {
@@ -49,10 +49,13 @@ export class TableView extends BaseView {
     this.showLoadingOverlay(8, true);
     this.tasks = await this.getAllTasks(this.taskManager);
 
-    const uniqueFolders = [...new Set(this.tasks.map(task => task.file.root))].sort();
+    // El estado se comparte con otras vistas de tareas: se lee al abrir y se escribe al cambiar.
+    this.viewState = loadTaskViewState(this.app);
+    if (!SORTABLE_COLUMNS.some(column => column.value === this.viewState.sortColumn)) {
+      this.viewState.sortColumn = DEFAULT_TASK_VIEW_STATE.sortColumn;
+    }
 
-    await this.render(TABLE_VIEW_TYPE, { tasks: this.tasks,
-    uniqueFolders: uniqueFolders }, this.i18n, this.plugin as AgendaPlugin, this.leaf);
+    await this.render(TABLE_VIEW_TYPE, { tasks: this.tasks }, this.i18n, this.plugin as AgendaPlugin, this.leaf);
   }
 
   protected registerViewSpecificHelpers(_i18n: I18n): void {
@@ -82,11 +85,26 @@ export class TableView extends BaseView {
   }
 
   protected setupViewSpecificEventListeners(container: HTMLElement, _data: TableViewData): void {
-    this.restoreTableState(container);
+    // Barra compartida: búsqueda, filtros y orden. Se monta primero porque reajusta el área guardada
+    // si ya no tiene tareas, y la tabla filtra con el estado resultante.
+    const toolbar = container.querySelector<HTMLElement>('.oa-table-toolbar');
+    if (toolbar) {
+      this.filterBar = new TaskFilterBar({
+        i18n: this.i18n,
+        tasks: this.tasks,
+        state: this.viewState,
+        sortOptions: SORTABLE_COLUMNS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
+        onChange: (state) => {
+          const sortChanged = state.sortColumn !== this.viewState.sortColumn || state.sortDirection !== this.viewState.sortDirection;
+          this.viewState = state;
+          if (sortChanged) this.applyCurrentSort(container);
+          this.applyFilters(container);
+        },
+      });
+      this.filterBar.mount(toolbar);
+      this.viewState = this.filterBar.getState();
+    }
 
-    // Implementar los event listeners para la tabla aquí
-    // Por ejemplo: ordenación, filtrado, paginación, etc.
-    
     // Listener para ordenar columnas
     const sortableHeaders = container.querySelectorAll('th.oa-sortable');
     sortableHeaders.forEach(header => {
@@ -100,40 +118,6 @@ export class TableView extends BaseView {
         this.handleColumnSort(header as HTMLElement);
       });
     });
-  
-    // Listener para el filtro de búsqueda
-    const searchInput = container.querySelector('#oa-table-search-input') as HTMLInputElement;
-    const searchClearButton = container.querySelector('#oa-table-search-clear') as HTMLButtonElement;
-    searchClearButton?.classList.toggle('oa-visible', Boolean(searchInput?.value));
-    searchInput?.addEventListener('input', () => {
-      searchClearButton?.classList.toggle('oa-visible', Boolean(searchInput.value));
-      this.filterTasks(container);
-    });
-    
-    // Listener para los filtros de dropdown
-    const filterDropdowns = container.querySelectorAll('.oa-table-filter-dropdown');
-    filterDropdowns.forEach(dropdown => {
-      dropdown.addEventListener('change', () => {
-        this.filterTasks(container);
-      });
-    });
-
-    if (searchInput && searchClearButton) {
-      // Limpiar el campo de búsqueda al hacer clic en el botón
-      searchClearButton.addEventListener('click', () => {
-        searchInput.value = '';
-        searchClearButton.classList.remove('oa-visible');
-        searchInput.focus(); // Opcional: mantiene el foco en el campo
-        this.filterTasks(container); // Volver a aplicar filtros sin el texto
-      });
-      
-      // Inicialmente ocultar el botón si no hay texto
-      if (searchInput.value) {
-        searchClearButton.classList.add('oa-visible');
-      } else {
-        searchClearButton.classList.remove('oa-visible');
-      }
-    }
 
     const tableRows = container.querySelectorAll('tr.oa-task-row');
   
@@ -158,270 +142,32 @@ export class TableView extends BaseView {
     });
 
     this.applyCurrentSort(container);
-    this.filterTasks(container);
+    this.applyFilters(container);
   }
 
-  private restoreTableState(container: HTMLElement): void {
-    const savedState = this.app.loadLocalStorage(TABLE_VIEW_STATE_KEY) as string | null;
-    if (!savedState) return;
+  private applyFilters(container: HTMLElement): void {
+    const visibleIds = new Set(filterTasksByViewState(this.tasks, this.viewState).map(task => task.id));
+    const tableRows = container.querySelectorAll<HTMLElement>('tr.oa-task-row');
 
-    try {
-      const state = JSON.parse(savedState) as Partial<TaskTableViewState>;
-      const searchInput = container.querySelector<HTMLInputElement>('#oa-table-search-input');
-      if (typeof state.search === 'string' && searchInput) searchInput.value = state.search;
-
-      const selectValues: Array<[string, string | undefined]> = [
-        ['#oa-table-priority-filter', state.priority],
-        ['#oa-table-status-filter', state.status],
-        ['#oa-table-folder-filter', state.folder],
-        ['#oa-table-due-filter', state.due],
-      ];
-      for (const [selector, value] of selectValues) {
-        const select = container.querySelector<HTMLSelectElement>(selector);
-        if (select && typeof value === 'string' && Array.from(select.options).some(option => option.value === value)) {
-          select.value = value;
-        }
-      }
-
-      const sortableColumns = ['priority', 'status', 'description', 'folder', 'due', 'tags'];
-      if (state.sortColumn && sortableColumns.includes(state.sortColumn) &&
-          (state.sortDirection === 'asc' || state.sortDirection === 'desc')) {
-        this.currentSortColumn = state.sortColumn;
-        this.currentSortDirection = state.sortDirection;
-      }
-    } catch (error) {
-      console.error('Error al cargar el estado de la tabla de tareas:', error);
-    }
-  }
-
-  private saveTableState(container: HTMLElement): void {
-    const getValue = (selector: string): string =>
-      container.querySelector<HTMLInputElement | HTMLSelectElement>(selector)?.value || '';
-
-    const state: TaskTableViewState = {
-      search: getValue('#oa-table-search-input'),
-      priority: getValue('#oa-table-priority-filter'),
-      status: getValue('#oa-table-status-filter'),
-      folder: getValue('#oa-table-folder-filter'),
-      due: getValue('#oa-table-due-filter'),
-      sortColumn: this.currentSortColumn,
-      sortDirection: this.currentSortDirection,
-    };
-    this.app.saveLocalStorage(TABLE_VIEW_STATE_KEY, JSON.stringify(state));
-  }
-
-  /**
-   * Normaliza un texto removiendo acentos y diacríticos
-   * Convierte: "ñáéíóúü" → "naeiouu"
-   */
-  private normalizeText(text: string): string {
-    return text
-      .normalize('NFD')               // Normaliza descomponiendo caracteres
-      .replace(/[\u0300-\u036f]/g, '') // Elimina los diacríticos
-      .toLowerCase();                  // Convierte a minúsculas
-  }
-
-  private filterTasks(container: HTMLElement): void {
-    // Obtener valores de los filtros
-    const searchInput = container.querySelector('#oa-table-search-input') as HTMLInputElement;
-    const priorityFilter = container.querySelector('#oa-table-priority-filter') as HTMLSelectElement;
-    const statusFilter = container.querySelector('#oa-table-status-filter') as HTMLSelectElement;
-    const folderFilter = container.querySelector('#oa-table-folder-filter') as HTMLSelectElement;
-    const dueFilter = container.querySelector('#oa-table-due-filter') as HTMLSelectElement;
-    
-    // Obtener los valores seleccionados
-    const rawSearchText = searchInput?.value?.trim() || '';
-    const normalizedSearchText = this.normalizeText(rawSearchText);
-    const priorityValue = priorityFilter?.value || 'all';
-    const statusValue = statusFilter?.value || 'all';
-    const folderValue = folderFilter?.value || 'all';
-    const dueValue = dueFilter?.value || 'all';
-    
-    // Obtener todas las filas de tareas
-    const tableRows = container.querySelectorAll('tr.oa-task-row');
     let visibleCount = 0;
-    
-    // Obtener la fecha actual para los filtros de fecha
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Calcular fecha de fin de semana (7 días desde hoy)
-    const endOfWeek = new Date(today);
-    endOfWeek.setDate(today.getDate() + 7);
-    
-    // Aplicar filtros a cada fila
     tableRows.forEach(row => {
-      let shouldShow = true;
-      
-      // 1. Filtro de texto (búsqueda) - ahora con normalización
-      if (normalizedSearchText) {
-        const taskDescription = row.querySelector('.oa-task-description')?.textContent || '';
-        const normalizedDescription = this.normalizeText(taskDescription);
-        
-        const taskTags = Array.from(row.querySelectorAll('.oa-task-tag'))
-          .map(tag => tag.textContent || '')
-          .join(' ');
-        const normalizedTags = this.normalizeText(taskTags);
-        
-        if (!normalizedDescription.includes(normalizedSearchText) && 
-            !normalizedTags.includes(normalizedSearchText)) {
-          shouldShow = false;
-        }
-      }
-
-      // 2. Filtro por prioridad
-      if (shouldShow && priorityValue !== 'all') {
-        if (priorityValue === 'none') {
-          // Buscar tareas sin prioridad
-          const priorityElement = row.querySelector('.oa-task-priority');
-          const hasPriority = !priorityElement?.classList.contains('priority-none');
-          
-          if (hasPriority) {
-            shouldShow = false;
-          }
-        } else {
-          // Buscar tareas con prioridad específica
-          const hasPriority = row.querySelector(`.priority-${priorityValue.toLowerCase()}`);
-          
-          if (!hasPriority) {
-            shouldShow = false;
-          }
-        }
-      }
-      
-      // 3. Filtro por estado
-      if (shouldShow && statusValue !== 'all') {
-        const statusIcon = row.querySelector('.oa-status-icon');
-        const currentStatus = statusIcon?.getAttribute('data-status') || '';
-        
-        if (currentStatus !== statusValue) {
-          shouldShow = false;
-        }
-      }
-
-      // 4. Filtro por carpeta
-      if (shouldShow && folderValue !== 'all') {
-        const folderName = row.querySelector('.oa-folder-name')?.textContent || '';
-        
-        if (folderName !== folderValue) {
-          shouldShow = false;
-        }
-      }
-
-      // 5. Filtro por fecha de vencimiento
-      if (shouldShow && dueValue !== 'all') {
-        // Verificar presencia de cualquier fecha con contenido
-        const dateElements = row.querySelectorAll('.oa-task-date');
-        const hasDateWithContent = Array.from(dateElements).some(el => {
-          const dateText = el.querySelector('.oa-date-text')?.textContent || '';
-          return dateText.trim().length > 0;
-        });
-        
-        // Verificar los casos especiales primero
-        if (dueValue === 'hasdate') {
-          // Mostrar solo si tiene al menos una fecha con contenido
-          if (!hasDateWithContent) {
-            shouldShow = false;
-          }
-        } else if (dueValue === 'nodate') {
-          // Mostrar solo si no tiene ninguna fecha con contenido
-          if (hasDateWithContent) {
-            shouldShow = false;
-          }
-        } else {
-          // Para los demás filtros, buscar específicamente la fecha de vencimiento
-          const dueDateElement = row.querySelector('.task-date.due-date');
-          
-          // Si no hay fecha de vencimiento, no mostrar para filtros que la requieren
-          if (!dueDateElement) {
-            shouldShow = false;
-          } else {
-            // Obtener el texto de la fecha del span con la clase 'date-text'
-            const dateText = dueDateElement.querySelector('.oa-date-text')?.textContent || '';
-            // Convertir a objeto Date
-            const dueDate = new Date(dateText);
-            
-            // Verificar que es una fecha válida
-            if (!isNaN(dueDate.getTime())) {
-              switch (dueValue) {
-                case 'overdue':
-                  // Tareas vencidas (antes de hoy)
-                  if (dueDate >= today) {
-                    shouldShow = false;
-                  }
-                  break;
-                  
-                case 'today': {
-                  // Tareas para hoy
-                  const isToday = dueDate.getDate() === today.getDate() && 
-                                dueDate.getMonth() === today.getMonth() && 
-                                dueDate.getFullYear() === today.getFullYear();
-                  if (!isToday) {
-                    shouldShow = false;
-                  }
-                  break;
-                }
-                  
-                case 'thisweek':
-                  // Tareas para esta semana (próximos 7 días)
-                  if (dueDate < today || dueDate > endOfWeek) {
-                    shouldShow = false;
-                  }
-                  break;
-                  
-                case 'future':
-                  // Tareas futuras (después de esta semana)
-                  if (dueDate <= endOfWeek) {
-                    shouldShow = false;
-                  }
-                  break;
-              }
-            } else {
-              // Si no se puede parsear la fecha, no mostrar en filtros específicos
-              shouldShow = false;
-            }
-          }
-        }
-      }
-
-      // Aplicar visibilidad según resultado de filtros
-      if (shouldShow) {
-        row.classList.remove('oa-hidden');
-        visibleCount++;
-      } else {
-        row.classList.add('oa-hidden');
+      const visible = visibleIds.has(row.dataset.taskId ?? '');
+      row.classList.toggle('oa-hidden', !visible);
+      if (visible) {
+        visibleCount += 1;
+        const rowNumber = row.querySelector('.oa-row-number');
+        if (rowNumber) rowNumber.textContent = String(visibleCount);
       }
     });
 
-    // Luego actualizar los números solo para las filas visibles
-    let rowNumber = 1;
-    tableRows.forEach(row => {
-      if (!row.classList.contains('oa-hidden')) {
-        const rowNumberElement = row.querySelector('.row-number');
-        if (rowNumberElement) {
-          rowNumberElement.textContent = rowNumber.toString();
-          rowNumber++;
-        }
-      }
-    });
-
-    // Actualizar el contador total en el encabezado
     const totalRowCountElement = container.querySelector('#oa-total-row-count');
     if (totalRowCountElement) {
       totalRowCountElement.textContent = `(${visibleCount})`;
     }
 
-    // Mostrar mensaje si no hay resultados
-    const emptyMessage = container.querySelector('.oa-empty-table-message') as HTMLElement;
-    if (emptyMessage) {
-      if (visibleCount === 0) {
-        emptyMessage.classList.add('oa-visible');
-      } else {
-        emptyMessage.classList.remove('oa-visible');
-      }
-    }
+    container.querySelector('.oa-empty-table-message')?.classList.toggle('oa-visible', visibleCount === 0);
 
-    this.saveTableState(container);
+    saveTaskViewState(this.app, this.viewState);
     this.resizeColumns(container);
   }
 
@@ -467,41 +213,19 @@ export class TableView extends BaseView {
 
   private handleColumnSort(header: HTMLElement): void {
     const sortBy = header.dataset.sort;
-    
     if (!sortBy) return;
-    
-    // Si hacemos clic en la misma columna, cambiamos la dirección
-    if (this.currentSortColumn === sortBy) {
-      this.currentSortDirection = this.currentSortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      // Si es una nueva columna, establecemos dirección ascendente por defecto
-      this.currentSortColumn = sortBy;
-      this.currentSortDirection = 'asc';
-    }
-    
-    const container = header.closest('.oa-table-view-container');
+
+    // Misma columna: invierte la dirección; columna nueva: ascendente por defecto
+    const direction = this.viewState.sortColumn === sortBy && this.viewState.sortDirection === 'asc' ? 'desc' : 'asc';
+    this.viewState = { ...this.viewState, sortColumn: sortBy, sortDirection: direction };
+    this.filterBar?.setSort(sortBy, direction);
+
+    const container = header.closest<HTMLElement>('.oa-table-view-container');
     if (!container) return;
-    
-    // Actualizar indicadores visuales de ordenación
-    this.updateSortIndicators(container);
-    
-    // Obtener todas las filas
-    const tableBody = container.querySelector('tbody');
-    if (!tableBody) return;
-    
-    const rows = Array.from(tableBody.querySelectorAll('tr.oa-task-row'));
-    
-    // Ordenar las filas
-    const sortedRows = this.sortRows(rows, sortBy, this.currentSortDirection);
-    
-    // Eliminar las filas actuales
-    rows.forEach(row => row.remove());
-    
-    // Añadir las filas ordenadas
-    sortedRows.forEach(row => tableBody.appendChild(row));
-    
-    // Actualizar la numeración de filas
-    this.filterTasks(container as HTMLElement);
+
+    this.applyCurrentSort(container);
+    // Renumera las filas en el nuevo orden y guarda el estado
+    this.applyFilters(container);
   }
 
   private applyCurrentSort(container: HTMLElement): void {
@@ -510,7 +234,7 @@ export class TableView extends BaseView {
     if (!tableBody) return;
 
     const rows = Array.from(tableBody.querySelectorAll('tr.oa-task-row'));
-    const sortedRows = this.sortRows(rows, this.currentSortColumn, this.currentSortDirection);
+    const sortedRows = this.sortRows(rows, this.viewState.sortColumn, this.viewState.sortDirection);
     sortedRows.forEach(row => tableBody.appendChild(row));
   }
 
@@ -526,12 +250,12 @@ export class TableView extends BaseView {
     });
     
     // Añadir indicador a la columna activa
-    const activeHeader = container.querySelector(`[data-sort="${this.currentSortColumn}"]`);
+    const activeHeader = container.querySelector(`[data-sort="${this.viewState.sortColumn}"]`);
     if (activeHeader) {
-      activeHeader.setAttribute('aria-sort', this.currentSortDirection === 'asc' ? 'ascending' : 'descending');
+      activeHeader.setAttribute('aria-sort', this.viewState.sortDirection === 'asc' ? 'ascending' : 'descending');
       const indicator = activeHeader.querySelector('.oa-sort-indicator');
       if (indicator) {
-        indicator.classList.add(this.currentSortDirection === 'asc' ? 'oa-sort-asc' : 'oa-sort-desc');
+        indicator.classList.add(this.viewState.sortDirection === 'asc' ? 'oa-sort-asc' : 'oa-sort-desc');
       }
     }
   }

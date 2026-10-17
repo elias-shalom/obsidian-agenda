@@ -2,7 +2,7 @@
 // Agrupado genérico de tareas por campo (v1.1.12, Fase A; ver docs/agenda-tasks/Arquitectura
 // técnica.md §20.2). Lo consumen Lista y Tabla y, en v1.1.13, Kanban y Gantt.
 import { ITask, GroupField, FolderNode } from "../types/interfaces";
-import { CoreTaskStatus } from "../types/enums";
+import { STATUS_OPTIONS } from "./task-status-options";
 
 export interface TaskGroup {
   /** Clave estable del grupo (para recordar su estado plegado o su orden). */
@@ -14,16 +14,6 @@ export interface TaskGroup {
   /** Subgrupos anidados; solo con `path`. */
   children?: TaskGroup[];
 }
-
-/** Estados en orden de flujo de trabajo, con su clave de traducción (el mismo orden que el menú de estado). */
-const STATUS_COLUMNS: { status: CoreTaskStatus; labelKey: string }[] = [
-  { status: CoreTaskStatus.Todo, labelKey: "status_todo" },
-  { status: CoreTaskStatus.InProgress, labelKey: "status_in_progress" },
-  { status: CoreTaskStatus.OnHold, labelKey: "status_on_hold" },
-  { status: CoreTaskStatus.Done, labelKey: "status_done" },
-  { status: CoreTaskStatus.Cancelled, labelKey: "status_cancelled" },
-  { status: CoreTaskStatus.nonTask, labelKey: "status_non_task" },
-];
 
 /** De mayor a menor; lo que no coincide (`undefined`) va al final. */
 const PRIORITY_ORDER = ["highest", "high", "medium", "normal", "low", "lowest"];
@@ -105,7 +95,7 @@ export function groupTasksByField(
 ): TaskGroup[] {
   switch (field) {
     case "status": {
-      const groups: TaskGroup[] = STATUS_COLUMNS.map(({ status, labelKey }) => ({
+      const groups: TaskGroup[] = STATUS_OPTIONS.map(({ status, labelKey }) => ({
         key: status,
         label: translate(labelKey),
         tasks: [],

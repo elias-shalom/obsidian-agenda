@@ -1,52 +1,5 @@
 <div class="oa-table-view-container">
-  <div class="oa-table-toolbar">
-
-    <div class="oa-table-filters">
-            <select id="oa-table-priority-filter" class="oa-table-filter-dropdown">
-        <option value="all">{{t 'all_priorities'}}</option>
-        <option value="Highest">{{t 'highest_priority'}} 🔺</option>
-        <option value="High">{{t 'high_priority'}} ⏫</option>
-        <option value="Medium">{{t 'medium_priority'}} 🔼</option>
-        <option value="Normal">{{t 'normal_priority'}} ▶️</option>
-        <option value="Low">{{t 'low_priority'}} 🔽</option>
-        <option value="Lowest">{{t 'lowest_priority'}} ⏬</option>
-        <option value="none">{{t 'no_priority'}}</option>
-      </select>
-
-      <select id="oa-table-status-filter" class="oa-table-filter-dropdown">
-        <option value="all">{{t 'all_tasks'}}</option>
-        <option value="Todo">{{t 'status_todo'}}</option>
-        <option value="InProgress">{{t 'status_in_progress'}}</option>
-        <option value="Done">{{t 'status_done'}}</option>
-        <option value="Cancelled">{{t 'status_cancelled'}}</option>
-        <option value="nonTask">{{t 'status_non_task'}}</option>
-        <option value="OnHold">{{t 'status_on_hold'}}</option>
-      </select>
-
-      <select id="oa-table-folder-filter" class="oa-table-filter-dropdown">
-        <option value="all">{{t 'all_folders'}}</option>
-        {{#each uniqueFolders}}
-        <option value="{{this}}">{{this}}</option>
-        {{/each}}
-      </select>
-
-      <select id="oa-table-due-filter" class="oa-table-filter-dropdown">
-        <option value="all">{{t 'all_dates'}}</option>
-        <option value="hasdate">{{t 'has_any_date'}}</option>
-        <option value="overdue">{{t 'overdue'}}</option>
-        <option value="today">{{t 'due_today'}}</option>
-        <option value="thisweek">{{t 'due_this_week'}}</option>
-        <option value="future">{{t 'future_tasks'}}</option>
-        <option value="nodate">{{t 'no_date'}}</option>
-      </select>
-    </div>
-
-    <div class="oa-table-search">
-      <input type="text" id="oa-table-search-input" placeholder="{{t 'search_tasks'}}" class="oa-search-input">
-      <button id="oa-table-search-clear" class="oa-search-clear-button">×</button>
-    </div>
-
-  </div>
+  <div class="oa-table-toolbar"></div>
   
   <div class="oa-table-container">
     <table class="oa-tasks-table">
@@ -77,7 +30,7 @@
       </thead>
       <tbody>
         {{#each tasks}}
-        <tr class="oa-task-row {{#if completed}}oa-task-completed{{/if}} {{priorityClass}}" data-file-path="{{this.file.path}}" data-line-number="{{line.number}}">
+        <tr class="oa-task-row {{#if completed}}oa-task-completed{{/if}} {{priorityClass}}" data-task-id="{{id}}" data-file-path="{{this.file.path}}" data-line-number="{{line.number}}">
           <td class="oa-table-col-row-number">
             <span class="oa-row-number"></span>
           </td>
@@ -93,7 +46,7 @@
               {{/if}}
           </td>
           <td class="oa-table-col-status">
-            <div class="oa-task-status-icon" title="{{t state.text}}" data-task-id="{{id}}">
+            <div class="oa-task-status-icon" title="{{t state.text}}">
               <span class="oa-status-icon" data-status="{{state.text}}">{{state.emoji}}</span>
             </div>
           </td>

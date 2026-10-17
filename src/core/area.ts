@@ -118,3 +118,37 @@ export function matchesTaskArea(filePath: string, selected: { area?: string; sub
 
   return true;
 }
+
+/** Áreas presentes en las rutas dadas, sin repetir (por nombre normalizado) y ordenadas; la raíz del vault no cuenta. */
+export function listTaskAreas(filePaths: string[]): string[] {
+  const byKey = new Map<string, string>();
+  for (const filePath of filePaths) {
+    const { area } = resolveTaskArea(filePath);
+    const key = normalizeAreaName(area);
+    if (key && !byKey.has(key)) byKey.set(key, area);
+  }
+  return [...byKey.values()].sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * Sub-áreas presentes bajo `area`: cada ruta con tareas y también sus carpetas contenedoras
+ * (con notas en `B/C/D` salen `B`, `B/C` y `B/C/D`), ya que la sub-área filtra por prefijo.
+ */
+export function listTaskSubAreas(filePaths: string[], area: string): string[] {
+  const areaKey = normalizeAreaName(area);
+  if (!areaKey) return [];
+
+  const byKey = new Map<string, string>();
+  for (const filePath of filePaths) {
+    const resolved = resolveTaskArea(filePath);
+    if (normalizeAreaName(resolved.area) !== areaKey) continue;
+
+    const folders = resolved.subArea.split('/').filter(Boolean);
+    for (let depth = 1; depth <= folders.length; depth += 1) {
+      const path = folders.slice(0, depth).join('/');
+      const key = normalizeSubAreaPath(path);
+      if (key && !byKey.has(key)) byKey.set(key, path);
+    }
+  }
+  return [...byKey.values()].sort((a, b) => a.localeCompare(b));
+}

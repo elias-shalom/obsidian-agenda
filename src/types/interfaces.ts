@@ -411,7 +411,6 @@ export type DurationTaskSegment = ITask & {
  */
 export interface TableViewData {
   tasks: ITask[];
-  uniqueFolders: string[];
 }
 
 /**

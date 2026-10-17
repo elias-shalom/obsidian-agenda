@@ -664,6 +664,8 @@ Para `status`, las columnas siguen el orden fijo de `CoreTaskStatus` (no el alfa
 
 ### 20.3 Barra de filtros compartida
 
+> Implementada (v1.1.12): `TaskFilterBar` en `src/core/task-filter-bar.ts` (`mount(root)`, `onChange`, `getState()`, `setSort()`), con el estado en `src/core/task-view-state.ts` y las opciones de estado en `src/core/task-status-options.ts`. Filtra con `filterTasksByViewState()`: prioridad, estado, área y vencimiento pasan por `TaskFilter`; la búsqueda y «con/sin fecha» son propias. «Esta semana» son los próximos 7 días y «futuras» las posteriores. La Tabla ya la usa; Lista, Kanban y Gantt, no.
+
 La Tabla tiene hoy sus propios controles (`#oa-table-search-input`, `#oa-table-priority-filter`, `#oa-table-status-filter`, `#oa-table-folder-filter`, `#oa-table-due-filter`), con las 6 opciones de estado escritas a mano en `table-view.hbs` y su estado persistido en `localStorage` (`TABLE_VIEW_STATE_KEY`). Se generaliza a una barra reutilizable en `src/core/` (misma idea que `TimeDial`/`CalendarDatePicker`: clase con `mount(root)` y callback `onChange`) que recibe qué controles mostrar y una clave de persistencia propia por vista, y genera las opciones de estado desde `CoreTaskStatus` + i18n. La consumen Lista, Tabla, Kanban y Gantt; un cambio en las opciones se hace en un solo lugar.
 
 ### 20.3.1 Helper de gestos de tarea compartido
@@ -820,6 +822,8 @@ La barra filtra sobre los datos con `TaskFilter`. La Tabla hoy filtra ocultando 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14. Se apoya en la barra de filtros (§20.3), el helper de gestos (§20.3.1) y las áreas (§22).
 
 ### 23.1 Estado compartido
+
+> Implementado en `src/core/task-view-state.ts` (búsqueda, prioridad, estado, área, sub-área, vencimiento, agrupado y orden; la clave es `obsidian-agenda-task-view-state`). El campo `mode` llega con el conmutador (U4).
 
 Nuevo módulo `src/core/task-view-state.ts` con `TaskViewState`: búsqueda, filtros (prioridad, estado, área, sub-área, vencimiento), agrupado, orden (campo y dirección) y modo. Se persiste con `app.saveLocalStorage` bajo una única clave, en lugar de la clave propia de la Tabla (`obsidian-agenda-task-table-state`, hoy en `table-view.ts`). Ambos modos lo leen al abrir y lo escriben al cambiar. Migración: la clave antigua se lee una vez, se convierte (`folder` → `area`, §22.3) y se elimina.
 

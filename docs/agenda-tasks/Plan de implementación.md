@@ -361,7 +361,7 @@ Fetch en vivo desde GitHub Releases; renderizado de Markdown libre (imágenes, v
 
 ### Fase A — Piezas compartidas (base para Kanban y Gantt, sin vista nueva)
 - [x] `TaskSorter.groupTasksByField(tasks, field)` genérico, con las columnas de estado en orden de flujo de trabajo (el del menú de estado: To-do, En progreso, En espera, Hecho, Cancelada, No es tarea; siempre las 6, aunque estén vacías). Para `path` devuelve un árbol de carpetas; la lógica vive en `src/core/task-grouping.ts` y `BaseView.groupTasksByFolder()` delega en ella. Falta `'area'`/`'subArea'` (AR2) y que Lista y Tabla lo usen (U2/U3).
-- [ ] Barra de filtros reutilizable en `src/core/` ([[Arquitectura técnica]] §20.3), con opciones de estado generadas desde `CoreTaskStatus` + i18n y persistencia por vista; reemplaza los controles hardcodeados de `table-view.hbs`.
+- [x] Barra de filtros reutilizable en `src/core/` ([[Arquitectura técnica]] §20.3), con opciones de estado generadas desde `STATUS_OPTIONS` + i18n y persistencia por vista; reemplaza los controles hardcodeados de `table-view.hbs`. Hecho: `TaskFilterBar` (`src/core/task-filter-bar.ts`, estilos en `_task-filter-bar.scss`); la Tabla la monta y filtra sobre datos con `filterTasksByViewState()` (`src/core/task-view-state.ts`). El combo de agrupado solo se muestra si la vista pasa `groupOptions` (la Tabla lo hará en U3; la Lista, en U2).
 - [x] `attachTaskGestures()` en `src/core/task-gestures.ts` ([[Arquitectura técnica]] §20.3.1): se migra primero el calendario, con la misma lógica de temporizador, y después Lista y Tabla. Hecho: calendario, Lista y Tabla; en Lista y Tabla `onChanged` pasa a ser `refreshView()` (lectura forzada, como en el calendario) en lugar de `onOpen()`.
 - [x] Separar los ids ([[Arquitectura técnica]] §20.3.2): `ITask.id` siempre `ruta#línea`, el `🆔` en `ITaskFlow.id`; ajustar el extractor, el modal (`isAutoId`) y el atributo `data-task-id` de la Tabla (el atributo conserva `{{id}}`, que ahora es la posición; nada lo lee).
 - [x] Escritura segura: `updateTaskLine()` e `insertLineAbove()` con el texto esperado de la línea, búsqueda de la línea exacta y aviso si no se encuentra (`locateTaskLine()` en `src/core/task-line-locator.ts`; `updateTaskLine()` devuelve dónde escribió y la ocurrencia recurrente se inserta con ese resultado; `CalendarView.writeTaskLine()` toma el texto esperado de la tarea dibujada y avisa con `task_line_changed`); actualizar los ~10 sitios que escriben (arrastrar, redimensionar, estado y modal) y probar el cálculo con scripts de Node.
@@ -424,8 +424,8 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [ ] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase AR2 — Filtro y agrupado (depende de AR1 y de la Fase A de Kanban)
-- [ ] Combobox de Área y de Sub-área (en cascada, oculto sin área elegida) en la barra de filtros compartida, con opciones tomadas de las tareas cargadas.
-- [ ] La Tabla pasa a filtrar sobre datos con `TaskFilter`; se convierte el valor `folder` guardado en `localStorage`.
+- [x] Combobox de Área y de Sub-área (en cascada, oculto sin área elegida) en la barra de filtros compartida, con opciones tomadas de las tareas cargadas.
+- [x] La Tabla pasa a filtrar sobre datos con `TaskFilter`; se convierte el valor `folder` guardado en `localStorage`.
 - [ ] La Tabla reemplaza la columna de carpeta por dos, Área y Sub-área (propuesta, sin confirmar).
 - [ ] `GroupField` gana `'area'` y `'subArea'`; `groupTasksByField(tasks, 'area')` devuelve el árbol área → sub-área.
 - [ ] Lista agrupa por área y sub-área (anidada por carpeta) y conserva el modo plano.
@@ -442,8 +442,8 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 > Comportamiento y decisiones: [[Especificación de vistas]] §14. Mecanismo: [[Arquitectura técnica]] §23. **Nada de esta fase está implementado.** Depende de la Fase A de Kanban (barra de filtros y helper de gestos) y de la fase AR2 (áreas).
 
 ### Fase U1 — Estado compartido y barra (depende de la Fase A de Kanban)
-- [ ] `src/core/task-view-state.ts` con `TaskViewState` y su persistencia en una sola clave; migración de la clave antigua de la Tabla.
-- [ ] La barra de filtros incorpora el combo de agrupado y el control de orden (campo y dirección).
+- [x] `src/core/task-view-state.ts` con `TaskViewState` y su persistencia en una sola clave (`obsidian-agenda-task-view-state`); migración de la clave antigua de la Tabla (`folder` pasa a `area`, la prioridad a minúsculas).
+- [x] La barra de filtros incorpora el combo de agrupado y el control de orden (campo y dirección), opcionales según lo que pase la vista. La Tabla ya usa el de orden, sincronizado con los encabezados de columna.
 - [ ] Verificable sola: el estado se guarda y se restaura entre recargas, y el valor `folder` antiguo se convierte o se reinicia.
 - [ ] `npm run build` y ESLint sobre los archivos tocados.
 
@@ -453,9 +453,9 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [ ] Verificable sola: filtrar y ordenar en la Lista funciona y el agrupado conserva el comportamiento anterior.
 
 ### Fase U3 — Tabla adopta la barra (depende de U1)
-- [ ] La Tabla filtra sobre datos con `TaskFilter` en lugar de ocultar filas del DOM.
+- [x] La Tabla filtra sobre datos con `TaskFilter` en lugar de ocultar filas del DOM (las filas se identifican con `data-task-id`).
 - [ ] Agrupado en la Tabla con filas de cabecera plegables y estado recordado.
-- [ ] Los encabezados ordenables actualizan el orden compartido.
+- [x] Los encabezados ordenables actualizan el orden compartido.
 - [ ] Ajustar las columnas al ancho disponible del contenedor en `resizeColumns()`: las flexibles se reducen en proporción sin bajar de su mínimo, con la ventana como referencia en escritorio y el ancho del dispositivo en tableta y teléfono; afinar los máximos de Tarea, Carpeta y Etiquetas y dejar que la Tarea se parta en dos líneas.
 - [ ] Verificable sola: la Tabla se comporta como antes sin agrupar, y agrupa y pliega al elegir un agrupado.
 

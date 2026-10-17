@@ -5,28 +5,19 @@
 import { Menu, Notice } from 'obsidian';
 import { DateTime } from 'luxon';
 import { ITask, AgendaPlugin } from '../types/interfaces';
-import { CoreTaskStatus, CoreTaskStatusIcon } from '../types/enums';
+import { CoreTaskStatus } from '../types/enums';
 import { I18n } from './i18n';
 import { TaskWriter } from './task-writer';
 import { upsertTaskStatus } from './task-line-fields';
 import { buildRecurrenceOccurrence } from './task-recurrence';
 import { EDIT_TASK_MODAL_TYPE } from './modal-manager';
+import { STATUS_OPTIONS } from './task-status-options';
 
 /** Espera entre un `click` y un posible segundo `click` antes de asumir que no viene un `dblclick` (ms). */
 export const TASK_CLICK_DELAY_MS = 250;
 
 /** Elementos interactivos dentro de una fila de Lista/Tabla cuyos clics no deben abrir el modal de la tarea. */
 export const TASK_GESTURE_IGNORE_SELECTOR = 'button, a, input, select';
-
-/** Opciones del menú contextual de estado (v1.1.10, Manejo de estatus §14.3), en orden de flujo de trabajo. */
-const STATUS_MENU_OPTIONS: { status: CoreTaskStatus; icon: string; labelKey: string }[] = [
-  { status: CoreTaskStatus.Todo, icon: CoreTaskStatusIcon.Todo, labelKey: 'status_todo' },
-  { status: CoreTaskStatus.InProgress, icon: CoreTaskStatusIcon.InProgress, labelKey: 'status_in_progress' },
-  { status: CoreTaskStatus.OnHold, icon: CoreTaskStatusIcon.OnHold, labelKey: 'status_on_hold' },
-  { status: CoreTaskStatus.Done, icon: CoreTaskStatusIcon.Done, labelKey: 'status_done' },
-  { status: CoreTaskStatus.Cancelled, icon: CoreTaskStatusIcon.Cancelled, labelKey: 'status_cancelled' },
-  { status: CoreTaskStatus.nonTask, icon: CoreTaskStatusIcon.nonTask, labelKey: 'status_non_task' },
-];
 
 export interface TaskGestureOptions {
   plugin: AgendaPlugin;
@@ -85,7 +76,7 @@ export function attachTaskGestures(el: HTMLElement, options: TaskGestureOptions)
     if (!task) return;
 
     const menu = new Menu();
-    for (const { status, icon, labelKey } of STATUS_MENU_OPTIONS) {
+    for (const { status, icon, labelKey } of STATUS_OPTIONS) {
       menu.addItem((menuItem) => menuItem
         .setTitle(`${icon} ${options.i18n.t(labelKey)}`)
         .onClick(() => {

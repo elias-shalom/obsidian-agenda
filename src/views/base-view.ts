@@ -9,6 +9,10 @@ import headerTemplate from './templates/header.hbs';
 import { AgendaPluginSettings } from '../settings/settings';
 import { clearTooltips, installTooltips } from '../core/tooltips';
 import { groupTasksByFolder } from '../core/task-grouping';
+import { TASK_MODE_VIEWS, TaskViewMode, loadTaskViewState } from '../core/task-view-state';
+
+/** Vistas que ilumina la pestaña «Tareas». */
+const TASKS_VIEW_TYPES: string[] = Object.values(TASK_MODE_VIEWS);
 
 // Type declaration for handlebars template
 type HandlebarsTemplate = (data: ViewData) => string;
@@ -224,9 +228,10 @@ export abstract class BaseView extends ItemView {
         // Verificar coincidencia exacta o si es una vista de calendario o de hábitos
         const isCalendarView = activeViewType.startsWith("calendar-") && tabId === "oa-calendar-view-tab";
         const isHabitView = activeViewType.startsWith("habit-") && tabId === "oa-habit-view-tab";
+        const isTasksView = TASKS_VIEW_TYPES.includes(activeViewType) && tabId === "oa-tasks-view-tab";
         const isExactMatch = tabId === `oa-${activeViewType}-tab`;
         
-        if (isExactMatch || isCalendarView || isHabitView) {
+        if (isExactMatch || isCalendarView || isHabitView || isTasksView) {
           tab.classList.add("oa-active");
         } else {
           tab.classList.remove("oa-active");
@@ -240,9 +245,10 @@ export abstract class BaseView extends ItemView {
         
         const isCalendarContainer = activeViewType.startsWith("calendar-") && divId === "oa-calendar-view-container";
         const isHabitContainer = activeViewType.startsWith("habit-") && divId === "oa-habit-view-container";
+        const isTasksContainer = TASKS_VIEW_TYPES.includes(activeViewType) && divId === "oa-tasks-view-container";
         const isExactMatch = divId === `oa-${activeViewType}-container`;
         
-        if (isExactMatch || isCalendarContainer || isHabitContainer) {
+        if (isExactMatch || isCalendarContainer || isHabitContainer || isTasksContainer) {
           buttonContainer.classList.add("oa-active");
         } else {
           buttonContainer.classList.remove("oa-active");
@@ -339,8 +345,7 @@ protected attachEventTabs(container: HTMLElement, plugin: AgendaPlugin, leaf: Wo
     const activeViewType = this.getViewType(); // Obtiene el tipo de vista actual
     const tabs = [
       { id: "oa-overview-view-tab", view: "overview-view" },
-      { id: "oa-list-view-tab", view: "list-view" },
-      { id: "oa-table-view-tab", view: "table-view" },
+      { id: "oa-tasks-view-tab", view: this.getDefaultTasksView(plugin.settings) },
       { id: "oa-calendar-view-tab", view: "calendar-month-view" },
       { id: "oa-timeline-view-tab", view: "timeline-view" },
       { id: "oa-gantt-view-tab", view: "gantt-view" },
@@ -363,6 +368,17 @@ protected attachEventTabs(container: HTMLElement, plugin: AgendaPlugin, leaf: Wo
     refreshBtn?.addEventListener('click', () => {
       this.refreshView().catch(console.error);
     });
+  }
+
+  /**
+   * Vista que abre la pestaña «Tareas»: el último modo usado si sigue visible en los ajustes y,
+   * si no, el otro.
+   */
+  private getDefaultTasksView(settings: AgendaPluginSettings): string {
+    const mode = loadTaskViewState(this.app).mode;
+    const visible = mode === 'table' ? settings.showTableTab : settings.showListTab;
+    const resolved: TaskViewMode = visible ? mode : (mode === 'table' ? 'list' : 'table');
+    return TASK_MODE_VIEWS[resolved];
   }
 
   /**

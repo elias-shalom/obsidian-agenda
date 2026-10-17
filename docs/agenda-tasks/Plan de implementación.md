@@ -460,11 +460,11 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [ ] Verificable sola: la Tabla se comporta como antes sin agrupar, y agrupa y pliega al elegir un agrupado (comprobado con script de Node: orden, filas y plantilla; falta la comprobación visual en Obsidian, incluido el ajuste de ancho en tableta y teléfono).
 
 ### Fase U4 — Pestaña única y conmutador (depende de U2 y U3)
-- [ ] Conmutador segmentado Lista | Tabla, con las clases del selector del calendario, íconos `list-todo` y `table` y tooltip; cambia de vista con `leaf.setViewState()`.
-- [ ] `header.hbs`: un solo botón «Tareas» visible si `showListTab` o `showTableTab`; abre el último modo usado.
-- [ ] Excepción de resaltado de pestaña activa en `base-view.ts` para `list-view` y `table-view`.
-- [ ] Claves i18n nuevas en los 6 locales.
-- [ ] Verificable sola: cambiar de modo conserva búsqueda, filtros, agrupado y orden; la pestaña se ilumina en ambos modos.
+- [x] Conmutador segmentado Lista | Tabla, con las clases del selector del calendario, íconos `list-todo` y `table` y tooltip; cambia de vista con `viewManager.activateView()` sobre la misma hoja (`buildTaskModeSwitch()` en `src/core/task-filter-bar.ts`; se oculta si solo un modo está visible).
+- [x] `header.hbs`: un solo botón «Tareas» (`oa-tasks-view-tab`) visible si `showListTab` o `showTableTab`; abre el último modo usado (`TaskViewState.mode`, que cada vista guarda al abrirse; `getDefaultTasksView()` en `base-view.ts`).
+- [x] Excepción de resaltado de pestaña activa en `base-view.ts` para `list-view` y `table-view`.
+- [x] Claves i18n nuevas en los 6 locales (`tasks_view_tab`). Las vistas guardan el agrupado solo si el cambio fue el del propio agrupado (`persistTaskViewState()`), para que el agrupado por defecto de cada vista no quede fijado al cambiar otro control.
+- [ ] Verificable sola: cambiar de modo conserva búsqueda, filtros, agrupado y orden; la pestaña se ilumina en ambos modos (el estado se comprobó con script de Node; falta la comprobación visual en Obsidian).
 - [ ] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase U5 — Funciones anunciadas de la Tabla (por diseñar, depende de U3)

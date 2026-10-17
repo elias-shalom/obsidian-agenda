@@ -831,9 +831,13 @@ Nuevo módulo `src/core/task-view-state.ts` con `TaskViewState`: búsqueda, filt
 
 ### 23.2 Conmutador de modo
 
+> Implementado (v1.1.12): `TaskModeSwitch` en la barra (`buildTaskModeSwitch()`), con `TaskViewState.mode` y `saveTaskViewMode()`; usa directamente las clases `.oa-calendar-view-segmented` y `.oa-calendar-view-btn` y cambia de vista con `viewManager.activateView()`.
+
 Control segmentado dentro de la barra compartida, solo en Lista y Tabla. Reutiliza los estilos y las clases del selector del calendario (`.oa-calendar-view-segmented`, `.oa-calendar-view-btn`); renombrarlas a un nombre neutro es una limpieza opcional. Íconos `list-todo` y `table`, los mismos de las pestañas actuales, con tooltip. Al hacer clic llama a `leaf.setViewState()` con el otro tipo de vista, como `CalendarView.switchToViewType()`; ambas vistas leen `TaskViewState` al abrir.
 
 ### 23.3 Pestaña única
+
+> Implementado (v1.1.12): ver `header.hbs` (`oa-tasks-view-tab`), `TASKS_VIEW_TYPES` y `getDefaultTasksView()` en `base-view.ts`.
 
 En `header.hbs` los botones de Lista y Tabla se reemplazan por uno, `oa-tasks-view-tab`, que se muestra con `(or settings.showListTab settings.showTableTab)`. `attachEventTabs()` lo apunta al último modo usado (`TaskViewState.mode`), con el mismo patrón que `getDefaultHabitView()`. El resaltado de la pestaña activa necesita una excepción como la que ya existe para `calendar-*` y `habit-*` en `base-view.ts`, porque tanto `list-view` como `table-view` deben iluminar la pestaña «Tareas».
 

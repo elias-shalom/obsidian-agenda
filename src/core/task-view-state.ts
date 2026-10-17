@@ -14,7 +14,13 @@ const LEGACY_TABLE_STATE_KEY = 'obsidian-agenda-task-table-state';
 export const PRIORITY_FILTER_VALUES = ['highest', 'high', 'medium', 'normal', 'low', 'lowest', 'none'] as const;
 export const DUE_FILTER_VALUES = ['hasdate', 'overdue', 'today', 'thisweek', 'future', 'nodate'] as const;
 
+/** Modos de la pestaña «Tareas» y la vista que abre cada uno. */
+export type TaskViewMode = 'list' | 'table';
+export const TASK_MODE_VIEWS: Record<TaskViewMode, string> = { list: 'list-view', table: 'table-view' };
+
 export interface TaskViewState {
+  /** Último modo usado: la pestaña «Tareas» abre este. */
+  mode: TaskViewMode;
   search: string;
   /** `'all'`, un valor de `PRIORITY_FILTER_VALUES` (`'none'` = sin prioridad). */
   priority: string;
@@ -34,6 +40,7 @@ export interface TaskViewState {
 }
 
 export const DEFAULT_TASK_VIEW_STATE: Readonly<TaskViewState> = {
+  mode: 'list',
   search: '',
   priority: 'all',
   status: 'all',
@@ -55,6 +62,7 @@ export function parseTaskViewState(raw: unknown): TaskViewState {
   const text = (value: unknown, fallback: string): string => (typeof value === 'string' ? value : fallback);
 
   return {
+    mode: source.mode === 'table' ? 'table' : defaults.mode,
     search: text(source.search, defaults.search),
     priority: source.priority === 'all' || isOneOf(PRIORITY_FILTER_VALUES, source.priority) ? source.priority : defaults.priority,
     status: source.status === 'all' || STATUS_OPTIONS.some(option => option.name === source.status) ? source.status as string : defaults.status,
@@ -100,6 +108,21 @@ export function loadTaskViewState(app: App): TaskViewState {
 
 export function saveTaskViewState(app: App, state: TaskViewState): void {
   app.saveLocalStorage(TASK_VIEW_STATE_KEY, JSON.stringify(state));
+}
+
+/**
+ * Guarda el estado tras un cambio en la barra. Cada vista resuelve su agrupado por defecto antes de
+ * pintar; para que eso no quede fijado al cambiar otro control, el agrupado guardado solo se
+ * sobrescribe si el cambio fue el del propio agrupado.
+ */
+export function persistTaskViewState(app: App, state: TaskViewState, changed: readonly string[]): void {
+  saveTaskViewState(app, changed.includes('group') ? state : { ...state, group: loadTaskViewState(app).group });
+}
+
+/** Guarda solo el modo, sobre lo ya guardado (la vista que llama puede tener valores por defecto propios sin guardar). */
+export function saveTaskViewMode(app: App, mode: TaskViewMode): void {
+  const state = loadTaskViewState(app);
+  if (state.mode !== mode) saveTaskViewState(app, { ...state, mode });
 }
 
 /** Minúsculas y sin acentos: «ñáéíóúü» → «naeiouu». */

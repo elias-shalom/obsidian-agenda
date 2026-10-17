@@ -5,8 +5,8 @@ import { ITask, ListViewData, AgendaPlugin } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { TaskWriter } from '../core/task-writer';
 import { attachTaskGestures, TASK_GESTURE_IGNORE_SELECTOR } from '../core/task-gestures';
-import { TaskFilterBar } from '../core/task-filter-bar';
-import { TaskViewState, loadTaskViewState, saveTaskViewState, filterTasksByViewState } from '../core/task-view-state';
+import { TaskFilterBar, buildTaskModeSwitch } from '../core/task-filter-bar';
+import { TaskViewState, TASK_MODE_VIEWS, loadTaskViewState, persistTaskViewState, saveTaskViewMode, filterTasksByViewState } from '../core/task-view-state';
 import { TASK_SORT_COLUMNS, sortTasksByColumn } from '../core/task-column-sort';
 import { TASK_GROUP_OPTIONS, groupTasksForView, toGroupViewModels } from '../core/task-grouping';
 
@@ -49,19 +49,27 @@ export class ListView extends BaseView {
     const saved = loadTaskViewState(this.app);
     if (!TASK_SORT_COLUMNS.some(column => column.value === saved.sortColumn)) saved.sortColumn = 'priority';
 
+    // La pestaña «Tareas» abre el último modo usado
+    saveTaskViewMode(this.app, 'list');
+    saved.mode = 'list';
+
     // La barra se crea antes de dibujar porque reajusta el área guardada si ya no tiene tareas.
     this.filterBar = new TaskFilterBar({
       i18n: this.i18n,
       tasks: this.tasks,
       state: { ...saved, group: saved.group || LIST_DEFAULT_GROUP },
+      modeSwitch: buildTaskModeSwitch(this.i18n, this.plugin.settings, 'list', (mode) => {
+        saveTaskViewMode(this.app, mode);
+        this.plugin.viewManager.activateView(TASK_MODE_VIEWS[mode], this.leaf);
+      }),
       groupOptions: TASK_GROUP_OPTIONS.map(({ value, labelKey }) => ({
         value,
         label: value === 'none' ? this.i18n.t(labelKey) : `${this.i18n.t('group_by')}: ${this.i18n.t(labelKey)}`,
       })),
       sortOptions: TASK_SORT_COLUMNS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
-      onChange: (state) => {
+      onChange: (state, changed) => {
         this.viewState = state;
-        saveTaskViewState(this.app, state);
+        persistTaskViewState(this.app, state, changed);
         this.refreshBody().catch(console.error);
       },
     });

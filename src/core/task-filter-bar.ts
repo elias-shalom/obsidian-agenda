@@ -3,15 +3,37 @@
 // docs/agenda-tasks/Arquitectura técnica.md §20.3): búsqueda, prioridad, estado, área, sub-área y
 // vencimiento, más agrupado y orden si la vista los ofrece. Mismo patrón que `CalendarDatePicker`:
 // `mount(root)` y un callback `onChange`.
+import { setIcon } from 'obsidian';
 import { ITask } from '../types/interfaces';
+import { AgendaPluginSettings } from '../settings/settings';
 import { I18n } from './i18n';
 import { STATUS_OPTIONS } from './task-status-options';
 import { listTaskAreas, listTaskSubAreas } from './area';
-import { TaskViewState } from './task-view-state';
+import { TaskViewState, TaskViewMode } from './task-view-state';
 
 export interface FilterBarOption {
   value: string;
   label: string;
+}
+
+/** Conmutador segmentado entre los modos de la pestaña «Tareas». */
+export interface TaskModeSwitch {
+  current: TaskViewMode;
+  modes: { value: TaskViewMode; label: string; icon: string }[];
+  onSelect: (mode: TaskViewMode) => void;
+}
+
+/** El conmutador de Lista | Tabla, o `undefined` si los ajustes dejan un solo modo visible. */
+export function buildTaskModeSwitch(
+  i18n: I18n,
+  settings: AgendaPluginSettings,
+  current: TaskViewMode,
+  onSelect: (mode: TaskViewMode) => void
+): TaskModeSwitch | undefined {
+  const modes: TaskModeSwitch['modes'] = [];
+  if (settings.showListTab) modes.push({ value: 'list', label: i18n.t('list_view_tab'), icon: 'list-todo' });
+  if (settings.showTableTab) modes.push({ value: 'table', label: i18n.t('table_view_tab'), icon: 'table' });
+  return modes.length > 1 ? { current, modes, onSelect } : undefined;
 }
 
 export interface TaskFilterBarOptions {
@@ -19,7 +41,9 @@ export interface TaskFilterBarOptions {
   /** Tareas cargadas: de ellas salen las opciones de Área y Sub-área. */
   tasks: ITask[];
   state: TaskViewState;
-  onChange: (state: TaskViewState) => void;
+  onChange: (state: TaskViewState, changed: readonly (keyof TaskViewState)[]) => void;
+  /** Si se pasa, la barra muestra al inicio el conmutador de modo Lista | Tabla. */
+  modeSwitch?: TaskModeSwitch;
   /** Si se pasa, la barra muestra el combo de agrupado con estos valores (incluye el de «sin agrupar»). */
   groupOptions?: FilterBarOption[];
   /** Si se pasa, la barra muestra el combo de orden con estos campos y el botón de dirección. */
@@ -80,6 +104,8 @@ export class TaskFilterBar {
 
     const filters = root.createDiv({ cls: 'oa-filter-bar__filters' });
 
+    this.mountModeSwitch(filters);
+
     this.addSelect(filters, 'task_priority', [
       { value: 'all', label: i18n.t('all_priorities') },
       ...PRIORITY_OPTIONS.map(({ value, labelKey, emoji }) => ({ value, label: `${i18n.t(labelKey)}${emoji}` })),
@@ -122,6 +148,25 @@ export class TaskFilterBar {
     }
 
     this.mountSearch(root);
+  }
+
+  private mountModeSwitch(parent: HTMLElement): void {
+    const modeSwitch = this.options.modeSwitch;
+    if (!modeSwitch) return;
+
+    // Mismas clases que el selector de vista del calendario
+    const group = parent.createDiv({ cls: 'oa-calendar-view-segmented', attr: { role: 'group', 'aria-label': this.options.i18n.t('tasks_view_tab') } });
+    for (const mode of modeSwitch.modes) {
+      const button = group.createEl('button', {
+        cls: 'oa-calendar-view-btn',
+        attr: { type: 'button', title: mode.label, 'aria-label': mode.label },
+      });
+      setIcon(button, mode.icon);
+      button.toggleClass('oa-active', mode.value === modeSwitch.current);
+      button.addEventListener('click', () => {
+        if (mode.value !== modeSwitch.current) modeSwitch.onSelect(mode.value);
+      });
+    }
   }
 
   private mountSearch(root: HTMLElement): void {
@@ -200,6 +245,6 @@ export class TaskFilterBar {
 
   private update(changes: Partial<TaskViewState>): void {
     this.state = { ...this.state, ...changes };
-    this.options.onChange({ ...this.state });
+    this.options.onChange({ ...this.state }, Object.keys(changes) as (keyof TaskViewState)[]);
   }
 }

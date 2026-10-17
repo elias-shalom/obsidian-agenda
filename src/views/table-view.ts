@@ -7,8 +7,8 @@ import Handlebars from 'handlebars';
 import { TaskDateType } from '../types/enums';
 import { TaskWriter } from '../core/task-writer';
 import { attachTaskGestures, TASK_GESTURE_IGNORE_SELECTOR } from '../core/task-gestures';
-import { TaskFilterBar } from '../core/task-filter-bar';
-import { TaskViewState, DEFAULT_TASK_VIEW_STATE, loadTaskViewState, saveTaskViewState, filterTasksByViewState } from '../core/task-view-state';
+import { TaskFilterBar, buildTaskModeSwitch } from '../core/task-filter-bar';
+import { TaskViewState, DEFAULT_TASK_VIEW_STATE, TASK_MODE_VIEWS, loadTaskViewState, persistTaskViewState, saveTaskViewMode, filterTasksByViewState } from '../core/task-view-state';
 import { TASK_SORT_COLUMNS, sortTasksByColumn } from '../core/task-column-sort';
 import { TASK_GROUP_OPTIONS, groupTasksForView, toGroupViewModels } from '../core/task-grouping';
 
@@ -62,19 +62,27 @@ export class TableView extends BaseView {
       saved.sortColumn = DEFAULT_TASK_VIEW_STATE.sortColumn;
     }
 
+    // La pestaña «Tareas» abre el último modo usado
+    saveTaskViewMode(this.app, 'table');
+    saved.mode = 'table';
+
     // La barra se crea antes de dibujar porque reajusta el área guardada si ya no tiene tareas.
     this.filterBar = new TaskFilterBar({
       i18n: this.i18n,
       tasks: this.tasks,
       state: { ...saved, group: saved.group || TABLE_DEFAULT_GROUP },
+      modeSwitch: buildTaskModeSwitch(this.i18n, (this.plugin as AgendaPlugin).settings, 'table', (mode) => {
+        saveTaskViewMode(this.app, mode);
+        (this.plugin as AgendaPlugin).viewManager.activateView(TASK_MODE_VIEWS[mode], this.leaf);
+      }),
       groupOptions: TASK_GROUP_OPTIONS.map(({ value, labelKey }) => ({
         value,
         label: value === 'none' ? this.i18n.t(labelKey) : `${this.i18n.t('group_by')}: ${this.i18n.t(labelKey)}`,
       })),
       sortOptions: TASK_SORT_COLUMNS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
-      onChange: (state) => {
+      onChange: (state, changed) => {
         this.viewState = state;
-        saveTaskViewState(this.app, state);
+        persistTaskViewState(this.app, state, changed);
         this.refreshRows().catch(console.error);
       },
     });
@@ -305,7 +313,7 @@ export class TableView extends BaseView {
     const direction = this.viewState.sortColumn === sortBy && this.viewState.sortDirection === 'asc' ? 'desc' : 'asc';
     this.viewState = { ...this.viewState, sortColumn: sortBy, sortDirection: direction };
     this.filterBar?.setSort(sortBy, direction);
-    saveTaskViewState(this.app, this.viewState);
+    persistTaskViewState(this.app, this.viewState, ['sortColumn', 'sortDirection']);
     this.refreshRows().catch(console.error);
   }
 

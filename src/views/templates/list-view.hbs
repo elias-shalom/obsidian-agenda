@@ -5,8 +5,14 @@
     <div class="oa-task-content">
       <div class="oa-task-description">
         {{section.desc}}
+        {{#if date.start}}
+          <span class="oa-task-date oa-task-date--start" title="{{t 'start_date'}}">🛫 {{formatDate date.start}}</span>
+        {{/if}}
+        {{#if date.scheduled}}
+          <span class="oa-task-date oa-task-date--scheduled" title="{{t 'scheduled_date'}}">⏳ {{formatDate date.scheduled}}{{#if date.scheduledTime}} 🕐 {{date.scheduledTime}}{{/if}}</span>
+        {{/if}}
         {{#if date.due}}
-          <span class="oa-task-due-date">📅 {{formatDate date.due}}</span>
+          <span class="oa-task-date oa-task-date--due" title="{{t 'due_date'}}">📅 {{formatDate date.due}}</span>
         {{/if}}
       </div>
       {{#if @root.showPath}}

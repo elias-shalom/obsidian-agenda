@@ -325,6 +325,7 @@ Orden de trabajo por dependencias: piezas compartidas, áreas, Lista y Tabla y d
   - [x] Filtros Área y Sub-área en la barra compartida (la sub-área aparece al elegir un área y se reinicia al cambiarla); reemplazan el filtro de carpeta de la Tabla
   - [x] Área y sub-área son campos de agrupado: la Lista agrupa por área (sub-áreas anidadas) y conserva el modo plano y su profundidad actual (hecho en el paso 6); Kanban y Gantt los usarán en v1.1.13, junto con el agrupado plano por sub-área
   - [x] Color por área en las cabeceras de grupo, como en Hábitos; la lógica de áreas se movió de `src/habits/habit.ts` a `src/core/area.ts` (pasos 2 y 6)
+  - [x] Las tareas que están directamente en la carpeta de un área (o sub-área) con sub-áreas se muestran al final, bajo una cabecera «Sin sub-área»; el orden por la columna Área sigue el mismo criterio (Lista, Tabla y orden por Área)
   - [x] Decidido: la Tabla conserva la columna de carpeta pero pasa a llamarse **Área** (primera carpeta; «Sin área» para la raíz), sin columna de Sub-área; la ruta del archivo se muestra pequeña bajo la tarea
 - [ ] **Lista y Tabla en una sola pestaña** (diseño en `Especificación de vistas.md` §14 y `Arquitectura técnica.md` §23; fases U1–U4 en `Plan de implementación.md`; depende de las piezas compartidas y de las áreas)
   - [x] Una pestaña «Tareas» con conmutador segmentado Lista | Tabla, como el selector del calendario (íconos con tooltip); cambiar de modo conserva búsqueda, filtros, agrupado y orden
@@ -334,7 +335,20 @@ Orden de trabajo por dependencias: piezas compartidas, áreas, Lista y Tabla y d
   - [x] `showListTab`/`showTableTab` se conservan como visibilidad de cada modo; la pestaña abre el último modo usado (con un solo modo visible, el conmutador no aparece)
   - [ ] Kanban y Gantt siguen en sus propias pestañas
   - [x] Tabla: ajustar las columnas al ancho disponible (viene de v1.1.11): a la ventana en escritorio y al ancho del dispositivo en tableta y teléfono, es decir, al ancho real del contenedor; las columnas flexibles se reducen en proporción sin bajar de su mínimo (la suma de mínimos es ~600 px, así que en un teléfono estrecho sigue habiendo scroll); hecho en `resizeColumns()` de `table-view.ts` (paso 7). Los máximos pasan a Tarea 520, Área 160 y Etiquetas 240; la Tarea se parte en varias líneas si no cabe y la ruta del archivo va en una línea cortada con puntos suspensivos; el diseño de tabla pasa a `table-layout: fixed`, sin el ancho mínimo de 760 px en pantallas estrechas
-  - [ ] Tabla: columnas y diseño personalizables y exportación a CSV, ya anunciados en el README y el manual pero sin implementar; se agregan en esta versión (diseño pendiente, Especificación §14.3 y fase U5)
+  - [x] Barra de filtros con chips (pulido estético, tras ver la barra actual en pantalla; diseño en `Especificación de vistas.md` §14.4, `Arquitectura técnica.md` §23.7 y fase U6 en `Plan de implementación.md`; implementado, falta la prueba manual en escritorio, tableta y teléfono)
+    - [x] Los cinco combos de filtro pasan a chips que se agregan con un botón **+ Filtro** (menús nativos de Obsidian en pasos: tipo, valor y, para Área, sub-área); la sub-área va dentro del chip de Área
+    - [x] Una fila de presentación (conmutador, + Filtro, agrupado, orden) con la búsqueda siempre a la derecha, y una segunda fila de chips solo con filtros activos, con un botón **Limpiar** (no borra la búsqueda)
+    - [x] En ventanas estrechas la búsqueda pasa a su propia línea (consulta de contenedor) y los chips saltan de línea; sin modo móvil aparte
+    - [x] Desaparece el combo «All tasks» del estado, que se confundía con «todas las tareas»
+    - [x] No cambian `TaskViewState`, el filtrado ni las vistas; solo la interfaz de `TaskFilterBar` y sus estilos
+  - [x] Lista: junto a la descripción de cada tarea se muestran también la fecha de inicio (🛫) y la programada (⏳, con su hora 🕐 si la tiene), además de la de vencimiento (📅); cada una solo si existe (`list-view.hbs`)
+  - [ ] Tabla: columnas de fechas y filtros por fecha (diseño en `Especificación de vistas.md` §14.5, `Arquitectura técnica.md` §23.8 y fase U7 en `Plan de implementación.md`; va antes que las columnas personalizables)
+    - [ ] La columna «Fechas» se divide en cuatro: **Inicio** (con la creación debajo), **Programada** (con hora y duración), **Vencimiento** y **Cerrada** (hecha o cancelada, una sola por tarea); cada fecha con su emoji y su tooltip
+    - [ ] Se ocultan las columnas de fechas que ninguna tarea cargada tiene (se decide sobre todas las cargadas, no sobre las filtradas, para que la tabla no cambie de forma al filtrar)
+    - [ ] Primera columna sin números de fila (solo el total en el encabezado), y Prioridad, Estado y Tarea más estrechas para que quepan las cuatro fechas
+    - [ ] Filtros por fecha: el tipo «Fecha» se divide en **Vencimiento**, **Inicio** y **Programada** (seis tipos en + Filtro), con los mismos valores para los tres; «Vencidas» solo cuenta tareas abiertas y se corrigen los textos «Vencidas hoy» y «Vencidas esta semana» por «Vencen hoy» y «Vencen en los próximos 7 días»; «Con fecha» y «Sin fecha» pasan a ser por tipo
+    - [ ] Orden por Inicio, Programada, Vencimiento y Cerrada (también en la Lista, que comparte el combo de orden)
+  - [ ] Tabla: columnas y diseño personalizables y exportación a CSV, ya anunciados en el README y el manual pero sin implementar; se agregan en esta versión (diseño pendiente, Especificación §14.3 y fase U5; reutilizará el modelo de columnas de la fase U7)
 - [ ] **Documentación al cerrar la versión**: README (badge, What's New, News, Changelog), manual de usuario en/es (Lista, Tabla, áreas) y la lista de características de este archivo (Lista y Tabla)
 
 ### Pendientes de versiones anteriores y dónde quedan

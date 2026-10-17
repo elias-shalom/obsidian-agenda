@@ -73,6 +73,8 @@ const NO_TAG_KEY = "";
 const NO_DATE_KEY = "";
 /** Clave y nombre con que `groupTasksByFolder()` agrupa las notas de la raíz del vault. */
 const ROOT_FOLDER_KEY = "Root";
+/** Sufijo de la clave del grupo con las tareas que están directamente en la carpeta de un área o sub-área. */
+const DIRECT_TASKS_KEY_SUFFIX = "#direct";
 
 /** Árbol de carpetas de las notas de las tareas: `A/B/nota.md` cuelga de `A` → `B`; una nota en la raíz va a «Root». */
 export function groupTasksByFolder(tasks: ITask[]): Record<string, FolderNode> {
@@ -198,8 +200,16 @@ export function groupTasksByField(
       // Área = primera carpeta y sub-áreas anidadas por carpeta; las notas de la raíz van al final, sin color.
       const withColor = (group: TaskGroup, color: string | undefined): TaskGroup =>
         ({ ...group, color, children: group.children?.map(child => withColor(child, color)) });
+      // Las tareas que están directamente en la carpeta de un grupo con sub-áreas van al final, en su propio
+      // grupo: sin cabecera parecerían pertenecer a la última sub-área.
+      const directTasksLast = (group: TaskGroup): TaskGroup => {
+        const children = (group.children ?? []).map(directTasksLast);
+        if (children.length === 0 || group.tasks.length === 0) return { ...group, children };
+        const direct: TaskGroup = { key: `${group.key}${DIRECT_TASKS_KEY_SUFFIX}`, label: translate("no_sub_area"), tasks: group.tasks, children: [], color: group.color };
+        return { ...group, tasks: [], children: [...children, direct] };
+      };
       const groups = groupTasksByField(tasks, "path", translate);
-      const areas = groups.filter(group => group.key !== ROOT_FOLDER_KEY).map(group => withColor(group, getAreaColor(group.label)));
+      const areas = groups.filter(group => group.key !== ROOT_FOLDER_KEY).map(group => directTasksLast(withColor(group, getAreaColor(group.label))));
       const root = groups.filter(group => group.key === ROOT_FOLDER_KEY).map(group => withColor({ ...group, label: translate("no_area") }, undefined));
       return [...areas, ...root];
     }

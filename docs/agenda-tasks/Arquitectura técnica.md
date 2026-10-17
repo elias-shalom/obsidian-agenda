@@ -861,6 +861,78 @@ La barra incorpora un combo de agrupado y un control de orden. El agrupado usa `
 
 Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones masivas.
 
+### 23.7 Barra de filtros con chips (v1.1.12, implementado; falta la prueba manual)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.4. Es un cambio solo de la capa de interfaz de `TaskFilterBar`: `TaskViewState`, `filterTasksByViewState()` y las vistas no cambian.
+
+**Módulo puro nuevo `src/core/task-filter-chips.ts`** (sin dependencias de Obsidian, para probarlo con scripts de Node):
+- `FilterChipId = 'priority' | 'status' | 'area' | 'due'`.
+- `getActiveFilterChips(state, translate)` devuelve los chips activos, en ese orden, con `id`, `typeLabel` y `valueLabel`; el de `area` junta Área y Sub-área («Área › Sub-área») y el valor «sin prioridad» usa `no_priority`. Un filtro está activo si su valor no es `'all'` (o `''` en área y sub-área).
+- `clearFilterChip(state, id)` y `clearAllFilters(state)` devuelven el estado sin ese filtro (quitar `area` reinicia también `subArea`); no tocan la búsqueda, el agrupado ni el orden.
+- `getFilterValueOptions(id, ...)` con los valores de cada tipo, sin la opción «Todos»: las constantes `PRIORITY_OPTIONS` y `DUE_OPTIONS` y la lista de estados salen hoy de `task-filter-bar.ts` y `STATUS_OPTIONS`, y se mueven aquí; las áreas y sub-áreas siguen saliendo de `listTaskAreas()` y `listTaskSubAreas()`.
+
+**`TaskFilterBar`** (`src/core/task-filter-bar.ts`):
+- `mount()` construye la fila principal (`.oa-filter-bar__main`: conmutador de modo, botón + Filtro, agrupado, orden y dirección, búsqueda con `margin-left: auto`) y la fila de chips (`.oa-filter-bar__chips`), que solo se muestra con chips activos. Los cinco `<select>` de filtro desaparecen; agrupado y orden conservan los suyos.
+- Menús con `Menu` de Obsidian, colocados con `showAtPosition({ x, y })` bajo el botón o el chip pulsado (`getBoundingClientRect()`), con `setChecked()` en el valor actual. Se encadenan: el primer menú elige el tipo, el segundo el valor y, para Área con sub-áreas, un tercero la sub-área. No se usan submenús: los tipos de Obsidian 1.14.4 instalados no exponen `setSubmenu()`, y `minAppVersion` es 1.8.7.
+- `renderChips()` se llama desde `update()`, que es el único punto por donde pasan los cambios; no hay estado propio de la barra aparte de `TaskViewState`. `reconcileArea()` sigue reajustando un área guardada que ya no tiene tareas, ahora antes de dibujar los chips.
+- Cada chip es un `<button>` (`.oa-filter-chip`) con una × interna enfocable (`.oa-filter-chip__remove`) y `aria-label` con i18n; `Limpiar` es `.oa-filter-bar__clear`.
+
+**Estilos** (`src/styles/components/_task-filter-bar.scss`):
+- La barra pasa de rejilla de dos columnas a dos contenedores flex. La búsqueda se queda a la derecha de la fila 1 con ancho `clamp(180px, 25%, 300px)`; con `container-type: inline-size` en la barra y un `@container` bajo ~560 px, la búsqueda pasa a su propia línea a todo el ancho. Los contenedores se miden por el ancho de la hoja y no por el de la ventana, que en Obsidian cambia con los paneles laterales. Si el WebView no soportara `@container`, la barra sigue funcionando porque ya tiene `flex-wrap`.
+- Chips y × llevan `padding: … !important`: en tableta, `.is-tablet button:not(.clickable-icon)` de Obsidian impone 20 px laterales y deformaba los botones pequeños (misma causa que los arreglos de la 1.1.11). Los chips usan un `max-width` con puntos suspensivos para que un área de nombre largo no ensanche la fila.
+- Se eliminan las reglas de los selectores de filtro; `.oa-filter-bar__select` queda para agrupado y orden. El cambio de claves de estilo de la Tabla/Lista no hace falta: ambas ya usan `.oa-filter-bar`.
+
+**i18n**: claves nuevas en los 6 idiomas: `filter_add` («+ Filtro»), `filter_clear` («Limpiar») y `filter_remove` (etiqueta accesible de la ×, con el nombre del filtro como parámetro). Los nombres de tipo reutilizan `task_priority`, `task_status`, `area` y `due_date`, y «Todas las sub-áreas» reutiliza `all_sub_areas`. Quedan sin uso y se eliminan `all_priorities`, `all_tasks`, `all_areas` y `all_dates` (comprobar con una búsqueda antes de borrar).
+
+**Archivos afectados**
+
+| Área | Archivos |
+|---|---|
+| Lógica pura | nuevo `src/core/task-filter-chips.ts` |
+| Barra | `src/core/task-filter-bar.ts` (mount, menús, chips) |
+| Estilos | `src/styles/components/_task-filter-bar.scss` |
+| i18n | `src/locales/*.json` (3 claves nuevas, 4 eliminadas) |
+| Vistas y estado | sin cambios |
+
+**Riesgos**: la posición y el cierre de los menús en móvil (se resuelven con el `Menu` nativo, pero hay que probarlos en tableta y teléfono); el foco del teclado al volver de un menú (no se devuelve al botón o chip que lo abrió: al elegir un valor el chip se redibuja; si molesta, se mejora después); y que quien está acostumbrado a los combos no encuentre los filtros (el botón + Filtro lleva texto, no solo ícono).
+
+### 23.8 Columnas de fechas y filtros por fecha (v1.1.12, diseño — no implementado)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.5. Amplía §23.1 (estado), §23.7 (chips) y la plantilla de la Tabla.
+
+**Estado y filtrado** (`src/core/task-view-state.ts`):
+- `TaskViewState` gana `start` y `scheduled` (`'all'` por defecto), junto al `due` actual; `parseTaskViewState()` los valida con `DUE_FILTER_VALUES`, que se reutiliza para los tres. Los valores guardados de `due` siguen siendo válidos, así que no hay migración.
+- Nueva función pura `matchesDateFilter(date, value, isOpen, today)` que decide un valor de filtro sobre una fecha (`DateTime | null`) comparando por día con `startOf('day')`: `hasdate`, `overdue` (anterior a hoy; para el vencimiento, además con tarea abierta), `today`, `thisweek` (de hoy a hoy + 7 días), `future` (más de 7 días) y `nodate`. `filterTasksByViewState()` la aplica a `due`, `start` y `scheduled`; deja de usar `dueDateRelative` y el apaño de `dueDate.exists` de §22.2. Una tarea está abierta si su estado no es Hecho, Cancelada ni No es tarea.
+- `hasAnyDate()` desaparece: «Con fecha» y «Sin fecha» pasan a ser por tipo.
+
+**Chips** (`src/core/task-filter-chips.ts`): `FilterChipId` pasa a `'priority' | 'status' | 'area' | 'start' | 'scheduled' | 'due'`, con `FILTER_CHIP_IDS` en ese orden y `FILTER_STATE_KEYS` con las dos claves nuevas. `getFilterValueOptions()` recibe el tipo y devuelve los textos de Vencimiento («Vencidas», «Vencen hoy», «Vencen en los próximos 7 días») o los de Inicio y Programada («Pasadas», «Hoy», «Próximos 7 días»); los nombres de tipo reutilizan `start_date`, `scheduled_date` y `due_date`. La barra no cambia: los menús y los chips se derivan de esa lista.
+
+**Orden** (`src/core/task-column-sort.ts`): `TASK_SORT_COLUMNS` gana `start`, `scheduled` y `closed` (y `due` pasa a llamarse con la clave `due_date`); `sortTasksByColumn()` los trata como `due`: por fecha, sin fecha al final en las dos direcciones. La fecha de cierre es la de hecha o, si no, la de cancelada. Se elimina la clave de texto `dates`.
+
+**Modelo de columnas** (nuevo `src/core/task-table-columns.ts`, puro): una lista ordenada con `id`, clave de texto, clave de orden, `{ min, max }` de ancho y, para las cuatro de fechas, una función `hasValue(task)` que dice si la tarea tiene algún valor que esa columna mostraría. `getVisibleColumns(tasks)` devuelve los `id` visibles: las columnas fijas siempre y las de fechas solo si alguna tarea cargada (sin filtrar) cumple `hasValue`. Es la base de la fase U5: allí se le sumará la elección del usuario.
+
+**La Tabla** (`src/views/table-view.ts`, `table-view.hbs`, `_table-view.scss`):
+- `TableViewData` incluye `columns` (mapa de visibilidad por `id`) y `columnCount`; la plantilla pinta cada encabezado y cada celda solo si su columna es visible, con `data-column="<id>"`, y las cabeceras de grupo usan `colspan="{{columnCount}}"` en lugar de 7.
+- Se elimina el número de fila (`.oa-row-number` y el campo `number` de `TableTaskRow`): la primera celda queda vacía y el encabezado conserva el total.
+- Las celdas de fechas muestran el emoji y el valor, y debajo, en una segunda línea más pequeña, la fecha secundaria (creación en Inicio; hora y duración en Programada). El estado de vencida o de hoy se calcula en TypeScript, para tareas abiertas, y se pasa a la plantilla (hoy `isOverdue` y `isDueToday` no los pone nadie).
+- `resizeColumns()` deja de usar el índice de la columna y busca el límite por `data-column` en el modelo; el reparto proporcional al ancho del contenedor no cambia.
+- Los anchos del modelo son los de §14.5 («Tarea» 170–380, «Prioridad» y «Estado» 36–44, etc.).
+
+**i18n**: claves nuevas en los 6 idiomas para los valores de Inicio y Programada (`date_past`, `date_today`, `date_this_week`, `date_future`), el nombre de la columna `closed_date` y los textos corregidos de Vencimiento (`due_today`, `due_this_week`) y de «Con fecha» (`has_any_date`). Se eliminan `dates` y, si no tiene otros usos, `future_tasks`.
+
+**Archivos afectados**
+
+| Área | Archivos |
+|---|---|
+| Estado y filtrado | `src/core/task-view-state.ts` |
+| Chips | `src/core/task-filter-chips.ts` |
+| Orden | `src/core/task-column-sort.ts` |
+| Columnas | nuevo `src/core/task-table-columns.ts` |
+| Tabla | `src/views/table-view.ts`, `src/views/templates/table-view.hbs`, `src/types/interfaces.ts` (`TableViewData`, `TableTaskRow`), `src/styles/views/_table-view.scss` |
+| i18n | `src/locales/*.json` |
+
+**Riesgos**: `table-layout: fixed` con columnas que aparecen y desaparecen (los anchos deben salir de las columnas visibles, no de las siete de antes); que la Lista comparta el combo de orden y muestre las columnas nuevas (Cerrada) aunque ella no las dibuja; y el cambio de significado de «Con fecha» y «Sin fecha» en estados ya guardados (el valor se conserva, pero ahora se aplica solo al vencimiento).
+
 ## 24. Sincronía con Google Calendar (v1.1.15, diseño — no implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §15. Diseño basado en `pubcyberry/obsidian-google-cal-sync` (inicio de sesión, almacenamiento del token, sincronización incremental) y `mcuste/obsidian-gcal-sync` (permisos mínimos, barreras de seguridad), adaptado a un modelo bidireccional sobre líneas de tarea.

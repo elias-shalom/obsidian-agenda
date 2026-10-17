@@ -23,6 +23,19 @@ const STATUS_RANK = new Map<string, number>(STATUS_OPTIONS.map((option, index) =
 
 const byText = (a: string, b: string): number => a.localeCompare(b);
 
+/**
+ * Compara rutas de sub-área por carpeta. Una ruta que es prefijo de otra (la vacía lo es de todas) va
+ * después de sus descendientes en las dos direcciones: son las tareas directas de esa carpeta.
+ */
+function compareSubAreas(a: string, b: string, factor: number): number {
+  const foldersA = a.split('/').filter(Boolean);
+  const foldersB = b.split('/').filter(Boolean);
+  for (let i = 0; i < Math.min(foldersA.length, foldersB.length); i += 1) {
+    if (foldersA[i] !== foldersB[i]) return byText(foldersA[i], foldersB[i]) * factor;
+  }
+  return foldersB.length - foldersA.length;
+}
+
 function compareByColumn(a: ITask, b: ITask, column: string): number {
   switch (column) {
     case 'priority':
@@ -31,11 +44,6 @@ function compareByColumn(a: ITask, b: ITask, column: string): number {
       return (STATUS_RANK.get(a.state.status) ?? 0) - (STATUS_RANK.get(b.state.status) ?? 0);
     case 'description':
       return byText(a.section.desc, b.section.desc);
-    case 'folder': {
-      // La columna Carpeta es ahora Área: primero por área y, dentro de ella, por ruta
-      const byArea = byText(resolveTaskArea(a.file.path).area, resolveTaskArea(b.file.path).area);
-      return byArea !== 0 ? byArea : byText(a.file.path, b.file.path);
-    }
     case 'tags':
       return byText(a.section.tags.join(','), b.section.tags.join(','));
     default:
@@ -43,7 +51,7 @@ function compareByColumn(a: ITask, b: ITask, column: string): number {
   }
 }
 
-/** Copia ordenada por la columna dada; las tareas sin vencimiento quedan al final en ambas direcciones. */
+/** Copia ordenada por la columna dada; las tareas sin vencimiento quedan al final en ambas direcciones, y en Área las que están directamente en la carpeta del área. */
 export function sortTasksByColumn(tasks: ITask[], column: string, direction: 'asc' | 'desc'): ITask[] {
   const factor = direction === 'asc' ? 1 : -1;
 
@@ -53,6 +61,15 @@ export function sortTasksByColumn(tasks: ITask[], column: string, direction: 'as
       const dueB = b.date.due?.toMillis();
       if (dueA === undefined || dueB === undefined) return dueA === dueB ? 0 : dueA === undefined ? 1 : -1;
       return (dueA - dueB) * factor;
+    }
+    if (column === 'folder') {
+      // La columna Carpeta es ahora Área: por área y, dentro de ella, por sub-área y ruta; sin sub-área, al final
+      const areaA = resolveTaskArea(a.file.path);
+      const areaB = resolveTaskArea(b.file.path);
+      const byArea = byText(areaA.area, areaB.area) * factor;
+      if (byArea !== 0) return byArea;
+      if (areaA.subArea !== areaB.subArea) return compareSubAreas(areaA.subArea, areaB.subArea, factor);
+      return byText(a.file.path, b.file.path) * factor;
     }
     return compareByColumn(a, b, column) * factor;
   });

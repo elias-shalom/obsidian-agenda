@@ -472,6 +472,29 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [ ] Diseñar y agregar la exportación a CSV (Especificación §14.3).
 - [ ] Verificable sola: el README y el manual de usuario dicen lo mismo que hace la Tabla.
 
+### Fase U6 — Barra de filtros con chips (pulido estético, depende de U1; diseño en [[Especificación de vistas]] §14.4 y [[Arquitectura técnica]] §23.7)
+- [x] **U6.1 Lógica pura**: nuevo `src/core/task-filter-chips.ts` con `FilterChipId`, `getActiveFilterChips()`, `clearFilterChip()`, `clearAllFilters()` y `getFilterValueOptions()`; `PRIORITY_OPTIONS` y `DUE_OPTIONS` se movieron allí desde `task-filter-bar.ts`.
+- [x] **U6.2 Maquetación**: fila principal con el conmutador, + Filtro, agrupado, orden y la búsqueda a la derecha (`margin-left: auto`), y fila de chips oculta si no hay filtros activos (`:not(:empty)`); la búsqueda pasa a su propia línea con un `@container` bajo 560 px.
+- [x] **U6.3 Menús**: botón + Filtro con el `Menu` nativo en pasos (tipo, valor y, para Área con sub-áreas, sub-área), colocado con `showAtPosition()`; el siguiente menú se abre con `window.setTimeout(…, 0)` para que no lo cierre el clic que cerró el anterior; sustituyen los cinco combos de filtro.
+- [x] **U6.4 Chips**: un chip por filtro activo con su ×, clic en el chip para cambiar el valor, y botón Limpiar (no toca la búsqueda); `renderChips()` desde `update()` cuando cambia un filtro.
+- [x] **U6.5 Estilos**: chips y × con `padding … !important` por el relleno de Obsidian en tableta, `max-width` con puntos suspensivos, estados `hover`/`focus-visible`; se quitaron las reglas de los combos de filtro.
+- [x] **U6.6 i18n**: claves `filter_add`, `filter_clear` y `filter_remove` en los 6 idiomas; eliminadas `all_priorities`, `all_tasks`, `all_areas` y `all_dates` (sin otros usos). Una sub-área guardada que ya no existe también se reinicia al abrir.
+- [x] Verificable sola con un script de Node (`task-filter-chips.ts`): los chips de cada combinación de estado, quitar Área reinicia la sub-área, Limpiar no toca búsqueda ni orden ni agrupado, y los valores no incluyen «Todos».
+- [ ] Prueba manual: escritorio, `app.emulateMobile(true)` en ventana estrecha (`is-phone`) y ancha (`is-tablet`), tema claro y oscuro, teclado (Tab, Enter y Escape en los menús), y que cambiar de Lista a Tabla conserva los chips.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fase U7 — Columnas de fechas de la Tabla y filtros por fecha (depende de U3 y U6; diseño en [[Especificación de vistas]] §14.5 y [[Arquitectura técnica]] §23.8)
+- [ ] **U7.1 Estado y filtrado**: campos `start` y `scheduled` en `TaskViewState`; `matchesDateFilter()` por día para los tres tipos (la vencida solo con tarea abierta); `filterTasksByViewState()` sin `dueDateRelative` ni `hasAnyDate()`.
+- [ ] **U7.2 Chips**: `FilterChipId` con `start` y `scheduled` (seis tipos en + Filtro), `getFilterValueOptions()` por tipo con los textos de Vencimiento y de Inicio/Programada.
+- [ ] **U7.3 Orden**: `start`, `scheduled` y `closed` en `TASK_SORT_COLUMNS` y en `sortTasksByColumn()` (sin fecha al final en las dos direcciones; el cierre es la fecha de hecha o de cancelada).
+- [ ] **U7.4 Modelo de columnas**: nuevo `src/core/task-table-columns.ts` con las columnas, sus límites de ancho y `getVisibleColumns(tasks)` (las de fechas se ocultan si ninguna tarea cargada tiene valor).
+- [ ] **U7.5 Plantilla y estilos de la Tabla**: encabezados y celdas por columna visible con `data-column`, `colspan` de las cabeceras de grupo según las visibles, cuatro columnas de fechas con la secundaria en una segunda línea, primera columna sin números de fila (solo el total en el encabezado), vencida y de hoy calculadas en TypeScript.
+- [ ] **U7.6 `resizeColumns()`**: límites por columna (`data-column`) con los anchos de §14.5 (Tarea 170–380, Prioridad y Estado 36–44, Área 72–140, fechas 90–120, Etiquetas 80–200).
+- [ ] **U7.7 i18n**: textos nuevos y corregidos en los 6 idiomas (`date_past`, `date_today`, `date_this_week`, `date_future`, `closed_date`, `due_today`, `due_this_week`, `has_any_date`); eliminar `dates` y, si no tiene otros usos, `future_tasks`.
+- [ ] Verificable sola con un script de Node: `matchesDateFilter()` para cada valor y tipo (incluida la vencida solo con tarea abierta), chips y valores de los seis tipos, orden por las columnas nuevas con las sin fecha al final, y `getVisibleColumns()` con y sin tareas que tengan cada fecha.
+- [ ] Prueba manual: tabla con todas las fechas y tabla sin Inicio ni Cerrada; filtros de los tres tipos; orden desde el encabezado y desde la barra; cabeceras de grupo con el `colspan` correcto; anchos en escritorio, tableta y teléfono emulados.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
 ### Fuera de alcance
 Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones masivas.
 

@@ -11,8 +11,7 @@ Por defecto, todas las familias de vistas están visibles. Puedes ocultar las qu
 | Pestaña | Para qué sirve |
 |---|---|
 | **Vista general** | Un panel con métricas clave, tareas próximas/vencidas y widgets de progreso |
-| **Lista** | Una lista compacta de tareas agrupadas por carpeta |
-| **Tabla** | Una cuadrícula de tareas estilo hoja de cálculo, con columnas ordenables |
+| **Tareas** | Una pestaña con un conmutador **Lista \| Tabla**: una lista compacta agrupada por área o una cuadrícula estilo hoja de cálculo, ambas con búsqueda, filtros, agrupado y orden |
 | **Calendario** | Seis diseños de calendario para ver las tareas en una línea de tiempo |
 | **Hábitos** | El módulo de Seguimiento de hábitos (separado de las tareas — ver [6. Seguimiento de hábitos](05-habit-tracker.md)) |
 
@@ -36,11 +35,11 @@ Haz clic en una tarea (en cualquier vista) para abrir el mismo modal, prellenado
 
 | Acción | Cómo |
 |---|---|
-| Filtrar tareas | Usa el panel de filtros (vista Tabla) |
+| Filtrar tareas | **+ Filtro** en la pestaña Tareas (Lista y Tabla) |
 | Crear una tarea | `Ctrl+P`, el botón de crear, o doble clic en una vista de calendario |
 | Editar una tarea | Haz clic en la tarea |
 | Abrir la nota detrás de una tarea | Doble clic en la tarea |
-| Ordenar tareas | Haz clic en un encabezado de columna (vistas Lista/Tabla) |
+| Ordenar tareas | El selector **Ordenar por**, o un encabezado de columna (Tabla) |
 
 ## Siguientes pasos
 

@@ -12,7 +12,8 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - ✅ Analiza y monitoriza tareas de todo tu vault
 - ✅ Compatible con la sintaxis y los metadatos de [Obsidian Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks)
 - ✅ Múltiples tipos de vista para gestionar tareas según tu flujo de trabajo
-- ✅ Actualizaciones de tareas en tiempo real
+- ✅ Actualizaciones de tareas en tiempo real, con vistas que se refrescan solas
+- ✅ Áreas y sub-áreas a partir de la estructura de carpetas
 - ✅ Interfaz personalizable con compatibilidad con temas
 - ✅ Atajos de teclado para acciones comunes
 - ✅ Soporte para localización
@@ -25,18 +26,22 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 - ✅ Resaltado de tareas vencidas
 - ✅ Widgets personalizables
 
+### Vista de lista y vista de tabla (pestaña «Tareas»)
+- ✅ Una pestaña con un conmutador Lista | Tabla que conserva búsqueda, filtros, agrupado y orden
+
 ### Vista de lista
-- ✅ Filas compactas con indicadores de prioridad y jerarquía de carpetas, en vista jerárquica o plana
-- ✅ Edición de tareas con clic (abre el modal) y doble clic abre la nota
+- ✅ Filas compactas con indicadores de prioridad y las fechas de inicio, programada y vencimiento
+- ✅ Edición de tareas con clic (abre el modal), doble clic abre la nota y clic derecho cambia el estado
 - ✅ Grupos de tareas contraíbles
-- ⬜ Búsqueda, filtros y orden (planeado en la unión Lista y Tabla de v1.1.12)
-- ⬜ Agrupación por fecha, estado o atributos personalizados (el agrupado genérico llega con las piezas compartidas de v1.1.12)
+- ✅ Búsqueda, filtros en chips (prioridad, estado, área y sub-área, inicio, programada y vencimiento) y orden
+- ✅ Agrupación por área y sub-área (por defecto), carpeta, estado, prioridad, etiquetas o fecha de vencimiento
 - ⬜ Columnas personalizables y acciones masivas (sin planear)
 
 ### Vista de tabla
-- ✅ Gestión de tareas estilo hoja de cálculo
+- ✅ Gestión de tareas estilo hoja de cálculo, con la misma barra de filtros y agrupado que la Lista
+- ✅ Columnas de fechas Inicio, Programada, Vencimiento y Cerrada (se ocultan si ninguna tarea las tiene)
 - ⬜ Columnas y diseños personalizables (planeado en v1.1.18)
-- ✅ Columnas ordenables y redimensionables
+- ✅ Columnas ordenables y redimensionables, ajustadas al ancho disponible
 - ✅ Entrada y edición rápida de atributos de tarea
 - ⬜ Exportación a CSV (planeado en v1.1.18)
 - ✅ Formato condicional
@@ -330,8 +335,8 @@ Orden de trabajo por dependencias: piezas compartidas, áreas, Lista y Tabla y d
 - [ ] **Lista y Tabla en una sola pestaña** (diseño en `Especificación de vistas.md` §14 y `Arquitectura técnica.md` §23; fases U1–U4 en `Plan de implementación.md`; depende de las piezas compartidas y de las áreas)
   - [x] Una pestaña «Tareas» con conmutador segmentado Lista | Tabla, como el selector del calendario (íconos con tooltip); cambiar de modo conserva búsqueda, filtros, agrupado y orden
   - [x] Opción A: se mantienen registrados `list-view` y `table-view` y el conmutador cambia de uno a otro (no rompe los espacios de trabajo guardados); una clase única queda como mejora posterior
-  - [ ] Barra común: búsqueda, filtros (estado, prioridad, Área, Sub-área, vencimiento), agrupado y orden; Lista ya gana lo que no tenía (búsqueda, filtros y orden; paso 6) y falta la Tabla con el agrupado
-  - [ ] El botón jerárquico/plano de Lista pasa a ser valores del combo de agrupado (hecho en la Lista, paso 6); la Tabla puede agrupar con cabeceras plegables (pendiente)
+  - [x] Barra común: búsqueda, filtros (estado, prioridad, Área, Sub-área, Inicio, Programada y Vencimiento), agrupado y orden; Lista y Tabla la usan (pasos 6 y 7)
+  - [x] El botón jerárquico/plano de Lista pasa a ser valores del combo de agrupado (Área y sub-área, y Carpeta como modo plano); la Tabla agrupa con cabeceras plegables
   - [x] `showListTab`/`showTableTab` se conservan como visibilidad de cada modo; la pestaña abre el último modo usado (con un solo modo visible, el conmutador no aparece)
   - [ ] Kanban y Gantt siguen en sus propias pestañas
   - [x] Tabla: ajustar las columnas al ancho disponible (viene de v1.1.11): a la ventana en escritorio y al ancho del dispositivo en tableta y teléfono, es decir, al ancho real del contenedor; las columnas flexibles se reducen en proporción sin bajar de su mínimo (la suma de mínimos es ~600 px, así que en un teléfono estrecho sigue habiendo scroll); hecho en `resizeColumns()` de `table-view.ts` (paso 7). Los máximos pasan a Tarea 520, Área 160 y Etiquetas 240; la Tarea se parte en varias líneas si no cabe y la ruta del archivo va en una línea cortada con puntos suspensivos; el diseño de tabla pasa a `table-layout: fixed`, sin el ancho mínimo de 760 px en pantallas estrechas
@@ -349,7 +354,7 @@ Orden de trabajo por dependencias: piezas compartidas, áreas, Lista y Tabla y d
     - [x] Filtros por fecha: el tipo «Fecha» se divide en **Vencimiento**, **Inicio** y **Programada** (seis tipos en + Filtro), con los mismos valores para los tres; «Vencidas» solo cuenta tareas abiertas y se corrigen los textos «Vencidas hoy» y «Vencidas esta semana» por «Vencen hoy» y «Vencen en los próximos 7 días»; «Con fecha» y «Sin fecha» pasan a ser por tipo
     - [x] Orden por Inicio, Programada, Vencimiento y Cerrada (también en la Lista, que comparte el combo de orden)
   - [x] Tabla: columnas y diseño personalizables y exportación a CSV: decidido **no** hacerlos en esta versión; pasan a v1.1.18 (ver más abajo). Se quitó el anuncio del README y del manual de usuario
-- [ ] **Documentación al cerrar la versión**: README (badge, What's New, News, Changelog), manual de usuario en/es (Lista, Tabla, áreas) y la lista de características de este archivo (Lista y Tabla)
+- [x] **Documentación al cerrar la versión**: README (badge, What's New, News, Changelog), manual de usuario en/es (Lista, Tabla, áreas, gestos, configuración e introducción) y la lista de características de este archivo (Lista y Tabla); el número de versión en `package.json`, `manifest.json` y `versions.json` se sube al publicar (`npm version 1.1.12 --no-git-tag-version`)
 
 ### Pendientes de versiones anteriores y dónde quedan
 

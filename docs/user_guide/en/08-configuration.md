@@ -8,7 +8,7 @@ Access every plugin setting via **Obsidian Settings → Community Plugins → Ag
 
 ## Tab Visibility
 
-- Show/hide each top-level tab independently: **Overview**, **List**, **Table**, **Calendar**.
+- Show/hide each top-level tab independently: **Overview**, **List**, **Table**, **Calendar**. List and Table are the two modes of the **Tasks** tab: with both visible you get the **List | Table** switch, with one visible the switch is hidden, and with none the tab is hidden.
 - Habit Tracker tabs have their own group (see **Habits** below).
 
 ## Calendar

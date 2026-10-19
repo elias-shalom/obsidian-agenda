@@ -2,17 +2,16 @@
 
 **Agenda Tasks** is a task management and calendar plugin for [Obsidian](https://obsidian.md). It turns your vault into a productivity system by reading the tasks you already write in your notes and presenting them through several dedicated views, without changing how you write tasks.
 
-> This manual covers plugin version **1.1.10**. For a plain list of what changed between versions, see the Changelog section of the project [README](../../../README.md#changelog).
+> This manual covers plugin version **1.1.12**. For a plain list of what changed between versions, see the Changelog section of the project [README](../../../README.md#changelog).
 
 ## What it does
 
-- Scans your entire vault for checkbox tasks (`- [ ]`) and keeps them up to date in real time as you edit notes.
+- Scans your entire vault for checkbox tasks (`- [ ]`) and keeps them up to date as you edit notes: the views refresh by themselves.
 - Is fully compatible with the [Obsidian Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) plugin's metadata format (dates, priority, recurrence, tags, etc.), so existing notes keep working unchanged.
 - Adds its own optional extensions on top of that format: a scheduled time and duration, a 6-state status (including "On Hold"), and automatic next-occurrence generation for recurring tasks.
 - Offers five view families, each suited to a different way of working:
   - **Overview** — a dashboard with key metrics and quick access to upcoming/overdue tasks.
-  - **List** — a compact list of tasks grouped by folder.
-  - **Table** — a spreadsheet-style, sortable grid of tasks.
+  - **List** and **Table** — two ways to work through your tasks in one **Tasks** tab: a compact list grouped by area, or a spreadsheet-style grid, both with search, filters, grouping and sorting.
   - **Calendar** — six layouts (Day, Week, Work Week, Month, Year, List) to see tasks against a timeline.
   - **Habit Tracker** — a separate module (Grid, Daily Routine, Dashboard, Weekly, Table) to track recurring habits, independent from tasks.
 

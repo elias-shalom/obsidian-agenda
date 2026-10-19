@@ -2,6 +2,14 @@
 // Los 6 estados en orden de flujo de trabajo, con su ícono y su clave de traducción. Fuente única
 // para el menú de estado, el agrupado y la barra de filtros.
 import { CoreTaskStatus, CoreTaskStatusIcon } from '../types/enums';
+import type { ITask } from '../types/interfaces';
+
+const CLOSED_STATUSES = new Set<string>([CoreTaskStatus.Done, CoreTaskStatus.Cancelled, CoreTaskStatus.nonTask]);
+
+/** Una tarea está abierta si no está hecha, cancelada ni marcada como «no es tarea». */
+export function isTaskOpen(task: ITask): boolean {
+  return !CLOSED_STATUSES.has(task.state.status);
+}
 
 export interface TaskStatusOption {
   status: CoreTaskStatus;

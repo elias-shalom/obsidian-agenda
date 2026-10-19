@@ -412,8 +412,12 @@ export type DurationTaskSegment = ITask & {
 export interface TableViewData {
   /** Tareas filtradas y ordenadas. */
   tasks: ITask[];
-  /** Filas a dibujar: cabeceras de grupo y tareas numeradas, en orden. */
+  /** Filas a dibujar: cabeceras de grupo y tareas, en orden. */
   rows: TableRow[];
+  /** Qu\u00e9 columnas se dibujan (las de fechas se ocultan si ninguna tarea cargada tiene valor). */
+  columns: Record<string, boolean>;
+  /** Cu\u00e1ntas columnas se dibujan, para el `colspan` de las cabeceras de grupo. */
+  columnCount: number;
   /** Hay tareas en el vault, aunque los filtros las oculten (cambia el mensaje de tabla vacía). */
   vaultHasTasks: boolean;
 }
@@ -428,8 +432,8 @@ export interface TableGroupRow {
   level: number;
 }
 
-/** Fila de tarea: la tarea con su número de fila. */
-export type TableTaskRow = ITask & { isGroup: false; number: number };
+/** Fila de tarea: la tarea con el estado de su vencimiento (`overdue` o `today`, solo en tareas abiertas). */
+export type TableTaskRow = ITask & { isGroup: false; dueState: 'overdue' | 'today' | '' };
 
 export type TableRow = TableGroupRow | TableTaskRow;
 

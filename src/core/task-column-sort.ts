@@ -1,6 +1,7 @@
 // src/core/task-column-sort.ts
 // Orden de tareas por columna (v1.1.12, Fase U1/U2): lo comparten la barra de filtros, la Lista y,
 // después, la Tabla. Las columnas son las de la Tabla; el orden por defecto es el de `TaskViewState`.
+import type { DateTime } from 'luxon';
 import { ITask } from '../types/interfaces';
 import { STATUS_OPTIONS } from './task-status-options';
 import { resolveTaskArea } from './area';
@@ -11,9 +12,20 @@ export const TASK_SORT_COLUMNS: readonly { value: string; labelKey: string }[] =
   { value: 'status', labelKey: 'task_status' },
   { value: 'description', labelKey: 'task' },
   { value: 'folder', labelKey: 'area' },
-  { value: 'due', labelKey: 'dates' },
+  { value: 'start', labelKey: 'column_start' },
+  { value: 'scheduled', labelKey: 'column_scheduled' },
+  { value: 'due', labelKey: 'column_due' },
+  { value: 'closed', labelKey: 'column_closed' },
   { value: 'tags', labelKey: 'tags' },
 ];
+
+/** Columnas de fecha y la fecha por la que ordenan; la de cierre es la de hecha o, si no, la de cancelada. */
+const DATE_COLUMNS: Record<string, (task: ITask) => DateTime | null> = {
+  start: task => task.date.start,
+  scheduled: task => task.date.scheduled,
+  due: task => task.date.due,
+  closed: task => task.date.done ?? task.date.cancelled,
+};
 
 /** Mayor valor = más prioritaria; lo que no coincide (`undefined`) queda al final en orden descendente. */
 const PRIORITY_RANK: Record<string, number> = { highest: 6, high: 5, medium: 4, normal: 3, low: 2, lowest: 1 };
@@ -51,14 +63,15 @@ function compareByColumn(a: ITask, b: ITask, column: string): number {
   }
 }
 
-/** Copia ordenada por la columna dada; las tareas sin vencimiento quedan al final en ambas direcciones, y en Área las que están directamente en la carpeta del área. */
+/** Copia ordenada por la columna dada; las tareas sin fecha en una columna de fecha quedan al final en ambas direcciones, y en Área las que están directamente en la carpeta del área. */
 export function sortTasksByColumn(tasks: ITask[], column: string, direction: 'asc' | 'desc'): ITask[] {
   const factor = direction === 'asc' ? 1 : -1;
 
   return [...tasks].sort((a, b) => {
-    if (column === 'due') {
-      const dueA = a.date.due?.toMillis();
-      const dueB = b.date.due?.toMillis();
+    const dateOf = DATE_COLUMNS[column];
+    if (dateOf) {
+      const dueA = dateOf(a)?.toMillis();
+      const dueB = dateOf(b)?.toMillis();
       if (dueA === undefined || dueB === undefined) return dueA === dueB ? 0 : dueA === undefined ? 1 : -1;
       return (dueA - dueB) * factor;
     }

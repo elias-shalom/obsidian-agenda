@@ -5,14 +5,15 @@ import type { App } from 'obsidian';
 import { DateTime } from 'luxon';
 import { ITask, TaskFilterCriteria } from '../types/interfaces';
 import { TaskFilter } from './task-filter';
-import { STATUS_OPTIONS } from './task-status-options';
+import { STATUS_OPTIONS, isTaskOpen } from './task-status-options';
 
 const TASK_VIEW_STATE_KEY = 'obsidian-agenda-task-view-state';
 /** Clave que usaba la Tabla antes de v1.1.12; se lee una vez, se convierte y se elimina. */
 const LEGACY_TABLE_STATE_KEY = 'obsidian-agenda-task-table-state';
 
 export const PRIORITY_FILTER_VALUES = ['highest', 'high', 'medium', 'normal', 'low', 'lowest', 'none'] as const;
-export const DUE_FILTER_VALUES = ['hasdate', 'overdue', 'today', 'thisweek', 'future', 'nodate'] as const;
+/** Valores de los filtros de fecha (vencimiento, inicio y programada): los tres comparten los mismos. */
+export const DATE_FILTER_VALUES = ['hasdate', 'overdue', 'today', 'thisweek', 'future', 'nodate'] as const;
 
 /** Modos de la pestaña «Tareas» y la vista que abre cada uno. */
 export type TaskViewMode = 'list' | 'table';
@@ -30,7 +31,11 @@ export interface TaskViewState {
   area: string;
   /** Ruta de carpetas bajo el área; vacío = todas. */
   subArea: string;
-  /** `'all'` o un valor de `DUE_FILTER_VALUES`. */
+  /** `'all'` o un valor de `DATE_FILTER_VALUES`, sobre la fecha de inicio. */
+  start: string;
+  /** `'all'` o un valor de `DATE_FILTER_VALUES`, sobre la fecha programada. */
+  scheduled: string;
+  /** `'all'` o un valor de `DATE_FILTER_VALUES`, sobre la fecha de vencimiento. */
   due: string;
   /** Agrupado elegido entre los que ofrece la vista; vacío = el que cada vista usa por defecto. */
   group: string;
@@ -46,6 +51,8 @@ export const DEFAULT_TASK_VIEW_STATE: Readonly<TaskViewState> = {
   status: 'all',
   area: '',
   subArea: '',
+  start: 'all',
+  scheduled: 'all',
   due: 'all',
   group: '',
   sortColumn: 'priority',
@@ -68,7 +75,9 @@ export function parseTaskViewState(raw: unknown): TaskViewState {
     status: source.status === 'all' || STATUS_OPTIONS.some(option => option.name === source.status) ? source.status as string : defaults.status,
     area: text(source.area, defaults.area),
     subArea: text(source.subArea, defaults.subArea),
-    due: source.due === 'all' || isOneOf(DUE_FILTER_VALUES, source.due) ? source.due : defaults.due,
+    start: source.start === 'all' || isOneOf(DATE_FILTER_VALUES, source.start) ? source.start : defaults.start,
+    scheduled: source.scheduled === 'all' || isOneOf(DATE_FILTER_VALUES, source.scheduled) ? source.scheduled : defaults.scheduled,
+    due: source.due === 'all' || isOneOf(DATE_FILTER_VALUES, source.due) ? source.due : defaults.due,
     group: text(source.group, defaults.group),
     sortColumn: text(source.sortColumn, defaults.sortColumn) || defaults.sortColumn,
     sortDirection: source.sortDirection === 'asc' || source.sortDirection === 'desc' ? source.sortDirection : defaults.sortDirection,
@@ -130,14 +139,30 @@ export function normalizeSearchText(text: string): string {
   return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
-const hasAnyDate = (task: ITask): boolean =>
-  [task.date.due, task.date.start, task.date.scheduled, task.date.created, task.date.done, task.date.cancelled]
-    .some(date => date !== null && date !== undefined);
+/**
+ * ¿La fecha cumple el valor del filtro? Se compara por día, sin hora. `overdue` es anterior a hoy y
+ * solo cuenta si la tarea está abierta (`isOpen`); `thisweek` va de hoy a 7 días después, hoy incluido, y
+ * `future` es más allá de esos 7 días.
+ */
+export function matchesDateFilter(date: DateTime | null | undefined, value: string, now: DateTime, isOpen = true): boolean {
+  if (value === 'all') return true;
+  if (value === 'nodate') return !date;
+  if (!date) return false;
+  if (value === 'hasdate') return true;
+
+  const days = Math.round(date.startOf('day').diff(now.startOf('day'), 'days').days);
+  switch (value) {
+    case 'overdue': return days < 0 && isOpen;
+    case 'today': return days === 0;
+    case 'thisweek': return days >= 0 && days <= 7;
+    case 'future': return days > 7;
+    default: return true;
+  }
+}
 
 /**
- * Tareas que cumplen el estado de búsqueda y filtros. Prioridad, estado, área y vencimiento pasan por
- * `TaskFilter`; la búsqueda (descripción y etiquetas, sin acentos) y «con/sin fecha» son propias.
- * «Esta semana» son los próximos 7 días y «futuras» las que vencen después de ellos.
+ * Tareas que cumplen el estado de búsqueda y filtros. Prioridad, estado y área pasan por `TaskFilter`;
+ * la búsqueda (descripción y etiquetas, sin acentos) y los tres filtros de fecha son propios.
  */
 export function filterTasksByViewState(tasks: ITask[], state: TaskViewState, now: DateTime = DateTime.now()): ITask[] {
   const criteria: TaskFilterCriteria = {};
@@ -153,31 +178,13 @@ export function filterTasksByViewState(tasks: ITask[], state: TaskViewState, now
     criteria.location = { area: state.area, subArea: state.subArea };
   }
 
-  // Los criterios relativos de `TaskFilter` dejan pasar las tareas sin vencimiento: se exige que exista.
-  switch (state.due) {
-    case 'overdue':
-      criteria.dueDate = { exists: true };
-      criteria.dueDateRelative = { overdue: true };
-      break;
-    case 'today':
-      criteria.dueDate = { exists: true };
-      criteria.dueDateRelative = { today: true };
-      break;
-    case 'thisweek':
-      criteria.dueDate = { exists: true };
-      criteria.dueDateRelative = { futureDays: 7 };
-      break;
-    case 'future':
-      criteria.dueDate = { exists: true, after: now.startOf('day').plus({ days: 7 }).toJSDate() };
-      break;
-  }
-
   const filtered = new TaskFilter().filterTasks(tasks, criteria);
   const search = normalizeSearchText(state.search.trim());
 
   return filtered.filter(task => {
-    if (state.due === 'hasdate' && !hasAnyDate(task)) return false;
-    if (state.due === 'nodate' && hasAnyDate(task)) return false;
+    if (!matchesDateFilter(task.date.due, state.due, now, isTaskOpen(task))) return false;
+    if (!matchesDateFilter(task.date.start, state.start, now)) return false;
+    if (!matchesDateFilter(task.date.scheduled, state.scheduled, now)) return false;
     if (!search) return true;
     return normalizeSearchText(task.section.desc).includes(search)
       || normalizeSearchText(task.section.tags.join(' ')).includes(search);

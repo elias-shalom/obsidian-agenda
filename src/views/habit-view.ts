@@ -71,9 +71,16 @@ export abstract class HabitView extends BaseView {
   }
 
   private handleHabitsRefresh = (): void => {
+    this.cancelAutoRefresh();
     this.habits = this.loadHabits();
     this.refreshHabitView().catch(console.error);
   };
+
+  protected async performAutoRefresh(): Promise<void> {
+    await this.habitManager.waitForInitialCache();
+    this.habits = this.loadHabits();
+    await this.refreshHabitView();
+  }
 
   /**
    * Combina los datos específicos de cada vista con los campos comunes

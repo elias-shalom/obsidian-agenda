@@ -161,7 +161,7 @@
 
 // Specific column styling
 .oa-table-col-priority {
-  min-width: 48px;
+  min-width: 36px;
   width: auto;
   text-align: center;
 }
@@ -190,7 +190,7 @@
 }
 
 .oa-table-col-status {
-  min-width: 48px;
+  min-width: 36px;
   width: auto;
   text-align: center;
 }
@@ -231,7 +231,7 @@
 }
 
 .oa-table-col-task {
-  min-width: 180px;
+  min-width: 170px;
 
   .oa-task-description {
     color: var(--text-normal);
@@ -274,62 +274,73 @@
   }
 }
 
-.oa-table-col-due {
-  min-width: 80px;
+// Las cuatro columnas de fechas: la fecha principal y, debajo, una secundaria más pequeña y apagada
+.oa-table-col-start,
+.oa-table-col-scheduled,
+.oa-table-col-due,
+.oa-table-col-closed {
+  min-width: 90px;
   width: auto;
-  
-  &.oa-overdue {
-    .due-date {
-      color: $overdue-color;
-      font-weight: bold;
-    }
-  }
-  
-  &.oa-due-today {
-    .due-date {
-      color: $today-color;
-      font-weight: bold;
-    }
-  }
 
-  .oa-task-dates {
+  .oa-task-date {
     display: flex;
-    flex-direction: column;
+    width: fit-content;
+    align-items: center;
     gap: 4px;
-    
-    .oa-task-date {
-      display: flex;
-      width: fit-content;
-      align-items: center;
-      gap: 4px;
-      padding: 1px 5px;
-      border-radius: 3px;
-      font-size: 0.82em;
-      white-space: nowrap;
-      
-      .oa-date-icon {
-        opacity: 0.9;
-      }
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 0.82em;
+    white-space: nowrap;
 
-      &.due-date {
-        background: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary));
-      }
+    + .oa-task-date {
+      margin-top: 3px;
+    }
 
-      &.scheduled-date {
-        color: var(--text-accent);
-      }
+    .oa-date-icon {
+      opacity: 0.9;
+    }
 
-      &.created-date,
-      &.done-date,
-      &.cancelled-date {
-        color: var(--text-faint);
-      }
+    &.oa-task-date--secondary {
+      padding-top: 0;
+      padding-bottom: 0;
+      color: var(--text-faint);
+      font-size: 0.74em;
     }
   }
 }
 
+.oa-table-col-scheduled .oa-task-date:not(.oa-task-date--secondary) {
+  color: var(--text-accent);
+}
+
+.oa-table-col-due {
+  .oa-task-date--due {
+    background: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary));
+  }
+
+  &.oa-overdue .oa-task-date--due {
+    color: $overdue-color;
+    font-weight: bold;
+  }
+
+  &.oa-due-today .oa-task-date--due {
+    color: $today-color;
+    font-weight: bold;
+  }
+}
+
+// Columnas de solo un ícono: sin el relleno lateral de las demás para que quepan en pocos píxeles
+.oa-table-container .oa-tasks-table {
+  .oa-table-col-count,
+  .oa-table-col-priority,
+  .oa-table-col-status {
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+}
+
 .oa-table-col-folder {
-  min-width: 100px;
+  min-width: 72px;
 
   .oa-task-folder {
     display: flex;
@@ -350,7 +361,7 @@
 }
 
 .oa-table-col-tags {
-  min-width: 96px;
+  min-width: 80px;
   
   .oa-task-tag {
     display: inline-flex;
@@ -449,19 +460,11 @@
   }
 }
 
-.oa-table-col-row-number {
+.oa-table-col-count {
   width: 30px;
   min-width: 30px;
   text-align: center;
   color: var(--text-muted);
-}
-
-.oa-row-number {
-  font-variant-numeric: tabular-nums;
-}
-
-.oa-row-number {
-  font-size: 0.9em;
 }
 
 #oa-total-row-count {

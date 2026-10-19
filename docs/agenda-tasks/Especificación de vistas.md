@@ -548,7 +548,7 @@ Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones
 
 El ajuste de las columnas al ancho disponible, decidido durante la 1.1.11, se implementa en v1.1.12: la referencia es el ancho real del contenedor (la ventana en escritorio y el ancho del dispositivo en tableta y teléfono), y las columnas flexibles se reducen en proporción sin bajar de su mínimo.
 
-El README y el manual de usuario anuncian para la Tabla **columnas y diseño personalizables** y **exportación a CSV**, que no existen en el código. Se decidió agregarlos en v1.1.12 como parte de las actualizaciones de Lista y Tabla. Sin diseño todavía; a decidir: qué columnas se pueden mostrar, ocultar y reordenar, dónde se guarda esa elección (hoy el estado de la Tabla va en `TABLE_VIEW_STATE_KEY`, §3), qué filas y columnas exporta el CSV (todas o solo las visibles tras filtrar), el separador y la codificación, y dónde se guarda o descarga el archivo.
+El README y el manual de usuario anuncian para la Tabla **columnas y diseño personalizables** y **exportación a CSV**, que no existen en el código. Se decidió **no** hacerlos en v1.1.12 y pasarlos a v1.1.18; mientras tanto se quitó el anuncio del README y del manual. Sin diseño todavía; a decidir: qué columnas se pueden mostrar, ocultar y reordenar, dónde se guarda esa elección (hoy el estado de la Tabla va en `TABLE_VIEW_STATE_KEY`, §3), qué filas y columnas exporta el CSV (todas o solo las visibles tras filtrar), el separador y la codificación, y dónde se guarda o descarga el archivo.
 
 ### 14.4 Barra de filtros con chips (v1.1.12 — implementado; falta la prueba manual)
 
@@ -582,7 +582,7 @@ El estado compartido (`TaskViewState`, §23.1) y el filtrado no cambian: los chi
 
 **Decisiones**: sin decisiones abiertas. Se descartó el panel plegable con combos (más conocido, pero muestra los filtros activos solo por un número) y los submenús de un solo menú (la API pública de `Menu` en los tipos de Obsidian instalados no expone submenús, así que la elección en pasos usa menús sucesivos).
 
-### 14.5 Columnas de fechas de la Tabla y filtros por fecha (v1.1.12 — diseño acordado, no implementado)
+### 14.5 Columnas de fechas de la Tabla y filtros por fecha (v1.1.12 — implementado; falta la prueba manual)
 
 **Problema.** La columna «Fechas» apila hasta seis fechas distintas en una sola celda y el filtro de fecha solo mira el vencimiento: no se puede pedir «programadas esta semana» ni «con inicio pasado». Además, «Vencidas» cuenta también las tareas hechas o canceladas, y los textos «Vencidas hoy» y «Vencidas esta semana» dicen lo contrario de lo que filtran.
 
@@ -638,6 +638,22 @@ Con las cuatro fechas visibles la suma de mínimos es de unos 790 px; con Inicio
 **Fuera de alcance**: filtrar por fecha de creación o de cierre; ordenar por la fecha secundaria; ocultar o reordenar columnas a mano (fase U5, que reutilizará este mismo modelo de columnas).
 
 **Decisiones**: sin decisiones abiertas.
+
+### 14.6 Refresco automático de las vistas (v1.1.12 — implementado; falta la prueba manual)
+
+**Problema.** Si se edita una nota en otro panel, ninguna vista cambia hasta volver a entrar en ella; la Rutina y el resaltado de «hoy» tampoco cambian a medianoche.
+
+**Comportamiento.**
+- Las vistas de tareas y de hábitos abiertas y visibles se actualizan solas unos 0,4 s después de un cambio real: guardar una nota sin tocar tareas (o, en hábitos, sin tocar la carpeta de hábitos) no las redibuja.
+- A medianoche local, y al volver a la ventana si el día cambió mientras tanto, todas se actualizan para mostrar el día nuevo.
+- Se conservan la búsqueda, los filtros, el orden, los grupos plegados y el scroll; no aparece la pantalla de carga.
+- No interrumpe lo que se está haciendo: si hay un modal, un menú, un selector de fecha, un arrastre o el foco está en un campo de la vista, el refresco espera a que termine.
+- Una vista oculta (otra pestaña) no se redibuja; se actualiza al volver a ella.
+- Una edición hecha desde la propia vista no la redibuja dos veces.
+
+**Decisiones**: retardo fijo de 0,4 s; solo vistas visibles; sin interruptor en los ajustes.
+
+**Fuera de alcance**: refresco parcial por fila (se redibuja la vista entera, como hoy al refrescar a mano) y cambios en la configuración (ya refrescan las vistas desde los ajustes).
 
 ## 15. Sincronía con Google Calendar (v1.1.15 — diseño, no implementado)
 

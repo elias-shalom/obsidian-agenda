@@ -8,9 +8,11 @@ import { TASK_MODAL_TYPE, ModalManager } from "./core/modal-manager";
 import { addTaskFieldMenuItems } from "./core/task-field-menu";
 import { isTaskLine } from "./core/task-line-fields";
 import { DEFAULT_SETTINGS, AgendaPluginSettings, } from "./settings/settings";
+import { DayChangeWatcher } from "./core/day-change";
 
 export default class ObsidianAgenda extends Plugin {
   settings: AgendaPluginSettings = DEFAULT_SETTINGS;
+  private dayChangeWatcher = new DayChangeWatcher();
   private viewManager: ViewManager ;
   private i18n: I18n;
   private taskManager: TaskManager;
@@ -123,6 +125,7 @@ export default class ObsidianAgenda extends Plugin {
       );
 
       this.viewManager.registerViews();
+      this.dayChangeWatcher.start();
       //logger.info("Vistas registradas correctamente.");
 
     } catch (error) {
@@ -146,6 +149,8 @@ onunload() {
     console.debug('Descargando plugin OBS Agenda');
 
     try {
+      this.dayChangeWatcher.stop();
+
       // Desregistrar vistas
       if (this.viewManager) {
         this.viewManager.unregisterViews();

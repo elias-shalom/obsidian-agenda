@@ -6,10 +6,24 @@ import { TaskExtractor } from "./task-extractor";
 import { TaskFilter } from "./task-filter";
 import { TaskSorter } from "./task-sorter";
 import { TaskQueryHandler } from "./task-query-handler";
+import { EventBus, EVENTS } from "./event-bus";
+import { RefreshScheduler } from "./refresh-scheduler";
+import { tasksSignature } from "./task-signature";
+
+/** Espera de calma antes de comprobar si los cambios del vault tocaron alguna tarea. */
+const CHANGE_CHECK_DELAY_MS = 400;
 
 export class TaskManager {
   private refreshInProgress: boolean = false;
   private refreshPromise: Promise<ITask[]> | null = null;
+  private notifiedSignature: string | null = null;
+  private readonly eventBus = EventBus.getInstance();
+  private readonly changeScheduler = new RefreshScheduler({
+    delayMs: CHANGE_CHECK_DELAY_MS,
+    isBusy: () => false,
+    run: () => this.notifyIfTasksChanged(),
+  });
+  private readonly onCacheInvalidated = (): void => this.changeScheduler.request();
   
   // Instancias de las clases especializadas
   private taskCache: TaskCache;
@@ -28,6 +42,18 @@ export class TaskManager {
     this.queryHandler = new TaskQueryHandler(
       (tasks: ITask[], criteria?: TaskFilterCriteria) => this.getFilteredTasks(criteria)
     );
+    this.eventBus.on(EVENTS.TASKS_UPDATED, this.onCacheInvalidated);
+  }
+
+  /** Avisa a las vistas solo si cambió alguna línea de tarea; guardar otra nota no redibuja nada. */
+  private async notifyIfTasksChanged(): Promise<void> {
+    if (this.eventBus.listenerCount(EVENTS.TASKS_CHANGED) === 0) return;
+
+    const signature = tasksSignature(await this.getAllTasks());
+    if (signature === this.notifiedSignature) return;
+
+    this.notifiedSignature = signature;
+    this.eventBus.emit(EVENTS.TASKS_CHANGED, { signature });
   }
 
   /** Expone los settings del plugin (v1.1.10): usado por `TaskModal`, que no extiende `CalendarView`
@@ -79,6 +105,13 @@ export class TaskManager {
         }
       })
     );
+
+    // Los metadatos se indexan después del guardado: sin esto la relectura podría ver las tareas antiguas
+    this.plugin.registerEvent(
+      this.app.metadataCache.on('changed', (file) => {
+        if (file.extension === 'md') this.invalidateFileCache(file.path);
+      })
+    );
   }
 
   unregisterEvents(): void {
@@ -106,6 +139,9 @@ export class TaskManager {
    * Limpia recursos del TaskManager
    */
   public cleanup(): void {
+    this.changeScheduler.dispose();
+    this.eventBus.off(EVENTS.TASKS_UPDATED, this.onCacheInvalidated);
+
     // Limpiar caches
     this.taskCache.cleanup();
     

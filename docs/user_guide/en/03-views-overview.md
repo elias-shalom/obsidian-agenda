@@ -25,11 +25,9 @@ A compact list of tasks grouped by folder, best for working through your vault's
 
 A spreadsheet-style grid, best when you want to scan, sort, and compare many tasks at a glance.
 
-- Customizable columns and layout.
 - Sortable and resizable columns — click a column header to sort, click again to reverse.
 - Quick entry and editing of task attributes directly in the grid.
 - Status and priority cues, compact date/tag styling, conditional formatting.
-- CSV export.
 - Search, filters, and sort order are remembered when you return from editing a task or switch views; column widths adapt to the rows visible after filtering.
 
 ## Next steps

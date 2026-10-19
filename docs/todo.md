@@ -35,10 +35,10 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 
 ### Vista de tabla
 - ✅ Gestión de tareas estilo hoja de cálculo
-- ✅ Columnas y diseños personalizables
+- ⬜ Columnas y diseños personalizables (planeado en v1.1.18)
 - ✅ Columnas ordenables y redimensionables
 - ✅ Entrada y edición rápida de atributos de tarea
-- ✅ Exportación a CSV
+- ⬜ Exportación a CSV (planeado en v1.1.18)
 - ✅ Formato condicional
 
 ### Vista de calendario
@@ -318,7 +318,7 @@ Orden de trabajo por dependencias: piezas compartidas, áreas, Lista y Tabla y d
   - [x] Separar los ids (Arquitectura §20.3.2): `Task.id` pasa a ser siempre la posición (`ruta#línea`) y el `🆔` va en su propio campo (`flow.id`); hoy el mismo campo vale el `🆔` si existe y `ruta-línea` si no
   - [x] Escritura segura: los escritores comprueban el texto de la línea antes de escribir y, si no coincide, buscan la línea exacta o cancelan con aviso; evita editar otra tarea cuando el archivo cambió entre el render y la acción
   - [x] Corregido de paso: el extractor de respaldo (sin caché de metadatos) numeraba las líneas contando solo las tareas y no la posición real en el archivo
-  - [ ] Refresco automático (propuesto, por confirmar; reúne el opcional que estaba en Kanban y dos pendientes de Hábitos): las vistas de tareas se refrescan solas al cambiar un archivo (hoy ninguna se suscribe a `TASKS_UPDATED`), la Rutina y las vistas de hábitos también, y las vistas que dependen del día actual cambian a medianoche local sin interacción ni cambios en el vault
+  - [x] Refresco automático (implementado, falta la prueba manual; diseño en `Especificación de vistas.md` §14.6, `Arquitectura técnica.md` §23.9 y fase U8 en `Plan de implementación.md`; reúne el opcional que estaba en Kanban y dos pendientes de Hábitos): las vistas de tareas y de hábitos se refrescan solas ~0,4 s después de un cambio real (una nota sin cambios en tareas no redibuja), conservando filtros, búsqueda, grupos plegados y scroll, y sin interrumpir modales, menús, arrastres ni escritura; las vistas cambian de día a medianoche local sin interacción ni cambios en el vault
 - [ ] **Áreas y sub-áreas de tareas** (reemplaza la idea de «Grupos de tareas»; diseño en `Especificación de vistas.md` §13 y `Arquitectura técnica.md` §22; fases AR1–AR2 en `Plan de implementación.md`; entrada original en "Próximas Características" más abajo, sección Características Experimentales)
   - [ ] Mismo concepto que en Hábitos, con distinto origen: en hábitos es configurable (frontmatter); en tareas **no**, la ubicación física de la nota es su área
   - [x] Área = nombre de la primera carpeta; sub-área = la ruta de carpetas sin la primera, completa y sin tope de niveles (`b` o `b/c/d`); archivos en la raíz del vault: «Sin área» (núcleo hecho: `resolveTaskArea()` y criterios de `TaskFilter`; la etiqueta «Sin área» va con la interfaz)
@@ -342,21 +342,21 @@ Orden de trabajo por dependencias: piezas compartidas, áreas, Lista y Tabla y d
     - [x] Desaparece el combo «All tasks» del estado, que se confundía con «todas las tareas»
     - [x] No cambian `TaskViewState`, el filtrado ni las vistas; solo la interfaz de `TaskFilterBar` y sus estilos
   - [x] Lista: junto a la descripción de cada tarea se muestran también la fecha de inicio (🛫) y la programada (⏳, con su hora 🕐 si la tiene), además de la de vencimiento (📅); cada una solo si existe (`list-view.hbs`)
-  - [ ] Tabla: columnas de fechas y filtros por fecha (diseño en `Especificación de vistas.md` §14.5, `Arquitectura técnica.md` §23.8 y fase U7 en `Plan de implementación.md`; va antes que las columnas personalizables)
-    - [ ] La columna «Fechas» se divide en cuatro: **Inicio** (con la creación debajo), **Programada** (con hora y duración), **Vencimiento** y **Cerrada** (hecha o cancelada, una sola por tarea); cada fecha con su emoji y su tooltip
-    - [ ] Se ocultan las columnas de fechas que ninguna tarea cargada tiene (se decide sobre todas las cargadas, no sobre las filtradas, para que la tabla no cambie de forma al filtrar)
-    - [ ] Primera columna sin números de fila (solo el total en el encabezado), y Prioridad, Estado y Tarea más estrechas para que quepan las cuatro fechas
-    - [ ] Filtros por fecha: el tipo «Fecha» se divide en **Vencimiento**, **Inicio** y **Programada** (seis tipos en + Filtro), con los mismos valores para los tres; «Vencidas» solo cuenta tareas abiertas y se corrigen los textos «Vencidas hoy» y «Vencidas esta semana» por «Vencen hoy» y «Vencen en los próximos 7 días»; «Con fecha» y «Sin fecha» pasan a ser por tipo
-    - [ ] Orden por Inicio, Programada, Vencimiento y Cerrada (también en la Lista, que comparte el combo de orden)
-  - [ ] Tabla: columnas y diseño personalizables y exportación a CSV, ya anunciados en el README y el manual pero sin implementar; se agregan en esta versión (diseño pendiente, Especificación §14.3 y fase U5; reutilizará el modelo de columnas de la fase U7)
+  - [x] Tabla: columnas de fechas y filtros por fecha (implementado, falta la prueba manual; diseño en `Especificación de vistas.md` §14.5, `Arquitectura técnica.md` §23.8 y fase U7 en `Plan de implementación.md`; va antes que las columnas personalizables)
+    - [x] La columna «Fechas» se divide en cuatro: **Inicio** (con la creación debajo), **Programada** (con hora y duración), **Vencimiento** y **Cerrada** (hecha o cancelada, una sola por tarea); cada fecha con su emoji y su tooltip
+    - [x] Se ocultan las columnas de fechas que ninguna tarea cargada tiene (se decide sobre todas las cargadas, no sobre las filtradas, para que la tabla no cambie de forma al filtrar)
+    - [x] Primera columna sin números de fila (solo el total en el encabezado), y Prioridad, Estado y Tarea más estrechas para que quepan las cuatro fechas
+    - [x] Filtros por fecha: el tipo «Fecha» se divide en **Vencimiento**, **Inicio** y **Programada** (seis tipos en + Filtro), con los mismos valores para los tres; «Vencidas» solo cuenta tareas abiertas y se corrigen los textos «Vencidas hoy» y «Vencidas esta semana» por «Vencen hoy» y «Vencen en los próximos 7 días»; «Con fecha» y «Sin fecha» pasan a ser por tipo
+    - [x] Orden por Inicio, Programada, Vencimiento y Cerrada (también en la Lista, que comparte el combo de orden)
+  - [x] Tabla: columnas y diseño personalizables y exportación a CSV: decidido **no** hacerlos en esta versión; pasan a v1.1.18 (ver más abajo). Se quitó el anuncio del README y del manual de usuario
 - [ ] **Documentación al cerrar la versión**: README (badge, What's New, News, Changelog), manual de usuario en/es (Lista, Tabla, áreas) y la lista de características de este archivo (Lista y Tabla)
 
 ### Pendientes de versiones anteriores y dónde quedan
 
 - Ajuste de las columnas de la Tabla al ancho disponible, de v1.1.11: entra en esta versión (ítem Lista y Tabla)
-- Columnas personalizables y CSV de la Tabla, anunciados antes de existir: entran en esta versión (ítem Lista y Tabla)
+- Columnas personalizables y CSV de la Tabla, anunciados antes de existir: pasan a v1.1.18
 - Búsqueda, filtros y orden de la Lista, y agrupado por atributos: entran con la barra compartida y la unión Lista y Tabla
-- Refresco automático de la Rutina y cambio de día a medianoche (de "Habit Tracker", más abajo): entran en las piezas compartidas, sujetos a confirmación
+- Refresco automático de la Rutina y cambio de día a medianoche (de "Habit Tracker", más abajo): entran en las piezas compartidas (hecho, falta la prueba manual)
 - Estados personalizados y filtrar el calendario por estado (de v1.1.10): pasan a v1.1.14
 - Columnas personalizables y acciones masivas de la Lista: siguen sin planear
 - Tareas activas e inactivas para el porcentaje de completado de Hábitos: siguen sin versión, en "Habit Tracker"
@@ -374,6 +374,7 @@ Cada ítem lleva su versión entre corchetes. El reparto sigue dependencias: las
 | v1.1.15 | Sincronía con Google Calendar |
 | v1.1.16 | Sincronía con Google Tasks |
 | v1.1.17 | Sincronía con Microsoft |
+| v1.1.18 | Tabla: columnas y diseño personalizables y exportación a CSV |
 
 - [ ] **[v1.1.13] Modal de "novedades" al actualizar** ("What's New"; pasa de v1.1.12; diseño en `docs/agenda-tasks/Especificación de vistas.md` §10 y `Arquitectura técnica.md` §19; fases en `Plan de implementación.md`) — investigado a partir del mecanismo equivalente del plugin [QuickAdd](https://github.com/chhoumann/quickadd); decidido **no** replicar su fetch en vivo a GitHub Releases, sino embeber el contenido localizado en `src/locales/*.json`
   - [ ] Nuevo setting `lastSeenVersion` (comparado contra `manifest.version` en `onload()`) y `showWhatsNewOnUpdate` (toggle, default activado)
@@ -411,6 +412,7 @@ Cada ítem lleva su versión entre corchetes. El reparto sigue dependencias: las
   - [ ] Sin decisiones de diseño abiertas
 - [ ] **[v1.1.16] Sincronía con Google Tasks** (idea, discusión pendiente, ítem aparte con su propio diseño; la API y el permiso (`tasks`) son distintos a los de Calendar; las tareas de Google solo tienen fecha de vencimiento y dos estados)
 - [ ] **[v1.1.17] Sincronía con Microsoft** (Outlook Calendar y Microsoft To Do; idea, discusión pendiente, ítem aparte con su propio diseño)
+- [ ] **[v1.1.18] Tabla: columnas y diseño personalizables y exportación a CSV** (pasa de v1.1.12; diseño pendiente, Especificación §14.3 y fase U5 en `Plan de implementación.md`; reutilizará el modelo de columnas de la fase U7, `task-table-columns.ts`; a decidir: qué columnas se pueden mostrar, ocultar y reordenar y dónde se guarda, qué filas y columnas exporta el CSV, separador, codificación y destino del archivo)
 - [ ] **[v1.1.14] Compatibilidad con el plugin Tasks** (diseño preliminar en `docs/agenda-tasks/Especificación de vistas.md` §17; no es una sincronía: mismo archivo y mismo formato de línea; arquitectura y plan por escribir al cerrar el diseño)
   - [ ] Ya coincide: emojis, Dataview, nueva ocurrencia una línea arriba, eliminación de `🆔`/`⛔` al repetir y `when done`
   - [ ] Fecha de referencia de la recurrencia: se mantiene la nuestra (`scheduled > due > start`) aunque Tasks use `due > scheduled > start`; se advierte en el manual
@@ -477,8 +479,8 @@ Cada ítem lleva su versión entre corchetes. El reparto sigue dependencias: las
 - [ ] Ancho de las filas de la tabla en la vista tablas — se quitó la columna Archivo en v1.1.11; el ajuste al ancho disponible entra en v1.1.12 (ver esa sección)
 
 ### Habit Tracker
-- [ ] Refresco automático de la Rutina — propuesto en v1.1.12 (piezas compartidas)
-- [ ] las vistas dependientes de la fecha actual a medianoche local, sin requerir interacción ni cambios en el vault — propuesto en v1.1.12 (piezas compartidas)
+- [x] Refresco automático de la Rutina — hecho en v1.1.12 (piezas compartidas; falta la prueba manual)
+- [x] las vistas dependientes de la fecha actual a medianoche local, sin requerir interacción ni cambios en el vault — hecho en v1.1.12 (piezas compartidas; falta la prueba manual)
 - [ ] Tareas activas e inactivas para el porcentaje de completado por fecha o rango de fecha
 
 

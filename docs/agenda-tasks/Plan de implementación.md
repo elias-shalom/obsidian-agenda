@@ -467,10 +467,10 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [ ] Verificable sola: cambiar de modo conserva búsqueda, filtros, agrupado y orden; la pestaña se ilumina en ambos modos (el estado se comprobó con script de Node; falta la comprobación visual en Obsidian).
 - [ ] `npm run build` y ESLint sobre los archivos tocados.
 
-### Fase U5 — Funciones anunciadas de la Tabla (por diseñar, depende de U3)
+### Fase U5 — Funciones anunciadas de la Tabla (pasa a v1.1.18; por diseñar, depende de U3 y U7)
 - [ ] Diseñar y agregar columnas y diseño personalizables de la Tabla (Especificación §14.3).
 - [ ] Diseñar y agregar la exportación a CSV (Especificación §14.3).
-- [ ] Verificable sola: el README y el manual de usuario dicen lo mismo que hace la Tabla.
+- [ ] Verificable sola: el README y el manual de usuario dicen lo mismo que hace la Tabla (al implementarlo en v1.1.18 se vuelven a anunciar).
 
 ### Fase U6 — Barra de filtros con chips (pulido estético, depende de U1; diseño en [[Especificación de vistas]] §14.4 y [[Arquitectura técnica]] §23.7)
 - [x] **U6.1 Lógica pura**: nuevo `src/core/task-filter-chips.ts` con `FilterChipId`, `getActiveFilterChips()`, `clearFilterChip()`, `clearAllFilters()` y `getFilterValueOptions()`; `PRIORITY_OPTIONS` y `DUE_OPTIONS` se movieron allí desde `task-filter-bar.ts`.
@@ -484,16 +484,27 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase U7 — Columnas de fechas de la Tabla y filtros por fecha (depende de U3 y U6; diseño en [[Especificación de vistas]] §14.5 y [[Arquitectura técnica]] §23.8)
-- [ ] **U7.1 Estado y filtrado**: campos `start` y `scheduled` en `TaskViewState`; `matchesDateFilter()` por día para los tres tipos (la vencida solo con tarea abierta); `filterTasksByViewState()` sin `dueDateRelative` ni `hasAnyDate()`.
-- [ ] **U7.2 Chips**: `FilterChipId` con `start` y `scheduled` (seis tipos en + Filtro), `getFilterValueOptions()` por tipo con los textos de Vencimiento y de Inicio/Programada.
-- [ ] **U7.3 Orden**: `start`, `scheduled` y `closed` en `TASK_SORT_COLUMNS` y en `sortTasksByColumn()` (sin fecha al final en las dos direcciones; el cierre es la fecha de hecha o de cancelada).
-- [ ] **U7.4 Modelo de columnas**: nuevo `src/core/task-table-columns.ts` con las columnas, sus límites de ancho y `getVisibleColumns(tasks)` (las de fechas se ocultan si ninguna tarea cargada tiene valor).
-- [ ] **U7.5 Plantilla y estilos de la Tabla**: encabezados y celdas por columna visible con `data-column`, `colspan` de las cabeceras de grupo según las visibles, cuatro columnas de fechas con la secundaria en una segunda línea, primera columna sin números de fila (solo el total en el encabezado), vencida y de hoy calculadas en TypeScript.
-- [ ] **U7.6 `resizeColumns()`**: límites por columna (`data-column`) con los anchos de §14.5 (Tarea 170–380, Prioridad y Estado 36–44, Área 72–140, fechas 90–120, Etiquetas 80–200).
-- [ ] **U7.7 i18n**: textos nuevos y corregidos en los 6 idiomas (`date_past`, `date_today`, `date_this_week`, `date_future`, `closed_date`, `due_today`, `due_this_week`, `has_any_date`); eliminar `dates` y, si no tiene otros usos, `future_tasks`.
-- [ ] Verificable sola con un script de Node: `matchesDateFilter()` para cada valor y tipo (incluida la vencida solo con tarea abierta), chips y valores de los seis tipos, orden por las columnas nuevas con las sin fecha al final, y `getVisibleColumns()` con y sin tareas que tengan cada fecha.
+- [x] **U7.1 Estado y filtrado**: campos `start` y `scheduled` en `TaskViewState`; `matchesDateFilter()` por día para los tres tipos (la vencida solo con tarea abierta); `filterTasksByViewState()` sin `dueDateRelative` ni `hasAnyDate()`.
+- [x] **U7.2 Chips**: `FilterChipId` con `start` y `scheduled` (seis tipos en + Filtro), `getFilterValueOptions()` por tipo con los textos de Vencimiento y de Inicio/Programada.
+- [x] **U7.3 Orden**: `start`, `scheduled` y `closed` en `TASK_SORT_COLUMNS` y en `sortTasksByColumn()` (sin fecha al final en las dos direcciones; el cierre es la fecha de hecha o de cancelada).
+- [x] **U7.4 Modelo de columnas**: nuevo `src/core/task-table-columns.ts` con las columnas, sus límites de ancho y `getColumnVisibility(tasks)` (las de fechas se ocultan si ninguna tarea cargada tiene valor).
+- [x] **U7.5 Plantilla y estilos de la Tabla**: encabezados y celdas por columna visible con `data-column`, `colspan` de las cabeceras de grupo según las visibles, cuatro columnas de fechas con la secundaria en una segunda línea, primera columna sin números de fila (solo el total en el encabezado), vencida y de hoy calculadas en TypeScript.
+- [x] **U7.6 `resizeColumns()`**: límites por columna (`data-column`) con los anchos de §14.5 (Tarea 170–380, Prioridad y Estado 36–44, Área 72–140, fechas 90–120, Etiquetas 80–200).
+- [x] **U7.7 i18n**: textos nuevos y corregidos en los 6 idiomas (`date_past`, `date_today`, `date_this_week`, `date_future`, `column_start`, `column_scheduled`, `column_due`, `column_closed`, `due_today`, `due_this_week`, `has_any_date`); eliminar `dates` y, si no tiene otros usos, `future_tasks`.
+- [x] Verificable sola con un script de Node: `matchesDateFilter()` para cada valor y tipo (incluida la vencida solo con tarea abierta), chips y valores de los seis tipos, orden por las columnas nuevas con las sin fecha al final, y `getColumnVisibility()` con y sin tareas que tengan cada fecha.
 - [ ] Prueba manual: tabla con todas las fechas y tabla sin Inicio ni Cerrada; filtros de los tres tipos; orden desde el encabezado y desde la barra; cabeceras de grupo con el `colspan` correcto; anchos en escritorio, tableta y teléfono emulados.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fase U8 — Refresco automático de las vistas (diseño en [[Especificación de vistas]] §14.6 y [[Arquitectura técnica]] §23.9)
+- [x] **U8.1 Núcleo puro**: `refresh-scheduler.ts`, `task-signature.ts`, `day-change.ts` y `scroll-state.ts` en `src/core/`.
+- [x] **U8.2 Eventos y tareas**: `tasks:changed`, `habits:updated`, `day:changed` y `listenerCount()` en `EventBus`; `TaskManager` emite `tasks:changed` solo si cambia la firma.
+- [x] **U8.3 Hábitos**: `HabitManager` emite `habits:updated` solo si cambia la huella de la carpeta de hábitos.
+- [x] **U8.4 Medianoche**: `main.ts` inicia y detiene `DayChangeWatcher`.
+- [x] **U8.5 `BaseView`**: suscripción y baja, aplazado con `isBusy()`, vista oculta pendiente hasta activarse, refresco silencioso (`runAutoRefresh()`) sin pantalla de carga y con scroll conservado, firma de lo cargado en `getAllTasks()`; `refreshView()` cancela la petición pendiente.
+- [x] **U8.6 `HabitView`**: `performAutoRefresh()` propio; el evento `obsidian-agenda:habits-refresh` cancela la petición pendiente.
+- [x] Verificable sola con un script de Node: el programador (agrupa, aplaza si está ocupado, repite una vez si llega otra petición durante la ejecución, cancela), la firma (cambia con el texto de una línea o con una tarea nueva, no con otra nota), `msUntilNextMidnight()` incluido un cambio de horario, y el emisor de `TaskManager` con un gestor simulado.
+- [ ] Prueba manual: editar una tarea en otro panel y ver el cambio en la Lista, la Tabla y el Calendario; guardar una nota sin tareas (no debe redibujar); escribir en la búsqueda mientras se edita en otro panel; arrastrar en el Calendario mientras llegan cambios; la Rutina pasada la medianoche; scroll, filtros y grupos plegados conservados; vista en otra pestaña que se actualiza al volver; editar desde la propia Tabla (un solo redibujo).
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
 Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones masivas.
@@ -509,7 +520,7 @@ Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones
 - [ ] `crypto.ts`: cifrado con la frase, y la frase en `app.secretStorage`; estados Sin sesión, Bloqueado, Conectado, Token caducado e Iniciar sesión en el escritorio.
 - [ ] README: declaración del uso de red.
 - [ ] Verificable sola: iniciar sesión en escritorio, reiniciar y seguir conectado; con una frase incorrecta queda Bloqueado. Pruebas de Node del cifrado y de PKCE.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase GC2 — Descarga y caché (depende de GC1)
 - [ ] `client.ts` con reintentos y manejo de 401, 410, 412 y 429; `calendar-sync.ts` con `syncToken` y ventana de −3 a +6 meses.
@@ -536,7 +547,7 @@ Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones
 - [ ] Rama de ajustes para móvil con los estados «Inicia sesión en el escritorio» y «Escribe la frase».
 - [ ] Comprobar que `esbuild.config.mjs` deja `http` fuera del paquete de móvil.
 - [ ] Verificable sola: en iOS y Android, tras iniciar sesión en el escritorio y escribir la frase, la sincronización funciona sin pantalla de inicio de sesión.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
 Google Tasks, Microsoft y el plugin Tasks; varias cuentas de Google; `🔁` ↔ RRULE; el botón directo sin credenciales propias; inicio de sesión por copiar y pegar en móvil.

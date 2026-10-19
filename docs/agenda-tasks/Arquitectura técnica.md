@@ -896,7 +896,7 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.4. Es
 
 **Riesgos**: la posición y el cierre de los menús en móvil (se resuelven con el `Menu` nativo, pero hay que probarlos en tableta y teléfono); el foco del teclado al volver de un menú (no se devuelve al botón o chip que lo abrió: al elegir un valor el chip se redibuja; si molesta, se mejora después); y que quien está acostumbrado a los combos no encuentre los filtros (el botón + Filtro lleva texto, no solo ícono).
 
-### 23.8 Columnas de fechas y filtros por fecha (v1.1.12, diseño — no implementado)
+### 23.8 Columnas de fechas y filtros por fecha (v1.1.12, implementado; falta la prueba manual)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.5. Amplía §23.1 (estado), §23.7 (chips) y la plantilla de la Tabla.
 
@@ -909,7 +909,7 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.5. Am
 
 **Orden** (`src/core/task-column-sort.ts`): `TASK_SORT_COLUMNS` gana `start`, `scheduled` y `closed` (y `due` pasa a llamarse con la clave `due_date`); `sortTasksByColumn()` los trata como `due`: por fecha, sin fecha al final en las dos direcciones. La fecha de cierre es la de hecha o, si no, la de cancelada. Se elimina la clave de texto `dates`.
 
-**Modelo de columnas** (nuevo `src/core/task-table-columns.ts`, puro): una lista ordenada con `id`, clave de texto, clave de orden, `{ min, max }` de ancho y, para las cuatro de fechas, una función `hasValue(task)` que dice si la tarea tiene algún valor que esa columna mostraría. `getVisibleColumns(tasks)` devuelve los `id` visibles: las columnas fijas siempre y las de fechas solo si alguna tarea cargada (sin filtrar) cumple `hasValue`. Es la base de la fase U5: allí se le sumará la elección del usuario.
+**Modelo de columnas** (nuevo `src/core/task-table-columns.ts`, puro): una lista ordenada con `id`, clave de texto, clave de orden, `{ min, max }` de ancho y, para las cuatro de fechas, una función `hasValue(task)` que dice si la tarea tiene algún valor que esa columna mostraría. `getColumnVisibility(tasks)` devuelve un mapa `id` → visible: las columnas fijas siempre y las de fechas solo si alguna tarea cargada (sin filtrar) cumple `hasValue`. Es la base de la fase U5: allí se le sumará la elección del usuario.
 
 **La Tabla** (`src/views/table-view.ts`, `table-view.hbs`, `_table-view.scss`):
 - `TableViewData` incluye `columns` (mapa de visibilidad por `id`) y `columnCount`; la plantilla pinta cada encabezado y cada celda solo si su columna es visible, con `data-column="<id>"`, y las cabeceras de grupo usan `colspan="{{columnCount}}"` en lugar de 7.
@@ -918,7 +918,7 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.5. Am
 - `resizeColumns()` deja de usar el índice de la columna y busca el límite por `data-column` en el modelo; el reparto proporcional al ancho del contenedor no cambia.
 - Los anchos del modelo son los de §14.5 («Tarea» 170–380, «Prioridad» y «Estado» 36–44, etc.).
 
-**i18n**: claves nuevas en los 6 idiomas para los valores de Inicio y Programada (`date_past`, `date_today`, `date_this_week`, `date_future`), el nombre de la columna `closed_date` y los textos corregidos de Vencimiento (`due_today`, `due_this_week`) y de «Con fecha» (`has_any_date`). Se eliminan `dates` y, si no tiene otros usos, `future_tasks`.
+**i18n**: claves nuevas en los 6 idiomas para los valores de Inicio y Programada (`date_past`, `date_today`, `date_this_week`, `date_future`), los nombres de las columnas (`column_start`, `column_scheduled`, `column_due`, `column_closed`) y los textos corregidos de Vencimiento (`due_today`, `due_this_week`) y de «Con fecha» (`has_any_date`). Se eliminan `dates` y `future_tasks`, sin otros usos.
 
 **Archivos afectados**
 
@@ -932,6 +932,45 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.5. Am
 | i18n | `src/locales/*.json` |
 
 **Riesgos**: `table-layout: fixed` con columnas que aparecen y desaparecen (los anchos deben salir de las columnas visibles, no de las siete de antes); que la Lista comparta el combo de orden y muestre las columnas nuevas (Cerrada) aunque ella no las dibuja; y el cambio de significado de «Con fecha» y «Sin fecha» en estados ya guardados (el valor se conserva, pero ahora se aplica solo al vencimiento).
+
+### 23.9 Refresco automático de las vistas (v1.1.12, implementado; falta la prueba manual)
+
+Comportamiento y decisiones: [[Especificación de vistas]] §14.6.
+
+**Punto de partida.** `TaskManager` y `HabitManager` ya invalidan sus cachés con los eventos del vault, y `TaskCache` emite `TASKS_UPDATED` al invalidar, pero nadie lo escucha. Cuidado con un bucle: `refreshView()` fuerza la recarga (`forceRefreshTasks()` invalida y vuelve a emitir), así que reaccionar a cada invalidación redibujaría tras cada refresco manual.
+
+**Piezas puras** (en `src/core/`, probables con un script de Node):
+- `refresh-scheduler.ts`: `RefreshScheduler` con `request()`, `cancel()` y `dispose()`. Agrupa las peticiones con un retardo (0,4 s, reinicia con cada petición); al cumplirse, si `isBusy()` es verdadero reintenta cada 0,4 s, y si hay una ejecución en curso, repite una vez al terminar. Los temporizadores se inyectan para poder probarlo.
+- `task-signature.ts`: `tasksSignature(tasks)` une `id` (ruta#línea) y el texto de la línea (`task.line.text`) de cada tarea; es lo que cambia si cambia algo visible de una tarea.
+- `day-change.ts`: `msUntilNextMidnight(now)` (Luxon, correcto en cambios de horario) y `DayChangeWatcher`, un único temporizador que, a la medianoche local, emite `day:changed` y se reprograma; también compara el día en `visibilitychange` por si el equipo estuvo suspendido.
+- `scroll-state.ts`: `captureScroll(root)` y `restoreScroll(root, snapshot)`; guardan el desplazamiento de la raíz y de cada elemento desplazado, identificado por su clase y su posición entre los de la misma clase.
+
+**Eventos** (`EventBus`): se añaden `tasks:changed` (con `{ signature }`), `habits:updated` y `day:changed`, y `listenerCount(evento)`.
+
+**Tareas** (`TaskManager`): escucha su propio `TASKS_UPDATED` (y `metadataCache.on('changed')`, que invalida el archivo cuando los metadatos ya están al día) y, tras 0,4 s, si hay alguien escuchando `tasks:changed`, pide `getAllTasks()`, calcula la firma y emite solo si difiere de la última notificada. Así una nota sin cambios en tareas no redibuja nada, y se calcula una vez, no por vista.
+
+**Hábitos** (`HabitManager`): `refreshCache()` calcula una huella de las notas de la carpeta de hábitos (ruta y hash del contenido) y emite `habits:updated` solo si cambió.
+
+**Medianoche** (`main.ts`): el complemento inicia `DayChangeWatcher` al cargar y lo detiene al descargar.
+
+**Vistas** (`BaseView`, de la que cuelgan todas):
+- El constructor se suscribe a `tasks:changed`, `habits:updated` y `day:changed` y se da de baja con `register()`. `getAllTasks()` guarda la firma de lo cargado (`loadedSignature`); un `tasks:changed` con esa misma firma se ignora (la edición ya la hizo esta vista), y una vista que nunca cargó tareas lo ignora.
+- Cada vista tiene su `RefreshScheduler`. Si la vista no está visible (`containerEl.isShown()`) se marca como pendiente y se refresca al activarse (`active-leaf-change`).
+- `isBusy()`: hay un `.modal-container`, un `.menu` o un `.flatpickr-calendar.open` en el documento, un `.oa-dragging` o `.oa-resizing` en la vista, o el foco está en un `input`, `textarea` o `select` de la vista.
+- `runAutoRefresh()`: captura el scroll, ejecuta `performAutoRefresh()` sin pantalla de carga (`showLoadingOverlay()` no hace nada mientras dura) y restaura el scroll. Por defecto `performAutoRefresh()` vuelve a ejecutar `onOpen()` sin forzar la recarga, así que se reconstruyen la Lista y la Tabla con el estado guardado; `HabitView` lo sobreescribe (recarga los hábitos y llama a `refreshHabitView()`).
+- `refreshView()` cancela la petición pendiente al terminar (como `cancelAutoRefresh()`, que usa `HabitView`), para no redibujar justo después de un refresco manual.
+- El evento DOM `obsidian-agenda:habits-refresh` (editor y ajustes) también cancela la petición pendiente.
+
+**Archivos afectados**
+
+| Área | Archivos |
+|---|---|
+| Núcleo | nuevos `src/core/refresh-scheduler.ts`, `task-signature.ts`, `day-change.ts`, `scroll-state.ts`; `event-bus.ts` |
+| Gestores | `src/core/task-manager.ts`, `src/habits/habit-manager.ts` |
+| Plugin | `src/main.ts` |
+| Vistas | `src/views/base-view.ts`, `src/views/habit-view.ts` |
+
+**Riesgos**: redibujar una vista con el foco en la búsqueda (por eso `isBusy()`); parpadeo al reconstruir con `onOpen()` (se espera poco, porque no hay pantalla de carga); que la firma no cubra algo que se dibuja y no esté en la línea de la tarea (hoy no hay nada así: área y subárea salen de la ruta, que está en el `id`); rendimiento en vaults muy grandes (la firma recorre todas las tareas una vez por cambio, y solo si hay vistas abiertas); y que `metadataCache` tarde en indexar (por eso se escucha su evento `changed`).
 
 ## 24. Sincronía con Google Calendar (v1.1.15, diseño — no implementado)
 

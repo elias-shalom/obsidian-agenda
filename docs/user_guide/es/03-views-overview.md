@@ -25,11 +25,9 @@ Una lista compacta de tareas agrupadas por carpeta, ideal para trabajar una por 
 
 Una cuadrícula estilo hoja de cálculo, ideal cuando quieres revisar, ordenar y comparar muchas tareas de un vistazo.
 
-- Columnas y diseño personalizables.
 - Columnas ordenables y redimensionables — haz clic en un encabezado de columna para ordenar, vuelve a hacer clic para invertir el orden.
 - Entrada y edición rápida de atributos de tarea directamente en la cuadrícula.
 - Indicadores de estado y prioridad, estilo compacto de fecha/etiquetas, formato condicional.
-- Exportación a CSV.
 - La búsqueda, los filtros y el orden se recuerdan al volver de editar una tarea o cambiar de vista; el ancho de las columnas se adapta a las filas visibles tras filtrar.
 
 ## Siguientes pasos

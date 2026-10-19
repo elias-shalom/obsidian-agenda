@@ -10,6 +10,13 @@ import { AgendaPluginSettings } from '../settings/settings';
 import { clearTooltips, installTooltips } from '../core/tooltips';
 import { groupTasksByFolder } from '../core/task-grouping';
 import { TASK_MODE_VIEWS, TaskViewMode, loadTaskViewState } from '../core/task-view-state';
+import { EventBus, EVENTS } from '../core/event-bus';
+import { RefreshScheduler } from '../core/refresh-scheduler';
+import { tasksSignature } from '../core/task-signature';
+import { captureScroll, restoreScroll } from '../core/scroll-state';
+
+/** Espera de calma antes de refrescar sola una vista (ver Arquitectura técnica §23.9). */
+const AUTO_REFRESH_DELAY_MS = 400;
 
 /** Vistas que ilumina la pestaña «Tareas». */
 const TASKS_VIEW_TYPES: string[] = Object.values(TASK_MODE_VIEWS);
@@ -21,19 +28,99 @@ import { I18n } from '../core/i18n';
 export abstract class BaseView extends ItemView {
   private helpersRegistered = false; // Flag para verificar si los helpers ya están registrados
   private _forceNextRefresh = false;
+  private loadedSignature: string | null = null;
+  private silentRefresh = false;
+  private refreshPending = false;
+  private readonly refreshScheduler = new RefreshScheduler({
+    delayMs: AUTO_REFRESH_DELAY_MS,
+    isBusy: () => this.isInteracting(),
+    run: () => this.runAutoRefresh(),
+  });
+
+  constructor(leaf: WorkspaceLeaf) {
+    super(leaf);
+
+    const bus = EventBus.getInstance();
+    const onTasksChanged = ({ signature }: { signature: string }): void => {
+      // Una vista que nunca cargó tareas no depende de ellas; si la firma coincide, ya muestra lo último
+      if (this.loadedSignature === null || signature === this.loadedSignature) return;
+      this.refreshScheduler.request();
+    };
+    const onChange = (): void => this.refreshScheduler.request();
+
+    bus.on(EVENTS.TASKS_CHANGED, onTasksChanged);
+    bus.on(EVENTS.HABITS_UPDATED, onChange);
+    bus.on(EVENTS.DAY_CHANGED, onChange);
+    this.register(() => {
+      bus.off(EVENTS.TASKS_CHANGED, onTasksChanged);
+      bus.off(EVENTS.HABITS_UPDATED, onChange);
+      bus.off(EVENTS.DAY_CHANGED, onChange);
+      this.refreshScheduler.dispose();
+    });
+
+    // Una vista que estaba oculta se actualiza al volver a ella
+    this.registerEvent(this.app.workspace.on('active-leaf-change', () => {
+      if (this.refreshPending) this.refreshScheduler.request();
+    }));
+  }
 
   protected async getAllTasks(taskManager: TaskManager): Promise<ITask[]> {
     // console.log("Actualizando tareas"); // Debugging line
+    let tasks: ITask[];
     if (this._forceNextRefresh) {
       this._forceNextRefresh = false;
       console.debug("Forzando actualización de tareas"); // Debugging line
-      return await taskManager.forceRefreshTasks();
+      tasks = await taskManager.forceRefreshTasks();
+    } else {
+      tasks = await taskManager.getAllTasks();
     }
-    return await taskManager.getAllTasks();
+    this.loadedSignature = tasksSignature(tasks);
+    return tasks;
   }
 
   public async refreshView(): Promise<void> {
     this._forceNextRefresh = true;
+    await this.onOpen();
+    // La recarga forzada invalida la caché y avisa; no hace falta redibujar otra vez
+    this.refreshScheduler.cancel();
+  }
+
+  /** Cancela un refresco automático pendiente (la vista acaba de actualizarse por su cuenta). */
+  protected cancelAutoRefresh(): void {
+    this.refreshScheduler.cancel();
+  }
+
+  /** Hay algo en curso que un redibujado interrumpiría: modal, menú, selector de fecha, arrastre o un campo con foco. */
+  private isInteracting(): boolean {
+    if (document.body.querySelector('.modal-container, .menu, .flatpickr-calendar.open')) return true;
+    if (this.containerEl.querySelector('.oa-dragging, .oa-resizing')) return true;
+
+    const active = document.activeElement;
+    return active instanceof HTMLElement
+      && this.containerEl.contains(active)
+      && ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName);
+  }
+
+  private async runAutoRefresh(): Promise<void> {
+    if (!this.containerEl.isShown()) {
+      this.refreshPending = true;
+      return;
+    }
+    this.refreshPending = false;
+
+    const container = this.containerEl.children[1] as HTMLElement;
+    const snapshot = captureScroll(container);
+    this.silentRefresh = true;
+    try {
+      await this.performAutoRefresh();
+    } finally {
+      this.silentRefresh = false;
+    }
+    restoreScroll(container, snapshot);
+  }
+
+  /** Vuelve a dibujar la vista sin forzar la relectura de las notas; las vistas pueden sobrescribirlo. */
+  protected async performAutoRefresh(): Promise<void> {
     await this.onOpen();
   }
 
@@ -549,6 +636,8 @@ protected attachEventTabs(container: HTMLElement, plugin: AgendaPlugin, leaf: Wo
   }
 
   protected showLoadingOverlay(linesCount: number = 6, hasHeader: boolean = false): void {
+    if (this.silentRefresh) return;
+
     const container = this.containerEl.children[1] as HTMLElement;
     container.empty();
     

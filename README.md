@@ -126,10 +126,8 @@ See the [full changelog](#changelog) below for older versions.
 
 #### Table View
 - Spreadsheet-style task management
-- Customizable columns and layouts
 - Sortable and resizable columns
 - Quick entry and editing of task attributes
-- CSV export capabilities
 - Conditional formatting
 
 #### Calendar View
@@ -508,10 +506,10 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 
 - ⬜ Areas and sub-areas for tasks, based on folders
 - ⬜ One "Tasks" tab combining the List and Table views, with search, filters, grouping and sorting
-- ⬜ Table: customizable columns and layout, and CSV export
 - ⬜ "What's new" notice after updating
 - ⬜ Kanban and Gantt views
 - ⬜ Custom task statuses and closer compatibility with the Tasks plugin
+- ⬜ Table: customizable columns and layout, and CSV export
 - ⬜ Google Calendar sync, followed by Google Tasks and Microsoft
 
 ---

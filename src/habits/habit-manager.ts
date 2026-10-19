@@ -7,9 +7,17 @@ import { dayCompletedDates, toggle } from './habit-completions';
 import { toggleOccurrence as writeToggleOccurrence } from './habit-writer';
 import { HabitEditorModal } from './habit-editor';
 import type { I18n } from '../core/i18n';
+import { EventBus, EVENTS } from '../core/event-bus';
+
+function hashString(text: string): string {
+  let hash = 5381;
+  for (let i = 0; i < text.length; i++) hash = ((hash << 5) + hash + text.charCodeAt(i)) | 0;
+  return `${text.length}:${hash}`;
+}
 
 export class HabitManager {
   private habitCache = new Map<string, IHabit>();
+  private lastFolderSignature: string | null = null;
   private readonly eventRefs: EventRef[] = [];
   private readonly descriptionCache = new Map<string, string>();
   private initialCacheReady: Promise<void> | null = null;
@@ -171,13 +179,16 @@ export class HabitManager {
 
     if (!(folder instanceof TFolder)) {
       this.habitCache.clear();
+      this.notifyIfFolderChanged('');
       return;
     }
 
     const habits: IHabit[] = [];
+    const signatureParts: string[] = [];
 
     for (const file of this.collectHabitFiles(folder)) {
       const content = await this.app.vault.cachedRead(file);
+      signatureParts.push(`${file.path}\u0000${hashString(content)}`);
       const fm = this.parseFrontmatter(content);
       const bodyDescription = content.replace(/^---[\s\S]*?---\s*/, '').trim();
       this.descriptionCache.set(file.path, bodyDescription);
@@ -188,6 +199,14 @@ export class HabitManager {
     }
 
     this.habitCache = new Map(habits.map(habit => [habit.file.path, habit]));
+    this.notifyIfFolderChanged(signatureParts.join('\n'));
+  }
+
+  /** La primera carga solo fija la referencia; las vistas ya esperan a ella al abrirse. */
+  private notifyIfFolderChanged(signature: string): void {
+    const previous = this.lastFolderSignature;
+    this.lastFolderSignature = signature;
+    if (previous !== null && previous !== signature) EventBus.getInstance().emit(EVENTS.HABITS_UPDATED, undefined);
   }
 
   /**

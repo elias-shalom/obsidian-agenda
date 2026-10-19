@@ -4,18 +4,20 @@
 import { TaskViewState } from './task-view-state';
 import { STATUS_OPTIONS } from './task-status-options';
 
-export type FilterChipId = 'priority' | 'status' | 'area' | 'due';
+export type FilterChipId = 'priority' | 'status' | 'area' | 'start' | 'scheduled' | 'due';
 
 /** Tipos de filtro, en el orden en que se ofrecen y se muestran. La sub-área va dentro del de área. */
-export const FILTER_CHIP_IDS: readonly FilterChipId[] = ['priority', 'status', 'area', 'due'];
+export const FILTER_CHIP_IDS: readonly FilterChipId[] = ['priority', 'status', 'area', 'start', 'scheduled', 'due'];
 
 /** Claves de `TaskViewState` que editan los filtros. */
-export const FILTER_STATE_KEYS: readonly (keyof TaskViewState)[] = ['priority', 'status', 'area', 'subArea', 'due'];
+export const FILTER_STATE_KEYS: readonly (keyof TaskViewState)[] = ['priority', 'status', 'area', 'subArea', 'start', 'scheduled', 'due'];
 
 const TYPE_LABEL_KEYS: Record<FilterChipId, string> = {
   priority: 'task_priority',
   status: 'task_status',
   area: 'area',
+  start: 'start_date',
+  scheduled: 'scheduled_date',
   due: 'due_date',
 };
 
@@ -29,12 +31,23 @@ const PRIORITY_OPTIONS = [
   { value: 'none', labelKey: 'no_priority', emoji: '' },
 ];
 
+/** Vencimiento: «vencidas» tiene sentido solo aquí, y «hoy» y «semana» hablan de cuándo vence. */
 const DUE_OPTIONS = [
   { value: 'hasdate', labelKey: 'has_any_date' },
   { value: 'overdue', labelKey: 'overdue' },
   { value: 'today', labelKey: 'due_today' },
   { value: 'thisweek', labelKey: 'due_this_week' },
-  { value: 'future', labelKey: 'future_tasks' },
+  { value: 'future', labelKey: 'date_future' },
+  { value: 'nodate', labelKey: 'no_date' },
+];
+
+/** Inicio y programada comparten los mismos textos. */
+const DATE_OPTIONS = [
+  { value: 'hasdate', labelKey: 'has_any_date' },
+  { value: 'overdue', labelKey: 'date_past' },
+  { value: 'today', labelKey: 'date_today' },
+  { value: 'thisweek', labelKey: 'date_this_week' },
+  { value: 'future', labelKey: 'date_future' },
   { value: 'nodate', labelKey: 'no_date' },
 ];
 
@@ -60,6 +73,9 @@ export function getFilterValueOptions(id: Exclude<FilterChipId, 'area'>, transla
       return STATUS_OPTIONS.map(({ name, labelKey }) => ({ value: name, label: translate(labelKey) }));
     case 'due':
       return DUE_OPTIONS.map(({ value, labelKey }) => ({ value, label: translate(labelKey) }));
+    case 'start':
+    case 'scheduled':
+      return DATE_OPTIONS.map(({ value, labelKey }) => ({ value, label: translate(labelKey) }));
   }
 }
 
@@ -84,6 +100,8 @@ export function getActiveFilterChips(state: TaskViewState, translate: Translate)
   if (state.priority !== 'all') add('priority', labelOf('priority', state.priority));
   if (state.status !== 'all') add('status', labelOf('status', state.status));
   if (state.area) add('area', areaValueLabel(state.area, state.subArea));
+  if (state.start !== 'all') add('start', labelOf('start', state.start));
+  if (state.scheduled !== 'all') add('scheduled', labelOf('scheduled', state.scheduled));
   if (state.due !== 'all') add('due', labelOf('due', state.due));
   return chips;
 }
@@ -94,6 +112,8 @@ export function clearFilterChip(state: TaskViewState, id: FilterChipId): TaskVie
     case 'priority': return { ...state, priority: 'all' };
     case 'status': return { ...state, status: 'all' };
     case 'area': return { ...state, area: '', subArea: '' };
+    case 'start': return { ...state, start: 'all' };
+    case 'scheduled': return { ...state, scheduled: 'all' };
     case 'due': return { ...state, due: 'all' };
   }
 }

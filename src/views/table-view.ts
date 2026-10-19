@@ -11,22 +11,14 @@ import { TaskFilterBar, buildTaskModeSwitch } from '../core/task-filter-bar';
 import { TaskViewState, DEFAULT_TASK_VIEW_STATE, TASK_MODE_VIEWS, loadTaskViewState, persistTaskViewState, saveTaskViewMode, filterTasksByViewState } from '../core/task-view-state';
 import { TASK_SORT_COLUMNS, sortTasksByColumn } from '../core/task-column-sort';
 import { TASK_GROUP_OPTIONS, groupTasksForView, toGroupViewModels } from '../core/task-grouping';
+import { getColumnLimits, getColumnVisibility } from '../core/task-table-columns';
+import { isTaskOpen } from '../core/task-status-options';
+import { DateTime } from 'luxon';
 
 export const TABLE_VIEW_TYPE = 'table-view';
 
 /** Agrupado que usa la Tabla cuando el usuario aún no eligió uno. */
 const TABLE_DEFAULT_GROUP = 'none';
-
-/** Ancho mínimo y máximo (px) de cada columna, en el orden de la tabla. */
-const COLUMN_LIMITS = [
-  { min: 44, max: 50 },
-  { min: 48, max: 76 },
-  { min: 48, max: 76 },
-  { min: 200, max: 520 },
-  { min: 80, max: 160 },
-  { min: 80, max: 120 },
-  { min: 96, max: 240 },
-];
 
 export class TableView extends BaseView {
   private tasks: ITask[] = []; // Lista de tareas
@@ -91,7 +83,7 @@ export class TableView extends BaseView {
     await this.render(TABLE_VIEW_TYPE, this.buildViewData(), this.i18n, this.plugin as AgendaPlugin, this.leaf);
   }
 
-  /** Aplica búsqueda, filtros, orden y agrupado del estado compartido y numera las filas. */
+  /** Aplica búsqueda, filtros, orden y agrupado del estado compartido y decide qué columnas se dibujan. */
   private buildViewData(): TableViewData {
     const sorted = sortTasksByColumn(
       filterTasksByViewState(this.tasks, this.viewState),
@@ -100,12 +92,14 @@ export class TableView extends BaseView {
     );
     const group = this.viewState.group || TABLE_DEFAULT_GROUP;
     const groups = toGroupViewModels(groupTasksForView(sorted, group, key => this.i18n.t(key)), group);
+    const today = DateTime.now().startOf('day');
 
     const rows: TableRow[] = [];
-    let number = 0;
     const addTask = (task: ITask): void => {
-      number += 1;
-      rows.push({ ...task, isGroup: false, number });
+      // Vencida o de hoy solo cuenta en tareas abiertas
+      const days = task.date.due ? Math.round(task.date.due.startOf('day').diff(today, 'days').days) : null;
+      const dueState = days === null || !isTaskOpen(task) ? '' : days < 0 ? 'overdue' : days === 0 ? 'today' : '';
+      rows.push({ ...task, isGroup: false, dueState });
     };
     const addGroup = (group: TaskGroupViewModel, level: number): void => {
       rows.push({ isGroup: true, label: group.label, storageKey: group.storageKey, color: group.color, count: group.count, level });
@@ -116,7 +110,11 @@ export class TableView extends BaseView {
     if (groups.length === 0) sorted.forEach(addTask);
     else groups.forEach(topGroup => addGroup(topGroup, 0));
 
-    return { tasks: sorted, rows, vaultHasTasks: this.tasks.length > 0 };
+    // Las columnas se deciden sobre todas las tareas cargadas, no sobre las filtradas
+    const columns = getColumnVisibility(this.tasks);
+    const columnCount = Object.values(columns).filter(Boolean).length;
+
+    return { tasks: sorted, rows, columns, columnCount, vaultHasTasks: this.tasks.length > 0 };
   }
 
   protected registerViewSpecificHelpers(_i18n: I18n): void {
@@ -262,7 +260,7 @@ export class TableView extends BaseView {
     const headers = Array.from(table.querySelectorAll<HTMLTableCellElement>('thead th'));
     const visibleRows = Array.from(table.querySelectorAll<HTMLTableRowElement>('tbody tr.oa-task-row:not(.oa-group-hidden)'));
     const allRows = Array.from(table.querySelectorAll<HTMLTableRowElement>('tbody tr.oa-task-row'));
-    const limitsOf = (columnIndex: number): { min: number; max: number } => COLUMN_LIMITS[columnIndex] ?? { min: 80, max: 280 };
+    const limitsOf = (columnIndex: number): { min: number; max: number } => getColumnLimits(headers[columnIndex]?.dataset.column);
 
     // La ruta bajo la tarea se corta con puntos suspensivos: no cuenta para el ancho de la columna.
     const measurable = (cell: HTMLTableCellElement): HTMLElement[] => {

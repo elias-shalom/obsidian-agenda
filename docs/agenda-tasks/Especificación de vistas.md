@@ -55,9 +55,9 @@ Interacciones: el botón superior alterna entre jerarquía de carpetas y vista p
 
 **Icono**: `table`. Rol: tabla ordenable/filtrable de tareas.
 
-Estado interno: `currentSortColumn`, `currentSortDirection` (`'asc' | 'desc'`). Datos expuestos: `tasks`, `uniqueFolders` (para el filtro por carpeta). Helpers: `equals`, `not`, `contains`, `inRange`, `dateTypeIcon` (mapea `TaskDateType` a su emoji). Interacciones: los encabezados ordenables (`th.oa-sortable`) cambian el orden ascendente/descendente con clic o con Enter/Espacio; el encabezado activo expone `aria-sort`. Búsqueda y filtros de prioridad, estado, carpeta y fecha se aplican en el cliente.
+Estado interno: el estado compartido de las vistas de tareas (`TaskViewState`: búsqueda, filtros, agrupado y orden, v1.1.12). Datos expuestos: `tasks`, `rows` (cabeceras de grupo y tareas numeradas) y `vaultHasTasks`. Helpers: `equals`, `not`, `contains`, `inRange`, `dateTypeIcon` (mapea `TaskDateType` a su emoji). Interacciones: los encabezados ordenables (`th.oa-sortable`) cambian el orden ascendente/descendente con clic o con Enter/Espacio; el encabezado activo expone `aria-sort`. Búsqueda y filtros de prioridad, estado, área, sub-área y fecha se aplican sobre los datos con la barra compartida.
 
-El estado de búsqueda, filtros y orden se guarda en el almacenamiento local de Obsidian y se restaura al volver a la vista, incluso después de editar una tarea. Las anchuras de las columnas se recalculan según el contenido de las filas visibles, con límites para evitar columnas desproporcionadas; en pantallas estrechas se conserva el desplazamiento horizontal. Columnas (v1.1.11): número de fila (44–50 px), prioridad, estado, tarea, carpeta, fechas (80–120 px) y etiquetas; la columna Archivo se quitó en v1.1.11. Pendiente: ajustar las columnas al ancho real del contenedor (v1.1.12, §14.3 y `docs/todo.md`). La presentación usa filas alternas sutiles, estados y prioridades diferenciados, fechas agrupadas y etiquetas compactas.
+El estado de búsqueda, filtros y orden se guarda en el almacenamiento local de Obsidian y se restaura al volver a la vista, incluso después de editar una tarea. Las anchuras de las columnas se recalculan según el contenido de las filas visibles, con límites para evitar columnas desproporcionadas; en pantallas estrechas se conserva el desplazamiento horizontal. Columnas (v1.1.11): número de fila (44–50 px), prioridad, estado, tarea, área (antes carpeta, desde v1.1.12), fechas (80–120 px) y etiquetas; la columna Archivo se quitó en v1.1.11. Las columnas se ajustan al ancho real del contenedor (v1.1.12). La presentación usa filas alternas sutiles, estados y prioridades diferenciados, fechas agrupadas y etiquetas compactas.
 
 ## 4. Calendar View (abstracta, `calendar-view.ts`)
 
@@ -380,7 +380,7 @@ Las vistas renderizadas por `BaseView` y el modal de tareas convierten sus atrib
 
 Manual de usuario final (distinto de esta documentación de desarrollo), en `docs/user_guide/`, en dos versiones completas y paralelas — inglés (`en/`) y español (`es/`) — con 10 capítulos idénticos en estructura: Introducción, Instalación, Primeros pasos, Vistas generales, Vistas de calendario, Seguimiento de hábitos, Formato de tareas y metadatos, Gestos e interacciones, Configuración, y Preguntas frecuentes y soporte. Un `docs/user_guide/README.md` enlaza ambas versiones y documenta cómo agregar un nuevo idioma (duplicar una carpeta de idioma y traducir manteniendo los mismos nombres de archivo). No requiere ningún cambio en el plugin: es documentación en Markdown plano, sin paso de build ni empaquetado — "generar" una versión es simplemente leer/exportar los archivos de esa carpeta.
 
-## 10. Modal de novedades al actualizar ("What's New") (v1.1.12 — diseño, no implementado)
+## 10. Modal de novedades al actualizar ("What's New") (v1.1.13 — diseño, no implementado)
 
 > **Estado**: diseño acordado, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §19.
 
@@ -513,9 +513,10 @@ La barra de filtros compartida (§11, §20.3) incluye:
 
 - **Área** y **sub-área** son dos campos de agrupado, los mismos valores de los combos. Lista, Kanban y Gantt agrupan por área y, dentro de cada una, por sub-área anidada según las carpetas de la ruta. Agrupar solo por sub-área sin un área elegida distingue los grupos por área y sub-área (etiqueta «Área · sub-área»), para no mezclar dos carpetas que se llamen igual en áreas distintas. Lista conserva su modo plano y su profundidad actual, con el área como grupo principal.
 - La cabecera de cada grupo usa el color del área, igual que en Hábitos.
+- **Tareas directas al final**: dentro de un área (o sub-área) con sub-áreas, las tareas que están directamente en su carpeta se muestran después de las sub-áreas, en un grupo propio con la cabecera «Sin sub-área» (sin ella parecerían pertenecer a la última sub-área). Un área sin sub-áreas no cambia. El orden por la columna Área sigue el mismo criterio, en ascendente y en descendente: las tareas directas de una carpeta quedan detrás de sus sub-áreas.
 
 ### 13.4 Decisiones abiertas
-1. Qué muestra la Tabla en lugar de la columna de carpeta: propuesta de dos columnas, Área (chip con el color del área) y Sub-área, con los mismos valores que los combos. Sin confirmar.
+Ninguna. Decidido: la Tabla conserva la columna de carpeta, renombrada **Área** (primera carpeta; la raíz del vault muestra «Sin área»), y no tiene columna de Sub-área: la ruta del archivo va pequeña bajo la tarea y el filtro, el agrupado y el orden cubren la sub-área.
 
 ### 13.5 Fuera de alcance
 Área configurable por tarea o por nota (frontmatter, etiqueta o campo en la línea); mover tareas entre áreas arrastrando (implicaría mover la tarea de archivo); áreas sin carpeta.
@@ -547,7 +548,112 @@ Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones
 
 El ajuste de las columnas al ancho disponible, decidido durante la 1.1.11, se implementa en v1.1.12: la referencia es el ancho real del contenedor (la ventana en escritorio y el ancho del dispositivo en tableta y teléfono), y las columnas flexibles se reducen en proporción sin bajar de su mínimo.
 
-El README y el manual de usuario anuncian para la Tabla **columnas y diseño personalizables** y **exportación a CSV**, que no existen en el código. Se decidió agregarlos en v1.1.12 como parte de las actualizaciones de Lista y Tabla. Sin diseño todavía; a decidir: qué columnas se pueden mostrar, ocultar y reordenar, dónde se guarda esa elección (hoy el estado de la Tabla va en `TABLE_VIEW_STATE_KEY`, §3), qué filas y columnas exporta el CSV (todas o solo las visibles tras filtrar), el separador y la codificación, y dónde se guarda o descarga el archivo.
+El README y el manual de usuario anuncian para la Tabla **columnas y diseño personalizables** y **exportación a CSV**, que no existen en el código. Se decidió **no** hacerlos en v1.1.12 y pasarlos a v1.1.18; mientras tanto se quitó el anuncio del README y del manual. Sin diseño todavía; a decidir: qué columnas se pueden mostrar, ocultar y reordenar, dónde se guarda esa elección (hoy el estado de la Tabla va en `TABLE_VIEW_STATE_KEY`, §3), qué filas y columnas exporta el CSV (todas o solo las visibles tras filtrar), el separador y la codificación, y dónde se guarda o descarga el archivo.
+
+### 14.4 Barra de filtros con chips (v1.1.12 — implementado; falta la prueba manual)
+
+**Problema.** Con todos los controles en una sola fila (conmutador de modo, cinco combos de filtro, agrupado, orden y dirección), la barra se parte donde cae el ancho: el orden salta a una segunda fila sin criterio, los combos tienen anchos distintos, la búsqueda queda lejos y flotando, y el combo de estado dice «All tasks», que se confunde con «todas las tareas».
+
+**Diseño.** Los filtros pasan de combos a **chips**: solo se ven los filtros activos, y se agregan desde un botón **+ Filtro**. La búsqueda queda siempre a la derecha.
+
+```
+Sin filtros activos (una sola fila)
+[☰][▦]  [+ Filtro ▾] [Agrupar ▾] [Ordenar ▾] [↓]                    [ Buscar tareas… ]
+
+Con filtros activos (aparece una segunda fila)
+[☰][▦]  [+ Filtro ▾] [Agrupar ▾] [Ordenar ▾] [↓]                    [ Buscar tareas… ]
+[Prioridad: Alta ×] [Área: Work › Proj ×] [Fecha: Vencidas ×]  [Limpiar]
+```
+
+- **Fila 1 (presentación)**: conmutador de modo, + Filtro, agrupado, orden con su dirección y, a la derecha, la búsqueda. Agrupado y orden siguen siendo combos con el texto «Agrupar por: …» y «Ordenar por: …».
+- **Fila 2 (filtros activos)**: solo existe si hay al menos un filtro activo. Contiene un chip por filtro y el botón **Limpiar**.
+- **Tipos de filtro**: Prioridad, Estado, Área y Fecha (la fecha se divide en Vencimiento, Inicio y Programada en §14.5, con lo que son seis tipos). La sub-área no es un tipo aparte: forma parte del chip de Área («Área: Work › Proj»).
+- **+ Filtro**: abre un menú nativo de Obsidian con los cuatro tipos; los que ya están activos aparecen marcados y, al elegirlos, se edita su valor. Al elegir un tipo se abre un segundo menú con sus valores (el actual, marcado) y, al elegir un valor, se crea o se actualiza el chip.
+- **Área**: el menú de valores lista las áreas que tienen tareas. Si el área elegida tiene sub-áreas, se abre un tercer menú con «Todas las sub-áreas» y las sub-áreas (cada ruta con tareas y sus carpetas contenedoras, como en §13.2); elegir «Todas» deja el chip solo con el área. Elegir otra área reinicia la sub-área. Elegir la misma área de nuevo vuelve a abrir el menú de sub-áreas, que es la forma de cambiarla.
+- **Chip**: muestra «Tipo: valor». Un clic sobre el chip abre el menú de valores de ese tipo; la × lo quita. Quitar el chip de Área quita también la sub-área.
+- **Limpiar**: quita todos los chips, pero no la búsqueda (que tiene su propia × dentro del campo). Solo aparece con chips activos.
+- **Valores**: los mismos que hoy y con los mismos textos, sin la opción «Todos» (quitar el chip es «todos»). Prioridad: de la más alta a la más baja y «Sin prioridad»; Estado: los seis estados; Fecha: «Tiene alguna fecha», «Vencidas», «Vencen hoy», «Vencen esta semana» (próximos 7 días), «Tareas futuras» y «Sin fecha».
+- **Ancho**: en una ventana estrecha la búsqueda pasa a su propia línea a todo el ancho y los chips saltan de línea; no hay un modo móvil aparte.
+- **Teclado y táctil**: los chips y su × son botones enfocables; los menús son los nativos, que ya soportan teclado y gestos táctiles.
+
+El estado compartido (`TaskViewState`, §23.1) y el filtrado no cambian: los chips son otra forma de editar los mismos valores, y los dos modos (Lista y Tabla) usan la misma barra.
+
+**Fuera de alcance**: varios valores por filtro (por ejemplo dos prioridades a la vez); filtros por etiqueta; guardar conjuntos de filtros con nombre; un chip para la búsqueda; chips para agrupado y orden.
+
+**Decisiones**: sin decisiones abiertas. Se descartó el panel plegable con combos (más conocido, pero muestra los filtros activos solo por un número) y los submenús de un solo menú (la API pública de `Menu` en los tipos de Obsidian instalados no expone submenús, así que la elección en pasos usa menús sucesivos).
+
+### 14.5 Columnas de fechas de la Tabla y filtros por fecha (v1.1.12 — implementado; falta la prueba manual)
+
+**Problema.** La columna «Fechas» apila hasta seis fechas distintas en una sola celda y el filtro de fecha solo mira el vencimiento: no se puede pedir «programadas esta semana» ni «con inicio pasado». Además, «Vencidas» cuenta también las tareas hechas o canceladas, y los textos «Vencidas hoy» y «Vencidas esta semana» dicen lo contrario de lo que filtran.
+
+**Columnas.** «Fechas» se divide en cuatro columnas, después de Área y antes de Etiquetas:
+
+| Columna | Fecha principal | Debajo, en pequeño | Ordena por |
+|---|---|---|---|
+| Inicio | 🛫 inicio | ➕ creación, si existe | inicio |
+| Programada | ⏳ programada | 🕐 hora y ⏱️ duración, si las tiene | programada |
+| Vencimiento | 📅 vencimiento | — | vencimiento |
+| Cerrada | ✅ hecha o ❌ cancelada (una tarea no tiene las dos) | — | la fecha de cierre |
+
+- Cada fecha lleva siempre su emoji y su tooltip; la secundaria va en texto más pequeño y apagado, para que se entienda qué es sin ocupar otra columna.
+- El vencimiento se marca como vencido o de hoy solo en tareas abiertas (ni hechas, ni canceladas, ni «no es tarea»).
+- Se descartó emparejar Programada con Cancelada: la cancelación es un resultado, igual que Hecha, así que ambas comparten la columna Cerrada.
+
+**Ocultación automática.** Una columna de fechas se oculta si **ninguna de las tareas cargadas** tiene algún valor de las que mostraría: Inicio, si ninguna tiene inicio ni creación; Programada, si ninguna tiene fecha programada; Vencimiento, si ninguna tiene vencimiento; Cerrada, si ninguna está hecha ni cancelada con fecha. Se decide sobre todas las tareas cargadas y no sobre las que quedan tras filtrar, para que la tabla no cambie de forma al filtrar. Las cabeceras de grupo ocupan siempre todas las columnas visibles.
+
+**Columnas más estrechas.** Para que quepan las cuatro:
+- La primera columna conserva solo el encabezado con el total de tareas (por ejemplo «(42)»); desaparecen los números de fila.
+- Prioridad y Estado, que solo llevan un ícono, se estrechan.
+- La columna Tarea se reduce un poco y su texto se parte en varias líneas como hasta ahora.
+
+| Columna | Ancho antes (px) | Ancho nuevo (px) |
+|---|---|---|
+| Total (solo encabezado) | 44–50 | 40–48 |
+| Prioridad | 48–76 | 36–44 |
+| Estado | 48–76 | 36–44 |
+| Tarea | 200–520 | 170–380 |
+| Área | 80–160 | 72–140 |
+| Inicio, Programada, Vencimiento y Cerrada (cada una) | «Fechas» 80–120 | 90–120 |
+| Etiquetas | 96–240 | 80–200 |
+
+Con las cuatro fechas visibles la suma de mínimos es de unos 790 px; con Inicio y Cerrada ocultas, de unos 610 px. En un teléfono estrecho sigue habiendo scroll horizontal. Los números se afinan con la prueba visual.
+
+**Filtros.** El tipo de filtro «Fecha» se divide en tres, **Vencimiento**, **Inicio** y **Programada**, que se suman a Prioridad, Estado y Área en el menú de + Filtro (seis tipos; §14.4). Los tres comparten los mismos valores, por día y sin hora:
+
+| Valor | Vencimiento | Inicio y Programada |
+|---|---|---|
+| Con fecha | tiene vencimiento | tiene esa fecha |
+| Vencidas / Pasadas | vencimiento anterior a hoy y tarea abierta | fecha anterior a hoy |
+| Hoy | vence hoy | es hoy |
+| Próximos 7 días | de hoy a 7 días después (hoy incluido) | igual |
+| Futuras | más de 7 días después de hoy | igual |
+| Sin fecha | no tiene vencimiento | no tiene esa fecha |
+
+- Cambian de significado «Con fecha» y «Sin fecha»: hoy quieren decir «alguna de las seis fechas» y pasan a ser por tipo.
+- Los textos nuevos de Vencimiento son «Vencen hoy» y «Vencen en los próximos 7 días»; para Inicio y Programada, «Hoy» y «Próximos 7 días».
+- Los identificadores guardados de los valores (`hasdate`, `overdue`, `today`, `thisweek`, `future`, `nodate`) se conservan y se reutilizan para los tres tipos, así que lo ya guardado sigue valiendo. Los campos nuevos (`start` y `scheduled`) parten de «todas».
+
+**Orden.** Se pueden ordenar por Inicio, Programada, Vencimiento y Cerrada (las tareas sin esa fecha quedan al final en las dos direcciones), tanto desde el encabezado de la Tabla como desde el combo de orden de la barra, que es compartido con la Lista.
+
+**Fuera de alcance**: filtrar por fecha de creación o de cierre; ordenar por la fecha secundaria; ocultar o reordenar columnas a mano (fase U5, que reutilizará este mismo modelo de columnas).
+
+**Decisiones**: sin decisiones abiertas.
+
+### 14.6 Refresco automático de las vistas (v1.1.12 — implementado; falta la prueba manual)
+
+**Problema.** Si se edita una nota en otro panel, ninguna vista cambia hasta volver a entrar en ella; la Rutina y el resaltado de «hoy» tampoco cambian a medianoche.
+
+**Comportamiento.**
+- Las vistas de tareas y de hábitos abiertas y visibles se actualizan solas unos 0,4 s después de un cambio real: guardar una nota sin tocar tareas (o, en hábitos, sin tocar la carpeta de hábitos) no las redibuja.
+- A medianoche local, y al volver a la ventana si el día cambió mientras tanto, todas se actualizan para mostrar el día nuevo.
+- Se conservan la búsqueda, los filtros, el orden, los grupos plegados y el scroll; no aparece la pantalla de carga.
+- No interrumpe lo que se está haciendo: si hay un modal, un menú, un selector de fecha, un arrastre o el foco está en un campo de la vista, el refresco espera a que termine.
+- Una vista oculta (otra pestaña) no se redibuja; se actualiza al volver a ella.
+- Una edición hecha desde la propia vista no la redibuja dos veces.
+
+**Decisiones**: retardo fijo de 0,4 s; solo vistas visibles; sin interruptor en los ajustes.
+
+**Fuera de alcance**: refresco parcial por fila (se redibuja la vista entera, como hoy al refrescar a mano) y cambios en la configuración (ya refrescan las vistas desde los ajustes).
 
 ## 15. Sincronía con Google Calendar (v1.1.15 — diseño, no implementado)
 

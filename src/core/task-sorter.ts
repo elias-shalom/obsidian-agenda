@@ -1,11 +1,18 @@
 import { ITask, SortField, GroupField } from "../types/interfaces";
 import { DateTime } from "luxon";
+import { groupTasksByField, TaskGroup } from "./task-grouping";
 
 /**
  * Clase responsable de la ordenación y agrupación de tareas
  */
 export class TaskSorter {
   
+  /**
+   * Agrupa tareas por un campo con grupos ordenados y etiquetados (v1.1.12); ver `groupTasksByField()`.
+   */
+  public groupTasksByField(tasks: ITask[], field: GroupField, translate?: (key: string) => string): TaskGroup[] {
+    return groupTasksByField(tasks, field, translate);
+  }
   /**
    * Ordena tareas por múltiples campos
    */

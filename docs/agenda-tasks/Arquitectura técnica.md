@@ -222,7 +222,7 @@ Desglose de tareas de esta decisión: ver [[Plan de implementación]] — Fase B
 Se usa la [Drag and Drop API nativa del navegador](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API) (`draggable`, `dragstart`/`dragover`/`drop`), no una librería externa — el plugin no la tenía como dependencia y el caso de uso (arrastrar una píldora a una celda dentro del mismo contenedor renderizado) no la necesita.
 
 - **Origen del drag** (común a Mes/Semana/Semana laboral/Día, cableado una sola vez en `CalendarView.setupViewSpecificEventListeners`): cada `.oa-calendar-task` con `draggable="true"` serializa en `dataTransfer` (`application/json`) un payload `TaskDragPayload` — `filePath`, `lineNumber`, `calendarDateType` (`due`/`start`/`scheduled`, tomado de `data-date-type`) y `scheduledTime` (tomado de `data-scheduled-time`, solo presente en las franjas horarias de Día). `CalendarView.parseTaskDragPayload()` es el único punto que deserializa y valida ese payload.
-- **Destino en Mes/Semana/Semana laboral** (`CalendarView`, clase base): las celdas de día (`.oa-calendar-month-day`, `.oa-calendar-week-day-container`) aceptan el drop y llaman a `handleTaskDayDrop()`, que resuelve la transformación de línea según `calendarDateType` (`due`/`start` → `upsertSimpleDate`, `scheduled` → `upsertScheduledDate`, preservando hora/duración ya existentes) y la aplica con `TaskWriter.updateTaskLine()`. Si la escritura falla (línea ya no válida), se muestra un `Notice` (`task_drag_drop_error`) en vez de fallar silenciosamente.
+- **Destino en Mes/Semana/Semana laboral** (`CalendarView`, clase base): las celdas de día (`.oa-calendar-month-day`, `.oa-calendar-week-day-container`) aceptan el drop y llaman a `handleTaskDayDrop()`, que resuelve la transformación de línea según `calendarDateType` (`due`/`start` → `upsertSimpleDate`, `scheduled` → `upsertScheduledDate`, preservando hora/duración ya existentes) y la aplica con `TaskWriter.updateTaskLine()`. Si la escritura falla (línea que ya no se puede localizar), se muestra un `Notice` (`task_line_changed`) en vez de fallar silenciosamente.
 - **Destino en Día** (`CalendarDayView`, sobrescribe el mismo patrón): las franjas horarias (`.oa-calendar-hour-slot`) solo aceptan payloads con `calendarDateType === 'scheduled'` y llaman a `handleHourSlotDrop()`, que arma la nueva hora `HH:mm` combinando la hora de la franja destino con los minutos originales del payload, y la aplica con `upsertScheduledTime()`.
 - Tras un drop exitoso, cada vista llama a `this.refreshView()` (mismo patrón que el resto de acciones del calendario) para re-renderizar con los datos actualizados del vault.
 
@@ -594,7 +594,7 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §7.7.
 | Modal de duración | `src/modals/task-duration-modal.ts` (usa el componente con `maxMinutes:420, stepMinutes:5`) |
 | Estilos | el SCSS del dial (hoy embebido en los estilos de hábitos) se mueve a un archivo compartido |
 
-## 19. Modal de novedades al actualizar ("What's New") (v1.1.12, diseño — no implementado)
+## 19. Modal de novedades al actualizar ("What's New") (v1.1.13, diseño — no implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §10. Investigado y diseñado a partir del mecanismo equivalente del plugin [QuickAdd](https://github.com/chhoumann/quickadd) (`src/main.ts` → `announceUpdate()` + `src/gui/UpdateModal/UpdateModal.ts`), adaptado a las diferencias de este proyecto (ver §19.4).
 
@@ -656,15 +656,21 @@ Nuevo `KanbanView extends BaseView` + `KANBAN_VIEW_TYPE`, registrado en `ViewMan
 
 ### 20.2 Motor de agrupado compartido
 
+> Implementado (v1.1.12) en `src/core/task-grouping.ts`: `groupTasksByField(tasks, field, translate?)` devuelve `TaskGroup[]` (`key`, `label`, `tasks` y, solo con `path`, `children`), y `TaskSorter.groupTasksByField()` delega en él. `status`: los 6 estados en orden de flujo de trabajo, siempre; `priority`: de mayor a menor, solo los presentes, «sin prioridad» al final; `dueDate`: por día, «sin fecha» al final; `tags`: por la primera etiqueta; `path`: árbol de carpetas. `area` y `subArea` llegan con la fase AR2.
+
 El tipo `GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags'` ya existe en `interfaces.ts` (campo `groupBy?` de la interfaz de filtros), pero no hay una implementación genérica: `ListView` solo agrupa por carpeta, de forma fija (`groupTasksByFolder()`). Se agrega a `TaskSorter` una función `groupTasksByField(tasks, field)` que devuelve grupos ordenados con su clave y etiqueta localizada; el agrupado por área y sub-área (§22.4) se deriva de la ruta del archivo. Kanban la usa para sus columnas; Lista y Tabla pueden adoptarla para ofrecer agrupado real más allá de carpeta. Orden dentro del grupo: `sortTasksByMultipleFields()` ya soporta ascendente/descendente.
 
 Para `status`, las columnas siguen el orden fijo de `CoreTaskStatus` (no el alfabético), e incluyen siempre las 6, aunque estén vacías, para que sean destinos de arrastre válidos. Agrupar por fecha no se ofrece (una columna por fecha distinta dispersa el tablero).
 
 ### 20.3 Barra de filtros compartida
 
+> Implementada (v1.1.12): `TaskFilterBar` en `src/core/task-filter-bar.ts` (`mount(root)`, `onChange`, `getState()`, `setSort()`), con el estado en `src/core/task-view-state.ts` y las opciones de estado en `src/core/task-status-options.ts`. Filtra con `filterTasksByViewState()`: prioridad, estado, área y vencimiento pasan por `TaskFilter`; la búsqueda y «con/sin fecha» son propias. «Esta semana» son los próximos 7 días y «futuras» las posteriores. La Tabla ya la usa; Lista, Kanban y Gantt, no.
+
 La Tabla tiene hoy sus propios controles (`#oa-table-search-input`, `#oa-table-priority-filter`, `#oa-table-status-filter`, `#oa-table-folder-filter`, `#oa-table-due-filter`), con las 6 opciones de estado escritas a mano en `table-view.hbs` y su estado persistido en `localStorage` (`TABLE_VIEW_STATE_KEY`). Se generaliza a una barra reutilizable en `src/core/` (misma idea que `TimeDial`/`CalendarDatePicker`: clase con `mount(root)` y callback `onChange`) que recibe qué controles mostrar y una clave de persistencia propia por vista, y genera las opciones de estado desde `CoreTaskStatus` + i18n. La consumen Lista, Tabla, Kanban y Gantt; un cambio en las opciones se hace en un solo lugar.
 
 ### 20.3.1 Helper de gestos de tarea compartido
+
+> Implementado (v1.1.12): `attachTaskGestures(el, opciones)` en `src/core/task-gestures.ts`, usado por calendario, Lista y Tabla. Recibe el plugin, `i18n`, el `TaskWriter`, `getTask`, `onChanged`, `openFile` e `ignoreSelector`; exporta `TASK_CLICK_DELAY_MS` y `TASK_GESTURE_IGNORE_SELECTOR`. El cambio de estado avisa con `task_line_changed` si la nota cambió. Overview, Kanban y Gantt aún no lo usan.
 
 Hoy el clic (con retardo de 250 ms para distinguirlo del doble clic), el doble clic (abre la nota) y `openEditTaskModal()` están copiados en `calendar-view.ts`, `list-view.ts` y `table-view.ts`, cada uno con su propia constante `TASK_CLICK_DELAY_MS`. Overview solo tiene doble clic (en `BaseView`) y el menú de estado con clic derecho solo existe en el calendario.
 
@@ -672,7 +678,9 @@ Se extrae a `src/core/task-gestures.ts`: `attachTaskGestures(el, { getTask, onCh
 
 Se migra primero el calendario, con la misma lógica de temporizador, y después Lista, Tabla, Kanban y Gantt. Lista y Tabla ganan el clic derecho sin escribir nada más.
 
-### 20.3.2 Identidad de la tarea y escritura segura (v1.1.12, con la Fase A)
+### 20.3.2 Identidad de la tarea y escritura segura (v1.1.12, con la Fase A; implementado)
+
+> Implementado: la ubicación de la línea es `locateTaskLine()` (`src/core/task-line-locator.ts`); `updateTaskLine()` devuelve el número y texto escritos para encadenar `insertLineAbove()`; en el calendario, `CalendarView.writeTaskLine()` toma el texto esperado de la tarea dibujada y avisa con `task_line_changed`. De paso se corrigió la numeración de líneas del extractor de respaldo. El texto de abajo describe el estado previo y el diseño.
 
 **Estado actual.** `Task.id` se arma en `TaskExtractor.createTaskFromLine()` como el `🆔` de la línea si lo tiene y, si no, `ruta-línea`; no se guarda y se recalcula cada vez que se vuelve a extraer el archivo (al modificarse, crearse, borrarse o renombrarse, o con el botón de recarga, que llama a `forceRefreshTasks()` y relee todo el vault; el TTL de 5 minutos solo reconstruye la lista global con las tareas ya extraídas). En la práctica las vistas y los escritores localizan una tarea por `file.path` más `line.number`; `Task.id` solo lo usan el modal (`isAutoId`) y un atributo de la Tabla. Además, `TASKS_UPDATED` se emite al invalidar la caché pero ninguna vista se suscribe, así que una vista abierta conserva los números de línea anteriores a un cambio hasta que se refresca.
 
@@ -768,7 +776,9 @@ Eventos de puntero (no arrastre HTML5), para redimensionar con precisión de un 
 
 Flechas de dependencia y aviso de rotura; desplazamiento en cascada de dependientes; zoom por día; Timeline view.
 
-## 22. Áreas y sub-áreas de tareas (v1.1.12, diseño — no implementado)
+## 22. Áreas y sub-áreas de tareas (v1.1.12, diseño — núcleo implementado)
+
+> Implementado el núcleo (fase AR1): `src/core/area.ts` con `normalizeAreaName()`, `resolveTaskArea()`, `matchesTaskArea()` y la paleta y colores movidos desde `habit.ts`, y los criterios `location.area`/`location.subArea` de `TaskFilter`. Pendiente la fase AR2 (barra, agrupado y vistas). Para la raíz del vault `resolveTaskArea()` devuelve cadenas vacías; la etiqueta «Sin área» la pone la interfaz.
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §13. Lo consumen la barra de filtros (§20.3), Lista, Kanban (§20) y Gantt (§21).
 
@@ -789,6 +799,8 @@ Los combobox de Área y Sub-área forman parte de la barra compartida (§20.3). 
 La barra filtra sobre los datos con `TaskFilter`. La Tabla hoy filtra ocultando filas del DOM (`filterTasks()` lee `#oa-table-folder-filter` y el texto de `.oa-folder-name`), y ese enfoque no sirve para Kanban ni Gantt. La migración incluye convertir el valor `folder` que la Tabla guarda en `localStorage` (`TABLE_VIEW_STATE_KEY`).
 
 ### 22.4 Agrupado
+
+> Implementado en la Lista (v1.1.12): `groupTasksByField(tasks, 'area')` reutiliza el árbol de carpetas, pone el color del área en cada grupo y deja «Sin área» al final. `'subArea'` queda para Kanban y Gantt.
 
 `GroupField` (hoy `'status' | 'priority' | 'dueDate' | 'path' | 'tags'`) gana `'area'` y `'subArea'`, los mismos valores de los combos. `groupTasksByField(tasks, 'area')` devuelve un árbol área → sub-área, ordenado, con el nombre y el color de cada grupo; el árbol anida la sub-área por carpeta, partiendo la ruta por `/`. Con `'subArea'` y sin un área elegida, la clave de grupo incluye el área para no mezclar carpetas homónimas de áreas distintas. Lista deja de usar `groupTasksByFolder()` y consume este árbol, conservando su modo plano. Kanban lo usa para sus columnas y Gantt para sus filas.
 
@@ -813,17 +825,25 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14. Se a
 
 ### 23.1 Estado compartido
 
+> Implementado en `src/core/task-view-state.ts` (búsqueda, prioridad, estado, área, sub-área, vencimiento, agrupado y orden; la clave es `obsidian-agenda-task-view-state`). El campo `mode` llega con el conmutador (U4).
+
 Nuevo módulo `src/core/task-view-state.ts` con `TaskViewState`: búsqueda, filtros (prioridad, estado, área, sub-área, vencimiento), agrupado, orden (campo y dirección) y modo. Se persiste con `app.saveLocalStorage` bajo una única clave, en lugar de la clave propia de la Tabla (`obsidian-agenda-task-table-state`, hoy en `table-view.ts`). Ambos modos lo leen al abrir y lo escriben al cambiar. Migración: la clave antigua se lee una vez, se convierte (`folder` → `area`, §22.3) y se elimina.
 
 ### 23.2 Conmutador de modo
+
+> Implementado (v1.1.12): `TaskModeSwitch` en la barra (`buildTaskModeSwitch()`), con `TaskViewState.mode` y `saveTaskViewMode()`; usa directamente las clases `.oa-calendar-view-segmented` y `.oa-calendar-view-btn` y cambia de vista con `viewManager.activateView()`.
 
 Control segmentado dentro de la barra compartida, solo en Lista y Tabla. Reutiliza los estilos y las clases del selector del calendario (`.oa-calendar-view-segmented`, `.oa-calendar-view-btn`); renombrarlas a un nombre neutro es una limpieza opcional. Íconos `list-todo` y `table`, los mismos de las pestañas actuales, con tooltip. Al hacer clic llama a `leaf.setViewState()` con el otro tipo de vista, como `CalendarView.switchToViewType()`; ambas vistas leen `TaskViewState` al abrir.
 
 ### 23.3 Pestaña única
 
+> Implementado (v1.1.12): ver `header.hbs` (`oa-tasks-view-tab`), `TASKS_VIEW_TYPES` y `getDefaultTasksView()` en `base-view.ts`.
+
 En `header.hbs` los botones de Lista y Tabla se reemplazan por uno, `oa-tasks-view-tab`, que se muestra con `(or settings.showListTab settings.showTableTab)`. `attachEventTabs()` lo apunta al último modo usado (`TaskViewState.mode`), con el mismo patrón que `getDefaultHabitView()`. El resaltado de la pestaña activa necesita una excepción como la que ya existe para `calendar-*` y `habit-*` en `base-view.ts`, porque tanto `list-view` como `table-view` deben iluminar la pestaña «Tareas».
 
 ### 23.4 Agrupado y orden
+
+> La Lista ya usa la barra con agrupado y orden (v1.1.12): el agrupado vacío en `TaskViewState` significa «el de cada vista» (Área en la Lista), `sortTasksByColumn()` (`src/core/task-column-sort.ts`) ordena sobre datos y, al cambiar un control, `ListView.refreshBody()` redibuja solo el cuerpo. La Tabla falta (U3).
 
 La barra incorpora un combo de agrupado y un control de orden. El agrupado usa `groupTasksByField()` (§22.4); sus valores sustituyen el botón `.oa-view-toggle-button` de la Lista (`isHierarchicalView`). La Tabla recibe filas de cabecera de grupo plegables, con el estado plegado en `localStorage` (`oa_tasks_collapsed:<clave>`). Los encabezados `th.oa-sortable` de la Tabla actualizan el orden compartido en vez de uno propio (`currentSortColumn`/`currentSortDirection`). Los dos modos filtran sobre los datos con `TaskFilter`, no sobre filas del DOM.
 
@@ -840,6 +860,117 @@ La barra incorpora un combo de agrupado y un control de orden. El agrupado usa `
 ### 23.6 Fuera de alcance (v1.1.12)
 
 Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones masivas.
+
+### 23.7 Barra de filtros con chips (v1.1.12, implementado; falta la prueba manual)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.4. Es un cambio solo de la capa de interfaz de `TaskFilterBar`: `TaskViewState`, `filterTasksByViewState()` y las vistas no cambian.
+
+**Módulo puro nuevo `src/core/task-filter-chips.ts`** (sin dependencias de Obsidian, para probarlo con scripts de Node):
+- `FilterChipId = 'priority' | 'status' | 'area' | 'due'`.
+- `getActiveFilterChips(state, translate)` devuelve los chips activos, en ese orden, con `id`, `typeLabel` y `valueLabel`; el de `area` junta Área y Sub-área («Área › Sub-área») y el valor «sin prioridad» usa `no_priority`. Un filtro está activo si su valor no es `'all'` (o `''` en área y sub-área).
+- `clearFilterChip(state, id)` y `clearAllFilters(state)` devuelven el estado sin ese filtro (quitar `area` reinicia también `subArea`); no tocan la búsqueda, el agrupado ni el orden.
+- `getFilterValueOptions(id, ...)` con los valores de cada tipo, sin la opción «Todos»: las constantes `PRIORITY_OPTIONS` y `DUE_OPTIONS` y la lista de estados salen hoy de `task-filter-bar.ts` y `STATUS_OPTIONS`, y se mueven aquí; las áreas y sub-áreas siguen saliendo de `listTaskAreas()` y `listTaskSubAreas()`.
+
+**`TaskFilterBar`** (`src/core/task-filter-bar.ts`):
+- `mount()` construye la fila principal (`.oa-filter-bar__main`: conmutador de modo, botón + Filtro, agrupado, orden y dirección, búsqueda con `margin-left: auto`) y la fila de chips (`.oa-filter-bar__chips`), que solo se muestra con chips activos. Los cinco `<select>` de filtro desaparecen; agrupado y orden conservan los suyos.
+- Menús con `Menu` de Obsidian, colocados con `showAtPosition({ x, y })` bajo el botón o el chip pulsado (`getBoundingClientRect()`), con `setChecked()` en el valor actual. Se encadenan: el primer menú elige el tipo, el segundo el valor y, para Área con sub-áreas, un tercero la sub-área. No se usan submenús: los tipos de Obsidian 1.14.4 instalados no exponen `setSubmenu()`, y `minAppVersion` es 1.8.7.
+- `renderChips()` se llama desde `update()`, que es el único punto por donde pasan los cambios; no hay estado propio de la barra aparte de `TaskViewState`. `reconcileArea()` sigue reajustando un área guardada que ya no tiene tareas, ahora antes de dibujar los chips.
+- Cada chip es un `<button>` (`.oa-filter-chip`) con una × interna enfocable (`.oa-filter-chip__remove`) y `aria-label` con i18n; `Limpiar` es `.oa-filter-bar__clear`.
+
+**Estilos** (`src/styles/components/_task-filter-bar.scss`):
+- La barra pasa de rejilla de dos columnas a dos contenedores flex. La búsqueda se queda a la derecha de la fila 1 con ancho `clamp(180px, 25%, 300px)`; con `container-type: inline-size` en la barra y un `@container` bajo ~560 px, la búsqueda pasa a su propia línea a todo el ancho. Los contenedores se miden por el ancho de la hoja y no por el de la ventana, que en Obsidian cambia con los paneles laterales. Si el WebView no soportara `@container`, la barra sigue funcionando porque ya tiene `flex-wrap`.
+- Chips y × llevan `padding: … !important`: en tableta, `.is-tablet button:not(.clickable-icon)` de Obsidian impone 20 px laterales y deformaba los botones pequeños (misma causa que los arreglos de la 1.1.11). Los chips usan un `max-width` con puntos suspensivos para que un área de nombre largo no ensanche la fila.
+- Se eliminan las reglas de los selectores de filtro; `.oa-filter-bar__select` queda para agrupado y orden. El cambio de claves de estilo de la Tabla/Lista no hace falta: ambas ya usan `.oa-filter-bar`.
+
+**i18n**: claves nuevas en los 6 idiomas: `filter_add` («+ Filtro»), `filter_clear` («Limpiar») y `filter_remove` (etiqueta accesible de la ×, con el nombre del filtro como parámetro). Los nombres de tipo reutilizan `task_priority`, `task_status`, `area` y `due_date`, y «Todas las sub-áreas» reutiliza `all_sub_areas`. Quedan sin uso y se eliminan `all_priorities`, `all_tasks`, `all_areas` y `all_dates` (comprobar con una búsqueda antes de borrar).
+
+**Archivos afectados**
+
+| Área | Archivos |
+|---|---|
+| Lógica pura | nuevo `src/core/task-filter-chips.ts` |
+| Barra | `src/core/task-filter-bar.ts` (mount, menús, chips) |
+| Estilos | `src/styles/components/_task-filter-bar.scss` |
+| i18n | `src/locales/*.json` (3 claves nuevas, 4 eliminadas) |
+| Vistas y estado | sin cambios |
+
+**Riesgos**: la posición y el cierre de los menús en móvil (se resuelven con el `Menu` nativo, pero hay que probarlos en tableta y teléfono); el foco del teclado al volver de un menú (no se devuelve al botón o chip que lo abrió: al elegir un valor el chip se redibuja; si molesta, se mejora después); y que quien está acostumbrado a los combos no encuentre los filtros (el botón + Filtro lleva texto, no solo ícono).
+
+### 23.8 Columnas de fechas y filtros por fecha (v1.1.12, implementado; falta la prueba manual)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.5. Amplía §23.1 (estado), §23.7 (chips) y la plantilla de la Tabla.
+
+**Estado y filtrado** (`src/core/task-view-state.ts`):
+- `TaskViewState` gana `start` y `scheduled` (`'all'` por defecto), junto al `due` actual; `parseTaskViewState()` los valida con `DUE_FILTER_VALUES`, que se reutiliza para los tres. Los valores guardados de `due` siguen siendo válidos, así que no hay migración.
+- Nueva función pura `matchesDateFilter(date, value, isOpen, today)` que decide un valor de filtro sobre una fecha (`DateTime | null`) comparando por día con `startOf('day')`: `hasdate`, `overdue` (anterior a hoy; para el vencimiento, además con tarea abierta), `today`, `thisweek` (de hoy a hoy + 7 días), `future` (más de 7 días) y `nodate`. `filterTasksByViewState()` la aplica a `due`, `start` y `scheduled`; deja de usar `dueDateRelative` y el apaño de `dueDate.exists` de §22.2. Una tarea está abierta si su estado no es Hecho, Cancelada ni No es tarea.
+- `hasAnyDate()` desaparece: «Con fecha» y «Sin fecha» pasan a ser por tipo.
+
+**Chips** (`src/core/task-filter-chips.ts`): `FilterChipId` pasa a `'priority' | 'status' | 'area' | 'start' | 'scheduled' | 'due'`, con `FILTER_CHIP_IDS` en ese orden y `FILTER_STATE_KEYS` con las dos claves nuevas. `getFilterValueOptions()` recibe el tipo y devuelve los textos de Vencimiento («Vencidas», «Vencen hoy», «Vencen en los próximos 7 días») o los de Inicio y Programada («Pasadas», «Hoy», «Próximos 7 días»); los nombres de tipo reutilizan `start_date`, `scheduled_date` y `due_date`. La barra no cambia: los menús y los chips se derivan de esa lista.
+
+**Orden** (`src/core/task-column-sort.ts`): `TASK_SORT_COLUMNS` gana `start`, `scheduled` y `closed` (y `due` pasa a llamarse con la clave `due_date`); `sortTasksByColumn()` los trata como `due`: por fecha, sin fecha al final en las dos direcciones. La fecha de cierre es la de hecha o, si no, la de cancelada. Se elimina la clave de texto `dates`.
+
+**Modelo de columnas** (nuevo `src/core/task-table-columns.ts`, puro): una lista ordenada con `id`, clave de texto, clave de orden, `{ min, max }` de ancho y, para las cuatro de fechas, una función `hasValue(task)` que dice si la tarea tiene algún valor que esa columna mostraría. `getColumnVisibility(tasks)` devuelve un mapa `id` → visible: las columnas fijas siempre y las de fechas solo si alguna tarea cargada (sin filtrar) cumple `hasValue`. Es la base de la fase U5: allí se le sumará la elección del usuario.
+
+**La Tabla** (`src/views/table-view.ts`, `table-view.hbs`, `_table-view.scss`):
+- `TableViewData` incluye `columns` (mapa de visibilidad por `id`) y `columnCount`; la plantilla pinta cada encabezado y cada celda solo si su columna es visible, con `data-column="<id>"`, y las cabeceras de grupo usan `colspan="{{columnCount}}"` en lugar de 7.
+- Se elimina el número de fila (`.oa-row-number` y el campo `number` de `TableTaskRow`): la primera celda queda vacía y el encabezado conserva el total.
+- Las celdas de fechas muestran el emoji y el valor, y debajo, en una segunda línea más pequeña, la fecha secundaria (creación en Inicio; hora y duración en Programada). El estado de vencida o de hoy se calcula en TypeScript, para tareas abiertas, y se pasa a la plantilla (hoy `isOverdue` y `isDueToday` no los pone nadie).
+- `resizeColumns()` deja de usar el índice de la columna y busca el límite por `data-column` en el modelo; el reparto proporcional al ancho del contenedor no cambia.
+- Los anchos del modelo son los de §14.5 («Tarea» 170–380, «Prioridad» y «Estado» 36–44, etc.).
+
+**i18n**: claves nuevas en los 6 idiomas para los valores de Inicio y Programada (`date_past`, `date_today`, `date_this_week`, `date_future`), los nombres de las columnas (`column_start`, `column_scheduled`, `column_due`, `column_closed`) y los textos corregidos de Vencimiento (`due_today`, `due_this_week`) y de «Con fecha» (`has_any_date`). Se eliminan `dates` y `future_tasks`, sin otros usos.
+
+**Archivos afectados**
+
+| Área | Archivos |
+|---|---|
+| Estado y filtrado | `src/core/task-view-state.ts` |
+| Chips | `src/core/task-filter-chips.ts` |
+| Orden | `src/core/task-column-sort.ts` |
+| Columnas | nuevo `src/core/task-table-columns.ts` |
+| Tabla | `src/views/table-view.ts`, `src/views/templates/table-view.hbs`, `src/types/interfaces.ts` (`TableViewData`, `TableTaskRow`), `src/styles/views/_table-view.scss` |
+| i18n | `src/locales/*.json` |
+
+**Riesgos**: `table-layout: fixed` con columnas que aparecen y desaparecen (los anchos deben salir de las columnas visibles, no de las siete de antes); que la Lista comparta el combo de orden y muestre las columnas nuevas (Cerrada) aunque ella no las dibuja; y el cambio de significado de «Con fecha» y «Sin fecha» en estados ya guardados (el valor se conserva, pero ahora se aplica solo al vencimiento).
+
+### 23.9 Refresco automático de las vistas (v1.1.12, implementado; falta la prueba manual)
+
+Comportamiento y decisiones: [[Especificación de vistas]] §14.6.
+
+**Punto de partida.** `TaskManager` y `HabitManager` ya invalidan sus cachés con los eventos del vault, y `TaskCache` emite `TASKS_UPDATED` al invalidar, pero nadie lo escucha. Cuidado con un bucle: `refreshView()` fuerza la recarga (`forceRefreshTasks()` invalida y vuelve a emitir), así que reaccionar a cada invalidación redibujaría tras cada refresco manual.
+
+**Piezas puras** (en `src/core/`, probables con un script de Node):
+- `refresh-scheduler.ts`: `RefreshScheduler` con `request()`, `cancel()` y `dispose()`. Agrupa las peticiones con un retardo (0,4 s, reinicia con cada petición); al cumplirse, si `isBusy()` es verdadero reintenta cada 0,4 s, y si hay una ejecución en curso, repite una vez al terminar. Los temporizadores se inyectan para poder probarlo.
+- `task-signature.ts`: `tasksSignature(tasks)` une `id` (ruta#línea) y el texto de la línea (`task.line.text`) de cada tarea; es lo que cambia si cambia algo visible de una tarea.
+- `day-change.ts`: `msUntilNextMidnight(now)` (Luxon, correcto en cambios de horario) y `DayChangeWatcher`, un único temporizador que, a la medianoche local, emite `day:changed` y se reprograma; también compara el día en `visibilitychange` por si el equipo estuvo suspendido.
+- `scroll-state.ts`: `captureScroll(root)` y `restoreScroll(root, snapshot)`; guardan el desplazamiento de la raíz y de cada elemento desplazado, identificado por su clase y su posición entre los de la misma clase.
+
+**Eventos** (`EventBus`): se añaden `tasks:changed` (con `{ signature }`), `habits:updated` y `day:changed`, y `listenerCount(evento)`.
+
+**Tareas** (`TaskManager`): escucha su propio `TASKS_UPDATED` (y `metadataCache.on('changed')`, que invalida el archivo cuando los metadatos ya están al día) y, tras 0,4 s, si hay alguien escuchando `tasks:changed`, pide `getAllTasks()`, calcula la firma y emite solo si difiere de la última notificada. Así una nota sin cambios en tareas no redibuja nada, y se calcula una vez, no por vista.
+
+**Hábitos** (`HabitManager`): `refreshCache()` calcula una huella de las notas de la carpeta de hábitos (ruta y hash del contenido) y emite `habits:updated` solo si cambió.
+
+**Medianoche** (`main.ts`): el complemento inicia `DayChangeWatcher` al cargar y lo detiene al descargar.
+
+**Vistas** (`BaseView`, de la que cuelgan todas):
+- El constructor se suscribe a `tasks:changed`, `habits:updated` y `day:changed` y se da de baja con `register()`. `getAllTasks()` guarda la firma de lo cargado (`loadedSignature`); un `tasks:changed` con esa misma firma se ignora (la edición ya la hizo esta vista), y una vista que nunca cargó tareas lo ignora.
+- Cada vista tiene su `RefreshScheduler`. Si la vista no está visible (`containerEl.isShown()`) se marca como pendiente y se refresca al activarse (`active-leaf-change`).
+- `isBusy()`: hay un `.modal-container`, un `.menu` o un `.flatpickr-calendar.open` en el documento, un `.oa-dragging` o `.oa-resizing` en la vista, o el foco está en un `input`, `textarea` o `select` de la vista.
+- `runAutoRefresh()`: captura el scroll, ejecuta `performAutoRefresh()` sin pantalla de carga (`showLoadingOverlay()` no hace nada mientras dura) y restaura el scroll. Por defecto `performAutoRefresh()` vuelve a ejecutar `onOpen()` sin forzar la recarga, así que se reconstruyen la Lista y la Tabla con el estado guardado; `HabitView` lo sobreescribe (recarga los hábitos y llama a `refreshHabitView()`).
+- `refreshView()` cancela la petición pendiente al terminar (como `cancelAutoRefresh()`, que usa `HabitView`), para no redibujar justo después de un refresco manual.
+- El evento DOM `obsidian-agenda:habits-refresh` (editor y ajustes) también cancela la petición pendiente.
+
+**Archivos afectados**
+
+| Área | Archivos |
+|---|---|
+| Núcleo | nuevos `src/core/refresh-scheduler.ts`, `task-signature.ts`, `day-change.ts`, `scroll-state.ts`; `event-bus.ts` |
+| Gestores | `src/core/task-manager.ts`, `src/habits/habit-manager.ts` |
+| Plugin | `src/main.ts` |
+| Vistas | `src/views/base-view.ts`, `src/views/habit-view.ts` |
+
+**Riesgos**: redibujar una vista con el foco en la búsqueda (por eso `isBusy()`); parpadeo al reconstruir con `onOpen()` (se espera poco, porque no hay pantalla de carga); que la firma no cubra algo que se dibuja y no esté en la línea de la tarea (hoy no hay nada así: área y subárea salen de la ruta, que está en el `id`); rendimiento en vaults muy grandes (la firma recorre todas las tareas una vez por cambio, y solo si hay vistas abiertas); y que `metadataCache` tarde en indexar (por eso se escucha su evento `changed`).
 
 ## 24. Sincronía con Google Calendar (v1.1.15, diseño — no implementado)
 

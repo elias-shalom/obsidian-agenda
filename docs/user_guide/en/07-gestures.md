@@ -30,10 +30,15 @@ A quick reference of every click, double-click, right-click, and drag across the
 |---|---|---|
 | Click | A task row/item (List or Table view) | Opens the **Edit Task** modal, prefilled with that task's data |
 | Double-click | A task row/item | Opens the underlying note, cursor on that line |
+| Right-click | A task row/item | Opens a context menu to change the task's status |
+| Click | The **List \| Table** switch | Switches mode, keeping search, filters, grouping and sort order |
+| Click | **+ Filter** | Opens menus to pick a filter type and a value (Area also asks for a sub-area) |
+| Click | A filter chip's ×, or **Clear** | Removes that filter, or all of them (the search text is kept) |
+| Click | A group header | Collapses or expands that group; its state is remembered |
 | Click | A column header (Table view) | Sorts by that column; click again to reverse. Also keyboard-accessible with Enter or Space |
 | Hover / keyboard focus | A control or widget with a tooltip | Shows a themed tooltip with its explanatory text |
 
-Table filters, search, and sort order are remembered when you return from editing a task or switch views; column widths adapt to the rows visible after filtering.
+Search, filters, grouping, and sort order are shared by the List and Table views and remembered when you return from editing a task or switch views; column widths adapt to the rows visible after filtering.
 
 ## Habit Tracker
 

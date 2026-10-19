@@ -1,5 +1,6 @@
 import { ITask, TaskFilterCriteria } from "../types/interfaces";
 import { DateTime } from "luxon";
+import { matchesTaskArea } from "./area";
 
 /**
  * Clase responsable del filtrado de tareas según diversos criterios
@@ -329,6 +330,11 @@ export class TaskFilter {
       if (!taskFolder.startsWith(criteria.location.folder)) {
         return false;
       }
+    }
+
+    // Filtrar por área y sub-área (ubicación física de la nota, v1.1.12)
+    if (!matchesTaskArea(task.file.path ?? '', criteria.location)) {
+      return false;
     }
 
     // Filtrar por archivo

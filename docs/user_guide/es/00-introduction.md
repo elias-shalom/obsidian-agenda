@@ -2,17 +2,16 @@
 
 **Agenda Tasks** es un plugin de gestión de tareas y calendario para [Obsidian](https://obsidian.md). Convierte tu bóveda en un sistema de productividad leyendo las tareas que ya escribes en tus notas y presentándolas a través de varias vistas dedicadas, sin cambiar la forma en que escribes tareas.
 
-> Este manual corresponde a la versión **1.1.10** del plugin. Para ver una lista simple de los cambios entre versiones, consulta la sección Changelog del [README](../../../README.md#changelog) del proyecto.
+> Este manual corresponde a la versión **1.1.12** del plugin. Para ver una lista simple de los cambios entre versiones, consulta la sección Changelog del [README](../../../README.md#changelog) del proyecto.
 
 ## Qué hace
 
-- Analiza toda tu bóveda en busca de tareas con casilla (`- [ ]`) y las mantiene actualizadas en tiempo real a medida que editas tus notas.
+- Analiza toda tu bóveda en busca de tareas con casilla (`- [ ]`) y las mantiene actualizadas a medida que editas tus notas: las vistas se refrescan solas.
 - Es totalmente compatible con el formato de metadatos del plugin [Obsidian Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) (fechas, prioridad, recurrencia, etiquetas, etc.), por lo que las notas existentes siguen funcionando sin cambios.
 - Añade sus propias extensiones opcionales sobre ese formato: hora y duración programadas, un estado con 6 valores (incluyendo "En espera") y generación automática de la siguiente ocurrencia para tareas recurrentes.
 - Ofrece cinco familias de vistas, cada una pensada para una forma distinta de trabajar:
   - **Vista general** — un panel con métricas clave y acceso rápido a tareas próximas/vencidas.
-  - **Lista** — una lista compacta de tareas agrupadas por carpeta.
-  - **Tabla** — una cuadrícula de tareas estilo hoja de cálculo, ordenable.
+  - **Lista** y **Tabla** — dos formas de trabajar tus tareas en una sola pestaña, **Tareas**: una lista compacta agrupada por área o una cuadrícula estilo hoja de cálculo, ambas con búsqueda, filtros, agrupado y orden.
   - **Calendario** — seis diseños (Día, Semana, Semana laboral, Mes, Año, Lista) para ver las tareas en una línea de tiempo.
   - **Seguimiento de hábitos** — un módulo independiente (Cuadrícula, Rutina diaria, Dashboard, Semanal, Tabla) para seguir hábitos recurrentes, separado de las tareas.
 

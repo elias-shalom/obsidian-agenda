@@ -2,11 +2,11 @@
 
 > A comprehensive task management and calendar plugin for Obsidian
 
-[![Release](https://img.shields.io/badge/version-1.1.11-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
+[![Release](https://img.shields.io/badge/version-1.1.12-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Obsidian](https://img.shields.io/badge/Obsidian-1.8.7+-purple.svg)](https://obsidian.md)
 
-> 🆕 **What's New in v1.1.11** — A maintenance release: layout fixes for Android phones and tablets (calendar buttons and date picker, Habit Routine, Grid and Weekly), readable header tabs in dark themes, a month label in the calendar's List view, a leaner Table, dependency updates and corrected documentation. [See details](#news) · [Full changelog](#changelog).
+> 🆕 **What's New in v1.1.12** — List and Table now live in one **Tasks** tab with a shared filter bar (search, filter chips, grouping and sort), tasks gain **areas and sub-areas** based on your folders, the Table splits its dates into Start, Scheduled, Due and Closed columns with a filter for each date, and every view refreshes by itself when your notes change. [See details](#news) · [Full changelog](#changelog).
 
 ## Overview
 
@@ -40,7 +40,18 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 
 ## 🆕 News
 
-### v1.1.11 (latest)
+### v1.1.12 (latest)
+- **One "Tasks" tab**: the List and Table views share a tab with a **List | Table** switch. Search, filters, grouping and sort order are shared and remembered, so switching mode (or coming back from editing a task) keeps what you were looking at
+- **Areas and sub-areas**: a task's area is the first folder of its note and its sub-area is the rest of the folder path (any depth); notes in the vault root are "No area". Use them to filter and to group (nested sub-areas, colored group headers); tasks sitting directly in an area's folder are listed last under "No sub-area"
+- **New filter bar**: a **+ Filter** button opens step-by-step menus (type, then value) for Priority, Status, Area (with sub-area), Start, Scheduled and Due. Active filters appear as removable chips with a **Clear** button; search sits on the right and drops to its own line on narrow windows
+- **Grouping** in List and Table: No grouping, Area and sub-area, Folder (flat), Status, Priority, Tags or Due date, with collapsible groups. This replaces the old hierarchical/flat button
+- **Table dates**: the single Dates column became four — **Start** (with the creation date below), **Scheduled** (with time and duration), **Due** and **Closed** (done or cancelled). A date column is hidden when no loaded task has that date. The Folder column is now **Area**, row numbers are gone and columns fit the available width, even on phones and tablets
+- **Date filters per type**: Due, Start and Scheduled each filter by With date, Overdue/Past, Today, Next 7 days, Future or No date. "Overdue" now counts only open tasks, and sorting works on all four date columns (also in the List)
+- **List**: each task shows its start (🛫), scheduled (⏳, with time) and due (📅) dates, and right-clicking a task in the List or Table opens the status menu, like in the calendar
+- **Automatic refresh**: List, Table, Calendar and Habit views update on their own about half a second after a real change in your notes (saving a note without touching tasks does nothing), keeping scroll, filters and collapsed groups, and waiting while a modal, menu, drag or text field is in use. At midnight the views switch to the new day without any interaction
+- **Safer edits**: before changing a task line the plugin checks it still matches what the view showed; if the note changed in the meantime it finds the exact line or cancels with a notice instead of editing another task
+
+### v1.1.11
 - **Android phone and tablet layout fixes**: Obsidian's mobile styles were distorting several controls. Fixed the calendar view-type buttons (their icons were invisible), the date picker (clipped on the right), the Day view sidebar toggle, the Habit Routine completion circle (oval), Habit Grid and Weekly cells (rectangular cells, shifted and cut streak pills), and buttons in the Task Modal, the Habit Editor and the Table
 - **Habit Routine** on narrow screens: habit names are visible again, long area tags no longer overflow their pill, and clicking a habit name opens the Habit Editor (double-click opens its note), like Grid, Weekly and List; the hover-only action buttons are hidden on touch devices
 - **Dark themes**: header tab labels and icons are readable without hovering
@@ -119,17 +130,18 @@ See the [full changelog](#changelog) below for older versions.
 - Customizable widgets
 
 #### List View
-- Compact task rows with priority cues and a clear folder hierarchy
-- Hierarchical (folder tree) or flat view, switched with one button
-- Collapsible folder groups
-- Click a task to edit it in the task modal; double-click to open its note
+- Compact task rows with priority cues, plus start, scheduled and due dates when a task has them
+- Shares the **Tasks** tab with the Table view (List | Table switch)
+- Search, filter chips (Priority, Status, Area, Start, Scheduled, Due), grouping and sort order
+- Group by area and sub-area (nested), folder, status, priority, tags or due date; collapsible groups
+- Click a task to edit it in the task modal; double-click to open its note; right-click to change its status
 
 #### Table View
-- Spreadsheet-style task management
-- Customizable columns and layouts
-- Sortable and resizable columns
+- Spreadsheet-style task management, in the same **Tasks** tab and with the same filter bar as the List view
+- Start, Scheduled, Due and Closed date columns (hidden when no task has that date)
+- Sortable and resizable columns that fit the available width
+- Grouping with collapsible group headers
 - Quick entry and editing of task attributes
-- CSV export capabilities
 - Conditional formatting
 
 #### Calendar View
@@ -153,7 +165,8 @@ See the [full changelog](#changelog) below for older versions.
 ### 🔧 General Capabilities
 - ✅ Parse and track tasks from your entire vault
 - ✅ Compatible with [Obsidian Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) syntax
-- ✅ Real-time task updates
+- ✅ Real-time task updates, with views that refresh by themselves
+- ✅ Areas and sub-areas derived from your folder structure
 - ✅ Built-in Habit Tracker module (Grid, Routine, Dashboard, Weekly and Table views, plus a habit creator/editor)
 - ✅ Customizable interface with themes support
 - ✅ Keyboard shortcuts for common actions
@@ -211,16 +224,15 @@ See the [full changelog](#changelog) below for older versions.
 1. Click the **Agenda icon** in the left sidebar ribbon
 2. Select your preferred view type:
    - **Overview** - Dashboard with key metrics
-   - **List** - Detailed task list
-   - **Table** - Spreadsheet view
+   - **List / Table** - One "Tasks" tab with a List | Table switch
    - **Calendar** - Calendar visualization
 3. Your tasks will automatically populate from your vault
 
 ### Common Actions
-- **Filter tasks** - Use the filter panel to narrow down tasks
+- **Filter tasks** - Click **+ Filter** (List and Table views) and pick a type and a value
 - **Create task** - Use Ctrl+P or the create button
 - **Edit task** - Click any task to edit inline or in modal
-- **Sort tasks** - Click column headers to sort (List and Table views)
+- **Sort tasks** - Use the sort selector, or click column headers (Table view)
 
 For comprehensive guides, visit the [Wiki](https://github.com/elias-shalom/obsidian-agenda/wiki).
 
@@ -258,10 +270,15 @@ A quick reference of clicks, double-clicks and drags across the plugin — handy
 |---|---|---|
 | Click | A task row/item (List or Table view) | Opens the **Edit Task** modal, prefilled with that task's data |
 | Double-click | A task row/item | Opens the underlying note, cursor on that line |
+| Right-click | A task row/item (List or Table view) | Opens a context menu to change the task's status |
+| Click | **List \| Table** switch (Tasks tab) | Switches mode, keeping search, filters, grouping and sort order |
+| Click | **+ Filter** (List or Table view) | Opens menus to pick a filter type and value (Area asks for a sub-area too) |
+| Click | A filter chip's ×, or **Clear** | Removes that filter, or all of them (search is not cleared) |
+| Click | A group header (List or Table view) | Collapses or expands that group; its state is remembered |
 | Click | A column header (Table view) | Sorts by that column; click again to reverse. Sorting is also keyboard-accessible with Enter or Space |
 | Hover or keyboard focus | A control or widget with a tooltip | Shows a themed tooltip with its explanatory text |
 
-Table filters and search are remembered when you return from editing a task or switch views. Column widths adapt to the rows visible after filtering.
+Search, filters, grouping and sort order are shared by the List and Table views and remembered when you return from editing a task or switch views. Column widths adapt to the rows visible after filtering.
 
 ### 🔥 Habit Tracker
 
@@ -326,10 +343,11 @@ The plugin recognizes and properly handles all standard Obsidian Tasks metadata,
 - **List View: Days to Show** (new in 1.1.10) - Number of days shown in the calendar's List view window (7–14, default 14)
 
 ### Filtering & Sorting
-- **Date Filters** - Filter by today, overdue, upcoming, or custom ranges
-- **Priority Filters** - Show tasks by priority level
-- **Tag Filters** - Filter by task tags
-- **Folder Filters** - Organize by file location
+- **Type filters** (+ Filter, List and Table views) - Priority, Status, Area (with sub-area), Start, Scheduled and Due
+- **Date filters** - Each of Start, Scheduled and Due: With date, Overdue/Past, Today, Next 7 days, Future or No date ("Overdue" counts only open tasks)
+- **Search** - Free text over the task description
+- **Grouping** - None, Area and sub-area, Folder, Status, Priority, Tags or Due date
+- **Sorting** - Priority, Status, Task, Area, Start, Scheduled, Due, Closed or Tags (ascending or descending)
 
 ### Advanced Options
 - **Keyboard Shortcuts** - Customize shortcuts for common actions, including inserting a task field from the editor without opening a modal
@@ -350,6 +368,20 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 ---
 
 ## 📋 Changelog
+
+### Version 1.1.12 🗂️
+- **Shared building blocks**: a generic grouping engine (`groupTasksByField`), a shared filter bar and view state, and a shared gesture helper (`attachTaskGestures`) now used by the calendar, List and Table; the calendar and these views no longer carry their own copies
+- **Areas and sub-areas** (`src/core/area.ts`): area = first folder of the note, sub-area = the remaining folder path without depth limit, "No area" for notes in the vault root. Added Area and Sub-area filters (the sub-area appears once an area is chosen) and area/sub-area grouping with colored headers; tasks directly in an area's folder are listed last under "No sub-area", and sorting by Area follows the same rule
+- **One Tasks tab**: `list-view` and `table-view` stay registered (saved workspaces keep working) and a segmented **List | Table** switch moves between them, keeping search, filters, grouping and sort order. The tab opens the last mode used; `showListTab`/`showTableTab` now control which modes are available, and with only one visible the switch is hidden
+- **Filter bar with chips**: the old combos became a **+ Filter** button with native step-by-step menus (type, value and, for Area, sub-area), a row of removable chips with **Clear**, and search that moves to its own line on narrow windows. The "All tasks" status option, which was easy to misread, is gone
+- **Grouping and sorting** in List and Table: None, Area and sub-area, Folder (flat), Status, Priority, Tags, Due date; sort by Priority, Status, Task, Area, Start, Scheduled, Due, Closed, Tags. Table group headers collapse and remember their state
+- **Table dates**: the Dates column was split into **Start** (creation date below), **Scheduled** (time and duration below), **Due** and **Closed** (done or cancelled); each column is hidden when no loaded task has a value for it (decided on all loaded tasks, so the table does not change shape while filtering). The Folder column became **Area**, the file path is shown small under the task, row numbers were removed and Priority, Status and Task are narrower
+- **Fit to width**: Table columns shrink proportionally to the real container width (window on desktop, device width on tablets and phones) without going below their minimum; the Task text wraps and the layout is `table-layout: fixed`
+- **Date filters per type**: the single Date filter became Due, Start and Scheduled, sharing With date, Overdue/Past, Today, Next 7 days, Future and No date, compared by day. "Overdue" counts only open tasks (not done, cancelled or non-task); the texts "Overdue today" and "Overdue this week" were corrected to "Due today" and "Due in the next 7 days"; "With date" and "No date" now apply to the chosen type. Saved filter values keep working
+- **List**: shows the start (🛫), scheduled (⏳ with 🕐) and due (📅) dates of each task when present, and gained the right-click status menu
+- **Automatic refresh**: `TaskManager` emits `tasks:changed` only when the signature of the task lines changes (debounced, and only while a view is listening), `HabitManager` emits `habits:updated` when the habit folder content changes, and a `DayChangeWatcher` emits `day:changed` at local midnight. Views redraw through a `RefreshScheduler` (0.4 s), keep their scroll position, skip the loading skeleton, wait while a modal, menu, date picker, drag or text field is active, and refresh when they become visible again if they were hidden; a refresh after the view's own edit is skipped. The Habit Routine and the "today" highlights now change day without interaction
+- **Ids and safe writes**: `Task.id` is now always the position (`path#line`) and the `🆔` has its own field; writers compare the expected line text before writing and, if it differs, look for the exact line or cancel with a notice. The fallback extractor no longer numbers lines by task count instead of file position
+- Table custom columns and CSV export, announced earlier but never implemented, were removed from the README and the user guide until they ship
 
 ### Version 1.1.11 🛠️
 - **Android layout fixes**: Obsidian's mobile and tablet styles pad every `<button>` with 20 px on each side and give it a taller height, which broke fixed-size and icon buttons. Overrode that padding on the calendar view-type switcher (icons were collapsing to zero width), the date picker cells and header, the Day view sidebar toggle, the Habit Routine completion circle, the Habit Grid and Weekly cells, the Task Modal priority/status pills, date triggers and advanced-fields toggle, the Habit Editor chip remove button, the Table search clear button and the habit "+" and related-file buttons
@@ -506,12 +538,10 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 
 ## 🗓️ Planned for Future Versions
 
-- ⬜ Areas and sub-areas for tasks, based on folders
-- ⬜ One "Tasks" tab combining the List and Table views, with search, filters, grouping and sorting
-- ⬜ Table: customizable columns and layout, and CSV export
 - ⬜ "What's new" notice after updating
 - ⬜ Kanban and Gantt views
 - ⬜ Custom task statuses and closer compatibility with the Tasks plugin
+- ⬜ Table: customizable columns and layout, and CSV export
 - ⬜ Google Calendar sync, followed by Google Tasks and Microsoft
 
 ---

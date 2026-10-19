@@ -12,25 +12,54 @@ A dashboard-style summary of your tasks, meant to be the first thing you check. 
 - Overdue tasks highlighted for visibility.
 - Customizable widgets.
 
+## The Tasks tab: List and Table
+
+The List and Table views share one **Tasks** tab. A **List | Table** switch at the left of the toolbar changes mode, and everything you set — search, filters, grouping and sort order — carries over and is remembered, also when you come back from editing a task. The tab opens in the last mode you used. If you hide one of the two in **Settings ▸ Tab Visibility**, the switch disappears and the tab opens the one that remains.
+
+Both views refresh by themselves shortly after a change in your notes, keeping your scroll position, filters and collapsed groups (see [Automatic refresh](#automatic-refresh)).
+
+### Filter bar
+
+- **Search** — type to filter by the task description. It stays on the right of the toolbar and moves to its own line on narrow windows.
+- **+ Filter** — opens menus in steps: first the type, then the value. The types are **Priority**, **Status**, **Area** (it asks for a sub-area afterwards), **Start date**, **Scheduled date** and **Due date**.
+- **Chips** — each active filter appears as a chip on a second row. Remove one with its ×, or use **Clear** to remove them all (the search text is kept).
+- **Group by** and **Sort by** — two selectors, plus an ascending/descending toggle.
+
+The three date filters offer the same values, compared by day: **With date**, **Overdue** (or **Past** for Start and Scheduled), **Today**, **Next 7 days**, **Future** and **No date**. For Due, *Overdue* counts only open tasks — a done or cancelled task is never overdue. Filters of different types combine with "and".
+
+### Areas and sub-areas
+
+A task's **area** is the first folder of the note it lives in, and its **sub-area** is the rest of the folder path, at any depth (`Work/Clients/Acme.md` → area `Work`, sub-area `Clients`). Notes in the vault root belong to **No area**. Nothing to configure — areas follow your folders.
+
+- Pick an area in **+ Filter ▸ Area**, then optionally one of its sub-areas.
+- Group by **Area and sub-area** to get a tree with colored headers. Tasks that sit directly in the folder of an area (or sub-area) that also has sub-areas are listed last, under **No sub-area**.
+
+### Grouping and sorting
+
+- **Group by**: No grouping, Area and sub-area, Folder (one flat group per area), Status, Priority, Tags or Due date. Group headers collapse and expand, and each remembers its state. The List groups by area by default and the Table does not group by default.
+- **Sort by**: Priority, Status, Task, Area, Start, Scheduled, Due, Closed or Tags. In the Table you can also click a column header. When you sort by a date, tasks without that date go last.
+
 ## List view
 
-A compact list of tasks grouped by folder, best for working through your vault's tasks one by one.
+A compact list of tasks, best for working through your vault's tasks one by one.
 
-- Compact rows with priority cues and a clear folder hierarchy.
-- Hierarchical (folder tree) or flat view, switched with one button.
-- Collapsible folder groups.
-- Click a task to edit it in the modal; double-click to open its note (see [8. Gestures and Interactions](07-gestures.md)).
+- Compact rows with priority cues; each task shows its start (🛫), scheduled (⏳, with its time) and due (📅) dates when it has them, and the note's path when the grouping does not already show it.
+- Grouped by area and sub-area by default; any other grouping is available from the selector.
+- Click a task to edit it in the modal; double-click to open its note; right-click to change its status (see [8. Gestures and Interactions](07-gestures.md)).
 
 ## Table view
 
 A spreadsheet-style grid, best when you want to scan, sort, and compare many tasks at a glance.
 
-- Customizable columns and layout.
-- Sortable and resizable columns — click a column header to sort, click again to reverse.
+- Columns: priority, status, task (with the note's path below it), area, **Start**, **Scheduled**, **Due**, **Closed** and tags. Each date appears with its icon: Start shows the creation date (➕) below it, Scheduled shows its time and duration, and Closed shows the done (✅) or cancelled (❌) date. A date column is hidden when none of your tasks has that date, and overdue or due-today dates of open tasks are highlighted.
+- The header of the first column shows the total number of tasks shown.
+- Sortable and resizable columns — click a column header to sort, click again to reverse. Columns also shrink to fit the width of the window or device, down to a minimum width, so on a phone you may still scroll sideways.
 - Quick entry and editing of task attributes directly in the grid.
 - Status and priority cues, compact date/tag styling, conditional formatting.
-- CSV export.
-- Search, filters, and sort order are remembered when you return from editing a task or switch views; column widths adapt to the rows visible after filtering.
+
+## Automatic refresh
+
+Views update on their own about half a second after something changes in your notes, so you don't need to switch tabs to see an edit made in another pane. Saving a note without touching a task does not redraw anything. Scroll position, search, filters and collapsed groups are kept, and the refresh waits while a modal, menu, date picker, drag or text field is in use. A view in a background tab updates when you return to it. At midnight, the views switch to the new day (the "today" marks, the Habit Routine) without any interaction.
 
 ## Next steps
 

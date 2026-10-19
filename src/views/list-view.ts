@@ -1,22 +1,31 @@
 import { WorkspaceLeaf } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask, FolderNode, ListViewData, AgendaPlugin } from '../types/interfaces';
+import { ITask, ListViewData, AgendaPlugin } from '../types/interfaces';
 import { I18n } from '../core/i18n';
-import Handlebars from 'handlebars';
-import { EDIT_TASK_MODAL_TYPE } from '../core/modal-manager';
-
-const TASK_CLICK_DELAY_MS = 250;
+import { TaskWriter } from '../core/task-writer';
+import { attachTaskGestures, TASK_GESTURE_IGNORE_SELECTOR } from '../core/task-gestures';
+import { TaskFilterBar, buildTaskModeSwitch } from '../core/task-filter-bar';
+import { TaskViewState, TASK_MODE_VIEWS, loadTaskViewState, persistTaskViewState, saveTaskViewMode, filterTasksByViewState } from '../core/task-view-state';
+import { TASK_SORT_COLUMNS, sortTasksByColumn } from '../core/task-column-sort';
+import { TASK_GROUP_OPTIONS, groupTasksForView, toGroupViewModels } from '../core/task-grouping';
 
 export const LIST_VIEW_TYPE = 'list-view';
 
+/** Agrupado que usa la Lista cuando el usuario aún no eligió uno (el árbol de carpetas de siempre). */
+const LIST_DEFAULT_GROUP = 'area';
+
 export class ListView extends BaseView {
   private tasks: ITask[] = []; // Lista de tareas
-  private isHierarchicalView: boolean = true; // Modo predeterminado: jerárquico
+  private viewState!: TaskViewState;
+  private filterBar: TaskFilterBar | null = null;
+  private content: HTMLElement | null = null;
+  private taskWriter: TaskWriter;
 
   constructor(leaf: WorkspaceLeaf, private plugin: AgendaPlugin, private i18n: I18n, private taskManager: TaskManager) {
     // Constructor de la clase ListView
     super(leaf); 
+    this.taskWriter = new TaskWriter(this.app);
   }
 
   getViewType(): string {
@@ -31,76 +40,62 @@ export class ListView extends BaseView {
     return 'list-todo';
   }
 
-  /**
-   * Alternar entre vista jerárquica y plana
-   */
-  private toggleViewMode(): void {
-    this.isHierarchicalView = !this.isHierarchicalView;
-    this.onOpen().catch(console.error); // Recargar la vista con el nuevo modo
-  }
-
   async onOpen(): Promise<void> {
     this.showLoadingOverlay(5, false);
 
     this.tasks = await this.getAllTasks(this.taskManager); // Cargar tareas
 
-    // Siempre crear la estructura jerárquica
-    const hierarchicalTasks = this.groupTasksByFolder(this.tasks);
-    
-    // Crear estructura plana si es necesario
-    const flattenedTasks = this.isHierarchicalView ? null : this.flattenTaskHierarchy(hierarchicalTasks);
-    
-    // Renderizar con ambas estructuras disponibles
-    await this.render(LIST_VIEW_TYPE, { 
-      tasks: this.tasks, 
-      groupedTasks: hierarchicalTasks,
-      flattenedTasks: flattenedTasks,
-      isHierarchicalView: this.isHierarchicalView
-    }, this.i18n, this.plugin, this.leaf);
+    // El estado se comparte con otras vistas de tareas: se lee al abrir y se escribe al cambiar.
+    const saved = loadTaskViewState(this.app);
+    if (!TASK_SORT_COLUMNS.some(column => column.value === saved.sortColumn)) saved.sortColumn = 'priority';
+
+    // La pestaña «Tareas» abre el último modo usado
+    saveTaskViewMode(this.app, 'list');
+    saved.mode = 'list';
+
+    // La barra se crea antes de dibujar porque reajusta el área guardada si ya no tiene tareas.
+    this.filterBar = new TaskFilterBar({
+      i18n: this.i18n,
+      tasks: this.tasks,
+      state: { ...saved, group: saved.group || LIST_DEFAULT_GROUP },
+      modeSwitch: buildTaskModeSwitch(this.i18n, this.plugin.settings, 'list', (mode) => {
+        saveTaskViewMode(this.app, mode);
+        this.plugin.viewManager.activateView(TASK_MODE_VIEWS[mode], this.leaf);
+      }),
+      groupOptions: TASK_GROUP_OPTIONS.map(({ value, labelKey }) => ({
+        value,
+        label: value === 'none' ? this.i18n.t(labelKey) : `${this.i18n.t('group_by')}: ${this.i18n.t(labelKey)}`,
+      })),
+      sortOptions: TASK_SORT_COLUMNS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
+      onChange: (state, changed) => {
+        this.viewState = state;
+        persistTaskViewState(this.app, state, changed);
+        this.refreshBody().catch(console.error);
+      },
+    });
+    this.viewState = this.filterBar.getState();
+
+    await this.render(LIST_VIEW_TYPE, this.buildViewData(), this.i18n, this.plugin, this.leaf);
   }
 
-  protected registerViewSpecificHelpers(_i18n: I18n): void {
-    // Helper para calcular el número total de tareas, incluyendo subcarpetas
-    Handlebars.registerHelper("totalTaskCount", function(folder) {
-      if (!folder) return 0;
-      
-  // Función recursiva para contar tareas
-  function countAllTasks(folderNode: import("../types/interfaces").FolderNode) {
-        // Contar tareas directas
-        let count = folderNode.tasks ? folderNode.tasks.length : 0;
-        
-        // Contar tareas en subcarpetas
-        if (folderNode.subfolders) {
-          Object.values(folderNode.subfolders).forEach(subfolder => {
-            count += countAllTasks(subfolder);
-          });
-        }
-        
-        return count;
-      }
-      
-      return countAllTasks(folder as FolderNode);
-    });
+  /** Aplica búsqueda, filtros, orden y agrupado del estado compartido. */
+  private buildViewData(): ListViewData {
+    const sorted = sortTasksByColumn(
+      filterTasksByViewState(this.tasks, this.viewState),
+      this.viewState.sortColumn,
+      this.viewState.sortDirection
+    );
+    const group = this.viewState.group || LIST_DEFAULT_GROUP;
+    const groups = groupTasksForView(sorted, group, key => this.i18n.t(key));
 
-    // Helper para recorrer recursivamente la estructura de carpetas
-    Handlebars.registerHelper("renderFolderHierarchy", function(folder: FolderNode, options: Handlebars.HelperOptions) {
-      let output = '';
-      if (!folder) return output;
-      
-      // Renderizar tareas directas de esta carpeta
-      if (folder.tasks && folder.tasks.length > 0) {
-        output += options.fn({ folderName: folder.name, fullPath: folder.fullPath, tasks: folder.tasks, level: 0 });
-      }
-      
-      // Recorrer subcarpetas recursivamente
-      if (folder.subfolders) {
-        Object.values(folder.subfolders).forEach(subfolder => {
-          output += Handlebars.helpers.renderFolderHierarchy(subfolder, options);
-        });
-      }
-      
-      return new Handlebars.SafeString(output);
-    });
+    return {
+      tasks: sorted,
+      groups: toGroupViewModels(groups, group),
+      flatTasks: sorted,
+      // El árbol de áreas ya indica dónde está cada nota; los demás agrupados no.
+      showPath: group !== 'area',
+      vaultHasTasks: this.tasks.length > 0,
+    };
   }
 
   /**
@@ -109,42 +104,57 @@ export class ListView extends BaseView {
    * @param data Datos utilizados para renderizar la vista
    */
   protected setupViewSpecificEventListeners(container: HTMLElement, _data: ListViewData): void {
-    // Implementar los listeners específicos de ListView
-    const viewToggleButton = container.querySelector('.oa-view-toggle-button');
-    if (viewToggleButton) {
-      viewToggleButton.addEventListener('click', () => {
-        this.toggleViewMode();
-      });
-    }
+    this.content = container;
 
-    // 1. Eventos para carpetas (igual que en BaseView)
+    const toolbar = container.querySelector<HTMLElement>('.oa-list-toolbar');
+    if (toolbar) this.filterBar?.mount(toolbar);
+
+    this.wireBody(container);
+  }
+
+  /** Vuelve a dibujar solo la lista (no la barra) tras un cambio de filtro, orden o agrupado. */
+  private async refreshBody(): Promise<void> {
+    const container = this.content;
+    if (!container) return;
+
+    const staging = createDiv();
+    await this.renderTemplate(staging, LIST_VIEW_TYPE, this.buildViewData());
+    const nextBody = staging.querySelector('.oa-list-body');
+    if (!nextBody) return;
+
+    container.querySelector('.oa-list-body')?.replaceWith(nextBody);
+    this.wireBody(container);
+  }
+
+  private wireBody(container: HTMLElement): void {
+    container.querySelectorAll<HTMLElement>('.oa-folder-group[data-group-color]').forEach(group => {
+      group.setCssProps({ '--oa-group-color': group.dataset.groupColor ?? '' });
+    });
+
+    // Plegar y desplegar grupos (el estado se recuerda por clave)
     this.addFolderToggleListeners(container);
 
-    // 2. Eventos para tareas (personalizado para ListView)
-    const taskItems = container.querySelectorAll('.oa-task-item');
-
-    taskItems.forEach(item => {
+    container.querySelectorAll<HTMLElement>('.oa-task-item').forEach(item => {
       // Añadir indicador visual
       item.addClass('clickable');
-      let pendingClickTimer: number | null = null;
 
-      // Evento de doble clic para abrir el archivo
-      item.addEventListener('dblclick', () => {
-        if (pendingClickTimer !== null) {
-          window.clearTimeout(pendingClickTimer);
-          pendingClickTimer = null;
-        }
-
-        const filePath = item.getAttribute('data-file-path');
-        const lineNumber = item.getAttribute('data-line-number');
-
-        if (filePath) {
-          this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined).catch(console.error);
-        }
+      // Clic edita, doble clic abre el archivo y clic derecho cambia el estado (gestos compartidos).
+      attachTaskGestures(item, {
+        plugin: this.plugin,
+        i18n: this.i18n,
+        taskWriter: this.taskWriter,
+        getTask: () => {
+          const filePath = item.getAttribute('data-file-path');
+          const lineNumber = Number(item.getAttribute('data-line-number'));
+          return this.tasks.find(candidate => candidate.file.path === filePath && candidate.line.number === lineNumber);
+        },
+        onChanged: () => this.refreshView(),
+        openFile: (filePath, lineNumber) => this.openTaskFile(filePath, lineNumber),
+        ignoreSelector: TASK_GESTURE_IGNORE_SELECTOR,
       });
 
       item.addEventListener('click', (event) => {
-        if ((event.target as HTMLElement).closest('button, a, input, select')) return;
+        if ((event.target as HTMLElement).closest(TASK_GESTURE_IGNORE_SELECTOR)) return;
 
         // Remover selección previa
         container.querySelectorAll('.oa-task-item.selected').forEach(el => {
@@ -153,70 +163,8 @@ export class ListView extends BaseView {
 
         // Marcar como seleccionada
         item.addClass('selected');
-
-        if (pendingClickTimer !== null) return;
-        pendingClickTimer = window.setTimeout(() => {
-          pendingClickTimer = null;
-          const filePath = item.getAttribute('data-file-path');
-          const lineNumber = item.getAttribute('data-line-number');
-          const task = this.tasks.find(candidate =>
-            candidate.file.path === filePath && candidate.line.number === Number(lineNumber)
-          );
-          if (task) this.openEditTaskModal(task);
-        }, TASK_CLICK_DELAY_MS);
       });
     });
-
-  }
-
-  private openEditTaskModal(task: ITask): void {
-    this.plugin.modalManager.openModal(EDIT_TASK_MODAL_TYPE, {
-      task,
-      onSaved: () => this.onOpen().catch(console.error),
-    });
-  }
-
-  /**
-   * Crea una estructura plana agrupando todas las tareas por carpeta principal
-   * @param groupedTasks Estructura jerárquica de tareas
-   * @returns Estructura plana con tareas agrupadas solo por carpeta principal
-   */
-  private flattenTaskHierarchy(groupedTasks: Record<string, FolderNode>): Record<string, FolderNode> {
-    const flattenedStructure: Record<string, FolderNode> = {};
-
-    // Función recursiva para recorrer la estructura jerárquica
-    const processFolderRecursive = (folder: FolderNode, parentFolder?: string) => {
-      const rootFolder = parentFolder || folder.name || 'Sin carpeta';
-
-      // Inicializar la carpeta raíz si no existe
-      if (!flattenedStructure[rootFolder]) {
-        flattenedStructure[rootFolder] = {
-          tasks: [],
-          name: rootFolder,
-          fullPath: rootFolder,
-          subfolders: {}
-        };
-      }
-
-      // Añadir tareas directas de esta carpeta a la carpeta raíz
-      if (folder.tasks && folder.tasks.length > 0) {
-        flattenedStructure[rootFolder].tasks.push(...folder.tasks);
-      }
-
-      // Procesar subcarpetas recursivamente
-      if (folder.subfolders) {
-        Object.values(folder.subfolders).forEach((subfolder: FolderNode) => {
-          processFolderRecursive(subfolder, rootFolder);
-        });
-      }
-    };
-
-    // Iniciar el proceso para cada carpeta de nivel superior
-    Object.values(groupedTasks).forEach((folder: FolderNode) => {
-      processFolderRecursive(folder);
-    });
-
-    return flattenedStructure;
   }
 
   async onClose(): Promise<void> {

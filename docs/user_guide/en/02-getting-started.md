@@ -11,8 +11,7 @@ By default, all view families are visible. You can hide the ones you don't use f
 | Tab | What it's for |
 |---|---|
 | **Overview** | A dashboard with key metrics, upcoming/overdue tasks and progress widgets |
-| **List** | A compact list of tasks grouped by folder |
-| **Table** | A spreadsheet-style grid of tasks, with sortable columns |
+| **Tasks** | One tab with a **List \| Table** switch: a compact list grouped by area, or a spreadsheet-style grid, both with search, filters, grouping and sorting |
 | **Calendar** | Six calendar layouts to see tasks against a timeline |
 | **Habits** | The Habit Tracker module (separate from tasks — see [6. Habit Tracker](05-habit-tracker.md)) |
 
@@ -36,11 +35,11 @@ Click a task (in any view) to open the same modal, prefilled with its current da
 
 | Action | How |
 |---|---|
-| Filter tasks | Use the filter panel (Table view) |
+| Filter tasks | **+ Filter** in the Tasks tab (List and Table) |
 | Create a task | `Ctrl+P`, the create button, or double-click in a calendar view |
 | Edit a task | Click the task |
 | Open the note behind a task | Double-click the task |
-| Sort tasks | Click a column header (List/Table views) |
+| Sort tasks | The **Sort by** selector, or a column header (Table) |
 
 ## Next steps
 

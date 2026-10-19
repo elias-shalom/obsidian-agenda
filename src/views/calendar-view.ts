@@ -1,4 +1,4 @@
-import { WorkspaceLeaf, Plugin, Notice, setIcon, Menu } from 'obsidian';
+import { WorkspaceLeaf, Plugin, Notice, setIcon } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
 import { ITask, CalendarViewData, AgendaPlugin } from '../types/interfaces';
@@ -6,27 +6,12 @@ import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import Handlebars from 'handlebars';
 import { CalendarViewType } from '../types/enums';
-import { CoreTaskStatus, CoreTaskStatusIcon } from '../types/enums';
-import { TaskWriter } from '../core/task-writer';
-import { upsertSimpleDate, upsertScheduledDate, upsertTaskStatus } from '../core/task-line-fields';
-import { buildRecurrenceOccurrence } from '../core/task-recurrence';
-import { EDIT_TASK_MODAL_TYPE } from '../core/modal-manager';
+import { TaskWriter, TaskLineWrite } from '../core/task-writer';
+import { upsertSimpleDate, upsertScheduledDate } from '../core/task-line-fields';
+import { attachTaskGestures, TASK_CLICK_DELAY_MS } from '../core/task-gestures';
 import { getReferenceDate, setReferenceDate } from '../core/calendar-reference-date';
 import { CalendarDatePicker } from '../core/calendar-date-picker';
 import { clearTooltips } from '../core/tooltips';
-
-/** Espera entre un `click` y un posible segundo `click` antes de asumir que no viene un `dblclick` (ms). */
-const TASK_CLICK_DELAY_MS = 250;
-
-/** Opciones del menú contextual de estado (v1.1.10, Manejo de estatus §14.3), en orden de flujo de trabajo. */
-const STATUS_MENU_OPTIONS: { status: CoreTaskStatus; icon: string; labelKey: string }[] = [
-  { status: CoreTaskStatus.Todo, icon: CoreTaskStatusIcon.Todo, labelKey: 'status_todo' },
-  { status: CoreTaskStatus.InProgress, icon: CoreTaskStatusIcon.InProgress, labelKey: 'status_in_progress' },
-  { status: CoreTaskStatus.OnHold, icon: CoreTaskStatusIcon.OnHold, labelKey: 'status_on_hold' },
-  { status: CoreTaskStatus.Done, icon: CoreTaskStatusIcon.Done, labelKey: 'status_done' },
-  { status: CoreTaskStatus.Cancelled, icon: CoreTaskStatusIcon.Cancelled, labelKey: 'status_cancelled' },
-  { status: CoreTaskStatus.nonTask, icon: CoreTaskStatusIcon.nonTask, labelKey: 'status_non_task' },
-];
 
 export const CALENDAR_VIEW_TYPE = 'calendar-view';
 
@@ -333,39 +318,18 @@ export abstract class CalendarView extends BaseView {
   // Event listeners para tareas
     const taskItems = container.querySelectorAll<HTMLElement>('.oa-calendar-task');
     taskItems.forEach(item => {
-      // Clic simple: abre el modal de edición; doble clic: abre el archivo (v1.1.4).
-      // Un doble clic real también dispara dos `click` sueltos antes del `dblclick`, así que
-      // el primer clic espera un poco por si llega un segundo antes de abrir el modal.
-      let pendingClickTimer: number | null = null;
-
-      item.addEventListener('click', (e) => {
-        const target = e.currentTarget as HTMLElement;
-        if (pendingClickTimer !== null) return;
-
-        pendingClickTimer = window.setTimeout(() => {
-          pendingClickTimer = null;
-          const filePath = target.getAttribute('data-file-path');
-          const lineNumber = target.getAttribute('data-line-number');
-          if (!filePath || !lineNumber) return;
-
-          const task = this.tasks.find(t => t.file.path === filePath && t.line.number === Number(lineNumber));
-          if (task) this.openEditTaskModal(task);
-        }, TASK_CLICK_DELAY_MS);
-      });
-
-      item.addEventListener('dblclick', (e) => {
-        if (pendingClickTimer !== null) {
-          window.clearTimeout(pendingClickTimer);
-          pendingClickTimer = null;
-        }
-
-        const target = e.currentTarget as HTMLElement;
-        const filePath = target.getAttribute('data-file-path');
-        const lineNumber = target.getAttribute('data-line-number');
-
-        if (filePath) {
-          this.openTaskFile(filePath, lineNumber ? parseInt(lineNumber) : undefined).catch(console.error);
-        }
+      // Clic edita, doble clic abre el archivo y clic derecho cambia el estado (gestos compartidos).
+      attachTaskGestures(item, {
+        plugin: this.plugin as AgendaPlugin,
+        i18n: this.i18n,
+        taskWriter: this.taskWriter,
+        getTask: () => {
+          const filePath = item.getAttribute('data-file-path');
+          const lineNumber = Number(item.getAttribute('data-line-number'));
+          return this.tasks.find(t => t.file.path === filePath && t.line.number === lineNumber);
+        },
+        onChanged: () => this.refreshView(),
+        openFile: (filePath, lineNumber) => this.openTaskFile(filePath, lineNumber),
       });
 
       // Drag and drop (v1.1.4, Fase D): el `dragstart` es común a todas las vistas de calendario;
@@ -384,36 +348,6 @@ export abstract class CalendarView extends BaseView {
 
       item.addEventListener('dragend', () => {
         item.removeClass('oa-dragging');
-      });
-
-      // Menú contextual de estado (v1.1.10, §14.3): clic derecho reescribe el símbolo de la tarea.
-      item.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        const filePath = item.getAttribute('data-file-path');
-        const lineNumberAttr = item.getAttribute('data-line-number');
-        if (!filePath || !lineNumberAttr) return;
-        const lineNumber = Number(lineNumberAttr);
-
-        const menu = new Menu();
-        for (const { status, icon, labelKey } of STATUS_MENU_OPTIONS) {
-          menu.addItem((menuItem) => menuItem
-            .setTitle(`${icon} ${this.i18n.t(labelKey)}`)
-            .onClick(() => {
-              const todayIso = DateTime.now().toFormat('yyyy-MM-dd');
-              const task = this.tasks.find(t => t.file.path === filePath && t.line.number === lineNumber);
-              // Calculado antes de escribir: necesita la recurrencia/fechas tal como están ahora (ADR-R1).
-              const nextOccurrenceLine = task ? buildRecurrenceOccurrence(task, status) : null;
-
-              this.taskWriter.updateTaskLine(filePath, lineNumber, (line) => upsertTaskStatus(line, status, todayIso))
-                .then(async ok => {
-                  if (!ok) return;
-                  if (nextOccurrenceLine) await this.taskWriter.insertLineAbove(filePath, lineNumber, nextOccurrenceLine);
-                  await this.refreshView();
-                })
-                .catch(console.error);
-            }));
-        }
-        menu.showAtMouseEvent(e);
       });
     });
 
@@ -521,15 +455,28 @@ export abstract class CalendarView extends BaseView {
     const transform = this.buildDateFieldTransform(payload.calendarDateType, newIsoDate);
     if (!transform) return;
 
-    this.taskWriter.updateTaskLine(payload.filePath, payload.lineNumber, transform)
-      .then(ok => {
-        if (ok) {
-          this.refreshView().catch(console.error);
-        } else {
-          new Notice(this.i18n.t('task_drag_drop_error'));
-        }
+    this.writeTaskLine(payload.filePath, payload.lineNumber, transform)
+      .then(written => {
+        if (written) this.refreshView().catch(console.error);
       })
       .catch(console.error);
+  }
+
+  /**
+   * Reescribe una tarea de la vista con escritura segura: el texto esperado es el de la tarea tal
+   * como se dibujó. Si la nota cambió y no se puede localizar la línea, avisa y no escribe nada.
+   */
+  protected async writeTaskLine(
+    filePath: string,
+    lineNumber: number,
+    transform: (line: string) => string
+  ): Promise<TaskLineWrite | null> {
+    const task = this.tasks.find(t => t.file.path === filePath && t.line.number === lineNumber);
+    const written = task
+      ? await this.taskWriter.updateTaskLine(filePath, lineNumber, task.line.text, transform)
+      : null;
+    if (!written) new Notice(this.i18n.t('task_line_changed'));
+    return written;
   }
 
   /** Construye la transformación de línea correspondiente al tipo de fecha que ancla la tarea. */
@@ -616,15 +563,6 @@ export abstract class CalendarView extends BaseView {
     plugin.modalManager.openModal("create-task", {
       today: dateStr,
       scheduledTime,
-      onSaved: () => this.refreshView().catch(console.error),
-    });
-  }
-
-  /** Abre el modal de edición para una tarea (clic simple sobre su píldora, v1.1.4). */
-  private openEditTaskModal(task: ITask): void {
-    const plugin = this.plugin as AgendaPlugin;
-    plugin.modalManager.openModal(EDIT_TASK_MODAL_TYPE, {
-      task,
       onSaved: () => this.refreshView().catch(console.error),
     });
   }

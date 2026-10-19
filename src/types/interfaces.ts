@@ -113,6 +113,8 @@ export interface ITaskSection {
  * Configuración de flow de la tarea
  */
 export interface ITaskFlow {
+  /** Valor de 🆔 (cadena vacía si la línea no lo tiene); no identifica la posición, para eso está `ITask.id`. */
+  id: string;
   repeat: string;
   blockLink: string;
   dependsOn: string[];
@@ -123,6 +125,7 @@ export interface ITaskFlow {
  * Nueva interfaz principal para una tarea optimizada
  */
 export interface ITask {
+  /** Posición de la tarea, `ruta#línea` (línea en base 1); cambia si la línea se mueve, no se guarda. */
   id: string;
   file: ITaskFile;
   line: ITaskLine;
@@ -277,6 +280,8 @@ export interface TaskFilterCriteria {
   // Filtros de ubicación
   location?: {
     folder?: string;                   // Carpeta donde se encuentra la tarea
+    area?: string;                     // Área: primera carpeta de la ruta de la nota
+    subArea?: string;                  // Sub-área: resto de la ruta de carpetas; coincide por prefijo
     file?: string;                     // Archivo específico
   };
   
@@ -315,7 +320,7 @@ export interface ModalOptions {
 
 export type SortField = 'dueDate' | 'startDate' | 'scheduledDate' | 'doneDate' | 'createdDate' | 'priority' | 'status' | 'text' | 'path';
 
-export type GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags';
+export type GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags' | 'area';
 
 export type ModalType = "create-task" | "edit-task" | "quick-capture"; // Extensible
 
@@ -405,9 +410,32 @@ export type DurationTaskSegment = ITask & {
  * Datos para la vista de tabla
  */
 export interface TableViewData {
+  /** Tareas filtradas y ordenadas. */
   tasks: ITask[];
-  uniqueFolders: string[];
+  /** Filas a dibujar: cabeceras de grupo y tareas, en orden. */
+  rows: TableRow[];
+  /** Qu\u00e9 columnas se dibujan (las de fechas se ocultan si ninguna tarea cargada tiene valor). */
+  columns: Record<string, boolean>;
+  /** Cu\u00e1ntas columnas se dibujan, para el `colspan` de las cabeceras de grupo. */
+  columnCount: number;
+  /** Hay tareas en el vault, aunque los filtros las oculten (cambia el mensaje de tabla vacía). */
+  vaultHasTasks: boolean;
 }
+
+/** Cabecera de grupo plegable de la Tabla; `level` es la profundidad (0 = primer nivel). */
+export interface TableGroupRow {
+  isGroup: true;
+  label: string;
+  storageKey: string;
+  color?: string;
+  count: number;
+  level: number;
+}
+
+/** Fila de tarea: la tarea con el estado de su vencimiento (`overdue` o `today`, solo en tareas abiertas). */
+export type TableTaskRow = ITask & { isGroup: false; dueState: 'overdue' | 'today' | '' };
+
+export type TableRow = TableGroupRow | TableTaskRow;
 
 /**
  * Interfaz extendida para tareas con edad calculada
@@ -442,14 +470,31 @@ export interface OverviewViewData {
   projectTasks: { project: string; tasks: ITask[]; }[];
 }
 
+/** Grupo de la Lista listo para dibujar: un `TaskGroup` con su total y la clave con que se recuerda su pliegue. */
+export interface TaskGroupViewModel {
+  label: string;
+  /** Clave del estado plegado en `localStorage`; las carpetas conservan la ruta de siempre. */
+  storageKey: string;
+  color?: string;
+  /** Tareas del grupo y de sus descendientes. */
+  count: number;
+  tasks: ITask[];
+  children: TaskGroupViewModel[];
+}
+
 /**
  * Datos para la vista de lista
  */
 export interface ListViewData {
   tasks: ITask[];
-  groupedTasks: Record<string, FolderNode>;
-  flattenedTasks: Record<string, FolderNode> | null;
-  isHierarchicalView: boolean;
+  /** Grupos a dibujar; vac\u00edo si no se agrupa (entonces se usa `flatTasks`). */
+  groups: TaskGroupViewModel[];
+  /** Tareas filtradas y ordenadas, sin agrupar. */
+  flatTasks: ITask[];
+  /** Mostrar la ruta de la nota en cada tarea: solo cuando el grupo no la implica. */
+  showPath: boolean;
+  /** Hay tareas en el vault, aunque los filtros las oculten (cambia el mensaje de lista vac\u00eda). */
+  vaultHasTasks: boolean;
 }
 
 /**

@@ -8,7 +8,7 @@ Accede a todos los ajustes del plugin desde **Configuración de Obsidian → Plu
 
 ## Visibilidad de pestañas
 
-- Mostrar/ocultar cada pestaña principal de forma independiente: **Vista general**, **Lista**, **Tabla**, **Calendario**.
+- Mostrar/ocultar cada pestaña principal de forma independiente: **Vista general**, **Lista**, **Tabla**, **Calendario**. Lista y Tabla son los dos modos de la pestaña **Tareas**: con ambos visibles aparece el conmutador **Lista | Tabla**, con uno visible el conmutador se oculta y con ninguno se oculta la pestaña.
 - Las pestañas del Seguimiento de hábitos tienen su propio grupo (ver **Hábitos** más abajo).
 
 ## Calendario

@@ -30,10 +30,15 @@ Una referencia rápida de cada clic, doble clic, clic derecho y arrastre en el p
 |---|---|---|
 | Clic | Una fila/elemento de tarea (vista Lista o Tabla) | Abre el modal **Editar tarea**, prellenado con los datos de esa tarea |
 | Doble clic | Una fila/elemento de tarea | Abre la nota subyacente, con el cursor en esa línea |
+| Clic derecho | Una fila/elemento de tarea | Abre un menú contextual para cambiar el estado de la tarea |
+| Clic | El conmutador **Lista \| Tabla** | Cambia de modo, conservando búsqueda, filtros, agrupado y orden |
+| Clic | **+ Filtro** | Abre menús para elegir un tipo de filtro y un valor (Área pide también una sub-área) |
+| Clic | La × de un chip de filtro, o **Limpiar** | Quita ese filtro, o todos (el texto de búsqueda se conserva) |
+| Clic | La cabecera de un grupo | Contrae o expande ese grupo; su estado se recuerda |
 | Clic | Un encabezado de columna (vista Tabla) | Ordena por esa columna; clic de nuevo para invertir. También accesible por teclado con Enter o Espacio |
 | Pasar el mouse / foco de teclado | Un control o widget con tooltip | Muestra un tooltip temático con su texto explicativo |
 
-Los filtros, la búsqueda y el orden de la Tabla se recuerdan al volver de editar una tarea o cambiar de vista; el ancho de las columnas se adapta a las filas visibles tras filtrar.
+La búsqueda, los filtros, el agrupado y el orden son comunes a las vistas Lista y Tabla y se recuerdan al volver de editar una tarea o cambiar de vista; el ancho de las columnas se adapta a las filas visibles tras filtrar.
 
 ## Seguimiento de hábitos
 

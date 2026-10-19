@@ -8,6 +8,18 @@ import { TaskPriorityEmoji } from '../types/enums';
 import headerTemplate from './templates/header.hbs';
 import { AgendaPluginSettings } from '../settings/settings';
 import { clearTooltips, installTooltips } from '../core/tooltips';
+import { groupTasksByFolder } from '../core/task-grouping';
+import { TASK_MODE_VIEWS, TaskViewMode, loadTaskViewState } from '../core/task-view-state';
+import { EventBus, EVENTS } from '../core/event-bus';
+import { RefreshScheduler } from '../core/refresh-scheduler';
+import { tasksSignature } from '../core/task-signature';
+import { captureScroll, restoreScroll } from '../core/scroll-state';
+
+/** Espera de calma antes de refrescar sola una vista (ver Arquitectura técnica §23.9). */
+const AUTO_REFRESH_DELAY_MS = 400;
+
+/** Vistas que ilumina la pestaña «Tareas». */
+const TASKS_VIEW_TYPES: string[] = Object.values(TASK_MODE_VIEWS);
 
 // Type declaration for handlebars template
 type HandlebarsTemplate = (data: ViewData) => string;
@@ -16,19 +28,99 @@ import { I18n } from '../core/i18n';
 export abstract class BaseView extends ItemView {
   private helpersRegistered = false; // Flag para verificar si los helpers ya están registrados
   private _forceNextRefresh = false;
+  private loadedSignature: string | null = null;
+  private silentRefresh = false;
+  private refreshPending = false;
+  private readonly refreshScheduler = new RefreshScheduler({
+    delayMs: AUTO_REFRESH_DELAY_MS,
+    isBusy: () => this.isInteracting(),
+    run: () => this.runAutoRefresh(),
+  });
+
+  constructor(leaf: WorkspaceLeaf) {
+    super(leaf);
+
+    const bus = EventBus.getInstance();
+    const onTasksChanged = ({ signature }: { signature: string }): void => {
+      // Una vista que nunca cargó tareas no depende de ellas; si la firma coincide, ya muestra lo último
+      if (this.loadedSignature === null || signature === this.loadedSignature) return;
+      this.refreshScheduler.request();
+    };
+    const onChange = (): void => this.refreshScheduler.request();
+
+    bus.on(EVENTS.TASKS_CHANGED, onTasksChanged);
+    bus.on(EVENTS.HABITS_UPDATED, onChange);
+    bus.on(EVENTS.DAY_CHANGED, onChange);
+    this.register(() => {
+      bus.off(EVENTS.TASKS_CHANGED, onTasksChanged);
+      bus.off(EVENTS.HABITS_UPDATED, onChange);
+      bus.off(EVENTS.DAY_CHANGED, onChange);
+      this.refreshScheduler.dispose();
+    });
+
+    // Una vista que estaba oculta se actualiza al volver a ella
+    this.registerEvent(this.app.workspace.on('active-leaf-change', () => {
+      if (this.refreshPending) this.refreshScheduler.request();
+    }));
+  }
 
   protected async getAllTasks(taskManager: TaskManager): Promise<ITask[]> {
     // console.log("Actualizando tareas"); // Debugging line
+    let tasks: ITask[];
     if (this._forceNextRefresh) {
       this._forceNextRefresh = false;
       console.debug("Forzando actualización de tareas"); // Debugging line
-      return await taskManager.forceRefreshTasks();
+      tasks = await taskManager.forceRefreshTasks();
+    } else {
+      tasks = await taskManager.getAllTasks();
     }
-    return await taskManager.getAllTasks();
+    this.loadedSignature = tasksSignature(tasks);
+    return tasks;
   }
 
   public async refreshView(): Promise<void> {
     this._forceNextRefresh = true;
+    await this.onOpen();
+    // La recarga forzada invalida la caché y avisa; no hace falta redibujar otra vez
+    this.refreshScheduler.cancel();
+  }
+
+  /** Cancela un refresco automático pendiente (la vista acaba de actualizarse por su cuenta). */
+  protected cancelAutoRefresh(): void {
+    this.refreshScheduler.cancel();
+  }
+
+  /** Hay algo en curso que un redibujado interrumpiría: modal, menú, selector de fecha, arrastre o un campo con foco. */
+  private isInteracting(): boolean {
+    if (document.body.querySelector('.modal-container, .menu, .flatpickr-calendar.open')) return true;
+    if (this.containerEl.querySelector('.oa-dragging, .oa-resizing')) return true;
+
+    const active = document.activeElement;
+    return active instanceof HTMLElement
+      && this.containerEl.contains(active)
+      && ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName);
+  }
+
+  private async runAutoRefresh(): Promise<void> {
+    if (!this.containerEl.isShown()) {
+      this.refreshPending = true;
+      return;
+    }
+    this.refreshPending = false;
+
+    const container = this.containerEl.children[1] as HTMLElement;
+    const snapshot = captureScroll(container);
+    this.silentRefresh = true;
+    try {
+      await this.performAutoRefresh();
+    } finally {
+      this.silentRefresh = false;
+    }
+    restoreScroll(container, snapshot);
+  }
+
+  /** Vuelve a dibujar la vista sin forzar la relectura de las notas; las vistas pueden sobrescribirlo. */
+  protected async performAutoRefresh(): Promise<void> {
     await this.onOpen();
   }
 
@@ -37,73 +129,7 @@ export abstract class BaseView extends ItemView {
   }
 
   protected groupTasksByFolder(tasks: ITask[]): Record<string, FolderNode> {
-    const rootFolders: Record<string, FolderNode> = {};
-    
-    tasks.forEach(task => {
-      if (!task.file.path) return;
-      
-      // Dividir la ruta del archivo en partes
-      const pathParts = task.file.path.split('/');
-      
-      // Si no hay partes de ruta, asignar a "Root"
-      if (pathParts.length === 1) {
-        if (!rootFolders['Root']) {
-          rootFolders['Root'] = {
-            name: 'Root',
-            fullPath: 'Root',
-            tasks: [],
-            subfolders: {}
-          };
-        }
-        rootFolders['Root'].tasks.push(task);
-        return;
-      }
-      
-      // Procesar la jerarquía de carpetas
-      let currentLevel = rootFolders;
-      let currentPath = '';
-      
-      // Iterar por cada nivel de carpeta (excepto el último que es el archivo)
-      for (let i = 0; i < pathParts.length - 1; i++) {
-        const folderName = pathParts[i];
-        currentPath = currentPath ? `${currentPath}/${folderName}` : folderName;
-        
-        // Para el primer nivel, crear en rootFolders si no existe
-        if (i === 0) {
-          if (!currentLevel[folderName]) {
-            currentLevel[folderName] = {
-              name: folderName,
-              fullPath: folderName,
-              tasks: [],
-              subfolders: {}
-            };
-          }
-          // Si es el último nivel de carpeta, añadir la tarea aquí
-          if (i === pathParts.length - 2) {
-            currentLevel[folderName].tasks.push(task);
-          }
-          currentLevel = currentLevel[folderName].subfolders;
-        } 
-        // Para niveles subsecuentes
-        else {
-          if (!currentLevel[folderName]) {
-            currentLevel[folderName] = {
-              name: folderName,
-              fullPath: currentPath,
-              tasks: [],
-              subfolders: {}
-            };
-          }
-          // Si es el último nivel de carpeta, añadir la tarea aquí
-          if (i === pathParts.length - 2) {
-            currentLevel[folderName].tasks.push(task);
-          }
-          currentLevel = currentLevel[folderName].subfolders;
-        }
-      }
-    });
-    
-    return rootFolders;
+    return groupTasksByFolder(tasks);
   }
 
   /**
@@ -289,9 +315,10 @@ export abstract class BaseView extends ItemView {
         // Verificar coincidencia exacta o si es una vista de calendario o de hábitos
         const isCalendarView = activeViewType.startsWith("calendar-") && tabId === "oa-calendar-view-tab";
         const isHabitView = activeViewType.startsWith("habit-") && tabId === "oa-habit-view-tab";
+        const isTasksView = TASKS_VIEW_TYPES.includes(activeViewType) && tabId === "oa-tasks-view-tab";
         const isExactMatch = tabId === `oa-${activeViewType}-tab`;
         
-        if (isExactMatch || isCalendarView || isHabitView) {
+        if (isExactMatch || isCalendarView || isHabitView || isTasksView) {
           tab.classList.add("oa-active");
         } else {
           tab.classList.remove("oa-active");
@@ -305,9 +332,10 @@ export abstract class BaseView extends ItemView {
         
         const isCalendarContainer = activeViewType.startsWith("calendar-") && divId === "oa-calendar-view-container";
         const isHabitContainer = activeViewType.startsWith("habit-") && divId === "oa-habit-view-container";
+        const isTasksContainer = TASKS_VIEW_TYPES.includes(activeViewType) && divId === "oa-tasks-view-container";
         const isExactMatch = divId === `oa-${activeViewType}-container`;
         
-        if (isExactMatch || isCalendarContainer || isHabitContainer) {
+        if (isExactMatch || isCalendarContainer || isHabitContainer || isTasksContainer) {
           buttonContainer.classList.add("oa-active");
         } else {
           buttonContainer.classList.remove("oa-active");
@@ -404,8 +432,7 @@ protected attachEventTabs(container: HTMLElement, plugin: AgendaPlugin, leaf: Wo
     const activeViewType = this.getViewType(); // Obtiene el tipo de vista actual
     const tabs = [
       { id: "oa-overview-view-tab", view: "overview-view" },
-      { id: "oa-list-view-tab", view: "list-view" },
-      { id: "oa-table-view-tab", view: "table-view" },
+      { id: "oa-tasks-view-tab", view: this.getDefaultTasksView(plugin.settings) },
       { id: "oa-calendar-view-tab", view: "calendar-month-view" },
       { id: "oa-timeline-view-tab", view: "timeline-view" },
       { id: "oa-gantt-view-tab", view: "gantt-view" },
@@ -428,6 +455,17 @@ protected attachEventTabs(container: HTMLElement, plugin: AgendaPlugin, leaf: Wo
     refreshBtn?.addEventListener('click', () => {
       this.refreshView().catch(console.error);
     });
+  }
+
+  /**
+   * Vista que abre la pestaña «Tareas»: el último modo usado si sigue visible en los ajustes y,
+   * si no, el otro.
+   */
+  private getDefaultTasksView(settings: AgendaPluginSettings): string {
+    const mode = loadTaskViewState(this.app).mode;
+    const visible = mode === 'table' ? settings.showTableTab : settings.showListTab;
+    const resolved: TaskViewMode = visible ? mode : (mode === 'table' ? 'list' : 'table');
+    return TASK_MODE_VIEWS[resolved];
   }
 
   /**
@@ -598,6 +636,8 @@ protected attachEventTabs(container: HTMLElement, plugin: AgendaPlugin, leaf: Wo
   }
 
   protected showLoadingOverlay(linesCount: number = 6, hasHeader: boolean = false): void {
+    if (this.silentRefresh) return;
+
     const container = this.containerEl.children[1] as HTMLElement;
     container.empty();
     

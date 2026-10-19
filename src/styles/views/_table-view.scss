@@ -8,73 +8,6 @@
   gap: 12px;
 }
 
-.oa-table-toolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
-  gap: 10px;
-  align-items: center;
-  padding: 8px 0;
-
-  .oa-table-filters {
-    display: flex;
-    min-width: 0;
-    flex-wrap: wrap;
-    gap: 6px;
-
-    .oa-table-filter-dropdown {
-      @include interactive-control;
-      max-width: 100%;
-      min-width: 0;
-      height: 32px;
-      padding: 4px 26px 4px 9px;
-      border-radius: 4px;
-      font-size: 0.88em;
-    }
-  }
-
-  .oa-table-search {
-    position: relative;
-    display: flex;
-    min-width: 0;
-
-    .oa-search-input {
-      @include interactive-control;
-      width: 100%;
-      min-width: 0;
-      height: 32px;
-      padding: 5px 34px 5px 10px;
-      text-align: left;
-    }
-
-    .oa-search-clear-button {
-      position: absolute;
-      top: 50%;
-      right: 7px;
-      display: none;
-      width: 22px;
-      height: 22px;
-      align-items: center;
-      justify-content: center;
-      padding: 0 !important; // `.is-tablet button` de Obsidian impone 20 px laterales y ovalaba el botón
-      transform: translateY(-50%);
-      border: 0;
-      border-radius: 4px;
-      background: transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-
-      &.oa-visible {
-        display: flex;
-      }
-
-      &:hover {
-        background: var(--background-modifier-hover);
-        color: var(--text-normal);
-      }
-    }
-  }
-}
-
 .oa-table-container {
   flex: 1;
   overflow: auto;
@@ -85,6 +18,7 @@
   
   .oa-tasks-table {
     width: 100%;
+    table-layout: fixed; // los anchos los fija `resizeColumns()`; el texto largo se corta en vez de ensanchar la columna
     border-collapse: separate;
     border-spacing: 0;
     color: var(--text-normal);
@@ -173,12 +107,61 @@
         display: none;
       }
     }
+
+    .oa-group-row {
+      cursor: pointer;
+
+      td {
+        padding: 6px 10px;
+        background-color: var(--background-secondary);
+      }
+
+      &:hover td {
+        background-color: var(--background-modifier-hover);
+      }
+
+      &[data-group-color] td {
+        box-shadow: inset 3px 0 0 var(--oa-group-color);
+      }
+
+      .oa-group-row-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 0.9em;
+        color: var(--text-normal);
+      }
+
+      .oa-task-count {
+        margin-left: 0;
+        color: var(--text-faint);
+        font-size: 0.85em;
+        font-variant-numeric: tabular-nums;
+      }
+
+      // Sangría por nivel de sub-área
+      @for $level from 1 through 5 {
+        &[data-level="#{$level}"] .oa-group-row-title {
+          padding-left: #{$level * 18}px;
+          font-weight: 500;
+        }
+      }
+
+      &.oa-collapsed .oa-folder-toggle {
+        transform: rotate(-90deg);
+      }
+    }
+
+    .oa-group-hidden {
+      display: none;
+    }
   }
 }
 
 // Specific column styling
 .oa-table-col-priority {
-  min-width: 48px;
+  min-width: 36px;
   width: auto;
   text-align: center;
 }
@@ -207,7 +190,7 @@
 }
 
 .oa-table-col-status {
-  min-width: 48px;
+  min-width: 36px;
   width: auto;
   text-align: center;
 }
@@ -248,13 +231,22 @@
 }
 
 .oa-table-col-task {
-  min-width: 180px;
+  min-width: 170px;
 
   .oa-task-description {
     color: var(--text-normal);
     font-weight: 500;
     line-height: 1.4;
     overflow-wrap: anywhere;
+  }
+
+  .oa-task-file-path {
+    margin-top: 2px;
+    overflow: hidden;
+    color: var(--text-faint);
+    font-size: 0.75em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .oa-task-subtasks-indicator {
@@ -282,62 +274,73 @@
   }
 }
 
-.oa-table-col-due {
-  min-width: 80px;
+// Las cuatro columnas de fechas: la fecha principal y, debajo, una secundaria más pequeña y apagada
+.oa-table-col-start,
+.oa-table-col-scheduled,
+.oa-table-col-due,
+.oa-table-col-closed {
+  min-width: 90px;
   width: auto;
-  
-  &.oa-overdue {
-    .due-date {
-      color: $overdue-color;
-      font-weight: bold;
-    }
-  }
-  
-  &.oa-due-today {
-    .due-date {
-      color: $today-color;
-      font-weight: bold;
-    }
-  }
 
-  .oa-task-dates {
+  .oa-task-date {
     display: flex;
-    flex-direction: column;
+    width: fit-content;
+    align-items: center;
     gap: 4px;
-    
-    .oa-task-date {
-      display: flex;
-      width: fit-content;
-      align-items: center;
-      gap: 4px;
-      padding: 1px 5px;
-      border-radius: 3px;
-      font-size: 0.82em;
-      white-space: nowrap;
-      
-      .oa-date-icon {
-        opacity: 0.9;
-      }
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 0.82em;
+    white-space: nowrap;
 
-      &.due-date {
-        background: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary));
-      }
+    + .oa-task-date {
+      margin-top: 3px;
+    }
 
-      &.scheduled-date {
-        color: var(--text-accent);
-      }
+    .oa-date-icon {
+      opacity: 0.9;
+    }
 
-      &.created-date,
-      &.done-date,
-      &.cancelled-date {
-        color: var(--text-faint);
-      }
+    &.oa-task-date--secondary {
+      padding-top: 0;
+      padding-bottom: 0;
+      color: var(--text-faint);
+      font-size: 0.74em;
     }
   }
 }
 
+.oa-table-col-scheduled .oa-task-date:not(.oa-task-date--secondary) {
+  color: var(--text-accent);
+}
+
+.oa-table-col-due {
+  .oa-task-date--due {
+    background: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary));
+  }
+
+  &.oa-overdue .oa-task-date--due {
+    color: $overdue-color;
+    font-weight: bold;
+  }
+
+  &.oa-due-today .oa-task-date--due {
+    color: $today-color;
+    font-weight: bold;
+  }
+}
+
+// Columnas de solo un ícono: sin el relleno lateral de las demás para que quepan en pocos píxeles
+.oa-table-container .oa-tasks-table {
+  .oa-table-col-count,
+  .oa-table-col-priority,
+  .oa-table-col-status {
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+}
+
 .oa-table-col-folder {
-  min-width: 100px;
+  min-width: 72px;
 
   .oa-task-folder {
     display: flex;
@@ -358,7 +361,7 @@
 }
 
 .oa-table-col-tags {
-  min-width: 96px;
+  min-width: 80px;
   
   .oa-task-tag {
     display: inline-flex;
@@ -457,19 +460,11 @@
   }
 }
 
-.oa-table-col-row-number {
+.oa-table-col-count {
   width: 30px;
   min-width: 30px;
   text-align: center;
   color: var(--text-muted);
-}
-
-.oa-row-number {
-  font-variant-numeric: tabular-nums;
-}
-
-.oa-row-number {
-  font-size: 0.9em;
 }
 
 #oa-total-row-count {
@@ -480,20 +475,8 @@
 }
 
 @media (max-width: 768px) {
-  .oa-table-toolbar {
-    grid-template-columns: minmax(0, 1fr);
-
-    .oa-table-search {
-      width: 100%;
-    }
-  }
-  
   .oa-table-container {
     overflow-x: auto;
-    
-    .oa-tasks-table {
-      min-width: 760px;
-    }
   }
 }
 

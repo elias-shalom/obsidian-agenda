@@ -1,0 +1,217 @@
+// src/core/task-grouping.ts
+// Agrupado genérico de tareas por campo (v1.1.12, Fase A; ver docs/agenda-tasks/Arquitectura
+// técnica.md §20.2). Lo consumen Lista y Tabla y, en v1.1.13, Kanban y Gantt.
+import { ITask, GroupField, FolderNode, TaskGroupViewModel } from "../types/interfaces";
+import { STATUS_OPTIONS } from "./task-status-options";
+import { getAreaColor } from "./area";
+
+export interface TaskGroup {
+  /** Clave estable del grupo (para recordar su estado plegado o su orden). */
+  key: string;
+  /** Texto a mostrar; localizado si se pasó `translate`. */
+  label: string;
+  /** Tareas del propio grupo, en el orden recibido (sin las de los hijos). */
+  tasks: ITask[];
+  /** Subgrupos anidados; solo con `path` y `area`. */
+  children?: TaskGroup[];
+  /** Color del área; solo con `area`, y no en el grupo «Sin área». */
+  color?: string;
+}
+
+/** Todas las tareas del grupo y de sus descendientes. */
+export function collectGroupTasks(group: TaskGroup): ITask[] {
+  return [...group.tasks, ...(group.children ?? []).flatMap(collectGroupTasks)];
+}
+
+/** Valores del combo de agrupado de Lista y Tabla, con la clave de traducción de su nombre. */
+export const TASK_GROUP_OPTIONS: readonly { value: string; labelKey: string }[] = [
+  { value: 'none', labelKey: 'group_none' },
+  { value: 'area', labelKey: 'group_area' },
+  { value: 'folder', labelKey: 'folder' },
+  { value: 'status', labelKey: 'task_status' },
+  { value: 'priority', labelKey: 'task_priority' },
+  { value: 'tags', labelKey: 'tags' },
+  { value: 'dueDate', labelKey: 'due_date' },
+];
+
+/**
+ * Grupos de la vista para un valor de `TASK_GROUP_OPTIONS`: `none` no agrupa y `folder` es el modo
+ * plano (cada área con todas sus tareas, sin sub-áreas anidadas).
+ */
+export function groupTasksForView(tasks: ITask[], group: string, translate: (key: string) => string): TaskGroup[] {
+  if (group === 'none') return [];
+  if (group === 'folder') {
+    return groupTasksByField(tasks, 'area', translate)
+      .map(areaGroup => ({ ...areaGroup, tasks: collectGroupTasks(areaGroup), children: undefined }));
+  }
+  return groupTasksByField(tasks, group as GroupField, translate);
+}
+
+/** Grupos listos para dibujar, sin los vacíos. El estado plegado se recuerda por `storageKey`. */
+export function toGroupViewModels(groups: TaskGroup[], field: string): TaskGroupViewModel[] {
+  return groups.flatMap(group => {
+    const children = toGroupViewModels(group.children ?? [], field);
+    const count = group.tasks.length + children.reduce((total, child) => total + child.count, 0);
+    if (count === 0) return [];
+    return [{
+      label: group.label,
+      // Las carpetas conservan la ruta como clave para no perder lo que el usuario ya tenía plegado.
+      storageKey: field === 'area' || field === 'folder' ? group.key : `${field}:${group.key}`,
+      color: group.color,
+      count,
+      tasks: group.tasks,
+      children,
+    }];
+  });
+}
+
+/** De mayor a menor; lo que no coincide (`undefined`) va al final. */
+const PRIORITY_ORDER = ["highest", "high", "medium", "normal", "low", "lowest"];
+
+const NO_PRIORITY_KEY = "undefined";
+const NO_TAG_KEY = "";
+const NO_DATE_KEY = "";
+/** Clave y nombre con que `groupTasksByFolder()` agrupa las notas de la raíz del vault. */
+const ROOT_FOLDER_KEY = "Root";
+/** Sufijo de la clave del grupo con las tareas que están directamente en la carpeta de un área o sub-área. */
+const DIRECT_TASKS_KEY_SUFFIX = "#direct";
+
+/** Árbol de carpetas de las notas de las tareas: `A/B/nota.md` cuelga de `A` → `B`; una nota en la raíz va a «Root». */
+export function groupTasksByFolder(tasks: ITask[]): Record<string, FolderNode> {
+  const rootFolders: Record<string, FolderNode> = {};
+
+  for (const task of tasks) {
+    if (!task.file.path) continue;
+
+    const folders = task.file.path.split("/").slice(0, -1);
+    if (folders.length === 0) {
+      rootFolders[ROOT_FOLDER_KEY] ??= { name: ROOT_FOLDER_KEY, fullPath: ROOT_FOLDER_KEY, tasks: [], subfolders: {} };
+      rootFolders[ROOT_FOLDER_KEY].tasks.push(task);
+      continue;
+    }
+
+    let level = rootFolders;
+    let currentPath = "";
+    folders.forEach((folderName, index) => {
+      currentPath = currentPath ? `${currentPath}/${folderName}` : folderName;
+      level[folderName] ??= { name: folderName, fullPath: currentPath, tasks: [], subfolders: {} };
+      if (index === folders.length - 1) level[folderName].tasks.push(task);
+      level = level[folderName].subfolders;
+    });
+  }
+
+  return rootFolders;
+}
+
+function folderNodeToGroup(node: FolderNode): TaskGroup {
+  return {
+    key: node.fullPath,
+    label: node.name,
+    tasks: node.tasks,
+    children: Object.values(node.subfolders)
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(folderNodeToGroup),
+  };
+}
+
+/** Agrupa tareas por un valor simple; los grupos salen en el orden que da `order` (claves ausentes, al final por texto). */
+function groupByKey(
+  tasks: ITask[],
+  keyOf: (task: ITask) => string,
+  labelOf: (key: string) => string,
+  order: (a: string, b: string) => number
+): TaskGroup[] {
+  const groups = new Map<string, TaskGroup>();
+  for (const task of tasks) {
+    const key = keyOf(task);
+    let group = groups.get(key);
+    if (!group) {
+      group = { key, label: labelOf(key), tasks: [] };
+      groups.set(key, group);
+    }
+    group.tasks.push(task);
+  }
+  return [...groups.values()].sort((a, b) => order(a.key, b.key));
+}
+
+/**
+ * Agrupa `tasks` por `field`. El orden de las tareas dentro de cada grupo es el de entrada: ordénalas antes.
+ * - `status`: siempre los 6 estados, en orden de flujo, aunque estén vacíos (destinos de arrastre válidos).
+ * - `priority`: de mayor a menor, con «sin prioridad» al final; solo los grupos con tareas.
+ * - `dueDate`: por día de vencimiento ascendente, «sin fecha» al final.
+ * - `tags`: por la primera etiqueta de la tarea, alfabético, «sin etiqueta» al final.
+ * - `path`: árbol de carpetas (`children`), alfabético.
+ * - `area`: el mismo árbol con el color del área; las notas de la raíz van al final como «Sin área».
+ */
+export function groupTasksByField(
+  tasks: ITask[],
+  field: GroupField,
+  translate: (key: string) => string = (key) => key
+): TaskGroup[] {
+  switch (field) {
+    case "status": {
+      const groups: TaskGroup[] = STATUS_OPTIONS.map(({ status, labelKey }) => ({
+        key: status,
+        label: translate(labelKey),
+        tasks: [],
+      }));
+      for (const task of tasks) {
+        const group = groups.find(candidate => candidate.key === task.state.status);
+        (group ?? groups[0]).tasks.push(task);
+      }
+      return groups;
+    }
+
+    case "priority": {
+      const rank = (key: string): number => {
+        const index = PRIORITY_ORDER.indexOf(key);
+        return index === -1 ? PRIORITY_ORDER.length : index;
+      };
+      return groupByKey(
+        tasks,
+        (task) => (PRIORITY_ORDER.includes(task.state.priority) ? task.state.priority : NO_PRIORITY_KEY),
+        (key) => translate(key === NO_PRIORITY_KEY ? "no_priority" : key),
+        (a, b) => rank(a) - rank(b)
+      );
+    }
+
+    case "dueDate":
+      return groupByKey(
+        tasks,
+        (task) => task.date.due?.toISODate() ?? NO_DATE_KEY,
+        (key) => (key === NO_DATE_KEY ? translate("none") : key),
+        (a, b) => (a === NO_DATE_KEY ? 1 : b === NO_DATE_KEY ? -1 : a.localeCompare(b))
+      );
+
+    case "tags":
+      return groupByKey(
+        tasks,
+        (task) => task.section.tags[0] ?? NO_TAG_KEY,
+        (key) => (key === NO_TAG_KEY ? translate("none") : key),
+        (a, b) => (a === NO_TAG_KEY ? 1 : b === NO_TAG_KEY ? -1 : a.localeCompare(b))
+      );
+
+    case "path":
+      return Object.values(groupTasksByFolder(tasks))
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map(folderNodeToGroup);
+
+    case "area": {
+      // Área = primera carpeta y sub-áreas anidadas por carpeta; las notas de la raíz van al final, sin color.
+      const withColor = (group: TaskGroup, color: string | undefined): TaskGroup =>
+        ({ ...group, color, children: group.children?.map(child => withColor(child, color)) });
+      // Las tareas que están directamente en la carpeta de un grupo con sub-áreas van al final, en su propio
+      // grupo: sin cabecera parecerían pertenecer a la última sub-área.
+      const directTasksLast = (group: TaskGroup): TaskGroup => {
+        const children = (group.children ?? []).map(directTasksLast);
+        if (children.length === 0 || group.tasks.length === 0) return { ...group, children };
+        const direct: TaskGroup = { key: `${group.key}${DIRECT_TASKS_KEY_SUFFIX}`, label: translate("no_sub_area"), tasks: group.tasks, children: [], color: group.color };
+        return { ...group, tasks: [], children: [...children, direct] };
+      };
+      const groups = groupTasksByField(tasks, "path", translate);
+      const areas = groups.filter(group => group.key !== ROOT_FOLDER_KEY).map(group => directTasksLast(withColor(group, getAreaColor(group.label))));
+      const root = groups.filter(group => group.key === ROOT_FOLDER_KEY).map(group => withColor({ ...group, label: translate("no_area") }, undefined));
+      return [...areas, ...root];
+    }
+  }
+}

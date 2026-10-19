@@ -212,15 +212,9 @@
   margin-left: 5px;
 }
 
-// Compact, scan-friendly task rows shared by hierarchical and flat modes.
-.oa-view-controls {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 12px;
-}
-
-.oa-view-toggle-button {
-  @include interactive-control;
+// Compact, scan-friendly task rows shared by every grouping mode.
+.oa-folder-group[data-group-color] > h3.oa-folder-name {
+  border-left: 3px solid var(--oa-group-color);
 }
 
 .oa-folder-structure {
@@ -365,7 +359,7 @@
   line-height: 1.4;
   overflow-wrap: anywhere;
 
-  .oa-task-due-date {
+  .oa-task-date {
     display: inline-flex;
     align-items: center;
     margin-left: 6px;

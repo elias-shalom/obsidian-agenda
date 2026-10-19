@@ -1,87 +1,70 @@
 <div class="oa-table-view-container">
-  <div class="oa-table-toolbar">
-
-    <div class="oa-table-filters">
-            <select id="oa-table-priority-filter" class="oa-table-filter-dropdown">
-        <option value="all">{{t 'all_priorities'}}</option>
-        <option value="Highest">{{t 'highest_priority'}} 🔺</option>
-        <option value="High">{{t 'high_priority'}} ⏫</option>
-        <option value="Medium">{{t 'medium_priority'}} 🔼</option>
-        <option value="Normal">{{t 'normal_priority'}} ▶️</option>
-        <option value="Low">{{t 'low_priority'}} 🔽</option>
-        <option value="Lowest">{{t 'lowest_priority'}} ⏬</option>
-        <option value="none">{{t 'no_priority'}}</option>
-      </select>
-
-      <select id="oa-table-status-filter" class="oa-table-filter-dropdown">
-        <option value="all">{{t 'all_tasks'}}</option>
-        <option value="Todo">{{t 'status_todo'}}</option>
-        <option value="InProgress">{{t 'status_in_progress'}}</option>
-        <option value="Done">{{t 'status_done'}}</option>
-        <option value="Cancelled">{{t 'status_cancelled'}}</option>
-        <option value="nonTask">{{t 'status_non_task'}}</option>
-        <option value="OnHold">{{t 'status_on_hold'}}</option>
-      </select>
-
-      <select id="oa-table-folder-filter" class="oa-table-filter-dropdown">
-        <option value="all">{{t 'all_folders'}}</option>
-        {{#each uniqueFolders}}
-        <option value="{{this}}">{{this}}</option>
-        {{/each}}
-      </select>
-
-      <select id="oa-table-due-filter" class="oa-table-filter-dropdown">
-        <option value="all">{{t 'all_dates'}}</option>
-        <option value="hasdate">{{t 'has_any_date'}}</option>
-        <option value="overdue">{{t 'overdue'}}</option>
-        <option value="today">{{t 'due_today'}}</option>
-        <option value="thisweek">{{t 'due_this_week'}}</option>
-        <option value="future">{{t 'future_tasks'}}</option>
-        <option value="nodate">{{t 'no_date'}}</option>
-      </select>
-    </div>
-
-    <div class="oa-table-search">
-      <input type="text" id="oa-table-search-input" placeholder="{{t 'search_tasks'}}" class="oa-search-input">
-      <button id="oa-table-search-clear" class="oa-search-clear-button">×</button>
-    </div>
-
-  </div>
+  <div class="oa-table-toolbar"></div>
   
   <div class="oa-table-container">
     <table class="oa-tasks-table">
       <thead>
         <tr>
-          <th class="oa-table-col-row-number">
+          <th class="oa-table-col-count" data-column="count">
             <span id="oa-total-row-count"></span>
           </th>
-          <th class="oa-table-col-priority oa-sortable" data-sort="priority">
+          <th class="oa-table-col-priority oa-sortable" data-column="priority" data-sort="priority">
             <span class="oa-sort-indicator">{{t 'priority'}}</span>
           </th>
-          <th class="oa-table-col-status oa-sortable" data-sort="status">
+          <th class="oa-table-col-status oa-sortable" data-column="status" data-sort="status">
             <span class="oa-sort-indicator">{{t 'status'}}</span>
-          </th>          
-          <th class="oa-table-col-task oa-sortable" data-sort="description">
+          </th>
+          <th class="oa-table-col-task oa-sortable" data-column="task" data-sort="description">
             <span class="oa-sort-indicator">{{t 'task'}}</span>
           </th>
-          <th class="oa-table-col-folder oa-sortable" data-sort="folder">
-            <span class="oa-sort-indicator">{{t 'folder'}}</span>
+          <th class="oa-table-col-folder oa-sortable" data-column="area" data-sort="folder">
+            <span class="oa-sort-indicator">{{t 'area'}}</span>
           </th>
-          <th class="oa-table-col-due oa-sortable" data-sort="due">
-            <span class="oa-sort-indicator">{{t 'dates'}}</span>
+          {{#if columns.start}}
+          <th class="oa-table-col-start oa-sortable" data-column="start" data-sort="start">
+            <span class="oa-sort-indicator">{{t 'column_start'}}</span>
           </th>
-          <th class="oa-table-col-tags oa-sortable" data-sort="tags">
+          {{/if}}
+          {{#if columns.scheduled}}
+          <th class="oa-table-col-scheduled oa-sortable" data-column="scheduled" data-sort="scheduled">
+            <span class="oa-sort-indicator">{{t 'column_scheduled'}}</span>
+          </th>
+          {{/if}}
+          {{#if columns.due}}
+          <th class="oa-table-col-due oa-sortable" data-column="due" data-sort="due">
+            <span class="oa-sort-indicator">{{t 'column_due'}}</span>
+          </th>
+          {{/if}}
+          {{#if columns.closed}}
+          <th class="oa-table-col-closed oa-sortable" data-column="closed" data-sort="closed">
+            <span class="oa-sort-indicator">{{t 'column_closed'}}</span>
+          </th>
+          {{/if}}
+          <th class="oa-table-col-tags oa-sortable" data-column="tags" data-sort="tags">
             <span class="oa-sort-indicator">{{t 'tags'}}</span>
           </th>
         </tr>
       </thead>
       <tbody>
-        {{#each tasks}}
-        <tr class="oa-task-row {{#if completed}}oa-task-completed{{/if}} {{priorityClass}}" data-file-path="{{this.file.path}}" data-line-number="{{line.number}}">
-          <td class="oa-table-col-row-number">
-            <span class="oa-row-number"></span>
+        {{#each rows}}
+        {{#if isGroup}}
+        <tr class="oa-group-row" data-level="{{level}}" data-folder-path="{{storageKey}}" {{#if color}}data-group-color="{{color}}"{{/if}}>
+          <td colspan="{{@root.columnCount}}">
+            <div class="oa-group-row-title">
+              <span class="oa-folder-toggle" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right">
+                  <path d="m9 18 6-6-6-6"/>
+                </svg>
+              </span>
+              <span class="oa-folder-title">{{label}}</span>
+              <span class="oa-task-count">({{count}})</span>
+            </div>
           </td>
-          <td class="oa-table-col-priority">
+        </tr>
+        {{else}}
+        <tr class="oa-task-row {{#if completed}}oa-task-completed{{/if}} {{priorityClass}}" data-task-id="{{id}}" data-file-path="{{this.file.path}}" data-line-number="{{line.number}}">
+          <td class="oa-table-col-count" data-column="count"></td>
+          <td class="oa-table-col-priority" data-column="priority">
               {{#if state.priority}}
               <div class="oa-task-priority priority-{{state.priority}}" title="{{t state.priority}}">
                 {{priorityIcon state.priority}}
@@ -92,13 +75,14 @@
               </div>
               {{/if}}
           </td>
-          <td class="oa-table-col-status">
-            <div class="oa-task-status-icon" title="{{t state.text}}" data-task-id="{{id}}">
+          <td class="oa-table-col-status" data-column="status">
+            <div class="oa-task-status-icon" title="{{t state.text}}">
               <span class="oa-status-icon" data-status="{{state.text}}">{{state.emoji}}</span>
             </div>
           </td>
-          <td class="oa-table-col-task">
+          <td class="oa-table-col-task" data-column="task">
             <div class="oa-task-description">{{section.desc}}</div>
+            <div class="oa-task-file-path" title="{{file.path}}">{{file.path}}</div>
             {{#if subtasks}}
             <div class="oa-task-subtasks-indicator">
               <span class="oa-subtasks-count">{{subtasksCompletedCount}}/{{subtasksCount}}</span>
@@ -108,58 +92,63 @@
             </div>
             {{/if}}
           </td>
-          <td class="oa-table-col-folder">
+          <td class="oa-table-col-folder" data-column="area">
             <div class="oa-task-folder">
               <span class="oa-folder-icon">📁</span>
-              <span class="oa-folder-name">{{file.root}}</span>
+              <span class="oa-folder-name">{{#if (eq file.root 'root')}}{{t 'no_area'}}{{else}}{{file.root}}{{/if}}</span>
             </div>
           </td>
-          <td class="oa-table-col-due {{#if isOverdue}}oa-overdue{{/if}} {{#if isDueToday}}oa-due-today{{/if}}">
-            <div class="oa-task-dates">
-              {{#if date.due}}
-              <div class="oa-task-date due-date" title="{{t 'due_date'}}">
-                <span class="oa-date-icon">{{dateTypeIcon 'Due'}}</span>
-                <span class="oa-date-text">{{formatDate date.due}}</span>
-              </div>
-              {{/if}}
-
-              {{#if date.scheduled}}
-              <div class="oa-task-date scheduled-date" title="{{t 'scheduled_date'}}">
-                <span class="oa-date-icon">{{dateTypeIcon 'Scheduled'}}</span>
-                <span class="oa-date-text">{{formatDate date.scheduled}}</span>
-              </div>
-              {{/if}}
-              
-              {{#if date.created}}
-              <div class="oa-task-date created-date" title="{{t 'created_date'}}">
-                <span class="oa-date-icon">{{dateTypeIcon 'Created'}}</span>
-                <span class="oa-date-text">{{formatDate date.created}}</span>
-              </div>
-              {{/if}}
-              
-              {{#if date.start}}
-              <div class="oa-task-date start-date" title="{{t 'start_date'}}">
-                <span class="oa-date-icon">{{dateTypeIcon 'Start'}}</span>
-                <span class="oa-date-text">{{formatDate date.start}}</span>
-              </div>
-              {{/if}}
-              
-              {{#if date.done}}
-              <div class="oa-task-date done-date" title="{{t 'done_date'}}">
-                <span class="oa-date-icon">{{dateTypeIcon 'Done'}}</span>
-                <span class="oa-date-text">{{formatDate date.done}}</span>
-              </div>
-              {{/if}}
-              
-              {{#if date.cancelled}}
-              <div class="oa-task-date cancelled-date" title="{{t 'cancelled_date'}}">
-                <span class="oa-date-icon">{{dateTypeIcon 'Cancelled'}}</span>
-                <span class="oa-date-text">{{formatDate date.cancelled}}</span>
-              </div>
-              {{/if}}
+          {{#if @root.columns.start}}
+          <td class="oa-table-col-start" data-column="start">
+            {{#if date.start}}
+            <div class="oa-task-date" title="{{t 'start_date'}}">
+              <span class="oa-date-icon">🛫</span><span class="oa-date-text">{{formatDate date.start}}</span>
             </div>
+            {{/if}}
+            {{#if date.created}}
+            <div class="oa-task-date oa-task-date--secondary" title="{{t 'created_date'}}">
+              <span class="oa-date-icon">➕</span><span class="oa-date-text">{{formatDate date.created}}</span>
+            </div>
+            {{/if}}
           </td>
-          <td class="oa-table-col-tags">
+          {{/if}}
+          {{#if @root.columns.scheduled}}
+          <td class="oa-table-col-scheduled" data-column="scheduled">
+            {{#if date.scheduled}}
+            <div class="oa-task-date" title="{{t 'scheduled_date'}}">
+              <span class="oa-date-icon">⏳</span><span class="oa-date-text">{{formatDate date.scheduled}}</span>
+            </div>
+            {{/if}}
+            {{#if date.scheduledTime}}
+            <div class="oa-task-date oa-task-date--secondary">
+              <span class="oa-date-icon">🕐</span><span class="oa-date-text">{{date.scheduledTime}}{{#if date.scheduledDuration}} · {{date.scheduledDuration}}m{{/if}}</span>
+            </div>
+            {{/if}}
+          </td>
+          {{/if}}
+          {{#if @root.columns.due}}
+          <td class="oa-table-col-due {{#if (eq dueState 'overdue')}}oa-overdue{{/if}} {{#if (eq dueState 'today')}}oa-due-today{{/if}}" data-column="due">
+            {{#if date.due}}
+            <div class="oa-task-date oa-task-date--due" title="{{t 'due_date'}}">
+              <span class="oa-date-icon">📅</span><span class="oa-date-text">{{formatDate date.due}}</span>
+            </div>
+            {{/if}}
+          </td>
+          {{/if}}
+          {{#if @root.columns.closed}}
+          <td class="oa-table-col-closed" data-column="closed">
+            {{#if date.done}}
+            <div class="oa-task-date" title="{{t 'done_date'}}">
+              <span class="oa-date-icon">✅</span><span class="oa-date-text">{{formatDate date.done}}</span>
+            </div>
+            {{else if date.cancelled}}
+            <div class="oa-task-date" title="{{t 'cancelled_date'}}">
+              <span class="oa-date-icon">❌</span><span class="oa-date-text">{{formatDate date.cancelled}}</span>
+            </div>
+            {{/if}}
+          </td>
+          {{/if}}
+          <td class="oa-table-col-tags" data-column="tags">
             <div class="oa-task-tags">
               {{#each section.tags}}
               <span class="oa-task-tag">{{this}}</span>
@@ -167,15 +156,13 @@
             </div>
           </td>
         </tr>
+        {{/if}}
         {{/each}}
       </tbody>
     </table>
   </div>
   
-  {{#unless tasks.length}}
-  <div class="oa-empty-table-message">
-    <p>{{t 'no_tasks_match_filters'}}</p>
+  <div class="oa-empty-table-message {{#unless tasks.length}}oa-visible{{/unless}}">
+    <p>{{#if vaultHasTasks}}{{t 'no_tasks_match_filters'}}{{else}}{{t 'no_tasks'}}{{/if}}</p>
   </div>
-  {{/unless}}
 </div>
-

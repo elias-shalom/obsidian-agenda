@@ -385,9 +385,9 @@ Orden de trabajo sugerido: fixes de Ajustes, enlace al manual, modal de novedade
   - [ ] En Cuadrícula y Semanal (orden) y en Rutina (orden y agrupar); la Tabla y el Dashboard no cambian
   - [ ] El combo de agrupar de Rutina usa «Momento del día» y «Área»; en español «Por daytime» pasa a «Por momento del día»
   - [ ] Solo cambia el texto: lo guardado no cambia
-- [ ] **[v1.1.13] README: referencia al manual de usuario** (el README no enlaza hoy `docs/user_guide/`, que se creó en v1.1.11)
-  - [ ] Enlaces a las dos versiones del manual, inglés (`docs/user_guide/en`) y español (`docs/user_guide/es`), desde el README
-  - [ ] Ubicación propuesta (por confirmar): entrada en la tabla de contenidos y mención en "Getting Help" y en "Quick Start"
+- [x] **[v1.1.13] README: referencia al manual de usuario** (el README no enlaza hoy `docs/user_guide/`, que se creó en v1.1.11)
+  - [x] Enlaces a las dos versiones del manual, inglés (`docs/user_guide/en`) y español (`docs/user_guide/es`), desde el README
+  - [x] Ubicación: entrada en la tabla de contenidos y mención en "Getting Help" y en "Quick Start"
 - [ ] **[v1.1.13] Modal de "novedades" al actualizar** ("What's New"; pasa de v1.1.12; diseño en `docs/agenda-tasks/Especificación de vistas.md` §10 y `Arquitectura técnica.md` §19; fases en `Plan de implementación.md`) — investigado a partir del mecanismo equivalente del plugin [QuickAdd](https://github.com/chhoumann/quickadd); decidido **no** replicar su fetch en vivo a GitHub Releases, sino embeber el contenido localizado en `src/locales/*.json`
   - [ ] Nuevo setting `lastSeenVersion` (comparado contra `manifest.version` en `onload()`) y `showWhatsNewOnUpdate` (toggle, default activado)
   - [ ] Se muestra una sola vez por versión, acumulando las novedades de todas las versiones saltadas (no solo la última)

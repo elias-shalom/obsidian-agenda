@@ -28,6 +28,7 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 - [Screenshots](#screenshots)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [User Manual](docs/user_guide/README.md) ([English](docs/user_guide/en/00-introduction.md) · [Español](docs/user_guide/es/00-introduction.md))
 - [Gestures & Interactions](#gestures--interactions)
 - [Task Format](#task-format-and-compatibility)
 - [Configuration](#configuration)
@@ -234,7 +235,7 @@ See the [full changelog](#changelog) below for older versions.
 - **Edit task** - Click any task to edit inline or in modal
 - **Sort tasks** - Use the sort selector, or click column headers (Table view)
 
-For comprehensive guides, visit the [Wiki](https://github.com/elias-shalom/obsidian-agenda/wiki).
+For step-by-step guides, read the **User Manual** ([English](docs/user_guide/en/00-introduction.md) · [Español](docs/user_guide/es/00-introduction.md)) or visit the [Wiki](https://github.com/elias-shalom/obsidian-agenda/wiki).
 
 ---
 
@@ -594,6 +595,7 @@ Releases are built by CI (`.github/workflows/release.yml`), not from a local mac
 ## 💬 Support and Feedback
 
 ### Getting Help
+- 📘 Read the **User Manual**: [English](docs/user_guide/en/00-introduction.md) · [Español](docs/user_guide/es/00-introduction.md)
 - 📖 Check the [Wiki](https://github.com/elias-shalom/obsidian-agenda/wiki)
 - 🐛 Report bugs on [GitHub Issues](https://github.com/elias-shalom/obsidian-agenda/issues)
 - 💡 Suggest features via GitHub Discussions

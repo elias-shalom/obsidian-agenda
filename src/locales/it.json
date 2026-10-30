@@ -357,6 +357,16 @@
   "habit_folder_invalid_parent": "Il percorso non può contenere '..'",
   "habit_folder_invalid_chars": "Il percorso non può contenere : * ? \" < > |",
   "habit_folder_create_failed": "Impossibile creare la cartella '{path}': {reason}",
+  "show_whats_new_on_update": "Mostra le novità dopo un aggiornamento",
+  "show_whats_new_on_update_desc": "Apre una finestra con le novità al primo avvio dopo l'aggiornamento del plugin",
+  "whats_new": {
+    "title": "Novità di Agenda Tasks",
+    "close": "Chiudi",
+    "v1_1_13": {
+      "title": "Schede, cartella delle abitudini ed etichette",
+      "items": "Un solo interruttore per la scheda Attività sostituisce quelli di Elenco e Tabella, e un nuovo interruttore nasconde l'intera scheda Abitudini.\nSe la cartella delle abitudini non esiste, creando la prima abitudine ti viene proposto di crearla, e le impostazioni indicano se esiste.\nI selettori di ordinamento e raggruppamento delle viste delle abitudini ora hanno un'etichetta (Ordine: / Gruppo:).\nQuesta finestra: dopo un aggiornamento vedrai le novità una sola volta; puoi disattivarla nelle impostazioni."
+    }
+  },
   "habit_new_habit": "Nuova abitudine",
   "habit_edit_habit": "Modifica abitudine",
   "habit_field_name": "Nome",

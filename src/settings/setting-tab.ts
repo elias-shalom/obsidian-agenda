@@ -63,6 +63,17 @@ export class SettingTab extends PluginSettingTab {
     return [
       {
         type: 'group',
+        heading: this.i18n.t('general_settings'),
+        items: [
+          {
+            name: this.i18n.t('show_whats_new_on_update'),
+            desc: this.i18n.t('show_whats_new_on_update_desc'),
+            control: { type: 'toggle', key: 'showWhatsNewOnUpdate' },
+          },
+        ],
+      },
+      {
+        type: 'group',
         heading: this.i18n.t('tabs_visibility_settings'),
         items: [
           { name: this.i18n.t('show_overview_tab'), control: { type: 'toggle', key: 'showOverviewTab' } },
@@ -227,6 +238,16 @@ export class SettingTab extends PluginSettingTab {
     containerEl.empty();
 
     new Setting(containerEl).setName(this.i18n.t("general_settings")).setHeading();
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("show_whats_new_on_update"))
+      .setDesc(this.i18n.t("show_whats_new_on_update_desc"))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.showWhatsNewOnUpdate)
+        .onChange(async (value) => {
+          this.plugin.settings.showWhatsNewOnUpdate = value;
+          await this.plugin.saveSettings();
+        }));
 
     new Setting(containerEl).setName(this.i18n.t("tabs_visibility_settings")).setHeading();
 

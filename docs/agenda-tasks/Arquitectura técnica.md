@@ -594,7 +594,7 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §7.7.
 | Modal de duración | `src/modals/task-duration-modal.ts` (usa el componente con `maxMinutes:420, stepMinutes:5`) |
 | Estilos | el SCSS del dial (hoy embebido en los estilos de hábitos) se mueve a un archivo compartido |
 
-## 19. Modal de novedades al actualizar ("What's New") (v1.1.13, diseño — no implementado)
+## 19. Modal de novedades al actualizar ("What's New") (v1.1.13, implementado; pendiente de prueba manual)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §10. Investigado y diseñado a partir del mecanismo equivalente del plugin [QuickAdd](https://github.com/chhoumann/quickadd) (`src/main.ts` → `announceUpdate()` + `src/gui/UpdateModal/UpdateModal.ts`), adaptado a las diferencias de este proyecto (ver §19.4).
 
@@ -606,6 +606,9 @@ Nuevo campo persistido `lastSeenVersion` en `AgendaPluginSettings`/`DEFAULT_SETT
 - Si son iguales, no hacer nada (ya se vio esta versión).
 - Si son distintas: actualizar `settings.lastSeenVersion = manifest.version` y guardar **de inmediato**, antes de decidir si se muestra el modal — igual que QuickAdd: así nunca se repite, aunque el usuario cierre el modal sin leerlo o aunque el ajuste esté desactivado.
 - Si el ajuste **"Mostrar novedades al actualizar"** (`showWhatsNewOnUpdate`, nuevo, default `true`) está desactivado, no se abre el modal — pero el paso anterior ya corrió, así que no se acumula para una futura reactivación del ajuste.
+- **Instalación nueva y actualización**: sin `data.json` (`loadData()` devuelve `null`) es una instalación nueva: se guarda la versión sin mostrar nada. Con datos pero sin `lastSeenVersion` (viene de la 1.1.12), las novedades parten de `PRE_WHATS_NEW_VERSION` (1.1.12).
+- **Cuándo**: `announceUpdate()` de `main.ts` se ejecuta en `workspace.onLayoutReady()`, no durante la carga. La decisión (guardar o no, mostrar o no) es la función pura `planUpdateAnnouncement()` de `src/core/whats-new.ts`.
+- **Contenido**: el catálogo `WHATS_NEW_VERSIONS` (de la más antigua a la más reciente) vive en `src/core/whats-new.ts`; por cada versión, los 6 locales traen `whats_new.v<x_y_z>.title` y `whats_new.v<x_y_z>.items` (un ítem por línea, separados por `\n`, texto plano). Publicar una versión con novedades exige añadirla al catálogo y a los 6 locales.
 
 ### 19.2 Selección de contenido a mostrar
 

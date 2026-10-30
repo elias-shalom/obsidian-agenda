@@ -380,12 +380,13 @@ Las vistas renderizadas por `BaseView` y el modal de tareas convierten sus atrib
 
 Manual de usuario final (distinto de esta documentación de desarrollo), en `docs/user_guide/`, en dos versiones completas y paralelas — inglés (`en/`) y español (`es/`) — con 10 capítulos idénticos en estructura: Introducción, Instalación, Primeros pasos, Vistas generales, Vistas de calendario, Seguimiento de hábitos, Formato de tareas y metadatos, Gestos e interacciones, Configuración, y Preguntas frecuentes y soporte. Un `docs/user_guide/README.md` enlaza ambas versiones y documenta cómo agregar un nuevo idioma (duplicar una carpeta de idioma y traducir manteniendo los mismos nombres de archivo). No requiere ningún cambio en el plugin: es documentación en Markdown plano, sin paso de build ni empaquetado — "generar" una versión es simplemente leer/exportar los archivos de esa carpeta.
 
-## 10. Modal de novedades al actualizar ("What's New") (v1.1.13 — diseño, no implementado)
+## 10. Modal de novedades al actualizar ("What's New") (v1.1.13 — implementado; pendiente de prueba manual)
 
-> **Estado**: diseño acordado, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §19.
+> **Estado**: implementado; falta la prueba manual. Mecanismo: [[Arquitectura técnica]] §19.
 
 Tras actualizar el plugin a una versión nueva, en el primer arranque se abre **una sola vez** un modal con las novedades desde la última versión que el usuario tenía instalada — si se saltó varias versiones, se muestran todas acumuladas, de la más reciente a la más antigua (no solo la última). El contenido está **localizado** (sigue el idioma de la interfaz de Obsidian, igual que el resto del plugin) y **no requiere conexión a internet** (ver justificación y comparación con el plugin que inspiró esta función, QuickAdd, en [[Arquitectura técnica]] §19).
 
+- En una instalación nueva no se muestra nada (no hay versión anterior); quien actualiza desde la 1.1.12 ve las novedades de la 1.1.13.
 - Un nuevo ajuste **"Mostrar novedades al actualizar"** (activado por defecto, en Configuración general) permite desactivar el modal por completo.
 - El modal siempre tiene un botón de cierre propio, visible dentro del contenido (no depende únicamente del cierre nativo del modal de Obsidian).
 - Si el ajuste está desactivado, el modal simplemente no se abre — pero la versión "vista" se actualiza igual, para que no vuelva a aparecer al reactivar el ajuste más adelante (evita mostrar de golpe el historial acumulado).

@@ -357,6 +357,16 @@
   "habit_folder_invalid_parent": "Der Pfad darf kein '..' enthalten",
   "habit_folder_invalid_chars": "Der Pfad darf keines der Zeichen : * ? \" < > | enthalten",
   "habit_folder_create_failed": "Ordner '{path}' konnte nicht erstellt werden: {reason}",
+  "show_whats_new_on_update": "Neuigkeiten nach einem Update anzeigen",
+  "show_whats_new_on_update_desc": "Öffnet beim ersten Start nach einem Plugin-Update ein Fenster mit den Neuerungen",
+  "whats_new": {
+    "title": "Neuigkeiten in Agenda Tasks",
+    "close": "Schließen",
+    "v1_1_13": {
+      "title": "Tabs, Gewohnheiten-Ordner und Beschriftungen",
+      "items": "Ein einziger Schalter für den Aufgaben-Tab ersetzt die Schalter für Liste und Tabelle, und ein neuer Schalter blendet den gesamten Gewohnheiten-Tab aus.\nWenn der Gewohnheiten-Ordner nicht existiert, wird beim Anlegen der ersten Gewohnheit angeboten, ihn zu erstellen; die Einstellungen zeigen, ob er existiert.\nDie Auswahlfelder für Sortierung und Gruppierung der Gewohnheitsansichten haben jetzt eine Beschriftung (Sortierung: / Gruppe:).\nDieses Fenster: Nach einem Update siehst du die Neuerungen einmal; du kannst es in den Einstellungen abschalten."
+    }
+  },
   "habit_new_habit": "Neue Gewohnheit",
   "habit_edit_habit": "Gewohnheit bearbeiten",
   "habit_field_name": "Name",

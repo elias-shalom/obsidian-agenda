@@ -334,23 +334,25 @@ Un paso de build/generación de los manuales (son Markdown plano, sin plantilla 
 
 ## Próxima fase — v1.1.13: modal de novedades al actualizar (diseño)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §10. Mecanismo: [[Arquitectura técnica]] §19. **Nada de esta fase está implementado.**
+> Comportamiento y decisiones: [[Especificación de vistas]] §10. Mecanismo: [[Arquitectura técnica]] §19. **Implementada; falta la prueba manual (Fase C, «Verificable sola»).**
 
 ### Fase A — Settings y disparador
-- [ ] Nuevo campo `lastSeenVersion` (string) en `AgendaPluginSettings`/`DEFAULT_SETTINGS`.
-- [ ] Nuevo campo `showWhatsNewOnUpdate` (boolean, default `true`) en `AgendaPluginSettings`/`DEFAULT_SETTINGS`, con su toggle en **Configuración general** (ambas rutas: API declarativa y `display()` legado).
-- [ ] `main.ts` → `onload()`: tras `loadSettings()`, comparar `manifest.version` contra `settings.lastSeenVersion`; si difieren, actualizar y guardar `lastSeenVersion` de inmediato (antes de decidir si se muestra el modal).
+- [x] Nuevo campo `lastSeenVersion` (string) en `AgendaPluginSettings`/`DEFAULT_SETTINGS`.
+- [x] Nuevo campo `showWhatsNewOnUpdate` (boolean, default `true`) en `AgendaPluginSettings`/`DEFAULT_SETTINGS`, con su toggle en **Configuración general** (ambas rutas: API declarativa y `display()` legado).
+- [x] `main.ts` → `onload()`: tras `loadSettings()`, comparar `manifest.version` contra `settings.lastSeenVersion`; si difieren, actualizar y guardar `lastSeenVersion` de inmediato (antes de decidir si se muestra el modal).
 
 ### Fase B — Contenido localizado (depende de A)
-- [ ] Nuevas claves de "novedades" por versión en `src/locales/*.json` (6 idiomas), espejando (resumido) el bloque "News" que ya se redacta a mano en `README.md` por cada release.
-- [ ] Función que, dado `lastSeenVersion`, resuelve la lista de versiones posteriores con contenido a mostrar, de la más reciente a la más antigua (acumulativo, no solo la última versión).
+- [x] Nuevas claves de "novedades" por versión en `src/locales/*.json` (6 idiomas), espejando (resumido) el bloque "News" que ya se redacta a mano en `README.md` por cada release.
+- [x] Función que, dado `lastSeenVersion`, resuelve la lista de versiones posteriores con contenido a mostrar, de la más reciente a la más antigua (acumulativo, no solo la última versión).
+
+- [ ] Cierre de v1.1.13 (Fase 9): revisar la entrada `whats_new.v1_1_13` en los 6 idiomas y completarla con lo que se publique (Kanban, Gantt).
 
 ### Fase C — Modal (depende de A y B)
-- [ ] Nuevo `src/modals/whats-new-modal.ts` + `src/modals/templates/whats-new-modal.hbs`.
-- [ ] Botón de cierre propio, visible dentro del contenido (no depende únicamente del cierre nativo del modal de Obsidian).
-- [ ] Si `showWhatsNewOnUpdate` es `false`, el modal no se abre (pero `lastSeenVersion` ya se actualizó en la Fase A).
+- [x] Nuevo `src/modals/whats-new-modal.ts` + `src/modals/templates/whats-new-modal.hbs`.
+- [x] Botón de cierre propio, visible dentro del contenido (no depende únicamente del cierre nativo del modal de Obsidian).
+- [x] Si `showWhatsNewOnUpdate` es `false`, el modal no se abre (pero `lastSeenVersion` ya se actualizó en la Fase A).
 - [ ] Verificable sola: al simular un cambio de versión (editar `lastSeenVersion` manualmente a una versión anterior y recargar el plugin), el modal se abre una sola vez con el contenido correcto en el idioma activo de Obsidian; con el ajuste desactivado, no se abre pero tampoco vuelve a aparecer al reactivarlo.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
 Fetch en vivo desde GitHub Releases; renderizado de Markdown libre (imágenes, video, bloques de código embebidos); preferencia granular "solo versiones con funcionalidad nueva" (mayor/menor) vs. todas; cualquier mecanismo de feedback tipo formulario.

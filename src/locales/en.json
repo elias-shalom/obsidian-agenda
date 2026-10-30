@@ -359,6 +359,16 @@
   "habit_folder_invalid_parent": "The path cannot contain '..'",
   "habit_folder_invalid_chars": "The path cannot contain : * ? \" < > |",
   "habit_folder_create_failed": "Could not create the folder '{path}': {reason}",
+  "show_whats_new_on_update": "Show what's new after an update",
+  "show_whats_new_on_update_desc": "Open a window with the new features the first time you start Obsidian after updating the plugin",
+  "whats_new": {
+    "title": "What's new in Agenda Tasks",
+    "close": "Close",
+    "v1_1_13": {
+      "title": "Tabs, habit folder and labels",
+      "items": "A single Show Tasks tab switch replaces the List and Table switches, and a new Show Habits tab switch hides the whole Habits tab.\nIf the habits folder does not exist, creating your first habit offers to create it, and Settings tells you whether it exists.\nThe sort and group selectors of the habit views now have a label (Sort: / Group:).\nThis window: after an update you will see what's new once; you can turn it off in Settings."
+    }
+  },
   "habit_new_habit": "New habit",
   "habit_edit_habit": "Edit habit",
   "habit_field_name": "Name",

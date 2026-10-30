@@ -358,6 +358,16 @@
   "habit_folder_invalid_parent": "La ruta no puede contener '..'",
   "habit_folder_invalid_chars": "La ruta no puede contener : * ? \" < > |",
   "habit_folder_create_failed": "No se pudo crear la carpeta '{path}': {reason}",
+  "show_whats_new_on_update": "Mostrar las novedades al actualizar",
+  "show_whats_new_on_update_desc": "Abre una ventana con las novedades la primera vez que inicias Obsidian tras actualizar el plugin",
+  "whats_new": {
+    "title": "Novedades de Agenda Tasks",
+    "close": "Cerrar",
+    "v1_1_13": {
+      "title": "Pestañas, carpeta de hábitos y rótulos",
+      "items": "Un solo interruptor «Mostrar pestaña Tareas» sustituye a los de Lista y Tabla, y el nuevo «Mostrar pestaña Hábitos» oculta toda la pestaña de Hábitos.\nSi la carpeta de hábitos no existe, al crear tu primer hábito se ofrece crearla, y Ajustes indica si existe.\nLos selectores de orden y agrupación de las vistas de hábitos tienen ahora un rótulo (Orden: / Grupo:).\nEsta ventana: tras actualizar verás las novedades una sola vez; puedes desactivarla en Ajustes."
+    }
+  },
   "habit_new_habit": "Nuevo hábito",
   "habit_edit_habit": "Editar hábito",
   "habit_field_name": "Nombre",

@@ -4,6 +4,9 @@ export interface AgendaPluginSettings {
   showTasksTab: boolean;
   showCalendarTab: boolean;
   showHabitTab: boolean;
+  /** Versión del plugin cuyas novedades ya se anunciaron (v1.1.13); vacío si nunca se guardó. */
+  lastSeenVersion: string;
+  showWhatsNewOnUpdate: boolean;
   weekStartDay: number;
   calendarShowDueDates: boolean;
   calendarShowStartDates: boolean;
@@ -33,6 +36,8 @@ export const DEFAULT_SETTINGS: AgendaPluginSettings = {
   showTasksTab: true,
   showCalendarTab: true,
   showHabitTab: true,
+  lastSeenVersion: "",
+  showWhatsNewOnUpdate: true,
   weekStartDay: 1,
   calendarShowDueDates: true,
   calendarShowStartDates: false,

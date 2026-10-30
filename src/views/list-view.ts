@@ -58,7 +58,7 @@ export class ListView extends BaseView {
       i18n: this.i18n,
       tasks: this.tasks,
       state: { ...saved, group: saved.group || LIST_DEFAULT_GROUP },
-      modeSwitch: buildTaskModeSwitch(this.i18n, this.plugin.settings, 'list', (mode) => {
+      modeSwitch: buildTaskModeSwitch(this.i18n, 'list', (mode) => {
         saveTaskViewMode(this.app, mode);
         this.plugin.viewManager.activateView(TASK_MODE_VIEWS[mode], this.leaf);
       }),

@@ -12,7 +12,7 @@
     </div>
     {{/if}}
 
-    {{#if (or settings.showListTab settings.showTableTab)}}
+    {{#if settings.showTasksTab}}
     <div id="oa-tasks-view-container" class="c-tab-container">
       <button id="oa-tasks-view-tab" class="c-tab">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-checks">
@@ -33,6 +33,7 @@
     </div>
     {{/if}}
 
+    {{#if settings.showHabitTab}}
     {{#if (or settings.showHabitGridTab settings.showHabitDashboardTab settings.showHabitRoutineTab settings.showHabitWeeklyTab settings.showHabitListTab)}}
     <div id="oa-habit-view-container" class="c-tab-container">
       <button id="oa-habit-view-tab" class="c-tab">
@@ -43,6 +44,7 @@
         <span class="tab-text">{{t "habit_view_tab"}}</span>
       </button>
     </div>
+    {{/if}}
     {{/if}}
     <!--<div id="oa-timeline-view-container" class="c-tab-container">
       <button id="oa-timeline-view-tab" class="c-tab">

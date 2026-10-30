@@ -7,7 +7,7 @@ import { SettingTab } from "./settings/setting-tab";
 import { TASK_MODAL_TYPE, ModalManager } from "./core/modal-manager";
 import { addTaskFieldMenuItems } from "./core/task-field-menu";
 import { isTaskLine } from "./core/task-line-fields";
-import { DEFAULT_SETTINGS, AgendaPluginSettings, } from "./settings/settings";
+import { DEFAULT_SETTINGS, AgendaPluginSettings, migrateTabSettings } from "./settings/settings";
 import { DayChangeWatcher } from "./core/day-change";
 
 export default class ObsidianAgenda extends Plugin {
@@ -135,7 +135,7 @@ export default class ObsidianAgenda extends Plugin {
 
   async loadSettings(): Promise<void> {
     const raw: unknown = await this.loadData();
-    const data = (raw && typeof raw === "object") ? raw as Partial<AgendaPluginSettings> : {};
+    const data = (raw && typeof raw === "object") ? migrateTabSettings(raw as Record<string, unknown>) : {};
 
     // Merge genérico: cualquier clave guardada sobrescribe su default, sin necesidad de listarla aquí.
     this.settings = { ...DEFAULT_SETTINGS, ...data };

@@ -33,9 +33,9 @@ export class SettingTab extends PluginSettingTab {
         heading: this.i18n.t('tabs_visibility_settings'),
         items: [
           { name: this.i18n.t('show_overview_tab'), control: { type: 'toggle', key: 'showOverviewTab' } },
-          { name: this.i18n.t('show_list_tab'), control: { type: 'toggle', key: 'showListTab' } },
-          { name: this.i18n.t('show_table_tab'), control: { type: 'toggle', key: 'showTableTab' } },
+          { name: this.i18n.t('show_tasks_tab'), control: { type: 'toggle', key: 'showTasksTab' } },
           { name: this.i18n.t('show_calendar_tab'), control: { type: 'toggle', key: 'showCalendarTab' } },
+          { name: this.i18n.t('show_habit_tab'), control: { type: 'toggle', key: 'showHabitTab' } },
           {
             name: this.i18n.t('week_start_day'),
             render: (setting) => {
@@ -207,20 +207,11 @@ export class SettingTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
-      .setName(this.i18n.t("show_list_tab"))
+      .setName(this.i18n.t("show_tasks_tab"))
       .addToggle(toggle => toggle
-        .setValue(this.plugin.settings.showListTab)
+        .setValue(this.plugin.settings.showTasksTab)
         .onChange(async (value) => {
-          this.plugin.settings.showListTab = value;
-          await this.plugin.saveSettings();
-        }));
-
-    new Setting(containerEl)
-      .setName(this.i18n.t("show_table_tab"))
-      .addToggle(toggle => toggle
-        .setValue(this.plugin.settings.showTableTab)
-        .onChange(async (value) => {
-          this.plugin.settings.showTableTab = value;
+          this.plugin.settings.showTasksTab = value;
           await this.plugin.saveSettings();
         }));
 
@@ -230,6 +221,15 @@ export class SettingTab extends PluginSettingTab {
         .setValue(this.plugin.settings.showCalendarTab)
         .onChange(async (value) => {
           this.plugin.settings.showCalendarTab = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("show_habit_tab"))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.showHabitTab)
+        .onChange(async (value) => {
+          this.plugin.settings.showHabitTab = value;
           await this.plugin.saveSettings();
         }));
 

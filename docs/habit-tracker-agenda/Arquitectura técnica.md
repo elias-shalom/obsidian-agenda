@@ -301,6 +301,7 @@ this.addCommand({ id: "oa-habit-edit", name: this.i18n.t("habit_edit_habit"),
 ## 8. Manejo de errores y estados
 
 - Ruta inexistente → la vista muestra `habit_no_habits_at '{habitFolderPath}'` (patrón `fatalError` de HT21).
+- **v1.1.13 (diseño)**: las cinco vistas muestran ese mensaje (hoy Rutina y Dashboard no); al guardar un hábito nuevo se pregunta por la carpeta y se crea; Ajustes avisa si la ruta no existe (ver `agenda-tasks/Arquitectura técnica.md` §25).
 - Frontmatter corrupto → se omite el hábito con log `console.warn` (debug).
 - Campo `area`/`frequency`/`priority` inválido → normalización silenciosa a defaults (`temporal` / `everyday` / `3`), ver §2.6 y [[Modelo de datos]] §7.
 - Sin hábitos → estado vacío con instrucción: crear nota en la ruta, usar el **Habit Creator** (`+`/comando) o ir a [[habit gen]].

@@ -365,8 +365,8 @@ Fetch en vivo desde GitHub Releases; renderizado de Markdown libre (imágenes, v
 - [x] `attachTaskGestures()` en `src/core/task-gestures.ts` ([[Arquitectura técnica]] §20.3.1): se migra primero el calendario, con la misma lógica de temporizador, y después Lista y Tabla. Hecho: calendario, Lista y Tabla; en Lista y Tabla `onChanged` pasa a ser `refreshView()` (lectura forzada, como en el calendario) en lugar de `onOpen()`.
 - [x] Separar los ids ([[Arquitectura técnica]] §20.3.2): `ITask.id` siempre `ruta#línea`, el `🆔` en `ITaskFlow.id`; ajustar el extractor, el modal (`isAutoId`) y el atributo `data-task-id` de la Tabla (el atributo conserva `{{id}}`, que ahora es la posición; nada lo lee).
 - [x] Escritura segura: `updateTaskLine()` e `insertLineAbove()` con el texto esperado de la línea, búsqueda de la línea exacta y aviso si no se encuentra (`locateTaskLine()` en `src/core/task-line-locator.ts`; `updateTaskLine()` devuelve dónde escribió y la ocurrencia recurrente se inserta con ese resultado; `CalendarView.writeTaskLine()` toma el texto esperado de la tarea dibujada y avisa con `task_line_changed`); actualizar los ~10 sitios que escriben (arrastrar, redimensionar, estado y modal) y probar el cálculo con scripts de Node.
-- [ ] Verificable sola: el calendario, la Lista y la Tabla se comportan igual que antes; la Tabla filtra con la barra nueva; Lista y Tabla ganan el menú de estado con clic derecho.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] Verificable sola: el calendario, la Lista y la Tabla se comportan igual que antes; la Tabla filtra con la barra nueva; Lista y Tabla ganan el menú de estado con clic derecho. (probado a mano)
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase B — Vista Kanban (depende de A)
 - [ ] `KanbanView` + `KANBAN_VIEW_TYPE`, registrada en `ViewManager`/`index.ts`/`TEMPLATE_LOADERS`, con `kanban-view.hbs` y `_kanban.scss`.
@@ -421,7 +421,7 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [x] `resolveTaskArea(filePath)` según la tabla de [[Especificación de vistas]] §13.1: área = primera carpeta, sub-área = resto de la ruta sin tope de niveles; para la raíz del vault devuelve cadenas vacías y el grupo «Sin área» es cosa de la interfaz (AR2).
 - [x] Criterios `location.area` y `location.subArea` en `TaskFilter` (vía `matchesTaskArea()`), con coincidencia de sub-área por prefijo de carpeta.
 - [x] Verificable sola: un script de Node confirma `resolveTaskArea()` para las cinco rutas de la tabla y el filtro por prefijo; Hábitos se ve igual que antes (comprobado en el script: etiquetas y colores sin cambios; falta la comprobación visual en Obsidian).
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase AR2 — Filtro y agrupado (depende de AR1 y de la Fase A de Kanban)
 - [x] Combobox de Área y de Sub-área (en cascada, oculto sin área elegida) en la barra de filtros compartida, con opciones tomadas de las tareas cargadas.
@@ -431,8 +431,8 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [x] Lista agrupa por área y sub-área (anidada por carpeta) y conserva el modo plano (valor «Carpeta» del combo).
 - [x] Color por área en las cabeceras de grupo (`getAreaColor`, franja a la izquierda; los hijos heredan el color).
 - [ ] Claves i18n nuevas en los 6 locales.
-- [ ] Verificable sola: elegir un área muestra el combobox de sub-área con solo sus sub-áreas; cambiar de área lo reinicia; Lista y Tabla filtran igual.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] Verificable sola: elegir un área muestra el combobox de sub-área con solo sus sub-áreas; cambiar de área lo reinicia; Lista y Tabla filtran igual. (probado a mano)
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
 Área configurable por tarea o por nota; mover tareas entre áreas arrastrando; áreas sin carpeta.
@@ -444,28 +444,28 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 ### Fase U1 — Estado compartido y barra (depende de la Fase A de Kanban)
 - [x] `src/core/task-view-state.ts` con `TaskViewState` y su persistencia en una sola clave (`obsidian-agenda-task-view-state`); migración de la clave antigua de la Tabla (`folder` pasa a `area`, la prioridad a minúsculas).
 - [x] La barra de filtros incorpora el combo de agrupado y el control de orden (campo y dirección), opcionales según lo que pase la vista. La Tabla ya usa el de orden, sincronizado con los encabezados de columna.
-- [ ] Verificable sola: el estado se guarda y se restaura entre recargas, y el valor `folder` antiguo se convierte o se reinicia.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] Verificable sola: el estado se guarda y se restaura entre recargas, y el valor `folder` antiguo se convierte o se reinicia. (probado a mano)
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase U2 — Lista adopta la barra (depende de U1)
 - [x] La Lista usa la barra: gana búsqueda, filtros y orden, que hoy no tiene. El orden usa `sortTasksByColumn()` (`src/core/task-column-sort.ts`, las columnas de la Tabla; sin fecha de vencimiento siempre al final) y el estado se lee al abrir y se escribe al cambiar. Al cambiar un control solo se redibuja el cuerpo de la lista, no la barra.
 - [x] El botón jerárquico/plano pasa a ser valores del combo de agrupado: Área y sub-área (anidado, por defecto), Carpeta (plano), Sin agrupar, y además Estado, Prioridad, Etiqueta y Vencimiento. El agrupado guardado vacío significa «el de cada vista»; las claves de plegado de las carpetas se conservan.
-- [ ] Verificable sola: filtrar y ordenar en la Lista funciona y el agrupado conserva el comportamiento anterior (comprobado con script de Node: árbol, orden y plantilla; falta la comprobación visual en Obsidian).
+- [x] Verificable sola: filtrar y ordenar en la Lista funciona y el agrupado conserva el comportamiento anterior (comprobado con script de Node: árbol, orden y plantilla; falta la comprobación visual en Obsidian). (probado a mano)
 
 ### Fase U3 — Tabla adopta la barra (depende de U1)
 - [x] La Tabla filtra sobre datos con `TaskFilter` en lugar de ocultar filas del DOM (las filas se identifican con `data-task-id`).
 - [x] Agrupado en la Tabla con filas de cabecera plegables y estado recordado (mismos valores que la Lista; por defecto sin agrupar; el plegado comparte clave con la Lista).
 - [x] Los encabezados ordenables actualizan el orden compartido. La Tabla ordena y agrupa sobre datos con `sortTasksByColumn()` y `groupTasksForView()` y redibuja solo las filas (`refreshRows()`); la columna Carpeta ordena ahora por área y luego por ruta.
 - [x] Ajustar las columnas al ancho disponible del contenedor en `resizeColumns()`: las flexibles se reducen en proporción sin bajar de su mínimo, con la ventana como referencia en escritorio y el ancho del dispositivo en tableta y teléfono; máximos afinados (Tarea 520, Área 160, Etiquetas 240) y la ruta bajo la tarea no cuenta para el ancho.
-- [ ] Verificable sola: la Tabla se comporta como antes sin agrupar, y agrupa y pliega al elegir un agrupado (comprobado con script de Node: orden, filas y plantilla; falta la comprobación visual en Obsidian, incluido el ajuste de ancho en tableta y teléfono).
+- [x] Verificable sola: la Tabla se comporta como antes sin agrupar, y agrupa y pliega al elegir un agrupado (comprobado con script de Node: orden, filas y plantilla; falta la comprobación visual en Obsidian, incluido el ajuste de ancho en tableta y teléfono). (probado a mano)
 
 ### Fase U4 — Pestaña única y conmutador (depende de U2 y U3)
 - [x] Conmutador segmentado Lista | Tabla, con las clases del selector del calendario, íconos `list-todo` y `table` y tooltip; cambia de vista con `viewManager.activateView()` sobre la misma hoja (`buildTaskModeSwitch()` en `src/core/task-filter-bar.ts`; se oculta si solo un modo está visible).
 - [x] `header.hbs`: un solo botón «Tareas» (`oa-tasks-view-tab`) visible si `showListTab` o `showTableTab`; abre el último modo usado (`TaskViewState.mode`, que cada vista guarda al abrirse; `getDefaultTasksView()` en `base-view.ts`).
 - [x] Excepción de resaltado de pestaña activa en `base-view.ts` para `list-view` y `table-view`.
 - [x] Claves i18n nuevas en los 6 locales (`tasks_view_tab`). Las vistas guardan el agrupado solo si el cambio fue el del propio agrupado (`persistTaskViewState()`), para que el agrupado por defecto de cada vista no quede fijado al cambiar otro control.
-- [ ] Verificable sola: cambiar de modo conserva búsqueda, filtros, agrupado y orden; la pestaña se ilumina en ambos modos (el estado se comprobó con script de Node; falta la comprobación visual en Obsidian).
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] Verificable sola: cambiar de modo conserva búsqueda, filtros, agrupado y orden; la pestaña se ilumina en ambos modos (el estado se comprobó con script de Node; falta la comprobación visual en Obsidian). (probado a mano)
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase U5 — Funciones anunciadas de la Tabla (pasa a v1.1.18; por diseñar, depende de U3 y U7)
 - [ ] Diseñar y agregar columnas y diseño personalizables de la Tabla (Especificación §14.3).
@@ -480,7 +480,7 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [x] **U6.5 Estilos**: chips y × con `padding … !important` por el relleno de Obsidian en tableta, `max-width` con puntos suspensivos, estados `hover`/`focus-visible`; se quitaron las reglas de los combos de filtro.
 - [x] **U6.6 i18n**: claves `filter_add`, `filter_clear` y `filter_remove` en los 6 idiomas; eliminadas `all_priorities`, `all_tasks`, `all_areas` y `all_dates` (sin otros usos). Una sub-área guardada que ya no existe también se reinicia al abrir.
 - [x] Verificable sola con un script de Node (`task-filter-chips.ts`): los chips de cada combinación de estado, quitar Área reinicia la sub-área, Limpiar no toca búsqueda ni orden ni agrupado, y los valores no incluyen «Todos».
-- [ ] Prueba manual: escritorio, `app.emulateMobile(true)` en ventana estrecha (`is-phone`) y ancha (`is-tablet`), tema claro y oscuro, teclado (Tab, Enter y Escape en los menús), y que cambiar de Lista a Tabla conserva los chips.
+- [x] Prueba manual: escritorio, `app.emulateMobile(true)` en ventana estrecha (`is-phone`) y ancha (`is-tablet`), tema claro y oscuro, teclado (Tab, Enter y Escape en los menús), y que cambiar de Lista a Tabla conserva los chips. (probado a mano)
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase U7 — Columnas de fechas de la Tabla y filtros por fecha (depende de U3 y U6; diseño en [[Especificación de vistas]] §14.5 y [[Arquitectura técnica]] §23.8)
@@ -492,7 +492,7 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [x] **U7.6 `resizeColumns()`**: límites por columna (`data-column`) con los anchos de §14.5 (Tarea 170–380, Prioridad y Estado 36–44, Área 72–140, fechas 90–120, Etiquetas 80–200).
 - [x] **U7.7 i18n**: textos nuevos y corregidos en los 6 idiomas (`date_past`, `date_today`, `date_this_week`, `date_future`, `column_start`, `column_scheduled`, `column_due`, `column_closed`, `due_today`, `due_this_week`, `has_any_date`); eliminar `dates` y, si no tiene otros usos, `future_tasks`.
 - [x] Verificable sola con un script de Node: `matchesDateFilter()` para cada valor y tipo (incluida la vencida solo con tarea abierta), chips y valores de los seis tipos, orden por las columnas nuevas con las sin fecha al final, y `getColumnVisibility()` con y sin tareas que tengan cada fecha.
-- [ ] Prueba manual: tabla con todas las fechas y tabla sin Inicio ni Cerrada; filtros de los tres tipos; orden desde el encabezado y desde la barra; cabeceras de grupo con el `colspan` correcto; anchos en escritorio, tableta y teléfono emulados.
+- [x] Prueba manual: tabla con todas las fechas y tabla sin Inicio ni Cerrada; filtros de los tres tipos; orden desde el encabezado y desde la barra; cabeceras de grupo con el `colspan` correcto; anchos en escritorio, tableta y teléfono emulados. (probado a mano)
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase U8 — Refresco automático de las vistas (diseño en [[Especificación de vistas]] §14.6 y [[Arquitectura técnica]] §23.9)
@@ -503,11 +503,53 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [x] **U8.5 `BaseView`**: suscripción y baja, aplazado con `isBusy()`, vista oculta pendiente hasta activarse, refresco silencioso (`runAutoRefresh()`) sin pantalla de carga y con scroll conservado, firma de lo cargado en `getAllTasks()`; `refreshView()` cancela la petición pendiente.
 - [x] **U8.6 `HabitView`**: `performAutoRefresh()` propio; el evento `obsidian-agenda:habits-refresh` cancela la petición pendiente.
 - [x] Verificable sola con un script de Node: el programador (agrupa, aplaza si está ocupado, repite una vez si llega otra petición durante la ejecución, cancela), la firma (cambia con el texto de una línea o con una tarea nueva, no con otra nota), `msUntilNextMidnight()` incluido un cambio de horario, y el emisor de `TaskManager` con un gestor simulado.
-- [ ] Prueba manual: editar una tarea en otro panel y ver el cambio en la Lista, la Tabla y el Calendario; guardar una nota sin tareas (no debe redibujar); escribir en la búsqueda mientras se edita en otro panel; arrastrar en el Calendario mientras llegan cambios; la Rutina pasada la medianoche; scroll, filtros y grupos plegados conservados; vista en otra pestaña que se actualiza al volver; editar desde la propia Tabla (un solo redibujo).
+- [x] Prueba manual: editar una tarea en otro panel y ver el cambio en la Lista, la Tabla y el Calendario; guardar una nota sin tareas (no debe redibujar); escribir en la búsqueda mientras se edita en otro panel; arrastrar en el Calendario mientras llegan cambios; la Rutina pasada la medianoche; scroll, filtros y grupos plegados conservados; vista en otra pestaña que se actualiza al volver; editar desde la propia Tabla (un solo redibujo). (probado a mano)
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
 Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones masivas.
+
+## Próxima fase — v1.1.13: ajustes de pestañas y carpeta de hábitos (diseño)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §18. Mecanismo: [[Arquitectura técnica]] §25. **Nada de esta fase está implementado.** Sin decisiones de diseño abiertas. Cada fase incluye sus scripts de prueba de Node.
+
+### Fase S1 — Visibilidad de pestañas
+- [x] `showTasksTab` y `showHabitTab` (por defecto `true`) en `settings.ts`; se eliminan `showListTab` y `showTableTab`.
+- [x] `migrateTabSettings()` puro, llamado desde `loadSettings()`: `showTasksTab` queda desactivado solo si los dos ajustes antiguos estaban desactivados; se borran las claves antiguas.
+- [x] `header.hbs`: la pestaña Tareas depende de `showTasksTab`; la de Hábitos, de `showHabitTab` y de al menos una subvista activa.
+- [x] `buildTaskModeSwitch()` siempre con Lista y Tabla; `getDefaultTasksView()` sin comprobar visibilidad.
+- [x] `setting-tab.ts`: interruptores «Show Tasks tab» y «Show Habits tab» en `getSettingDefinitions()` y en `display()`; se quitan los de List y Table.
+- [x] Verificable sola: `migrateTabSettings()` con las cuatro combinaciones antiguas y con ajustes nuevos.
+
+### Fase S2 — Carpeta de hábitos (depende de ninguna)
+- [ ] `src/habits/habit-folder.ts`: `normalizeHabitFolderPath()` y `evaluateHabitFolderHint()`.
+- [ ] `HabitManager.ensureFolder()` y el parámetro `saveSettings` del constructor.
+- [ ] `HabitFolderModal` con ruta editable, validación en vivo, Crear y Cancelar; estilos reutilizados del Habit Editor.
+- [ ] `HabitEditorModal.save()`: al crear con la carpeta inexistente, pregunta, crea la ruta y guarda la ruta nueva en Ajustes si cambió; con Cancelar no guarda; un error al crear se avisa sin guardar el hábito.
+- [ ] Verificable sola: rutas válidas, absolutas, con `..`, con caracteres no permitidos y vacías; `ensureFolder()` con un vault simulado (orden de creación, carpeta existente y choque con un archivo).
+
+### Fase S3 — Vistas de hábitos sin hábitos (depende de S2)
+- [ ] `HabitView.getEmptyMessage()` y su uso en las cinco vistas; Rutina y Dashboard reciben `emptyMessage` y sus plantillas lo muestran.
+- [ ] Verificable sola: con cero hábitos y con la carpeta inexistente, las cinco vistas se muestran sin error, con el mensaje y la ruta.
+
+### Fase S4 — Aviso en Ajustes (depende de S2)
+- [ ] Campo de la ruta como `render` personalizado con aviso de tres estados (existe, no existe, ruta no válida), recalculado con `debounce` de 500 ms; guarda `habitFolderPath` a mano; mismo resultado en `display()`.
+- [ ] Claves i18n nuevas en los 6 locales y se eliminan `show_list_tab` y `show_table_tab`.
+- [ ] Verificable sola: `evaluateHabitFolderHint()` para cada estado.
+- [ ] Documentación al implementar: README, manual en/es (Tab Visibility y carpeta de hábitos) y «News» de la versión.
+- [ ] Prueba manual: ocultar Tareas y Hábitos desde Ajustes; actualizar desde una configuración con solo la Tabla visible; crear el primer hábito sin carpeta (Crear, Cancelar y ruta nueva); escribir rutas válidas y no válidas en Ajustes; abrir las cinco vistas sin hábitos.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fase S5 — Rótulos de los combos de hábitos (independiente; diseño en [[Especificación de vistas]] §18.6 y [[Arquitectura técnica]] §25.8)
+- [ ] i18n: `habit_sort_label` y `habit_group_label` en los 6 idiomas; `habit_sort_daytime` en español pasa a «Por momento del día».
+- [ ] Plantillas de Cuadrícula, Semanal y Rutina: `data-label` en el contenedor y `aria-label` y `title` en el `<select>`; el combo de agrupar de Rutina usa `habit_daytime` y `habit_area`.
+- [ ] Estilos del prefijo en `_habit-common.scss` (`::before` con `attr(data-label)`), sin romper la barra en tableta y teléfono.
+- [ ] Verificable sola: script de Node que comprueba que los 6 locales tienen las dos claves nuevas.
+- [ ] Prueba manual: los combos de Cuadrícula, Semanal y Rutina con su rótulo en escritorio, `is-tablet` e `is-phone`, tema claro y oscuro; cambiar de idioma; el orden y la agrupación elegidos siguen funcionando.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fuera de alcance
+Crear carpetas sin preguntar; botones nuevos en las vistas; migrar hábitos existentes.
 
 ## Próxima fase — v1.1.15: sincronía con Google Calendar (diseño)
 

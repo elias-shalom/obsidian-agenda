@@ -861,7 +861,7 @@ La barra incorpora un combo de agrupado y un control de orden. El agrupado usa `
 
 Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones masivas.
 
-### 23.7 Barra de filtros con chips (v1.1.12, implementado; falta la prueba manual)
+### 23.7 Barra de filtros con chips (v1.1.12, implementado y probado a mano)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.4. Es un cambio solo de la capa de interfaz de `TaskFilterBar`: `TaskViewState`, `filterTasksByViewState()` y las vistas no cambian.
 
@@ -896,7 +896,7 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.4. Es
 
 **Riesgos**: la posición y el cierre de los menús en móvil (se resuelven con el `Menu` nativo, pero hay que probarlos en tableta y teléfono); el foco del teclado al volver de un menú (no se devuelve al botón o chip que lo abrió: al elegir un valor el chip se redibuja; si molesta, se mejora después); y que quien está acostumbrado a los combos no encuentre los filtros (el botón + Filtro lleva texto, no solo ícono).
 
-### 23.8 Columnas de fechas y filtros por fecha (v1.1.12, implementado; falta la prueba manual)
+### 23.8 Columnas de fechas y filtros por fecha (v1.1.12, implementado y probado a mano)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.5. Amplía §23.1 (estado), §23.7 (chips) y la plantilla de la Tabla.
 
@@ -933,7 +933,7 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.5. Am
 
 **Riesgos**: `table-layout: fixed` con columnas que aparecen y desaparecen (los anchos deben salir de las columnas visibles, no de las siete de antes); que la Lista comparta el combo de orden y muestre las columnas nuevas (Cerrada) aunque ella no las dibuja; y el cambio de significado de «Con fecha» y «Sin fecha» en estados ya guardados (el valor se conserva, pero ahora se aplica solo al vencimiento).
 
-### 23.9 Refresco automático de las vistas (v1.1.12, implementado; falta la prueba manual)
+### 23.9 Refresco automático de las vistas (v1.1.12, implementado y probado a mano)
 
 Comportamiento y decisiones: [[Especificación de vistas]] §14.6.
 
@@ -1063,3 +1063,61 @@ El repo no tiene pruebas automatizadas y un error de sincronización escribe en 
 ### 24.13 Fuera de alcance (v1.1.15)
 
 Google Tasks, Microsoft y el plugin Tasks; varias cuentas de Google; `🔁` ↔ RRULE; el botón directo sin credenciales propias; inicio de sesión por copiar y pegar en móvil.
+
+
+## 25. Ajustes de pestañas y carpeta de hábitos (v1.1.13, diseño — no implementado)
+
+Comportamiento y decisiones: [[Especificación de vistas]] §18.
+
+### 25.1 Visibilidad de pestañas
+
+- `AgendaPluginSettings` gana `showTasksTab` y `showHabitTab` (ambos `true` por defecto) y pierde `showListTab` y `showTableTab`.
+- **Migración** en una función pura `migrateTabSettings(saved)` de `settings.ts`, llamada desde `loadSettings()` tras el merge `{ ...DEFAULT_SETTINGS, ...data }`: si lo guardado no trae `showTasksTab`, se calcula como `!(saved.showListTab === false && saved.showTableTab === false)`; después se borran las dos claves antiguas del objeto.
+- Consumidores: `header.hbs` (`{{#if settings.showTasksTab}}` y `{{#if settings.showHabitTab}}` envolviendo el `(or ...)` actual de las cinco subvistas; el helper `and` no existe), `buildTaskModeSwitch()` en `task-filter-bar.ts` (siempre Lista y Tabla; desaparece el caso de un solo modo) y `getDefaultTasksView()` en `base-view.ts` (sin comprobar visibilidad).
+- `setting-tab.ts`: los dos interruptores nuevos en `getSettingDefinitions()` y en `display()`; se eliminan los de List y Table.
+
+### 25.2 Carpeta de hábitos
+
+- **Módulo puro** `src/habits/habit-folder.ts`: `normalizeHabitFolderPath(input, fallback)` devuelve `{ ok: true, path }` o `{ ok: false, reason }` con `reason` en `absolute`, `parent` o `chars` (claves i18n `habit_folder_invalid_*`); y `evaluateHabitFolderHint(input, exists)` devuelve `ok`, `missing` o `invalid` para Ajustes.
+- **`HabitManager.ensureFolder(path)`**: recorre los segmentos acumulados y llama a `vault.createFolder()` en los que no existen; si un segmento existe como archivo, lanza un error; tolera que la carpeta ya exista por una carrera. `HabitManager` recibe un cuarto parámetro `saveSettings` para guardar la ruta nueva (hoy solo recibe un lector de ajustes).
+- **`HabitFolderModal`** (`src/habits/habit-folder-modal.ts`): modal de Obsidian con un campo de texto, validación en vivo con la misma función, **Crear** deshabilitado mientras la ruta no sea válida, Intro para confirmar y Esc para cancelar; reutiliza las clases `.oa-btn` y de campo del Habit Editor. `open()` devuelve una promesa con la ruta confirmada o `null`.
+- **Flujo** en `HabitEditorModal.save()`, solo al crear: si `habitManager.folderExists()` es falso, se abre el modal; con `null` se sale sin guardar; con una ruta, `ensureFolder()` y, si cambió, se guarda en `habitFolderPath` antes de `createHabit()`. Un error al crear se muestra con `Notice` y no se guarda el hábito.
+
+### 25.3 Vistas sin hábitos
+
+`HabitView` ofrece `getEmptyMessage()` (`habit_no_habits`, o `habit_no_habits_at` con la ruta si la carpeta no existe) y las cinco vistas lo usan. Rutina y Dashboard pasan a recibir `emptyMessage` en sus datos y sus plantillas sustituyen `{{t "habit_no_habits"}}` por `{{emptyMessage}}`, como ya hacen Grid, Tabla y Semanal; el código repetido de esas tres se elimina.
+
+### 25.4 Aviso en Ajustes
+
+El campo de la ruta pasa de un control `text` con `key` a un `render` personalizado, igual que `week_start_day`, que dibuja el campo y un texto de aviso debajo. El aviso se recalcula al abrir y con `debounce` (500 ms) al escribir. Al ser un control propio, guarda `habitFolderPath` a mano con `saveSettings()`. `display()` (Obsidian anterior a 1.13) obtiene el mismo resultado con `Setting` y un elemento hijo.
+
+### 25.5 i18n y pruebas
+
+- **Claves nuevas** en los 6 idiomas: `show_tasks_tab`, `show_habit_tab`, `habit_folder_modal_title`, `habit_folder_modal_desc`, `habit_folder_create`, `habit_folder_missing_hint`, `habit_folder_invalid_absolute`, `habit_folder_invalid_parent`, `habit_folder_invalid_chars` y `habit_folder_create_failed`; se eliminan `show_list_tab` y `show_table_tab`.
+- **Pruebas** con scripts de Node (el repo no tiene framework): `normalizeHabitFolderPath()` con rutas válidas, absolutas, con `..`, con caracteres no permitidos y vacías; `migrateTabSettings()` con las cuatro combinaciones de los ajustes antiguos y con ajustes nuevos; `evaluateHabitFolderHint()`; y `ensureFolder()` con un vault simulado (orden de creación, carpeta existente y choque con un archivo).
+
+### 25.6 Archivos afectados
+
+| Área | Archivos |
+|---|---|
+| Ajustes | `src/settings/settings.ts`, `src/settings/setting-tab.ts`, `src/main.ts` (`loadSettings()`) |
+| Pestañas | `src/views/templates/header.hbs`, `src/core/task-filter-bar.ts`, `src/views/base-view.ts` |
+| Carpeta de hábitos | nuevos `src/habits/habit-folder.ts` y `habit-folder-modal.ts`; `habit-manager.ts`, `habit-editor.ts`, `habit-view.ts` y las vistas de hábitos con sus plantillas |
+| i18n y docs | `src/locales/*.json`, README, manual de usuario en/es y `docs/todo.md` |
+
+### 25.7 Riesgos
+
+- Quien había ocultado solo uno de los dos modos ve ahora ambos (cambio aceptado, se anuncia en la novedad de la versión).
+- El `render` personalizado deja fuera el enlace automático de la clave de Ajustes: hay que guardar y refrescar a mano.
+- Los caracteres inválidos difieren entre sistemas operativos: se usa el conjunto más estricto (Windows) para que una ruta valga en todos.
+- Si cambia el orden de carga (los ajustes se leen después del constructor del `HabitManager`), la carpeta se calcula siempre con el lector de ajustes y no con una copia.
+
+### 25.8 Rótulos de los combos de hábitos
+
+Comportamiento: [[Especificación de vistas]] §18.6.
+
+- **Plantillas** `habit-grid-view.hbs`, `habit-weekly-view.hbs` y `habit-routine-view.hbs`: el contenedor `.oa-habit-view-selector` del combo de orden (y del de agrupar en Rutina) gana `data-label="{{t 'habit_sort_label'}}"` (o `habit_group_label`) y una clase modificadora para el prefijo; el `<select>` gana `aria-label` y `title` con el mismo texto.
+- **Estilos** en `_habit-common.scss`: el prefijo se dibuja con `::before { content: attr(data-label) }` dentro del control, sin elementos nuevos en el DOM; debe caber en `is-tablet` e `is-phone` (si no, se acorta con una variante de la clase).
+- **Opciones del combo de agrupar** de Rutina: `habit_daytime` y `habit_area` en lugar de `habit_sort_daytime` y `habit_sort_area`. No cambian los valores de las opciones, así que el código de `habit-routine-view.ts` y lo guardado quedan igual.
+- **i18n**: claves nuevas `habit_sort_label` y `habit_group_label` en los 6 idiomas; en español `habit_sort_daytime` pasa a «Por momento del día».
+- **Riesgo**: el texto de `::before` no lo anuncian los lectores de pantalla ni se puede seleccionar, por eso el `aria-label` y el `title`.

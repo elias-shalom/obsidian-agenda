@@ -1,9 +1,9 @@
 export interface AgendaPluginSettings {
   // Define your plugin settings here
   showOverviewTab: boolean;
-  showListTab: boolean;
-  showTableTab: boolean;
+  showTasksTab: boolean;
   showCalendarTab: boolean;
+  showHabitTab: boolean;
   weekStartDay: number;
   calendarShowDueDates: boolean;
   calendarShowStartDates: boolean;
@@ -30,9 +30,9 @@ export interface AgendaPluginSettings {
 
 export const DEFAULT_SETTINGS: AgendaPluginSettings = {
   showOverviewTab: true,
-  showListTab: true,
-  showTableTab: true,
+  showTasksTab: true,
   showCalendarTab: true,
+  showHabitTab: true,
   weekStartDay: 1,
   calendarShowDueDates: true,
   calendarShowStartDates: false,
@@ -54,3 +54,13 @@ export const DEFAULT_SETTINGS: AgendaPluginSettings = {
   showHabitWeeklyTab: true,
   showHabitListTab: true,
 };
+
+/** v1.1.13: `showListTab` y `showTableTab` pasan a ser `showTasksTab`; solo queda apagada si ambas lo estaban. */
+export function migrateTabSettings(saved: Record<string, unknown>): Partial<AgendaPluginSettings> {
+  const { showListTab, showTableTab, ...rest } = saved;
+  const migrated = rest as Partial<AgendaPluginSettings>;
+  if (typeof migrated.showTasksTab !== "boolean") {
+    migrated.showTasksTab = !(showListTab === false && showTableTab === false);
+  }
+  return migrated;
+}

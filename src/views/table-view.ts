@@ -63,7 +63,7 @@ export class TableView extends BaseView {
       i18n: this.i18n,
       tasks: this.tasks,
       state: { ...saved, group: saved.group || TABLE_DEFAULT_GROUP },
-      modeSwitch: buildTaskModeSwitch(this.i18n, (this.plugin as AgendaPlugin).settings, 'table', (mode) => {
+      modeSwitch: buildTaskModeSwitch(this.i18n, 'table', (mode) => {
         saveTaskViewMode(this.app, mode);
         (this.plugin as AgendaPlugin).viewManager.activateView(TASK_MODE_VIEWS[mode], this.leaf);
       }),

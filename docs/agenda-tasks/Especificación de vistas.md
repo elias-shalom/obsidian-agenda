@@ -550,7 +550,7 @@ El ajuste de las columnas al ancho disponible, decidido durante la 1.1.11, se im
 
 El README y el manual de usuario anuncian para la Tabla **columnas y diseño personalizables** y **exportación a CSV**, que no existen en el código. Se decidió **no** hacerlos en v1.1.12 y pasarlos a v1.1.18; mientras tanto se quitó el anuncio del README y del manual. Sin diseño todavía; a decidir: qué columnas se pueden mostrar, ocultar y reordenar, dónde se guarda esa elección (hoy el estado de la Tabla va en `TABLE_VIEW_STATE_KEY`, §3), qué filas y columnas exporta el CSV (todas o solo las visibles tras filtrar), el separador y la codificación, y dónde se guarda o descarga el archivo.
 
-### 14.4 Barra de filtros con chips (v1.1.12 — implementado; falta la prueba manual)
+### 14.4 Barra de filtros con chips (v1.1.12 — implementado y probado a mano)
 
 **Problema.** Con todos los controles en una sola fila (conmutador de modo, cinco combos de filtro, agrupado, orden y dirección), la barra se parte donde cae el ancho: el orden salta a una segunda fila sin criterio, los combos tienen anchos distintos, la búsqueda queda lejos y flotando, y el combo de estado dice «All tasks», que se confunde con «todas las tareas».
 
@@ -582,7 +582,7 @@ El estado compartido (`TaskViewState`, §23.1) y el filtrado no cambian: los chi
 
 **Decisiones**: sin decisiones abiertas. Se descartó el panel plegable con combos (más conocido, pero muestra los filtros activos solo por un número) y los submenús de un solo menú (la API pública de `Menu` en los tipos de Obsidian instalados no expone submenús, así que la elección en pasos usa menús sucesivos).
 
-### 14.5 Columnas de fechas de la Tabla y filtros por fecha (v1.1.12 — implementado; falta la prueba manual)
+### 14.5 Columnas de fechas de la Tabla y filtros por fecha (v1.1.12 — implementado y probado a mano)
 
 **Problema.** La columna «Fechas» apila hasta seis fechas distintas en una sola celda y el filtro de fecha solo mira el vencimiento: no se puede pedir «programadas esta semana» ni «con inicio pasado». Además, «Vencidas» cuenta también las tareas hechas o canceladas, y los textos «Vencidas hoy» y «Vencidas esta semana» dicen lo contrario de lo que filtran.
 
@@ -639,7 +639,7 @@ Con las cuatro fechas visibles la suma de mínimos es de unos 790 px; con Inicio
 
 **Decisiones**: sin decisiones abiertas.
 
-### 14.6 Refresco automático de las vistas (v1.1.12 — implementado; falta la prueba manual)
+### 14.6 Refresco automático de las vistas (v1.1.12 — implementado y probado a mano)
 
 **Problema.** Si se edita una nota en otro panel, ninguna vista cambia hasta volver a entrar en ella; la Rutina y el resaltado de «hoy» tampoco cambian a medianoche.
 
@@ -894,3 +894,78 @@ En las notas espejo siguen sincronizándose todas las líneas con fecha (§15.4)
 Ventajas: no hay marca extra en la línea, el `🆔` se puede crear libremente, funciona entre dispositivos porque el vínculo está en Google y no en un índice local, y las vistas pueden mostrar una insignia de «sincronizada» calculada sin tocar la línea.
 
 Límites: un evento fuera de la ventana descargada (de −3 a +6 meses) no se reconoce como vinculado, lo que solo afecta a eventos lejanos que de todos modos no se sincronizan; y si se edita a mano el `🆔` de una línea ya enviada, el evento queda huérfano. Un evento del plugin sin ninguna línea que lo reclame (línea borrada o `🆔` editado) se borra de Google, y esa operación siempre pide aprobación.
+
+
+## 18. Ajustes: visibilidad de pestañas y carpeta de hábitos (v1.1.13 — diseño acordado, no implementado)
+
+### 18.1 Problema
+
+- **Pestañas.** Tras unir Lista y Tabla en la pestaña «Tareas» (§14), Ajustes sigue ofreciendo dos interruptores sueltos, «Show List tab» y «Show Table tab». La pestaña de Hábitos no tiene interruptor propio: solo desaparece si se apagan a mano sus cinco subvistas.
+- **Carpeta de hábitos.** Si la carpeta configurada no existe, el primer hábito no se puede guardar (la nota se crea sin crear antes la carpeta) y Ajustes no avisa. Las vistas Grid, Tabla y Semanal ya muestran «No hay hábitos en <ruta>», pero Rutina y Dashboard solo dicen «No hay hábitos».
+- **Combos de hábitos.** En Cuadrícula, Semanal y Rutina los combos de orden (y, en Rutina, el de agrupar) no dicen para qué sirven: no tienen rótulo y el de agrupar de Rutina reutiliza los textos del de orden («Por daytime», «Por área»). En español «daytime» aparece sin traducir.
+
+### 18.2 Visibilidad de pestañas
+
+| Interruptor (grupo «Tab Visibility») | Efecto |
+|---|---|
+| Show Overview tab | Sin cambios. |
+| **Show Tasks tab** (nuevo) | Reemplaza a «List» y «Table». El conmutador Lista \| Tabla muestra siempre los dos modos. |
+| Show Calendar tab | Sin cambios. |
+| **Show Habits tab** (nuevo) | Interruptor maestro. La pestaña aparece solo si está activo **y** al menos una de las cinco subvistas está activa. |
+
+- Las cinco subvistas de hábitos (Grid, Dashboard, Rutina, Semanal, Lista) se conservan en el grupo «Habit tabs visibility».
+- Ambos interruptores nuevos parten activados.
+- **Migración**: `showTasksTab` se calcula una vez a partir de lo guardado: queda desactivado solo si `showListTab` y `showTableTab` estaban ambos desactivados. Los dos ajustes antiguos desaparecen. Quien había ocultado un solo modo (por ejemplo, la Tabla) ve ahora los dos; es un cambio de comportamiento aceptado.
+- Kanban y Gantt (v1.1.13) agregan sus interruptores en este mismo grupo.
+
+### 18.3 Carpeta de hábitos
+
+- **Al guardar un hábito nuevo** con la carpeta configurada inexistente aparece un diálogo: «La carpeta <ruta> no existe», con la ruta editable (prellenada con la configurada) y los botones **Crear** y **Cancelar**.
+  - **Crear** crea toda la ruta, guarda la ruta en Ajustes si el usuario la cambió y continúa guardando el hábito.
+  - **Cancelar** no crea nada y el editor queda abierto con los datos escritos.
+  - Si crear la carpeta falla, no se guarda el hábito y se avisa con el motivo.
+  - Editar un hábito existente no muestra el diálogo (su nota ya está en la carpeta).
+- **Rutas válidas**: relativas a la bóveda, con `/` como separador (se acepta `\` y se normaliza), sin `/` inicial ni final, sin `..`, sin unidad de disco (`C:`) y sin los caracteres `: * ? " < > |`. Una ruta vacía usa la ruta por defecto (`daily plan/daily routine/habit`).
+- **Vistas sin hábitos** (cero hábitos o carpeta inexistente): las cinco vistas se muestran sin error, con un mensaje de estado vacío y el botón **+**. Si falta la carpeta, el mensaje indica la ruta en todas las vistas, también en Rutina y Dashboard. No se crea nada al abrir una vista.
+- **Ajustes** muestra bajo el campo de la ruta un aviso, medio segundo después de dejar de escribir:
+  - la carpeta existe: sin aviso;
+  - no existe: texto informativo («Se creará al guardar el primer hábito»);
+  - ruta no válida: error con el motivo.
+  El aviso no impide guardar la ruta y no hay botón «Crear ahora»; el diálogo vuelve a validar al crear.
+
+### 18.4 Decisiones
+
+| Decisión | Alternativas | Motivo |
+|---|---|---|
+| Un solo interruptor «Tasks» | Dos interruptores de modo (con o sin maestro); conservar los actuales | Coincide con la pestaña única; el conmutador deja de tener casos de un solo modo. |
+| Interruptor maestro de Hábitos más subvistas independientes | Solo maestro; no agregar nada | Permite ocultar toda la pestaña sin perder la elección de subvistas. |
+| Preguntar con la ruta editable al guardar | Crear en silencio; crear en silencio solo con la ruta por defecto | Una ruta mal escrita no crea carpetas por error, y el primer hábito sirve para elegir la carpeta. |
+| Ajustes solo informa | Botón «Crear ahora»; aviso emergente | Un solo camino de creación; el aviso no se pierde al cerrarse. |
+| Se arregla en v1.1.13 | v1.1.12 | v1.1.12 ya está publicada. |
+| Rótulo como prefijo dentro del combo («Orden:», «Grupo:») | Etiqueta de texto separada; solo icono con `title` | Se ve con el combo cerrado y no agrega elementos a la barra, que en móvil va justa; el icono es ambiguo y el `title` no se ve en móvil. |
+| Sustantivos cortos («Orden», «Grupo») | Verbos («Ordenar», «Agrupar») | Más cortos y de la misma clase gramatical. |
+
+### 18.5 Supuestos y fuera de alcance
+
+- Sin impacto de rendimiento ni de escala: son operaciones puntuales y no se lee el vault.
+- Las rutas son siempre relativas a la bóveda: no se aceptan rutas absolutas ni fuera de ella.
+- **Fuera de alcance**: crear carpetas sin preguntar, botones nuevos en las vistas, migrar hábitos existentes y cambiar la carpeta de las notas ya creadas.
+
+### 18.6 Rótulos de los combos de orden y agrupación de hábitos
+
+- **Dónde**: el combo de orden en Cuadrícula, Semanal y Rutina, y el de agrupar en Rutina. La Tabla ordena desde sus encabezados y el Dashboard no tiene estos combos: no cambian.
+- **Rótulo**: prefijo corto dentro del control, siempre visible con el combo cerrado: `Orden: Por racha`, `Grupo: Por área`. El `<select>` lleva además `aria-label` y `title` con el mismo texto, porque el texto generado por CSS no lo leen los lectores de pantalla.
+
+| Idioma | Orden | Grupo |
+|---|---|---|
+| en | Sort: | Group: |
+| es | Orden: | Grupo: |
+| pt | Ordem: | Grupo: |
+| it | Ordine: | Gruppo: |
+| fr | Tri : | Groupe : |
+| de | Sortierung: | Gruppe: |
+
+- **Opciones del combo de agrupar** (Rutina): pasan a «Momento del día» y «Área», con las claves que ya existen (`habit_daytime` y `habit_area`), para no parecerse a las del combo de orden, que conserva «Por área», «Por prioridad», etc.
+- **Español**: «Por daytime» pasa a «Por momento del día».
+- Solo cambia el texto: los valores guardados (orden y agrupación elegidos) no cambian y no hay migración.
+- **Fuera de alcance**: criterios nuevos de orden o agrupación y combos en la Tabla o el Dashboard.

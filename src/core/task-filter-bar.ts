@@ -6,7 +6,6 @@
 // `mount(root)` y un callback `onChange`.
 import { Menu, setIcon } from 'obsidian';
 import { ITask } from '../types/interfaces';
-import { AgendaPluginSettings } from '../settings/settings';
 import { I18n } from './i18n';
 import { listTaskAreas, listTaskSubAreas } from './area';
 import { TaskViewState, TaskViewMode } from './task-view-state';
@@ -27,17 +26,20 @@ export interface TaskModeSwitch {
   onSelect: (mode: TaskViewMode) => void;
 }
 
-/** El conmutador de Lista | Tabla, o `undefined` si los ajustes dejan un solo modo visible. */
+/** El conmutador de Lista | Tabla, siempre con los dos modos. */
 export function buildTaskModeSwitch(
   i18n: I18n,
-  settings: AgendaPluginSettings,
   current: TaskViewMode,
   onSelect: (mode: TaskViewMode) => void
-): TaskModeSwitch | undefined {
-  const modes: TaskModeSwitch['modes'] = [];
-  if (settings.showListTab) modes.push({ value: 'list', label: i18n.t('list_view_tab'), icon: 'list-todo' });
-  if (settings.showTableTab) modes.push({ value: 'table', label: i18n.t('table_view_tab'), icon: 'table' });
-  return modes.length > 1 ? { current, modes, onSelect } : undefined;
+): TaskModeSwitch {
+  return {
+    current,
+    modes: [
+      { value: 'list', label: i18n.t('list_view_tab'), icon: 'list-todo' },
+      { value: 'table', label: i18n.t('table_view_tab'), icon: 'table' },
+    ],
+    onSelect,
+  };
 }
 
 export interface TaskFilterBarOptions {

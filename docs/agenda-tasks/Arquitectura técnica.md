@@ -1078,10 +1078,10 @@ Comportamiento y decisiones: [[Especificación de vistas]] §18.
 
 ### 25.2 Carpeta de hábitos
 
-- **Módulo puro** `src/habits/habit-folder.ts`: `normalizeHabitFolderPath(input, fallback)` devuelve `{ ok: true, path }` o `{ ok: false, reason }` con `reason` en `absolute`, `parent` o `chars` (claves i18n `habit_folder_invalid_*`); y `evaluateHabitFolderHint(input, exists)` devuelve `ok`, `missing` o `invalid` para Ajustes.
+- **Módulo puro** `src/habits/habit-folder.ts`: `normalizeHabitFolderPath(input, fallback)` devuelve `{ ok: true, path }` o `{ ok: false, reason }` con `reason` en `absolute`, `parent` o `chars` (claves i18n `habit_folder_invalid_*`); `evaluateHabitFolderHint(input, fallback, folderExists)` devuelve `{ state: 'ok' }`, `{ state: 'missing', path }` o `{ state: 'invalid', reason }` para Ajustes; y `ensureFolderPath(vault, path)` crea los segmentos sobre un vault mínimo (`FolderVault`), para probarlo sin Obsidian.
 - **`HabitManager.ensureFolder(path)`**: recorre los segmentos acumulados y llama a `vault.createFolder()` en los que no existen; si un segmento existe como archivo, lanza un error; tolera que la carpeta ya exista por una carrera. `HabitManager` recibe un cuarto parámetro `saveSettings` para guardar la ruta nueva (hoy solo recibe un lector de ajustes).
 - **`HabitFolderModal`** (`src/habits/habit-folder-modal.ts`): modal de Obsidian con un campo de texto, validación en vivo con la misma función, **Crear** deshabilitado mientras la ruta no sea válida, Intro para confirmar y Esc para cancelar; reutiliza las clases `.oa-btn` y de campo del Habit Editor. `open()` devuelve una promesa con la ruta confirmada o `null`.
-- **Flujo** en `HabitEditorModal.save()`, solo al crear: si `habitManager.folderExists()` es falso, se abre el modal; con `null` se sale sin guardar; con una ruta, `ensureFolder()` y, si cambió, se guarda en `habitFolderPath` antes de `createHabit()`. Un error al crear se muestra con `Notice` y no se guarda el hábito.
+- **Flujo** en `HabitEditorModal.save()`, solo al crear: si `habitManager.folderExists()` es falso, se abre el modal; con `null` se sale sin guardar; con una ruta, `ensureFolder()` y `setFolderPath()` (que guarda `habitFolderPath` si cambió) antes de `createHabit()`. Un error al crear se muestra con `Notice` y no se guarda el hábito.
 
 ### 25.3 Vistas sin hábitos
 

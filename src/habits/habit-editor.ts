@@ -5,6 +5,7 @@ import type { HabitManager } from './habit-manager';
 import { getAreaLabel } from './habit';
 import type { Daytime, HabitArea, IHabit } from './habit';
 import { TimeDial } from '../core/time-dial';
+import { HabitFolderModal } from './habit-folder-modal';
 
 // @ts-ignore: Plugin de esbuild maneja los archivos .hbs
 import habitEditorTemplate from './templates/habit-editor-modal.hbs';
@@ -491,12 +492,31 @@ export class HabitEditorModal extends Modal {
     if (this.habit) {
       await this.updateHabit(this.habit, values);
     } else {
+      if (!(await this.ensureHabitFolder())) return;
       await this.createHabit(values);
     }
 
     await this.habitManager.refreshHabits();
     document.dispatchEvent(new CustomEvent('obsidian-agenda:habits-refresh'));
     this.close();
+  }
+
+  /** Con la carpeta inexistente pregunta dónde crearla; `false` si se cancela o falla (no se guarda el hábito). */
+  private async ensureHabitFolder(): Promise<boolean> {
+    if (this.habitManager.folderExists()) return true;
+
+    const path = await HabitFolderModal.ask(this.app, this.i18n, this.habitManager.getFolderPath());
+    if (path === null) return false;
+
+    try {
+      await this.habitManager.ensureFolder(path);
+      await this.habitManager.setFolderPath(path);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      new Notice(this.i18n.t('habit_folder_create_failed', { path, reason }));
+      return false;
+    }
+    return true;
   }
 
   private async createHabit(values: HabitFormValues): Promise<void> {

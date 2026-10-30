@@ -24,7 +24,7 @@ export default class ObsidianAgenda extends Plugin {
       super(app, manifest);
       this.i18n = new I18n(app);
       this.taskManager = new TaskManager(app, this.i18n, this);
-      this.habitManager = new HabitManager(app, () => this.settings, this.i18n);
+      this.habitManager = new HabitManager(app, () => this.settings, this.i18n, () => this.saveSettings());
       this.viewManager = new ViewManager(this, this.i18n, this.taskManager, this.habitManager); // Pasar la instancia del plugin
       this.modalManager = new ModalManager(app, this.i18n, this.taskManager);
   }

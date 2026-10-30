@@ -95,6 +95,13 @@ export abstract class HabitView extends BaseView {
     };
   }
 
+  /** Mensaje de estado vacío: con la carpeta inexistente indica la ruta configurada. */
+  protected getEmptyMessage(): string {
+    return this.habitManager.folderExists()
+      ? this.i18n.t('habit_no_habits')
+      : this.i18n.t('habit_no_habits_at', { path: this.habitManager.getFolderPath() });
+  }
+
   protected async refreshHabitView(): Promise<void> {
     await this.render(
       this.getViewType(),

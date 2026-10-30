@@ -143,13 +143,9 @@ export class HabitTableView extends HabitView {
 
     this.sortRows(rows);
 
-    const folderExists = this.habitManager.folderExists();
-
     return {
       habits: rows,
-      emptyMessage: folderExists
-        ? this.i18n.t('habit_no_habits')
-        : this.i18n.t('habit_no_habits_at', { path: this.habitManager.getFolderPath() }),
+      emptyMessage: this.getEmptyMessage(),
     };
   }
 

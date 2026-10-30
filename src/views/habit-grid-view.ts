@@ -127,16 +127,12 @@ export class HabitGridView extends HabitView {
 
     const rows = records.map((record, index) => ({ ...record, alt: index % 2 === 1 }));
 
-    const folderExists = this.habitManager.folderExists();
-
     return {
       habits: rows,
       columns,
       sortBy: this.sortBy,
       windowLabel: `${dates[0].toFormat('dd MMM')} \u2013 ${dates[dates.length - 1].toFormat('dd MMM yyyy')}`,
-      emptyMessage: folderExists
-        ? this.i18n.t('habit_no_habits')
-        : this.i18n.t('habit_no_habits_at', { path: this.habitManager.getFolderPath() }),
+      emptyMessage: this.getEmptyMessage(),
     };
   }
 

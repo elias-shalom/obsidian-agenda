@@ -182,6 +182,7 @@ export class HabitRoutineView extends HabitView {
       selectedDate: dateIso,
       isToday: dateIso === DateTime.local().toISODate(),
       hasHabits: Object.keys(nonEmptySections).length > 0,
+      emptyMessage: this.getEmptyMessage(),
       sortBy: this.sortBy,
       groupBy: this.groupBy,
       areaStats,

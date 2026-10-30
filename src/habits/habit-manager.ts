@@ -2,6 +2,7 @@ import { App, EventRef, TFile, TFolder, parseYaml } from 'obsidian';
 import type { AgendaPluginSettings } from '../settings/settings';
 import type { Daytime, IHabit } from './habit';
 import { parseHabit } from './habit-parser';
+import { ensureFolderPath } from './habit-folder';
 import { computeDashboard } from './habit-stats';
 import { dayCompletedDates, toggle } from './habit-completions';
 import { toggleOccurrence as writeToggleOccurrence } from './habit-writer';
@@ -25,7 +26,8 @@ export class HabitManager {
   constructor(
     private app: App,
     private settingsGetter: () => AgendaPluginSettings,
-    private i18n: I18n
+    private i18n: I18n,
+    private saveSettings: () => Promise<void>
   ) {
     this.registerEvents();
   }
@@ -56,6 +58,27 @@ export class HabitManager {
   /** Indica si la carpeta de hábitos configurada existe en el vault */
   folderExists(): boolean {
     return this.app.vault.getAbstractFileByPath(this.getHabitFolderPath()) instanceof TFolder;
+  }
+
+  /** Crea la ruta indicada, segmento a segmento; falla si un segmento existe como archivo. */
+  async ensureFolder(path: string): Promise<void> {
+    const { vault } = this.app;
+    await ensureFolderPath({
+      kindAt: (p) => {
+        const entry = vault.getAbstractFileByPath(p);
+        if (entry instanceof TFolder) return 'folder';
+        return entry ? 'file' : null;
+      },
+      createFolder: async (p) => { await vault.createFolder(p); },
+    }, path);
+  }
+
+  /** Guarda en Ajustes la carpeta de hábitos si es distinta de la configurada. */
+  async setFolderPath(path: string): Promise<void> {
+    const settings = this.settingsGetter();
+    if (settings.habitFolderPath === path) return;
+    settings.habitFolderPath = path;
+    await this.saveSettings();
   }
 
   /** Recorre recursivamente la carpeta de hábitos y devuelve todas las notas .md encontradas */

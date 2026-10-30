@@ -522,31 +522,31 @@ Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones
 - [x] Verificable sola: `migrateTabSettings()` con las cuatro combinaciones antiguas y con ajustes nuevos.
 
 ### Fase S2 — Carpeta de hábitos (depende de ninguna)
-- [ ] `src/habits/habit-folder.ts`: `normalizeHabitFolderPath()` y `evaluateHabitFolderHint()`.
-- [ ] `HabitManager.ensureFolder()` y el parámetro `saveSettings` del constructor.
-- [ ] `HabitFolderModal` con ruta editable, validación en vivo, Crear y Cancelar; estilos reutilizados del Habit Editor.
-- [ ] `HabitEditorModal.save()`: al crear con la carpeta inexistente, pregunta, crea la ruta y guarda la ruta nueva en Ajustes si cambió; con Cancelar no guarda; un error al crear se avisa sin guardar el hábito.
-- [ ] Verificable sola: rutas válidas, absolutas, con `..`, con caracteres no permitidos y vacías; `ensureFolder()` con un vault simulado (orden de creación, carpeta existente y choque con un archivo).
+- [x] `src/habits/habit-folder.ts`: `normalizeHabitFolderPath()` y `evaluateHabitFolderHint()`.
+- [x] `HabitManager.ensureFolder()` y el parámetro `saveSettings` del constructor.
+- [x] `HabitFolderModal` con ruta editable, validación en vivo, Crear y Cancelar; estilos reutilizados del Habit Editor.
+- [x] `HabitEditorModal.save()`: al crear con la carpeta inexistente, pregunta, crea la ruta y guarda la ruta nueva en Ajustes si cambió; con Cancelar no guarda; un error al crear se avisa sin guardar el hábito.
+- [x] Verificable sola: rutas válidas, absolutas, con `..`, con caracteres no permitidos y vacías; `ensureFolder()` con un vault simulado (orden de creación, carpeta existente y choque con un archivo).
 
 ### Fase S3 — Vistas de hábitos sin hábitos (depende de S2)
-- [ ] `HabitView.getEmptyMessage()` y su uso en las cinco vistas; Rutina y Dashboard reciben `emptyMessage` y sus plantillas lo muestran.
-- [ ] Verificable sola: con cero hábitos y con la carpeta inexistente, las cinco vistas se muestran sin error, con el mensaje y la ruta.
+- [x] `HabitView.getEmptyMessage()` y su uso en las cinco vistas; Rutina y Dashboard reciben `emptyMessage` y sus plantillas lo muestran.
+- [x] Verificable sola: con cero hábitos y con la carpeta inexistente, las cinco vistas se muestran sin error, con el mensaje y la ruta.
 
 ### Fase S4 — Aviso en Ajustes (depende de S2)
-- [ ] Campo de la ruta como `render` personalizado con aviso de tres estados (existe, no existe, ruta no válida), recalculado con `debounce` de 500 ms; guarda `habitFolderPath` a mano; mismo resultado en `display()`.
-- [ ] Claves i18n nuevas en los 6 locales y se eliminan `show_list_tab` y `show_table_tab`.
-- [ ] Verificable sola: `evaluateHabitFolderHint()` para cada estado.
+- [x] Campo de la ruta como `render` personalizado con aviso de tres estados (existe, no existe, ruta no válida), recalculado con `debounce` de 500 ms; guarda `habitFolderPath` a mano; mismo resultado en `display()`.
+- [x] Claves i18n nuevas en los 6 locales y se eliminan `show_list_tab` y `show_table_tab`.
+- [x] Verificable sola: `evaluateHabitFolderHint()` para cada estado.
 - [ ] Documentación al implementar: README, manual en/es (Tab Visibility y carpeta de hábitos) y «News» de la versión.
 - [ ] Prueba manual: ocultar Tareas y Hábitos desde Ajustes; actualizar desde una configuración con solo la Tabla visible; crear el primer hábito sin carpeta (Crear, Cancelar y ruta nueva); escribir rutas válidas y no válidas en Ajustes; abrir las cinco vistas sin hábitos.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase S5 — Rótulos de los combos de hábitos (independiente; diseño en [[Especificación de vistas]] §18.6 y [[Arquitectura técnica]] §25.8)
-- [ ] i18n: `habit_sort_label` y `habit_group_label` en los 6 idiomas; `habit_sort_daytime` en español pasa a «Por momento del día».
-- [ ] Plantillas de Cuadrícula, Semanal y Rutina: `data-label` en el contenedor y `aria-label` y `title` en el `<select>`; el combo de agrupar de Rutina usa `habit_daytime` y `habit_area`.
-- [ ] Estilos del prefijo en `_habit-common.scss` (`::before` con `attr(data-label)`), sin romper la barra en tableta y teléfono.
-- [ ] Verificable sola: script de Node que comprueba que los 6 locales tienen las dos claves nuevas.
+- [x] i18n: `habit_sort_label` y `habit_group_label` en los 6 idiomas; `habit_sort_daytime` en español pasa a «Por momento del día».
+- [x] Plantillas de Cuadrícula, Semanal y Rutina: `data-label` en el contenedor y `aria-label` y `title` en el `<select>`; el combo de agrupar de Rutina usa `habit_daytime` y `habit_area`.
+- [x] Estilos del prefijo en `_habit-common.scss` (`::before` con `attr(data-label)`), sin romper la barra en tableta y teléfono.
+- [x] Verificable sola: script de Node que comprueba que los 6 locales tienen las dos claves nuevas.
 - [ ] Prueba manual: los combos de Cuadrícula, Semanal y Rutina con su rótulo en escritorio, `is-tablet` e `is-phone`, tema claro y oscuro; cambiar de idioma; el orden y la agrupación elegidos siguen funcionando.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
 Crear carpetas sin preguntar; botones nuevos en las vistas; migrar hábitos existentes.

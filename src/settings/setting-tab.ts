@@ -1,9 +1,10 @@
 import AgendaPlugin from '../main';
-import { App, PluginSettingTab, Setting, SettingDefinitionItem } from 'obsidian';
+import { App, PluginSettingTab, Setting, SettingDefinitionItem, TFolder, debounce } from 'obsidian';
 import { I18n } from "../core/i18n";
 import { BaseView } from '../views/base-view';
 import type { AgendaPluginSettings } from './settings';
 import { DEFAULT_SETTINGS } from './settings';
+import { evaluateHabitFolderHint } from '../habits/habit-folder';
 
 const CALENDAR_VIEW_TYPES = ['calendar-month-view', 'calendar-year-view', 'calendar-week-view', 'calendar-workweek-view', 'calendar-day-view'];
 
@@ -23,6 +24,38 @@ export class SettingTab extends PluginSettingTab {
         leaf.view.refreshView().catch(console.error);
       }
     });
+  }
+
+  /** Campo de la carpeta de hábitos con un aviso informativo debajo (v1.1.13, S4); no impide guardar. */
+  private renderHabitFolderField(setting: Setting): void {
+    const hintEl = setting.infoEl.createDiv({ cls: 'oa-habit-folder-hint' });
+
+    const updateHint = (value: string): void => {
+      const hint = evaluateHabitFolderHint(
+        value,
+        DEFAULT_SETTINGS.habitFolderPath,
+        (path) => this.app.vault.getAbstractFileByPath(path) instanceof TFolder
+      );
+      hintEl.empty();
+      hintEl.toggleClass('oa-habit-folder-hint--error', hint.state === 'invalid');
+      if (hint.state === 'missing') {
+        hintEl.setText(this.i18n.t('habit_folder_missing_hint', { path: hint.path }));
+      } else if (hint.state === 'invalid') {
+        hintEl.setText(this.i18n.t(`habit_folder_invalid_${hint.reason}`));
+      }
+    };
+    const updateHintDebounced = debounce(updateHint, 500, true);
+
+    setting.addText(text => text
+      .setPlaceholder(DEFAULT_SETTINGS.habitFolderPath)
+      .setValue(this.plugin.settings.habitFolderPath)
+      .onChange(async (value) => {
+        this.plugin.settings.habitFolderPath = value;
+        await this.plugin.saveSettings();
+        updateHintDebounced(value);
+      }));
+
+    updateHint(this.plugin.settings.habitFolderPath);
   }
 
   /** API declarativa (Obsidian 1.13+): permite que estos ajustes aparezcan en el buscador global de settings. */
@@ -136,7 +169,7 @@ export class SettingTab extends PluginSettingTab {
           {
             name: this.i18n.t('habit_folder_path'),
             desc: this.i18n.t('habit_folder_path_desc'),
-            control: { type: 'text', key: 'habitFolderPath', placeholder: 'daily plan/daily routine/habit' },
+            render: (setting) => this.renderHabitFolderField(setting),
           },
           { name: this.i18n.t('habit_days_to_show'), control: { type: 'slider', key: 'habitDaysToShow', min: 7, max: 90, step: 1 } },
           { name: this.i18n.t('habit_show_streaks'), control: { type: 'toggle', key: 'habitShowStreaks' } },
@@ -313,13 +346,7 @@ export class SettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName(this.i18n.t("habit_folder_path"))
       .setDesc(this.i18n.t("habit_folder_path_desc"))
-      .addText(text => text
-        .setPlaceholder(DEFAULT_SETTINGS.habitFolderPath)
-        .setValue(this.plugin.settings.habitFolderPath)
-        .onChange(async (value) => {
-          this.plugin.settings.habitFolderPath = value;
-          await this.plugin.saveSettings();
-        }));
+      .then(setting => this.renderHabitFolderField(setting));
 
     new Setting(containerEl)
       .setName(this.i18n.t("habit_days_to_show"))

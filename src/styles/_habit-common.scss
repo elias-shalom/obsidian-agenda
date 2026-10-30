@@ -68,6 +68,45 @@
       }
     }
 
+    // Combos de orden y agrupación con rótulo (v1.1.13, S5): el contenedor hace de píldora y el rótulo
+    // sale de `data-label`, así se ve con el combo cerrado sin añadir elementos a la barra.
+    .oa-habit-view-selector--labeled {
+      @include interactive-control;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 6px;
+      padding: 0 0 0 10px;
+
+      &::before {
+        content: attr(data-label);
+        color: var(--text-muted);
+        font-size: 0.9em;
+        white-space: nowrap;
+      }
+
+      &:hover::before,
+      &:focus-within::before {
+        color: inherit;
+      }
+
+      &:focus-within {
+        border-color: $active-border-color;
+      }
+
+      .oa-habit-view-dropdown,
+      .oa-habit-view-dropdown:hover,
+      .oa-habit-view-dropdown:focus {
+        border-color: transparent;
+        box-shadow: none;
+        background-color: transparent !important;
+        color: inherit;
+      }
+
+      .oa-habit-view-dropdown {
+        padding-left: 6px;
+      }
+    }
+
     // Reiniciar la navegación de rutina/semanal dentro del toolbar
     .oa-habit-routine-nav,
     .oa-habit-weekly-nav {
@@ -82,5 +121,20 @@
       font-weight: 600;
       font-size: var(--font-smaller, 0.75rem);
     }
+  }
+}
+
+// Aviso informativo de la carpeta de hábitos (Ajustes y modal de la carpeta; v1.1.13, S2/S4)
+.oa-habit-folder-hint {
+  margin-top: 0.25rem;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+
+  &:empty {
+    display: none;
+  }
+
+  &--error {
+    color: var(--text-error);
   }
 }

@@ -413,35 +413,35 @@ Orden de trabajo sugerido: fixes de Ajustes, enlace al manual, modal de novedade
   - [x] Pruebas aportadas en el mismo PR: `tests/calendar-weekday-labels.test.cjs` (21 pruebas; `node --test`), el primer archivo de pruebas del repo
   - [x] Integrado en `features/develop` con la autoría de Aidan; el PR sigue abierto con un comentario hasta que la versión llegue a `main`; crédito en la sección Contributors del README
   - [x] Nota en el Changelog de la versión con el crédito a @AidanAJoyce (README, versión 1.1.13)
-  - [ ] Pendiente: prueba manual con el inicio de semana en lunes y en domingo (Semana, Semana laboral y Lista)
+  - [x] Prueba manual con el inicio de semana en lunes y en domingo (Semana, Semana laboral y Lista)
 - [x] **[v1.1.13] Ajustes de filtros y rótulos** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §13.2, §14.7 y §18.6 y `Arquitectura técnica.md` §26; fases F1 a F3 en `Plan de implementación.md`)
   - [x] Filtro de Área: opción «Raíz» / «Root» que muestra solo las tareas fuera de cualquier carpeta
   - [x] Filtro de Sub-área: opción «Raíz» / «Root» que muestra solo las tareas de las notas directas del área, sin subcarpeta
   - [x] Combos de agrupado y orden de las tareas (Lista, Tabla y Kanban): «Group:» y «Sort:» (en español «Grupo:» y «Orden:») en lugar de «Group by» y «Sort by»
   - [x] Combo de orden de hábitos (Cuadrícula, Semanal y Rutina): opciones sin «By» / «Por» («Area», «Priority»…, «Área», «Prioridad»…) en los 6 idiomas
-- [x] **[v1.1.13] Vista Gantt** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §12 y `Arquitectura técnica.md` §21; fases G1–G2 en `Plan de implementación.md`; referencia visual: Timelineal; entrada original en "Próximas Características" más abajo, sección Timeline & Planning Views) — **lectura (G1) y edición de fechas (G2) implementadas**: vista registrada, pestaña con `showGanttTab`, ventana de 7/14/21 días o mes natural, agrupado por área y sub-área, barras, hitos y tareas sin fecha, y mover o redimensionar barras y extender hitos; pendiente la prueba manual
+- [x] **[v1.1.13] Vista Gantt** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §12 y `Arquitectura técnica.md` §21; fases G1–G2 en `Plan de implementación.md`; referencia visual: Timelineal; entrada original en "Próximas Características" más abajo, sección Timeline & Planning Views) — **lectura (G1) y edición de fechas (G2) implementadas**: vista registrada, pestaña con `showGanttTab`, ventana de 7/14/21 días o mes natural, agrupado por área y sub-área, barras, hitos y tareas sin fecha, y mover o redimensionar barras y extender hitos; probado a mano
   - [x] Pestaña de nivel superior con `showGanttTab`; mismos filtros que Tabla y Kanban (barra compartida, sin combo de agrupado) y mismos gestos que el calendario (helper compartido)
   - [x] Ajustes visuales tras la primera revisión (2026-10-31): zoom con el número de días y el icono de calendario para el mes; cabecera de grupo sin barra resumen; tareas sin fecha como grupo plegable al estilo de la Lista (ancho máximo del 80 %, plegado por defecto); periodo a la izquierda y zoom y `◀ Hoy ▶` a la derecha, como el calendario; cuadrícula vertical (línea de día, línea de semana más marcada y fines de semana sombreados)
-  - [x] Columna de nombres con estado, icono de prioridad y el texto de la tarea un poco más pequeño (0,9 em) (pendiente de prueba manual)
+  - [x] Columna de nombres con estado, icono de prioridad y el texto de la tarea un poco más pequeño (0,9 em) (probado a mano)
   - [ ] Combo de agrupado del Gantt: decidido pasarlo a v1.1.14 (ítem propio más abajo)
   - [x] Dos o más fechas: barra (inicio = `start` o `scheduled`, fin = `due` o `scheduled`); una sola fecha: hito; ninguna: contador «sin fecha»
   - [x] Zoom 7/14/21 días o mes natural (la ventana usa los días reales del mes, 28 a 31); cabecera con pestañas de mes, año, franja de días, bandas de semana y línea de «hoy»
   - [x] Agrupado por área y sub-área (nombre de la primera carpeta y resto de la ruta, anidado), plegable
-  - [x] Editar fechas desde la vista: mover la barra, redimensionar cada borde (reescribe el campo que define ese borde), mover hitos y convertirlos en barra con su manija (implementado; pendiente de prueba manual)
+  - [x] Editar fechas desde la vista: mover la barra, redimensionar cada borde (reescribe el campo que define ese borde), mover hitos y convertirlos en barra con su manija (implementado y probado a mano)
   - [x] Dependencias: solo una insignia 🔗; las flechas entre barras quedan para una versión posterior
   - [x] **Decidido (2026-10-31)**: las ventanas de 7/14/21 días empiezan en el primer día de semana configurado que contiene la fecha de referencia
   - [x] **Decidido (2026-10-31)**: un hito se convierte en barra arrastrando su manija; con solo 🛫 crea ⏳ y con solo ⏳ crea 📅
   - [x] **Decidido (2026-10-31)**: un hito con solo 📅 vencimiento se extiende hacia la izquierda creando 🛫 inicio (la manija queda a la izquierda)
   - [x] **Decidido (2026-10-31)**: un fin anterior al inicio en datos escritos a mano se dibuja como hito en la fecha de inicio, con un aviso
 
-- [ ] **[v1.1.13] Pruebas manuales pendientes** (todo lo de esta sección está implementado; falta probarlo en Obsidian antes de publicar)
-  - [ ] Kanban (Fases B y B2): columnas por estado, prioridad, etiqueta y carpeta; arrastrar entre columnas de estado y de prioridad; plegar y desplegar columnas; altura y scroll de las columnas; filtros y estado propio
-  - [ ] Ajustes (S1 a S5): interruptores de pestañas y la migración desde Lista y Tabla; carpeta de hábitos inexistente (diálogo, aviso en Ajustes y mensaje en las cinco vistas); rótulos «Group:» y «Sort:»
-  - [ ] Filtros (F1 a F3): «Raíz» en Área y en Sub-área; rótulos de los combos y de los combos de hábitos
-  - [ ] Modal de novedades: primera apertura tras actualizar, una sola vez, con versiones acumuladas y con el ajuste desactivado; idioma
-  - [ ] Etiquetas del día de la semana (Semana, Semana laboral y Lista) con el inicio de semana en lunes y en domingo
-  - [ ] Gantt (G1 y G2): ventanas de 7, 14, 21 días y mes; cuadrícula, hoy y fines de semana; mover y redimensionar barras; extender hitos; tooltip con las fechas; grupo «Tareas sin fecha»; refresco al soltar; escritorio, tableta y teléfono
-- [x] **Documentación al cerrar la versión**: README (badge, What's New, News, Features, Gestures, Configuration, Changelog con el crédito a @AidanAJoyce y lista de próximas versiones), manual de usuario en/es (introducción, primeros pasos, vistas generales con Kanban y Gantt, gestos, configuración y preguntas frecuentes), entrada `whats_new.v1_1_13` en los 6 idiomas y la documentación de desarrollo; el número de versión en `package.json`, `manifest.json` y `versions.json` se sube al publicar (`npm version 1.1.13 --no-git-tag-version`)
+- [x] **[v1.1.13] Pruebas manuales** (hechas con éxito el 2026-10-31 sobre todo lo implementado en esta sección)
+  - [x] Kanban (Fases B y B2): columnas por estado, prioridad, etiqueta y carpeta; arrastrar entre columnas de estado y de prioridad; plegar y desplegar columnas; altura y scroll de las columnas; filtros y estado propio
+  - [x] Ajustes (S1 a S5): interruptores de pestañas y la migración desde Lista y Tabla; carpeta de hábitos inexistente (diálogo, aviso en Ajustes y mensaje en las cinco vistas); rótulos «Group:» y «Sort:»
+  - [x] Filtros (F1 a F3): «Raíz» en Área y en Sub-área; rótulos de los combos y de los combos de hábitos
+  - [x] Modal de novedades: primera apertura tras actualizar, una sola vez, con versiones acumuladas y con el ajuste desactivado; idioma
+  - [x] Etiquetas del día de la semana (Semana, Semana laboral y Lista) con el inicio de semana en lunes y en domingo
+  - [x] Gantt (G1 y G2): ventanas de 7, 14, 21 días y mes; cuadrícula, hoy y fines de semana; mover y redimensionar barras; extender hitos; tooltip con las fechas; grupo «Tareas sin fecha»; refresco al soltar; escritorio, tableta y teléfono
+- [x] **Documentación al cerrar la versión**: README (badge, What's New, News, Features, Gestures, Configuration, Changelog con el crédito a @AidanAJoyce y lista de próximas versiones), manual de usuario en/es (introducción, primeros pasos, vistas generales con Kanban y Gantt, gestos, configuración y preguntas frecuentes), entrada `whats_new.v1_1_13` en los 6 idiomas y la documentación de desarrollo; el número de versión en `package.json`, `manifest.json` y `versions.json` se subió a 1.1.13 con `npm version 1.1.13 --no-git-tag-version`
 
 ### Pendientes de versiones anteriores y dónde quedan
 

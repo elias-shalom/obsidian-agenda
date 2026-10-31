@@ -52,8 +52,8 @@ A diferencia de `docs/habit-tracker-agenda/` (que documentó un módulo nuevo **
 - [x] Módulo de tareas documentado (retrospectivo, basado en el código actual)
 - [x] Vistas Overview / Lista / Tabla / Calendario (5 variantes) completas y en uso
 - [ ] Vista Timeline (placeholder, sin lógica propia de posicionamiento temporal)
-- [x] Vista Gantt (v1.1.13): barras, hitos, ventana de 7/14/21 días o mes, agrupado por área y edición de fechas; pendiente de prueba manual; sin flechas de dependencia (solo una insignia)
-- [x] Vista Kanban (v1.1.13): columnas por estado, prioridad, etiqueta o carpeta, arrastre de estado y prioridad y columnas plegables; pendiente de prueba manual
+- [x] Vista Gantt (v1.1.13): barras, hitos, ventana de 7/14/21 días o mes, agrupado por área y edición de fechas; probado a mano; sin flechas de dependencia (solo una insignia)
+- [x] Vista Kanban (v1.1.13): columnas por estado, prioridad, etiqueta o carpeta, arrastre de estado y prioridad y columnas plegables; probado a mano
 - [x] Edición de tareas existentes desde el modal (clic simple en el calendario, doble clic abre el archivo)
 - [ ] Programación por hora del día (v1.1.4, ver `docs/todo.md`)
 

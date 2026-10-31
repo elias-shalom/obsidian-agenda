@@ -380,7 +380,7 @@ Las vistas renderizadas por `BaseView` y el modal de tareas convierten sus atrib
 
 Manual de usuario final (distinto de esta documentación de desarrollo), en `docs/user_guide/`, en dos versiones completas y paralelas — inglés (`en/`) y español (`es/`) — con 10 capítulos idénticos en estructura: Introducción, Instalación, Primeros pasos, Vistas generales, Vistas de calendario, Seguimiento de hábitos, Formato de tareas y metadatos, Gestos e interacciones, Configuración, y Preguntas frecuentes y soporte. Un `docs/user_guide/README.md` enlaza ambas versiones y documenta cómo agregar un nuevo idioma (duplicar una carpeta de idioma y traducir manteniendo los mismos nombres de archivo). No requiere ningún cambio en el plugin: es documentación en Markdown plano, sin paso de build ni empaquetado — "generar" una versión es simplemente leer/exportar los archivos de esa carpeta.
 
-## 10. Modal de novedades al actualizar ("What's New") (v1.1.13 — implementado; pendiente de prueba manual)
+## 10. Modal de novedades al actualizar ("What's New") (v1.1.13 — implementado y probado a mano)
 
 > **Estado**: implementado; falta la prueba manual. Mecanismo: [[Arquitectura técnica]] §19.
 
@@ -394,7 +394,7 @@ Tras actualizar el plugin a una versión nueva, en el primer arranque se abre **
 ### 10.1 Fuera de alcance
 Traer el contenido en vivo desde los releases de GitHub; renderizado de Markdown libre (imágenes, video, bloques de código embebidos); una preferencia granular de "solo versiones con funcionalidad nueva" (mayor/menor) vs. todas (puede evaluarse más adelante); cualquier mecanismo de feedback tipo formulario.
 
-## 11. Kanban View (v1.1.13, con las piezas compartidas en v1.1.12 — Fase B implementada, pendiente de prueba manual; orden manual pospuesto a v1.1.14)
+## 11. Kanban View (v1.1.13, con las piezas compartidas en v1.1.12 — Fase B implementada y probada a mano; orden manual pospuesto a v1.1.14)
 
 > **Estado**: diseño acordado en sesión de discusión; las columnas y el arrastre de estado y prioridad están implementados (Fase B), el orden manual (Fase C) pasa a v1.1.14. Mecanismo: [[Arquitectura técnica]] §20. Referencia investigada: el plugin [Tasks Kanban](https://community.obsidian.md/plugins/tasks-kanban) (ver comparación en §20.6).
 
@@ -417,7 +417,7 @@ Kanban v1 usa solo los 6 estados fijos. Que el usuario defina estados propios (s
 ### 11.2 Fuera de alcance
 Tableros múltiples guardados/nombrados; mini-lenguaje de query propio; estados personalizables (§11.1); agrupar por fecha (una columna por fecha distinta dispersa el tablero); unificar las pestañas Lista y Tabla (ver `docs/todo.md`, se evalúa aparte).
 
-### 11.3 Refinamientos del tablero (v1.1.13 — implementados salvo la decisión abierta; pendiente de prueba manual)
+### 11.3 Refinamientos del tablero (v1.1.13 — implementados y probados a mano (el agrupado por área pasa a v1.1.14))
 
 > Fase B2 del plan. Surgieron al probar la Fase B. Mecanismo: [[Arquitectura técnica]] §20.8.
 
@@ -427,9 +427,9 @@ Tableros múltiples guardados/nombrados; mini-lenguaje de query propio; estados 
 - **Altura.** Cada columna se ajusta a su contenido (como mínimo lo que ocupan sus tareas) hasta un máximo: la altura visible del panel donde está la vista. Si lo supera, las tarjetas se desplazan dentro de la columna con la rueda mientras el cursor está sobre ella, y el encabezado queda fijo. El desplazamiento de la vista entera no cambia.
 - **Decisión abierta: agrupar por área y sub-área.** Hoy el combo de agrupado ofrece «Carpeta» (una columna por primera carpeta, sin sub-áreas); §11 decía «área con sus sub-áreas» y se simplificó porque las columnas no se anidan. Opciones en estudio: **A** «Área» y «Sub-área» como agrupados distintos (una columna por ruta completa de sub-área); **B** solo renombrar «Carpeta» a «Área» y dejar las sub-áreas al filtro; **C** «Área», que con un área filtrada muestra una columna por sub-área (más «Sin sub-área» para las notas directas). **Pasa a v1.1.14** (decisión del 2026-10-31): se retomará con calma; mientras tanto el combo conserva «Carpeta».
 
-## 12. Gantt View (v1.1.13 — lectura y edición de fechas implementadas, pendientes de prueba manual)
+## 12. Gantt View (v1.1.13 — lectura y edición de fechas implementadas y probadas a mano)
 
-> **Estado**: diseño acordado en sesión de discusión; las decisiones de §12.7 se tomaron el 2026-10-31 y no queda ninguna abierta; la lectura del diagrama (Fase G1) y la edición de fechas (Fase G2) están implementadas, pendientes de prueba manual. Mecanismo: [[Arquitectura técnica]] §21. Reemplaza al placeholder de §6. Referencia visual: la vista de semanas y estancias del plugin Timelineal (captura aportada en la discusión, no incluida en el repositorio).
+> **Estado**: diseño acordado en sesión de discusión; las decisiones de §12.7 se tomaron el 2026-10-31 y no queda ninguna abierta; la lectura del diagrama (Fase G1) y la edición de fechas (Fase G2) están implementadas y probadas a mano. Mecanismo: [[Arquitectura técnica]] §21. Reemplaza al placeholder de §6. Referencia visual: la vista de semanas y estancias del plugin Timelineal (captura aportada en la discusión, no incluida en el repositorio).
 
 Un diagrama de tareas sobre un eje de tiempo, pensado para proyectos largos: una fila por tarea, con una barra que va de su fecha de inicio a su fecha de fin. Mismos filtros y orden que Tabla y Kanban (barra de filtros compartida, §11), y los mismos gestos de tarea que el calendario.
 
@@ -526,8 +526,8 @@ El **área** es solo el nombre de la primera carpeta; la **sub-área** es la rut
 La barra de filtros compartida (§11, §20.3) incluye:
 
 - **Área**: un combobox con «Todas» más el nombre de la primera carpeta de cada área que tiene tareas.
-- **Raíz** (v1.1.13 — implementado; pendiente de prueba manual): el combobox de Área ofrece además «Raíz» / «Root», que muestra solo las tareas de notas fuera de cualquier carpeta (en la raíz de la bóveda). Se ofrece cuando hay tareas en la raíz y no tiene sub-áreas. En el agrupado esas tareas siguen llamándose «Sin área».
-- **Raíz en la sub-área** (v1.1.13 — implementado; pendiente de prueba manual): el combobox de Sub-área ofrece también «Raíz» / «Root» justo después de «Todas las sub-áreas», que muestra solo las tareas de las notas que están directamente en la carpeta del área elegida, sin ninguna subcarpeta (las notas de `B` y no las de `B/C`). Se ofrece cuando el área tiene notas directas. Hasta ahora no había forma de aislarlas, porque elegir una sub-área incluye también sus hijas. El chip lo muestra como «Work › Raíz».
+- **Raíz** (v1.1.13 — implementado y probado a mano): el combobox de Área ofrece además «Raíz» / «Root», que muestra solo las tareas de notas fuera de cualquier carpeta (en la raíz de la bóveda). Se ofrece cuando hay tareas en la raíz y no tiene sub-áreas. En el agrupado esas tareas siguen llamándose «Sin área».
+- **Raíz en la sub-área** (v1.1.13 — implementado y probado a mano): el combobox de Sub-área ofrece también «Raíz» / «Root» justo después de «Todas las sub-áreas», que muestra solo las tareas de las notas que están directamente en la carpeta del área elegida, sin ninguna subcarpeta (las notas de `B` y no las de `B/C`). Se ofrece cuando el área tiene notas directas. Hasta ahora no había forma de aislarlas, porque elegir una sub-área incluye también sus hijas. El chip lo muestra como «Work › Raíz».
 - **Sub-área**: un segundo combobox, con la ruta sin la primera carpeta. Aparece solo cuando se elige un área y ofrece las sub-áreas de esa área: cada ruta presente y también sus carpetas contenedoras (con tareas en `B/C/D` se ofrecen `B`, `B/C` y `B/C/D`). Se reinicia al cambiar de área y se oculta si el área no tiene sub-áreas. Elegir `B` incluye las tareas de `B` y de `B/*`; elegir `B/C` solo las de `B/C` y `B/C/*`.
 - Reemplaza al filtro de «carpeta» de la Tabla, que hoy es un filtro plano por carpeta de primer nivel. El valor que la Tabla tenía guardado se convierte al área equivalente, o se reinicia si no coincide.
 - Se usa en Lista, Tabla, Kanban y Gantt, y se recuerda por vista.
@@ -680,7 +680,7 @@ Con las cuatro fechas visibles la suma de mínimos es de unos 790 px; con Inicio
 
 **Fuera de alcance**: refresco parcial por fila (se redibuja la vista entera, como hoy al refrescar a mano) y cambios en la configuración (ya refrescan las vistas desde los ajustes).
 
-### 14.7 Rótulos de agrupado y orden sin «por» (v1.1.13 — implementado; pendiente de prueba manual)
+### 14.7 Rótulos de agrupado y orden sin «por» (v1.1.13 — implementado y probado a mano)
 
 - Los combos de agrupado y orden de la barra de tareas (Lista, Tabla y Kanban) pasan de «Group by: Status» y «Sort by: Priority» a **«Group: Status»** y **«Sort: Priority»**: las mismas palabras que los combos de hábitos (§18.6). «Sin agrupar» no lleva prefijo. El `aria-label` de cada combo conserva «Agrupar por» y «Ordenar por».
 
@@ -1005,7 +1005,7 @@ Límites: un evento fuera de la ventana descargada (de −3 a +6 meses) no se re
 
 - **Opciones del combo de agrupar** (Rutina): pasan a «Momento del día» y «Área», con las claves que ya existen (`habit_daytime` y `habit_area`), para no parecerse a las del combo de orden.
 - **Español**: «Por daytime» pasó a «Por momento del día».
-- **Opciones de orden sin «By» / «Por»** (ajuste posterior, implementado; pendiente de prueba manual): como el rótulo del combo ya dice que es el orden, sus opciones pierden el «By» / «Por» y quedan como texto plano.
+- **Opciones de orden sin «By» / «Por»** (ajuste posterior, implementado y probado a mano): como el rótulo del combo ya dice que es el orden, sus opciones pierden el «By» / «Por» y quedan como texto plano.
 
 | Idioma | Alfabético | Área | Momento del día | Prioridad | Racha | % cumplimiento |
 |---|---|---|---|---|---|---|

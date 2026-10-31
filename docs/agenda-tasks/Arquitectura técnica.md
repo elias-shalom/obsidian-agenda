@@ -594,7 +594,7 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §7.7.
 | Modal de duración | `src/modals/task-duration-modal.ts` (usa el componente con `maxMinutes:420, stepMinutes:5`) |
 | Estilos | el SCSS del dial (hoy embebido en los estilos de hábitos) se mueve a un archivo compartido |
 
-## 19. Modal de novedades al actualizar ("What's New") (v1.1.13, implementado; pendiente de prueba manual)
+## 19. Modal de novedades al actualizar ("What's New") (v1.1.13, implementado y probado a mano)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §10. Investigado y diseñado a partir del mecanismo equivalente del plugin [QuickAdd](https://github.com/chhoumann/quickadd) (`src/main.ts` → `announceUpdate()` + `src/gui/UpdateModal/UpdateModal.ts`), adaptado a las diferencias de este proyecto (ver §19.4).
 
@@ -649,7 +649,7 @@ Implica mantener, por cada versión publicada, una entrada corta equivalente en 
 
 Fetch en vivo desde GitHub Releases; renderizado de Markdown libre/imágenes/video embebidos; preferencia granular "solo versiones con funcionalidad nueva" (mayor/menor) vs. todas; cualquier mecanismo de feedback tipo formulario (QuickAdd lo incluye, no aplica a este proyecto).
 
-## 20. Kanban View (v1.1.13, con las piezas compartidas en v1.1.12; Fase B implementada, pendiente de prueba manual; Fase C pendiente)
+## 20. Kanban View (v1.1.13, con las piezas compartidas en v1.1.12; Fase B implementada y probada a mano; Fase C pendiente)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §11.
 
@@ -731,7 +731,7 @@ Queda fuera, como mejora opcional: que las vistas se refresquen solas al cambiar
 
 Tableros múltiples guardados; mini-lenguaje de query propio; carriles (swimlanes) plegables; estados personalizables; unificar las pestañas Lista y Tabla.
 
-### 20.8 Refinamientos del tablero (Fase B2, v1.1.13 — implementados; pendiente de prueba manual)
+### 20.8 Refinamientos del tablero (Fase B2, v1.1.13 — implementados y probados a mano)
 
 Comportamiento: [[Especificación de vistas]] §11.3.
 
@@ -742,7 +742,7 @@ Comportamiento: [[Especificación de vistas]] §11.3.
 - **Pruebas**: Node para `resolveCollapsed()` y para la plantilla con columnas plegadas; prueba manual de plegado, recarga, soltar sobre una columna plegada y scroll por columna.
 - **Pospuesto a v1.1.14**: agrupar por área y sub-área (Especificación §11.3, opciones A, B y C); no afecta al diseño de arriba.
 
-## 21. Gantt View (v1.1.13; G1 y G2 implementadas, pendientes de prueba manual)
+## 21. Gantt View (v1.1.13; G1 y G2 implementadas y probadas a mano)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §12. Comparte con Kanban el motor de agrupado (§20.2), la barra de filtros (§20.3) y el helper de gestos (§20.3.1).
 
@@ -1170,7 +1170,7 @@ Comportamiento: [[Especificación de vistas]] §18.6.
 - **i18n**: claves nuevas `habit_sort_label` y `habit_group_label` en los 6 idiomas; en español `habit_sort_daytime` pasó a «Por momento del día»; el ajuste posterior (§26.3) quita el «By» / «Por» de todas las opciones `habit_sort_*`.
 - **Riesgo**: el texto de `::before` no lo anuncian los lectores de pantalla ni se puede seleccionar, por eso el `aria-label` y el `title`.
 
-## 26. Ajustes de filtros y rótulos (v1.1.13, implementados; pendientes de prueba manual)
+## 26. Ajustes de filtros y rótulos (v1.1.13, implementados y probados a mano)
 
 Comportamiento: [[Especificación de vistas]] §13.2, §14.7 y §18.6.
 
@@ -1191,7 +1191,7 @@ Claves nuevas `group_label` y `sort_label` (valores de la tabla de §14.7, ya co
 
 Solo cambia el texto de `habit_sort_alphabetical`, `habit_sort_area`, `habit_sort_daytime`, `habit_sort_priority`, `habit_sort_streak` y `habit_sort_pct` en los 6 locales (tabla de §18.6). `habit_by_area` y `habit_by_daytime` (títulos del Dashboard) no cambian. Prueba: el chequeo de locales (mismas claves y ninguna de las seis empieza por «By» / «Por» o su equivalente).
 
-## 27. Corrección: etiquetas del día en Semana, Semana laboral y Lista (v1.1.13, implementado; pendiente de prueba manual)
+## 27. Corrección: etiquetas del día en Semana, Semana laboral y Lista (v1.1.13, implementado y probado a mano)
 
 **Síntoma.** Con el inicio de semana en lunes, el 31 de octubre de 2026 (sábado) se etiquetaba «Sun 31 Oct» en las vistas Semana, Semana laboral y Lista; Mes y Año ya estaban bien (issue #35). Lo reportó [@AidanAJoyce](https://github.com/AidanAJoyce), usuario en macOS con Obsidian 1.14.5, y propuso la corrección en el PR [#58](https://github.com/elias-shalom/obsidian-agenda/pull/58).
 
@@ -1199,7 +1199,7 @@ Solo cambia el texto de `habit_sort_alphabetical`, `habit_sort_area`, `habit_sor
 
 **Corrección.** Las tres vistas calculan el índice como `(currentDay.weekday - this.getWeekStartDay() + 7) % 7`. No se extrajo una función aparte: es una expresión de una línea y las pruebas ejercitan las vistas reales. Solo cambian esos tres cálculos de etiqueta: los rangos de fechas, la asignación de tareas, las fechas guardadas y las vistas Día, Mes y Año quedan igual (los dos archivos de Semana y Semana laboral ganan además un salto de línea final).
 
-**Pruebas.** `tests/calendar-weekday-labels.test.cjs`, aportado en el mismo PR y primer archivo de pruebas del repo (no hay script `npm test`): transpila las vistas reales con `typescript` y las ejecuta sobre un `CalendarView` mínimo, sin Obsidian. Son 21 pruebas (3 vistas por los 7 inicios de semana) que comprueban, en inglés y español, con UTC, Bucarest y Nueva York y con fechas límite (fin de año, bisiesto, cambio de hora), el nombre del día, la fecha, el número de días y que la tarea queda en su fecha. Se ejecutan con `node --test tests/calendar-weekday-labels.test.cjs`. En la revisión: 21 de 21 pasan, y `npm run build` y ESLint quedan limpios. Prueba manual pendiente en Obsidian.
+**Pruebas.** `tests/calendar-weekday-labels.test.cjs`, aportado en el mismo PR y primer archivo de pruebas del repo (no hay script `npm test`): transpila las vistas reales con `typescript` y las ejecuta sobre un `CalendarView` mínimo, sin Obsidian. Son 21 pruebas (3 vistas por los 7 inicios de semana) que comprueban, en inglés y español, con UTC, Bucarest y Nueva York y con fechas límite (fin de año, bisiesto, cambio de hora), el nombre del día, la fecha, el número de días y que la tarea queda en su fecha. Se ejecutan con `node --test tests/calendar-weekday-labels.test.cjs`. En la revisión: 21 de 21 pasan, y `npm run build` y ESLint quedan limpios. Probado a mano en Obsidian.
 
 ### 27.1 Participación externa
 

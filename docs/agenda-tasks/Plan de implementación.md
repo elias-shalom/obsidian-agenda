@@ -351,7 +351,7 @@ Un paso de build/generación de los manuales (son Markdown plano, sin plantilla 
 - [x] Nuevo `src/modals/whats-new-modal.ts` + `src/modals/templates/whats-new-modal.hbs`.
 - [x] Botón de cierre propio, visible dentro del contenido (no depende únicamente del cierre nativo del modal de Obsidian).
 - [x] Si `showWhatsNewOnUpdate` es `false`, el modal no se abre (pero `lastSeenVersion` ya se actualizó en la Fase A).
-- [ ] Verificable sola: al simular un cambio de versión (editar `lastSeenVersion` manualmente a una versión anterior y recargar el plugin), el modal se abre una sola vez con el contenido correcto en el idioma activo de Obsidian; con el ajuste desactivado, no se abre pero tampoco vuelve a aparecer al reactivarlo.
+- [x] Verificable sola: al simular un cambio de versión (editar `lastSeenVersion` manualmente a una versión anterior y recargar el plugin), el modal se abre una sola vez con el contenido correcto en el idioma activo de Obsidian; con el ajuste desactivado, no se abre pero tampoco vuelve a aparecer al reactivarlo.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
@@ -359,7 +359,7 @@ Fetch en vivo desde GitHub Releases; renderizado de Markdown libre (imágenes, v
 
 ## Próxima fase — v1.1.13: Kanban view (diseño; la Fase A, las piezas compartidas, va en v1.1.12)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §11. Mecanismo: [[Arquitectura técnica]] §20. **Fases A y B implementadas (la B, pendiente de prueba manual); la C pasa a v1.1.14.** El arrastre se resolvió: solo estado y prioridad. El orden manual (Fase C) se pospone a v1.1.14 (ver §20.4). La Fase B2 (columnas plegables y altura máxima) está implementada, pendiente de prueba manual; el agrupado por área y sub-área pasa a v1.1.14 (Especificación §11.3).
+> Comportamiento y decisiones: [[Especificación de vistas]] §11. Mecanismo: [[Arquitectura técnica]] §20. **Fases A y B implementadas (la B, probada a mano); la C pasa a v1.1.14.** El arrastre se resolvió: solo estado y prioridad. El orden manual (Fase C) se pospone a v1.1.14 (ver §20.4). La Fase B2 (columnas plegables y altura máxima) está implementada y probada a mano; el agrupado por área y sub-área pasa a v1.1.14 (Especificación §11.3).
 
 ### Fase A — Piezas compartidas (base para Kanban y Gantt, sin vista nueva)
 - [x] `TaskSorter.groupTasksByField(tasks, field)` genérico, con las columnas de estado en orden de flujo de trabajo (el del menú de estado: To-do, En progreso, En espera, Hecho, Cancelada, No es tarea; siempre las 6, aunque estén vacías). Para `path` devuelve un árbol de carpetas; la lógica vive en `src/core/task-grouping.ts` y `BaseView.groupTasksByFolder()` delega en ella. Falta `'area'`/`'subArea'` (AR2) y que Lista y Tabla lo usen (U2/U3).
@@ -377,16 +377,16 @@ Fetch en vivo desde GitHub Releases; renderizado de Markdown libre (imágenes, v
 - [x] Arrastre entre columnas por estado con `upsertTaskStatus()` + `updateTaskLine()`, incluida la ocurrencia siguiente de tareas recurrentes; por prioridad con `upsertPriority()`.
 - [x] Gestos de tarjeta iguales al resto del plugin (clic edita, doble clic abre la nota, clic derecho abre el menú de estado).
 - [x] Claves i18n nuevas en los 6 locales.
-- [ ] Verificable sola: arrastrar una tarjeta a "Hecho" agrega ✅ en el archivo y refresca el tablero; arrastrarla de vuelta lo quita.
+- [x] Verificable sola: arrastrar una tarjeta a "Hecho" agrega ✅ en el archivo y refresca el tablero; arrastrarla de vuelta lo quita.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
-### Fase B2 — Refinamientos del tablero (implementados; pendiente de prueba manual; depende de B)
+### Fase B2 — Refinamientos del tablero (implementados y probados a mano; depende de B)
 - [x] `src/core/kanban-collapse.ts` (puro): `resolveCollapsed()` (la elección guardada manda; sin ella, una columna vacía está plegada) y la clave de almacenamiento por agrupado y columna.
 - [x] Plantilla y estilos: encabezado como botón con `aria-expanded`; columna plegada de ancho fijo con el nombre en vertical (`writing-mode`) y el contador; el clic en el encabezado o en la barra alterna y guarda la elección.
 - [x] Soltar sobre una columna plegada: sigue aceptando y resaltándose; al recibir la tarjeta se borra la elección guardada y la columna se despliega.
 - [x] Altura: columnas ajustadas al contenido hasta la altura visible del panel (menos la barra de filtros, con `ResizeObserver`); encabezado fijo y tarjetas con desplazamiento propio.
 - [x] Claves i18n `kanban_collapse_column` y `kanban_expand_column` en los 6 locales.
-- [ ] Verificable sola: Node (`resolveCollapsed()` y la plantilla con columnas plegadas). Prueba manual: plegar, desplegar y recargar; las vacías arrancan plegadas; soltar sobre una plegada; una columna con muchas tareas desplaza por su cuenta y el arrastre sigue funcionando dentro de ella; panel dividido y teléfono emulado.
+- [x] Verificable sola: Node (`resolveCollapsed()` y la plantilla con columnas plegadas). Prueba manual: plegar, desplegar y recargar; las vacías arrancan plegadas; soltar sobre una plegada; una columna con muchas tareas desplaza por su cuenta y el arrastre sigue funcionando dentro de ella; panel dividido y teléfono emulado.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 - [ ] Agrupar el tablero por área y sub-área: **pasa a v1.1.14** (Especificación §11.3, opciones A, B y C).
 
@@ -400,7 +400,7 @@ Tableros múltiples guardados; mini-lenguaje de query propio; carriles (swimlane
 
 ## Próxima fase — v1.1.13: Gantt view (diseño)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §12. Mecanismo: [[Arquitectura técnica]] §21. **G1 y G2 implementadas (pendientes de prueba manual).** Depende de la Fase A de Kanban (piezas compartidas). Las decisiones de la Especificación §12.7 se tomaron el 2026-10-31 y no queda ninguna abierta.
+> Comportamiento y decisiones: [[Especificación de vistas]] §12. Mecanismo: [[Arquitectura técnica]] §21. **G1 y G2 implementadas y probadas a mano.** Depende de la Fase A de Kanban (piezas compartidas). Las decisiones de la Especificación §12.7 se tomaron el 2026-10-31 y no queda ninguna abierta.
 
 ### Fase G1 — Gantt de lectura (depende de la Fase A de Kanban)
 - [x] `resolveGanttSpan(task)` en `src/core/task-gantt.ts`: barra, hito o ninguna, según [[Especificación de vistas]] §12.1.
@@ -418,7 +418,7 @@ Tableros múltiples guardados; mini-lenguaje de query propio; carriles (swimlane
 - [x] Barra de filtros compartida y gestos con `attachTaskGestures()`.
 - [x] Claves i18n nuevas en los 6 locales.
 - [x] Pruebas de Node: `resolveGanttSpan()` en todos los casos de §12.1 (incluido el fin anterior al inicio y la hora de ⏳ ignorada), ventanas de 7/14/21 días con cada inicio de semana y mes natural de 28 a 31 días, posiciones recortadas por cada lado, un cambio de hora, bandas de semana, filas agrupadas (solo tareas dentro de la ventana, grupos plegados y vacíos), dependencias, estado y zoom, plantilla, encabezado y los 6 locales (98 comprobaciones).
-- [ ] Verificable sola: con tareas de una, dos y tres fechas se ven hitos y barras correctas; cambiar de zoom y de mes (28 a 31 días) mantiene las posiciones.
+- [x] Verificable sola: con tareas de una, dos y tres fechas se ven hitos y barras correctas; cambiar de zoom y de mes (28 a 31 días) mantiene las posiciones.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase G2 — Edición de fechas (depende de G1)
@@ -427,7 +427,7 @@ Tableros múltiples guardados; mini-lenguaje de query propio; carriles (swimlane
 - [x] Tooltip que indica qué campo escribe cada borde; bloquear fin anterior al inicio.
 - [x] Convertir un hito en barra con su manija: `start` crea `scheduled`, `scheduled` crea `due` y un hito con solo `due` crea `start` con la manija a la izquierda (Especificación §12.7).
 - [x] Pruebas de Node: `shiftTaskDates()` (hora de ⏳, ➕/✅/`🆔`/`⛔` intactos, cambio de mes, año y hora), `clampGanttDelta()`, `planGanttEdit()` y `applyGanttEdit()` en los tres tipos de barra y de hito, el rango incoherente y la plantilla (manijas ocultas en el lado recortado; 47 comprobaciones).
-- [ ] Verificable sola: arrastrar un borde cambia solo el campo indicado en la nota; mover la barra desplaza las tres fechas sin tocar `🆔`/`⛔`; la vista se refresca sola al soltar y no se abre el modal.
+- [x] Verificable sola: arrastrar un borde cambia solo el campo indicado en la nota; mover la barra desplaza las tres fechas sin tocar `🆔`/`⛔`; la vista se refresca sola al soltar y no se abre el modal.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
@@ -451,7 +451,7 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [x] `GroupField` gana `'area'`; `groupTasksByField(tasks, 'area')` devuelve el árbol área → sub-área (las notas de la raíz, como «Sin área», al final). `'subArea'` (grupos planos «Área · sub-área») queda para Kanban y Gantt (v1.1.13).
 - [x] Lista agrupa por área y sub-área (anidada por carpeta) y conserva el modo plano (valor «Carpeta» del combo).
 - [x] Color por área en las cabeceras de grupo (`getAreaColor`, franja a la izquierda; los hijos heredan el color).
-- [ ] Claves i18n nuevas en los 6 locales.
+- [x] Claves i18n nuevas en los 6 locales.
 - [x] Verificable sola: elegir un área muestra el combobox de sub-área con solo sus sub-áreas; cambiar de área lo reinicia; Lista y Tabla filtran igual. (probado a mano)
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
@@ -557,8 +557,8 @@ Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones
 - [x] Campo de la ruta como `render` personalizado con aviso de tres estados (existe, no existe, ruta no válida), recalculado con `debounce` de 500 ms; guarda `habitFolderPath` a mano; mismo resultado en `display()`.
 - [x] Claves i18n nuevas en los 6 locales y se eliminan `show_list_tab` y `show_table_tab`.
 - [x] Verificable sola: `evaluateHabitFolderHint()` para cada estado.
-- [ ] Documentación al implementar: README, manual en/es (Tab Visibility y carpeta de hábitos) y «News» de la versión.
-- [ ] Prueba manual: ocultar Tareas y Hábitos desde Ajustes; actualizar desde una configuración con solo la Tabla visible; crear el primer hábito sin carpeta (Crear, Cancelar y ruta nueva); escribir rutas válidas y no válidas en Ajustes; abrir las cinco vistas sin hábitos.
+- [x] Documentación al implementar: README, manual en/es (Tab Visibility y carpeta de hábitos) y «News» de la versión.
+- [x] Prueba manual: ocultar Tareas y Hábitos desde Ajustes; actualizar desde una configuración con solo la Tabla visible; crear el primer hábito sin carpeta (Crear, Cancelar y ruta nueva); escribir rutas válidas y no válidas en Ajustes; abrir las cinco vistas sin hábitos.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase S5 — Rótulos de los combos de hábitos (independiente; diseño en [[Especificación de vistas]] §18.6 y [[Arquitectura técnica]] §25.8)
@@ -566,13 +566,13 @@ Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones
 - [x] Plantillas de Cuadrícula, Semanal y Rutina: `data-label` en el contenedor y `aria-label` y `title` en el `<select>`; el combo de agrupar de Rutina usa `habit_daytime` y `habit_area`.
 - [x] Estilos del prefijo en `_habit-common.scss` (`::before` con `attr(data-label)`), sin romper la barra en tableta y teléfono.
 - [x] Verificable sola: script de Node que comprueba que los 6 locales tienen las dos claves nuevas.
-- [ ] Prueba manual: los combos de Cuadrícula, Semanal y Rutina con su rótulo en escritorio, `is-tablet` e `is-phone`, tema claro y oscuro; cambiar de idioma; el orden y la agrupación elegidos siguen funcionando.
+- [x] Prueba manual: los combos de Cuadrícula, Semanal y Rutina con su rótulo en escritorio, `is-tablet` e `is-phone`, tema claro y oscuro; cambiar de idioma; el orden y la agrupación elegidos siguen funcionando.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
 Crear carpetas sin preguntar; botones nuevos en las vistas; migrar hábitos existentes.
 
-## Corrección — v1.1.13: etiquetas del día de la semana (implementado; pendiente de prueba manual)
+## Corrección — v1.1.13: etiquetas del día de la semana (implementado y probado a mano)
 
 > Mecanismo: [[Arquitectura técnica]] §27. Reportado y corregido por @AidanAJoyce (PR #58).
 
@@ -580,7 +580,7 @@ Crear carpetas sin preguntar; botones nuevos en las vistas; migrar hábitos exis
 - [x] Corrección aportada en el PR #58 (@AidanAJoyce): el índice del nombre del día es `(weekday - weekStartDay + 7) % 7`; no hay función aparte.
 - [x] `CalendarWeekView`, `CalendarWorkWeekView` y `CalendarListView` usan esa expresión con `this.getWeekStartDay()` en lugar de `weekday % 7`.
 - [x] Verificable sola: `node --test tests/calendar-weekday-labels.test.cjs` (21 pruebas del PR: 3 vistas por los 7 inicios de semana, en inglés y español, con tres zonas horarias y fechas límite); 21 de 21 pasan.
-- [ ] Prueba manual: inicio de semana en lunes y en domingo; 31 de octubre de 2026 es «Sat», 1 de noviembre «Sun» y 2 de noviembre «Mon» en Semana, Semana laboral y Lista; las tareas siguen en su fecha.
+- [x] Prueba manual: inicio de semana en lunes y en domingo; 31 de octubre de 2026 es «Sat», 1 de noviembre «Sun» y 2 de noviembre «Mon» en Semana, Semana laboral y Lista; las tareas siguen en su fecha.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 - [x] Integración: revisión del PR, merge en `features/develop` con la autoría de Aidan y comentario en el PR, que queda abierto hasta que la versión llegue a `main` (Arquitectura §27.1).
 - [x] README: sección Contributors con el crédito.
@@ -591,25 +591,25 @@ La alineación de la vista Semana con `weekStartDay` (usa la semana ISO de Luxon
 
 ## Próxima fase — v1.1.13: ajustes de filtros y rótulos (diseño)
 
-> Comportamiento: [[Especificación de vistas]] §13.2, §14.7 y §18.6. Mecanismo: [[Arquitectura técnica]] §26. **F1, F2 y F3 implementadas (pendientes de prueba manual).** Sin decisiones abiertas. Orden de trabajo: primero la Fase B2 de Kanban, después F1, F2 y F3.
+> Comportamiento: [[Especificación de vistas]] §13.2, §14.7 y §18.6. Mecanismo: [[Arquitectura técnica]] §26. **F1, F2 y F3 implementadas y probadas a mano.** Sin decisiones abiertas. Orden de trabajo: primero la Fase B2 de Kanban, después F1, F2 y F3.
 
 ### Fase F1 — Opción «Raíz» en el filtro de Área
 - [x] `ROOT_AREA` (`'/'`) en `src/core/area.ts`; `matchesTaskArea()` lo entiende (solo notas fuera de cualquier carpeta).
 - [x] `TaskFilterBar`: «Raíz» al final del menú de Área, solo si hay tareas en la raíz; sin menú de sub-área al elegirla; el chip la muestra; `reconcileArea()` la conserva mientras haya tareas en la raíz.
 - [x] Clave `area_root` en los 6 locales.
 - [x] Ampliación acordada tras probar la F1: «Raíz» también en el filtro de Sub-área, con las notas que están directamente en la carpeta del área (`hasDirectTasks()`, `matchesTaskArea()` y el menú de sub-áreas).
-- [ ] Verificable sola: Node (`matchesTaskArea()`, `filterTasksByViewState()` y la reconciliación). Prueba manual en Lista, Tabla y Kanban, con tareas dentro y fuera de carpetas.
+- [x] Verificable sola: Node (`matchesTaskArea()`, `filterTasksByViewState()` y la reconciliación). Prueba manual en Lista, Tabla y Kanban, con tareas dentro y fuera de carpetas.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase F2 — Rótulos «Group:» y «Sort:» en las tareas
 - [x] Claves `group_label` y `sort_label` en los 6 locales.
 - [x] `TaskFilterBar` (orden) y Lista, Tabla y Kanban (agrupado) las usan en el texto visible; el `aria-label` conserva «Agrupar por» y «Ordenar por».
-- [ ] Verificable sola: Node (claves en los 6 locales). Prueba manual en los tres modos.
+- [x] Verificable sola: Node (claves en los 6 locales). Prueba manual en los tres modos.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase F3 — Opciones de orden de hábitos sin «By»
 - [x] Texto de las seis claves `habit_sort_*` en los 6 locales (Especificación §18.6).
-- [ ] Verificable sola: el chequeo de locales. Prueba manual en Cuadrícula, Semanal y Rutina.
+- [x] Verificable sola: el chequeo de locales. Prueba manual en Cuadrícula, Semanal y Rutina.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance

@@ -394,27 +394,38 @@ Tras actualizar el plugin a una versión nueva, en el primer arranque se abre **
 ### 10.1 Fuera de alcance
 Traer el contenido en vivo desde los releases de GitHub; renderizado de Markdown libre (imágenes, video, bloques de código embebidos); una preferencia granular de "solo versiones con funcionalidad nueva" (mayor/menor) vs. todas (puede evaluarse más adelante); cualquier mecanismo de feedback tipo formulario.
 
-## 11. Kanban View (v1.1.13, con las piezas compartidas en v1.1.12 — diseño, no implementado)
+## 11. Kanban View (v1.1.13, con las piezas compartidas en v1.1.12 — Fase B implementada, pendiente de prueba manual; orden manual pendiente)
 
-> **Estado**: diseño acordado en sesión de discusión, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §20. Referencia investigada: el plugin [Tasks Kanban](https://community.obsidian.md/plugins/tasks-kanban) (ver comparación en §20.6).
+> **Estado**: diseño acordado en sesión de discusión; las columnas y el arrastre de estado y prioridad están implementados (Fase B), falta el orden manual (Fase C). Mecanismo: [[Arquitectura técnica]] §20. Referencia investigada: el plugin [Tasks Kanban](https://community.obsidian.md/plugins/tasks-kanban) (ver comparación en §20.6).
 
 Un tablero donde cada tarjeta es una tarea real del vault (la misma `.oa-calendar-task`-style de las demás vistas, no una copia ni una nota aparte) y cada columna agrupa tareas por un criterio. Mover una tarjeta reescribe la línea de la tarea en su archivo origen.
 
 - **Ubicación**: nueva pestaña de nivel superior, junto a Overview/Lista/Tabla/Calendario/Hábitos, con su propio ajuste de visibilidad (mismo patrón que `showListTab`/`showTableTab`).
-- **Columnas**: por defecto, una por cada uno de los 6 estados fijos (`CoreTaskStatus`: Todo, En progreso, En espera, Hecho, Cancelada, No es tarea). Un selector permite agrupar en cambio por **prioridad**, **etiqueta** o **área** (con sus sub-áreas, ver §13).
+- **Columnas**: por defecto, una por cada uno de los 6 estados fijos (`CoreTaskStatus`: Todo, En progreso, En espera, Hecho, Cancelada, No es tarea). Un selector permite agrupar en cambio por **prioridad**, **etiqueta** o **carpeta** (la primera carpeta de la nota, es decir, el área; ver §13).
 - **Filtros y orden**: los mismos que ya usan Lista/Tabla (`TaskFilter`/`TaskSorter`), incluyendo orden ascendente/descendente. No hay un lenguaje de query propio.
 - **Filtros**: una barra compartida y configurable, usada por Lista, Tabla, Kanban y Gantt, que incluye el filtro por estado (hoy la Tabla tiene sus propios controles, hardcodeados en su plantilla; se reemplazan por esta barra común).
 - **Arrastrar entre columnas** (agrupando por estado): cambia el estado de la tarea al de la columna destino, con el mismo efecto que el menú contextual del calendario (§4.9): marcar "Hecho" agrega ✅, salir de "Hecho" lo quita, y completar una tarea recurrente genera su siguiente ocurrencia.
-- **Arrastrar entre columnas** (agrupando por prioridad/etiqueta/carpeta): cambia el campo correspondiente de la tarea. El detalle por criterio (¿cómo se "mueve" una tarea a otra etiqueta o carpeta?) queda por resolver en la fase de diseño técnico.
+- **Arrastrar entre columnas** (agrupando por prioridad): cambia la prioridad de la tarea; la columna «Normal» quita el emoji de prioridad. Las columnas por etiqueta y carpeta son de solo lectura: no admiten soltar.
 - **Reordenar dentro de una columna**: sí, arrastrando una tarjeta a otra posición de la misma columna. Requiere persistir un orden manual (ver §20.4, decisión pendiente).
 - **Gestos de tarjeta**: iguales al resto del plugin — clic edita, doble clic abre la nota, clic derecho abre el menú de estado.
-- **Un solo tablero**: sin tableros guardados/nombrados múltiples por ahora.
+- **Un solo tablero**: sin tableros guardados/nombrados múltiples por ahora. Su búsqueda, filtros, orden y agrupado se guardan aparte de los de Lista y Tabla.
+- **Columnas vacías**: por estado y por prioridad se muestran siempre todas las columnas, aunque estén vacías, porque son destinos de arrastre.
 
 ### 11.1 Estados personalizables (relacionado, fuera de alcance)
 Kanban v1 usa solo los 6 estados fijos. Que el usuario defina estados propios (símbolo + nombre + `type`, como los [Custom Statuses de Tasks](https://publish.obsidian.md/tasks/Getting+Started/Statuses/Custom+Statuses)) es un ítem propio, candidato a v1.1.14. A favor de este plugin: sus vistas dibujan sus propios íconos, así que un estado personalizado no necesita que el usuario instale un tema CSS (a diferencia de Tasks). En contra: el enum fijo está repetido en el Task Modal, el menú contextual, el badge del calendario, el filtro de Tabla y las claves i18n, y los nombres personalizados no se pueden traducir.
 
 ### 11.2 Fuera de alcance
 Tableros múltiples guardados/nombrados; mini-lenguaje de query propio; estados personalizables (§11.1); agrupar por fecha (una columna por fecha distinta dispersa el tablero); unificar las pestañas Lista y Tabla (ver `docs/todo.md`, se evalúa aparte).
+
+### 11.3 Refinamientos del tablero (v1.1.13 — implementados salvo la decisión abierta; pendiente de prueba manual)
+
+> Fase B2 del plan. Surgieron al probar la Fase B. Mecanismo: [[Arquitectura técnica]] §20.8.
+
+- **Columnas plegables.** Pulsar el encabezado de una columna la pliega a una barra delgada con su nombre en vertical y el número de tareas; pulsar la barra la despliega. Las columnas sin tareas arrancan plegadas.
+- **Memoria del plegado.** Se recuerda por agrupado y por columna, pero solo lo que el usuario cambia a mano: una columna vacía que el usuario despliega sigue desplegada, y una con tareas que pliega sigue plegada. Sin una elección del usuario manda el valor por defecto (vacía = plegada).
+- **Soltar sobre una columna plegada.** La barra plegada acepta la tarjeta y se resalta mientras se arrastra, de modo que «Hecho», «Cancelada» o «En espera» siguen siendo destinos aunque estén vacías. Al recibir una tarea la columna se despliega sola; esa acción descarta la elección de plegado que el usuario hubiera guardado para ella.
+- **Altura.** Cada columna se ajusta a su contenido (como mínimo lo que ocupan sus tareas) hasta un máximo: la altura visible del panel donde está la vista. Si lo supera, las tarjetas se desplazan dentro de la columna con la rueda mientras el cursor está sobre ella, y el encabezado queda fijo. El desplazamiento de la vista entera no cambia.
+- **Decisión abierta: agrupar por área y sub-área.** Hoy el combo de agrupado ofrece «Carpeta» (una columna por primera carpeta, sin sub-áreas); §11 decía «área con sus sub-áreas» y se simplificó porque las columnas no se anidan. Opciones en estudio: **A** «Área» y «Sub-área» como agrupados distintos (una columna por ruta completa de sub-área); **B** solo renombrar «Carpeta» a «Área» y dejar las sub-áreas al filtro; **C** «Área», que con un área filtrada muestra una columna por sub-área (más «Sin sub-área» para las notas directas). El usuario lo está pensando: no se implementa hasta decidir.
 
 ## 12. Gantt View (v1.1.13 — diseño, no implementado)
 
@@ -506,6 +517,7 @@ El **área** es solo el nombre de la primera carpeta; la **sub-área** es la rut
 La barra de filtros compartida (§11, §20.3) incluye:
 
 - **Área**: un combobox con «Todas» más el nombre de la primera carpeta de cada área que tiene tareas.
+- **Raíz** (v1.1.13 — acordado, no implementado): el combobox de Área ofrece además «Raíz» / «Root», que muestra solo las tareas de notas fuera de cualquier carpeta (en la raíz de la bóveda). Se ofrece cuando hay tareas en la raíz y no tiene sub-áreas. El filtro de Sub-área no cambia. En el agrupado esas tareas siguen llamándose «Sin área».
 - **Sub-área**: un segundo combobox, con la ruta sin la primera carpeta. Aparece solo cuando se elige un área y ofrece las sub-áreas de esa área: cada ruta presente y también sus carpetas contenedoras (con tareas en `B/C/D` se ofrecen `B`, `B/C` y `B/C/D`). Se reinicia al cambiar de área y se oculta si el área no tiene sub-áreas. Elegir `B` incluye las tareas de `B` y de `B/*`; elegir `B/C` solo las de `B/C` y `B/C/*`.
 - Reemplaza al filtro de «carpeta» de la Tabla, que hoy es un filtro plano por carpeta de primer nivel. El valor que la Tabla tenía guardado se convierte al área equivalente, o se reinicia si no coincide.
 - Se usa en Lista, Tabla, Kanban y Gantt, y se recuerda por vista.
@@ -566,7 +578,7 @@ Con filtros activos (aparece una segunda fila)
 [Prioridad: Alta ×] [Área: Work › Proj ×] [Fecha: Vencidas ×]  [Limpiar]
 ```
 
-- **Fila 1 (presentación)**: conmutador de modo, + Filtro, agrupado, orden con su dirección y, a la derecha, la búsqueda. Agrupado y orden siguen siendo combos con el texto «Agrupar por: …» y «Ordenar por: …».
+- **Fila 1 (presentación)**: conmutador de modo, + Filtro, agrupado, orden con su dirección y, a la derecha, la búsqueda. Agrupado y orden siguen siendo combos con el texto «Agrupar por: …» y «Ordenar por: …» (v1.1.12); en v1.1.13 pasan a «Grupo: …» y «Orden: …», sin «por» (§14.7).
 - **Fila 2 (filtros activos)**: solo existe si hay al menos un filtro activo. Contiene un chip por filtro y el botón **Limpiar**.
 - **Tipos de filtro**: Prioridad, Estado, Área y Fecha (la fecha se divide en Vencimiento, Inicio y Programada en §14.5, con lo que son seis tipos). La sub-área no es un tipo aparte: forma parte del chip de Área («Área: Work › Proj»).
 - **+ Filtro**: abre un menú nativo de Obsidian con los cuatro tipos; los que ya están activos aparecen marcados y, al elegirlos, se edita su valor. Al elegir un tipo se abre un segundo menú con sus valores (el actual, marcado) y, al elegir un valor, se crea o se actualiza el chip.
@@ -655,6 +667,19 @@ Con las cuatro fechas visibles la suma de mínimos es de unos 790 px; con Inicio
 **Decisiones**: retardo fijo de 0,4 s; solo vistas visibles; sin interruptor en los ajustes.
 
 **Fuera de alcance**: refresco parcial por fila (se redibuja la vista entera, como hoy al refrescar a mano) y cambios en la configuración (ya refrescan las vistas desde los ajustes).
+
+### 14.7 Rótulos de agrupado y orden sin «por» (v1.1.13 — acordado, no implementado)
+
+- Los combos de agrupado y orden de la barra de tareas (Lista, Tabla y Kanban) pasan de «Group by: Status» y «Sort by: Priority» a **«Group: Status»** y **«Sort: Priority»**: las mismas palabras que los combos de hábitos (§18.6). «Sin agrupar» no lleva prefijo. El `aria-label` de cada combo conserva «Agrupar por» y «Ordenar por».
+
+| Idioma | Agrupado | Orden |
+|---|---|---|
+| en | Group: | Sort: |
+| es | Grupo: | Orden: |
+| pt | Grupo: | Ordem: |
+| it | Gruppo: | Ordine: |
+| fr | Groupe : | Tri : |
+| de | Gruppe: | Sortierung: |
 
 ## 15. Sincronía con Google Calendar (v1.1.15 — diseño, no implementado)
 
@@ -966,7 +991,18 @@ Límites: un evento fuera de la ventana descargada (de −3 a +6 meses) no se re
 | fr | Tri : | Groupe : |
 | de | Sortierung: | Gruppe: |
 
-- **Opciones del combo de agrupar** (Rutina): pasan a «Momento del día» y «Área», con las claves que ya existen (`habit_daytime` y `habit_area`), para no parecerse a las del combo de orden, que conserva «Por área», «Por prioridad», etc.
-- **Español**: «Por daytime» pasa a «Por momento del día».
+- **Opciones del combo de agrupar** (Rutina): pasan a «Momento del día» y «Área», con las claves que ya existen (`habit_daytime` y `habit_area`), para no parecerse a las del combo de orden.
+- **Español**: «Por daytime» pasó a «Por momento del día».
+- **Opciones de orden sin «By» / «Por»** (ajuste posterior, acordado, no implementado): como el rótulo del combo ya dice que es el orden, sus opciones pierden el «By» / «Por» y quedan como texto plano.
+
+| Idioma | Alfabético | Área | Momento del día | Prioridad | Racha | % cumplimiento |
+|---|---|---|---|---|---|---|
+| en | Alphabetical | Area | Daytime | Priority | Streak | Completion % |
+| es | Alfabético | Área | Momento del día | Prioridad | Racha | % cumplimiento |
+| pt | Alfabético | Área | Período | Prioridade | Sequência | % de conclusão |
+| it | Alfabetico | Area | Momento | Priorità | Serie | % di completamento |
+| fr | Alphabétique | Domaine | Moment | Priorité | Série | % de réussite |
+| de | Alphabetisch | Bereich | Tageszeit | Priorität | Serie | Erfüllung % |
+
 - Solo cambia el texto: los valores guardados (orden y agrupación elegidos) no cambian y no hay migración.
 - **Fuera de alcance**: criterios nuevos de orden o agrupación y combos en la Tabla o el Dashboard.

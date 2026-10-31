@@ -78,6 +78,7 @@ export class SettingTab extends PluginSettingTab {
         items: [
           { name: this.i18n.t('show_overview_tab'), control: { type: 'toggle', key: 'showOverviewTab' } },
           { name: this.i18n.t('show_tasks_tab'), control: { type: 'toggle', key: 'showTasksTab' } },
+          { name: this.i18n.t('show_kanban_tab'), control: { type: 'toggle', key: 'showKanbanTab' } },
           { name: this.i18n.t('show_calendar_tab'), control: { type: 'toggle', key: 'showCalendarTab' } },
           { name: this.i18n.t('show_habit_tab'), control: { type: 'toggle', key: 'showHabitTab' } },
           {
@@ -266,6 +267,15 @@ export class SettingTab extends PluginSettingTab {
         .setValue(this.plugin.settings.showTasksTab)
         .onChange(async (value) => {
           this.plugin.settings.showTasksTab = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("show_kanban_tab"))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.showKanbanTab)
+        .onChange(async (value) => {
+          this.plugin.settings.showKanbanTab = value;
           await this.plugin.saveSettings();
         }));
 

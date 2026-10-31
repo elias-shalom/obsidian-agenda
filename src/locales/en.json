@@ -361,12 +361,18 @@
   "habit_folder_create_failed": "Could not create the folder '{path}': {reason}",
   "show_whats_new_on_update": "Show what's new after an update",
   "show_whats_new_on_update_desc": "Open a window with the new features the first time you start Obsidian after updating the plugin",
+  "kanban_view_tab": "Kanban",
+  "kanban_view_title": "Kanban",
+  "kanban_empty_column": "No tasks",
+  "show_kanban_tab": "Show Kanban tab",
+  "kanban_collapse_column": "Collapse column",
+  "kanban_expand_column": "Expand column",
   "whats_new": {
     "title": "What's new in Agenda Tasks",
     "close": "Close",
     "v1_1_13": {
       "title": "Tabs, habit folder and labels",
-      "items": "A single Show Tasks tab switch replaces the List and Table switches, and a new Show Habits tab switch hides the whole Habits tab.\nIf the habits folder does not exist, creating your first habit offers to create it, and Settings tells you whether it exists.\nThe sort and group selectors of the habit views now have a label (Sort: / Group:).\nThis window: after an update you will see what's new once; you can turn it off in Settings."
+      "items": "A new Kanban tab shows your tasks as columns by status, priority, tag or folder; drag a card to another status or priority column to change it.\nA single Show Tasks tab switch replaces the List and Table switches, and a new Show Habits tab switch hides the whole Habits tab.\nIf the habits folder does not exist, creating your first habit offers to create it, and Settings tells you whether it exists.\nThe sort and group selectors of the habit views now have a label (Sort: / Group:).\nThis window: after an update you will see what's new once; you can turn it off in Settings."
     }
   },
   "habit_new_habit": "New habit",

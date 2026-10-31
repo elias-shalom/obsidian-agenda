@@ -359,12 +359,18 @@
   "habit_folder_create_failed": "Impossible de créer le dossier '{path}' : {reason}",
   "show_whats_new_on_update": "Afficher les nouveautés après une mise à jour",
   "show_whats_new_on_update_desc": "Ouvre une fenêtre avec les nouveautés au premier démarrage après la mise à jour du plugin",
+  "kanban_view_tab": "Kanban",
+  "kanban_view_title": "Kanban",
+  "kanban_empty_column": "Aucune tâche",
+  "show_kanban_tab": "Afficher l'onglet Kanban",
+  "kanban_collapse_column": "Réduire la colonne",
+  "kanban_expand_column": "Développer la colonne",
   "whats_new": {
     "title": "Nouveautés d'Agenda Tasks",
     "close": "Fermer",
     "v1_1_13": {
       "title": "Onglets, dossier des habitudes et libellés",
-      "items": "Un seul interrupteur pour l'onglet Tâches remplace ceux de la Liste et du Tableau, et un nouvel interrupteur masque tout l'onglet Habitudes.\nSi le dossier des habitudes n'existe pas, la création de votre première habitude propose de le créer, et les paramètres indiquent s'il existe.\nLes sélecteurs de tri et de regroupement des vues d'habitudes ont maintenant un libellé (Tri : / Groupe :).\nCette fenêtre : après une mise à jour, vous verrez les nouveautés une seule fois ; vous pouvez la désactiver dans les paramètres."
+      "items": "Un nouvel onglet Kanban affiche vos tâches en colonnes par statut, priorité, étiquette ou dossier ; faites glisser une carte vers une autre colonne de statut ou de priorité pour la modifier.\nUn seul interrupteur pour l'onglet Tâches remplace ceux de la Liste et du Tableau, et un nouvel interrupteur masque tout l'onglet Habitudes.\nSi le dossier des habitudes n'existe pas, la création de votre première habitude propose de le créer, et les paramètres indiquent s'il existe.\nLes sélecteurs de tri et de regroupement des vues d'habitudes ont maintenant un libellé (Tri : / Groupe :).\nCette fenêtre : après une mise à jour, vous verrez les nouveautés une seule fois ; vous pouvez la désactiver dans les paramètres."
     }
   },
   "habit_new_habit": "Nouvelle habitude",

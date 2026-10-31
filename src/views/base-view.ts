@@ -384,6 +384,8 @@ export abstract class BaseView extends ItemView {
     // @ts-ignore
     "habit-table-view": () => import("./templates/habit-table-view.hbs"),
     // @ts-ignore
+    "kanban-view": () => import("./templates/kanban-view.hbs"),
+    // @ts-ignore
     "list-view": () => import("./templates/list-view.hbs"),
     // @ts-ignore
     "overview-view": () => import("./templates/overview-view.hbs"),
@@ -433,6 +435,7 @@ protected attachEventTabs(container: HTMLElement, plugin: AgendaPlugin, leaf: Wo
     const tabs = [
       { id: "oa-overview-view-tab", view: "overview-view" },
       { id: "oa-tasks-view-tab", view: this.getDefaultTasksView() },
+      { id: "oa-kanban-view-tab", view: "kanban-view" },
       { id: "oa-calendar-view-tab", view: "calendar-month-view" },
       { id: "oa-timeline-view-tab", view: "timeline-view" },
       { id: "oa-gantt-view-tab", view: "gantt-view" },

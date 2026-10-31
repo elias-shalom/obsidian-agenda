@@ -649,7 +649,7 @@ Implica mantener, por cada versión publicada, una entrada corta equivalente en 
 
 Fetch en vivo desde GitHub Releases; renderizado de Markdown libre/imágenes/video embebidos; preferencia granular "solo versiones con funcionalidad nueva" (mayor/menor) vs. todas; cualquier mecanismo de feedback tipo formulario (QuickAdd lo incluye, no aplica a este proyecto).
 
-## 20. Kanban View (v1.1.13, con las piezas compartidas en v1.1.12; diseño — no implementado)
+## 20. Kanban View (v1.1.13, con las piezas compartidas en v1.1.12; Fase B implementada, pendiente de prueba manual; Fase C pendiente)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §11.
 
@@ -698,7 +698,8 @@ Queda fuera, como mejora opcional: que las vistas se refresquen solas al cambiar
 ### 20.4 Arrastrar y reordenar
 
 - **Entre columnas (estado)**: reutiliza `upsertTaskStatus()` + `TaskWriter.updateTaskLine()` (v1.1.10, §14) y, al completar, `buildRecurrenceOccurrence()` + `insertLineAbove()` (§16), exactamente como el menú contextual del calendario. El payload de `dragstart` sigue el patrón de `TaskDragPayload` (`filePath`, `lineNumber`); `dragover` solo resalta la columna y llama a `preventDefault()` sin leer el payload (limitación de `dataTransfer.getData()` ya documentada para el calendario), y se valida en `drop`.
-- **Entre columnas (prioridad/etiqueta/carpeta)**: usa `upsertPriority()` para prioridad. Etiqueta y carpeta no tienen todavía una operación de escritura equivalente; mover a otra carpeta implicaría mover la tarea de archivo, algo que el plugin no hace hoy (el campo de archivo es solo lectura al editar). **Decisión pendiente**: restringir el arrastre entre columnas a estado y prioridad, y dejar etiqueta/carpeta como agrupado de solo lectura.
+- **Entre columnas (prioridad/etiqueta/carpeta)**: usa `upsertPriority()` para prioridad. Etiqueta y carpeta no tienen una operación de escritura equivalente; mover a otra carpeta implicaría mover la tarea de archivo, algo que el plugin no hace hoy (el campo de archivo es solo lectura al editar). **Decidido (Fase B)**: el arrastre entre columnas se restringe a estado y prioridad; etiqueta y carpeta son agrupados de solo lectura (no admiten soltar).
+- **Implementación (Fase B)**: `src/core/kanban-board.ts` (puro) tiene `buildKanbanColumns()` (por estado y prioridad salen siempre todas las columnas, también las vacías; por etiqueta y carpeta, solo las que tienen tareas), `taskColumnKey()` y `priorityLineTransform()` (`normal` quita el emoji, porque la tarea sin prioridad explícita ya cuenta como normal). `src/core/kanban-state.ts` guarda el estado del tablero con su propia clave de `localStorage`, aparte del de Lista y Tabla, para que agrupar por estado aquí no cambie el agrupado de aquellas. `changeTaskStatus()` se exporta de `task-gestures.ts` y el tablero la reutiliza (incluida la siguiente ocurrencia de una tarea recurrente). Soltar sobre la misma columna no hace nada; la columna «sin prioridad» solo aparece si hay tareas con una prioridad no reconocida y no admite soltar. El arrastre usa el tipo `application/x-agenda-kanban-task` para no aceptar arrastres ajenos, y la tarjeta lleva `.oa-dragging` mientras se arrastra para que el refresco automático espere.
 - **Reordenar dentro de una columna**: requiere un orden manual persistido. La línea de la tarea no tiene un campo de orden y la posición en el archivo no sirve (cada tarea vive en su propia nota). **Decisión pendiente**: persistir el orden en `data.json` del plugin, por clave `ruta:línea` o por `🆔` cuando exista; el riesgo es que la clave `ruta:línea` queda obsoleta si se editan las notas. Se resuelve en la Fase C del plan.
 
 ### 20.5 Archivos afectados (estimado)
@@ -729,6 +730,17 @@ Queda fuera, como mejora opcional: que las vistas se refresquen solas al cambiar
 ### 20.7 Fuera de alcance (v1.1.13)
 
 Tableros múltiples guardados; mini-lenguaje de query propio; carriles (swimlanes) plegables; estados personalizables; unificar las pestañas Lista y Tabla.
+
+### 20.8 Refinamientos del tablero (Fase B2, v1.1.13 — implementados; pendiente de prueba manual)
+
+Comportamiento: [[Especificación de vistas]] §11.3.
+
+- **Estado de plegado**: módulo puro `src/core/kanban-collapse.ts` con `resolveCollapsed(taskCount, stored)`: la elección guardada (`'collapsed'` o `'expanded'`) manda y, sin ella, una columna vacía está plegada. Se guarda con `app.saveLocalStorage()` bajo una clave por agrupado y columna (`obsidian-agenda-kanban-collapsed:<agrupado>:<columna>`), y solo cuando el usuario pliega o despliega a mano. Al soltar una tarjeta en una columna se borra su clave: la columna ya no está vacía y, sin elección, se despliega.
+- **Plantilla y estilos**: el encabezado pasa a ser un `<button>` con `aria-expanded` y `aria-label` (`kanban_collapse_column` / `kanban_expand_column`). La plantilla recibe `collapsed` por columna y añade `oa-kanban-column--collapsed`: ancho fijo (44 px), alto igual al del tablero, el nombre en vertical con `writing-mode: vertical-rl` y el contador arriba en horizontal; las tarjetas quedan ocultas. El clic alterna la clase y guarda la elección sin redibujar el tablero. `data-droppable` no cambia, así que la barra sigue recibiendo `dragover` y `drop`, y `.oa-kanban-column--over` la resalta.
+- **Altura**: `.oa-kanban-column` pasa a ser una columna flex con `max-height` igual a la altura visible del contenedor de contenido menos su relleno, la barra de filtros y un margen de 16 px para la barra de desplazamiento horizontal (con un mínimo de 160 px); `__cards` lleva `overflow-y: auto` y `min-height: 0`, y el encabezado queda fuera de esa zona. Como el contenedor de contenido desplaza, un `100%` en CSS no sirve: la vista mide el contenedor y expone `--oa-kanban-max-height` con un `ResizeObserver` (también al cambiar el tamaño del panel). Las columnas siguen con `align-items: flex-start`, así que se ajustan al contenido hasta ese máximo.
+- **Riesgo**: el arrastre nativo de HTML5 desplaza solo al acercarse a los bordes de un contenedor con scroll en Chromium; se comprueba a mano dentro de una columna con muchas tareas.
+- **Pruebas**: Node para `resolveCollapsed()` y para la plantilla con columnas plegadas; prueba manual de plegado, recarga, soltar sobre una columna plegada y scroll por columna.
+- **Decisión abierta**: agrupar por área y sub-área (Especificación §11.3, opciones A, B y C); no afecta al diseño de arriba.
 
 ## 21. Gantt View (v1.1.13, diseño — no implementado)
 
@@ -1122,5 +1134,25 @@ Comportamiento: [[Especificación de vistas]] §18.6.
 - **Plantillas** `habit-grid-view.hbs`, `habit-weekly-view.hbs` y `habit-routine-view.hbs`: el contenedor `.oa-habit-view-selector` del combo de orden (y del de agrupar en Rutina) gana `data-label="{{t 'habit_sort_label'}}"` (o `habit_group_label`) y una clase modificadora para el prefijo; el `<select>` gana `aria-label` y `title` con el mismo texto.
 - **Estilos** en `_habit-common.scss`: el prefijo se dibuja con `::before { content: attr(data-label) }` dentro del control, sin elementos nuevos en el DOM; debe caber en `is-tablet` e `is-phone` (si no, se acorta con una variante de la clase).
 - **Opciones del combo de agrupar** de Rutina: `habit_daytime` y `habit_area` en lugar de `habit_sort_daytime` y `habit_sort_area`. No cambian los valores de las opciones, así que el código de `habit-routine-view.ts` y lo guardado quedan igual.
-- **i18n**: claves nuevas `habit_sort_label` y `habit_group_label` en los 6 idiomas; en español `habit_sort_daytime` pasa a «Por momento del día».
+- **i18n**: claves nuevas `habit_sort_label` y `habit_group_label` en los 6 idiomas; en español `habit_sort_daytime` pasó a «Por momento del día»; el ajuste posterior (§26.3) quita el «By» / «Por» de todas las opciones `habit_sort_*`.
 - **Riesgo**: el texto de `::before` no lo anuncian los lectores de pantalla ni se puede seleccionar, por eso el `aria-label` y el `title`.
+
+## 26. Ajustes de filtros y rótulos (v1.1.13, diseño acordado — no implementado)
+
+Comportamiento: [[Especificación de vistas]] §13.2, §14.7 y §18.6.
+
+### 26.1 Opción «Raíz» en el filtro de Área
+
+- `TaskViewState.area` admite el valor `ROOT_AREA` (`'/'`, exportado de `src/core/area.ts`): no puede chocar con el nombre de una carpeta porque Obsidian no permite `/` en ellos. `matchesTaskArea(filePath, { area: ROOT_AREA })` es verdadero solo si el área de la nota (`resolveTaskArea()`) está vacía, es decir, si está fuera de cualquier carpeta; la sub-área no cambia.
+- `listTaskAreas()` sigue sin incluir la raíz. `TaskFilterBar` añade «Raíz» al final del menú de Área, solo si alguna tarea cargada está en la raíz, y al elegirla no abre el menú de sub-áreas (no tiene). `reconcileArea()` conserva el valor mientras haya tareas en la raíz y lo reinicia si ya no las hay. El chip de Área muestra «Raíz».
+- Clave `area_root`: Root, Raíz, Hauptverzeichnis, Racine, Radice, Raiz. En el agrupado esas tareas siguen llamándose «Sin área» (`no_area`).
+- El valor viaja en el estado guardado de Lista, Tabla y Kanban: `parseTaskViewState()` ya acepta cualquier texto en `area`.
+- Pruebas (Node): `matchesTaskArea()` con la raíz, con un área y con área y sub-área; `filterTasksByViewState()`; la reconciliación.
+
+### 26.2 Rótulos «Group:» y «Sort:» en las tareas
+
+Claves nuevas `group_label` y `sort_label` (valores de la tabla de §14.7) en los 6 locales. `TaskFilterBar` usa `sort_label` en el texto de las opciones de orden (hoy `sort_by`) y Lista, Tabla y Kanban usan `group_label` en el de agrupado (hoy `group_by`). `group_by` y `sort_by` se conservan para el `aria-label`.
+
+### 26.3 Opciones de orden de hábitos
+
+Solo cambia el texto de `habit_sort_alphabetical`, `habit_sort_area`, `habit_sort_daytime`, `habit_sort_priority`, `habit_sort_streak` y `habit_sort_pct` en los 6 locales (tabla de §18.6). `habit_by_area` y `habit_by_daytime` (títulos del Dashboard) no cambian. Prueba: el chequeo de locales (mismas claves y ninguna de las seis empieza por «By» / «Por» o su equivalente).

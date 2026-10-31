@@ -360,12 +360,18 @@
   "habit_folder_create_failed": "No se pudo crear la carpeta '{path}': {reason}",
   "show_whats_new_on_update": "Mostrar las novedades al actualizar",
   "show_whats_new_on_update_desc": "Abre una ventana con las novedades la primera vez que inicias Obsidian tras actualizar el plugin",
+  "kanban_view_tab": "Kanban",
+  "kanban_view_title": "Kanban",
+  "kanban_empty_column": "Sin tareas",
+  "show_kanban_tab": "Mostrar pestaña Kanban",
+  "kanban_collapse_column": "Plegar columna",
+  "kanban_expand_column": "Desplegar columna",
   "whats_new": {
     "title": "Novedades de Agenda Tasks",
     "close": "Cerrar",
     "v1_1_13": {
       "title": "Pestañas, carpeta de hábitos y rótulos",
-      "items": "Un solo interruptor «Mostrar pestaña Tareas» sustituye a los de Lista y Tabla, y el nuevo «Mostrar pestaña Hábitos» oculta toda la pestaña de Hábitos.\nSi la carpeta de hábitos no existe, al crear tu primer hábito se ofrece crearla, y Ajustes indica si existe.\nLos selectores de orden y agrupación de las vistas de hábitos tienen ahora un rótulo (Orden: / Grupo:).\nEsta ventana: tras actualizar verás las novedades una sola vez; puedes desactivarla en Ajustes."
+      "items": "Una nueva pestaña Kanban muestra tus tareas en columnas por estado, prioridad, etiqueta o carpeta; arrastra una tarjeta a otra columna de estado o prioridad para cambiarlo.\nUn solo interruptor «Mostrar pestaña Tareas» sustituye a los de Lista y Tabla, y el nuevo «Mostrar pestaña Hábitos» oculta toda la pestaña de Hábitos.\nSi la carpeta de hábitos no existe, al crear tu primer hábito se ofrece crearla, y Ajustes indica si existe.\nLos selectores de orden y agrupación de las vistas de hábitos tienen ahora un rótulo (Orden: / Grupo:).\nEsta ventana: tras actualizar verás las novedades una sola vez; puedes desactivarla en Ajustes."
     }
   },
   "habit_new_habit": "Nuevo hábito",

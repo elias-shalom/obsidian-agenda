@@ -400,8 +400,17 @@ Orden de trabajo sugerido: fixes de Ajustes, enlace al manual, modal de novedade
   - [ ] Tableros múltiples guardados: no en esta fase — un solo tablero con los filtros actuales del plugin; varios tableros queda para una versión futura
   - [ ] Reordenar tarjetas dentro de una columna: sí, por arrastre — implica un orden manual persistido
   - [ ] **Decisión técnica pendiente**: dónde persistir el orden manual (candidato: `data.json` por `ruta:línea` o `🆔`; la clave `ruta:línea` queda obsoleta si se editan las notas) — Fase C del plan
-  - [ ] **Decisión técnica pendiente**: el arrastre entre columnas por etiqueta/carpeta no tiene operación de escritura equivalente (mover de carpeta implicaría mover la tarea de archivo); propuesta: arrastre solo para estado y prioridad, etiqueta/carpeta como agrupado de solo lectura
+  - [x] **Decidido y hecho en la Fase B**: el arrastre entre columnas solo cambia estado y prioridad; etiqueta y carpeta son agrupado de solo lectura (mover de carpeta implicaría mover la tarea de archivo)
   - [ ] **Estados personalizados/configurables** (tipo [Custom Statuses de Tasks](https://publish.obsidian.md/tasks/Getting+Started/Statuses/Custom+Statuses)) — diferido, **no** es prerequisito de Kanban v1; anotado para evaluar como ítem propio de v1.1.14 (ver nota en "Próximas Características")
+- [ ] **[v1.1.13] Kanban: refinamientos del tablero** (acordados al probar la Fase B; diseño en `docs/agenda-tasks/Especificación de vistas.md` §11.3 y `Arquitectura técnica.md` §20.8; fase B2 en `Plan de implementación.md`)
+  - [ ] Columnas plegables: el encabezado las pliega a una barra delgada con el nombre en vertical y el contador; las vacías arrancan plegadas; se recuerda solo lo que el usuario cambia a mano
+  - [ ] La barra plegada acepta la tarjeta al soltarla y se resalta al arrastrar; al recibir una tarea, la columna se despliega sola
+  - [ ] Altura: la columna se ajusta a su contenido hasta la altura visible del panel; encabezado fijo y scroll propio de las tarjetas
+  - [ ] **Decisión abierta (no se implementa aún)**: agrupar el tablero por área y sub-área (opciones A, B y C en la Especificación §11.3)
+- [ ] **[v1.1.13] Ajustes de filtros y rótulos** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §13.2, §14.7 y §18.6 y `Arquitectura técnica.md` §26; fases F1 a F3 en `Plan de implementación.md`)
+  - [ ] Filtro de Área: opción «Raíz» / «Root» que muestra solo las tareas fuera de cualquier carpeta; la sub-área no cambia
+  - [ ] Combos de agrupado y orden de las tareas (Lista, Tabla y Kanban): «Group:» y «Sort:» (en español «Grupo:» y «Orden:») en lugar de «Group by» y «Sort by»
+  - [ ] Combo de orden de hábitos (Cuadrícula, Semanal y Rutina): opciones sin «By» / «Por» («Area», «Priority»…, «Área», «Prioridad»…) en los 6 idiomas
 - [ ] **[v1.1.13] Vista Gantt** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §12 y `Arquitectura técnica.md` §21; fases G1–G2 en `Plan de implementación.md`; referencia visual: Timelineal; entrada original en "Próximas Características" más abajo, sección Timeline & Planning Views) — hoy **no está registrada ni visible** (registro y botón del encabezado comentados, plantilla `gantt-view.hbs` vacía); corrige una nota anterior que la daba por registrada
   - [ ] Pestaña de nivel superior con `showGanttTab`; mismos filtros que Tabla y Kanban (barra compartida) y mismos gestos que el calendario (helper compartido)
   - [ ] Dos o más fechas: barra (inicio = `start` o `scheduled`, fin = `due` o `scheduled`); una sola fecha: hito; ninguna: contador «sin fecha»

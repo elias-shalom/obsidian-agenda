@@ -6,6 +6,7 @@ export { CalendarDayView, CALENDAR_DAY_VIEW_TYPE } from './calendar-day-view';
 export { CalendarWorkWeekView, CALENDAR_WORK_WEEK_VIEW_TYPE } from './calendar-workweek-view';
 export { CalendarListView, CALENDAR_LIST_VIEW_TYPE } from './calendar-list-view';
 export { ListView, LIST_VIEW_TYPE } from './list-view';
+export { KanbanView, KANBAN_VIEW_TYPE } from './kanban-view';
 export { CalendarView, CALENDAR_VIEW_TYPE } from './calendar-view';
 export { TimelineView, TIMELINE_VIEW_TYPE } from './timeline-view';
 export { GanttView, GANTT_VIEW_TYPE } from './gantt-view';

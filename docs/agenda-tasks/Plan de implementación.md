@@ -359,7 +359,7 @@ Fetch en vivo desde GitHub Releases; renderizado de Markdown libre (imágenes, v
 
 ## Próxima fase — v1.1.13: Kanban view (diseño; la Fase A, las piezas compartidas, va en v1.1.12)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §11. Mecanismo: [[Arquitectura técnica]] §20. **Nada de esta fase está implementado.** Dos decisiones de diseño técnico siguen abiertas (arrastre por etiqueta/carpeta y persistencia del orden manual, ver §20.4).
+> Comportamiento y decisiones: [[Especificación de vistas]] §11. Mecanismo: [[Arquitectura técnica]] §20. **Fases A y B implementadas (la B, pendiente de prueba manual); la C, pendiente.** El arrastre se resolvió: solo estado y prioridad. Sigue abierta la persistencia del orden manual (Fase C, ver §20.4). La Fase B2 (columnas plegables y altura máxima) está implementada, pendiente de prueba manual; queda abierta la decisión de agrupar por área y sub-área (Especificación §11.3).
 
 ### Fase A — Piezas compartidas (base para Kanban y Gantt, sin vista nueva)
 - [x] `TaskSorter.groupTasksByField(tasks, field)` genérico, con las columnas de estado en orden de flujo de trabajo (el del menú de estado: To-do, En progreso, En espera, Hecho, Cancelada, No es tarea; siempre las 6, aunque estén vacías). Para `path` devuelve un árbol de carpetas; la lógica vive en `src/core/task-grouping.ts` y `BaseView.groupTasksByFolder()` delega en ella. Falta `'area'`/`'subArea'` (AR2) y que Lista y Tabla lo usen (U2/U3).
@@ -371,14 +371,24 @@ Fetch en vivo desde GitHub Releases; renderizado de Markdown libre (imágenes, v
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase B — Vista Kanban (depende de A)
-- [ ] `KanbanView` + `KANBAN_VIEW_TYPE`, registrada en `ViewManager`/`index.ts`/`TEMPLATE_LOADERS`, con `kanban-view.hbs` y `_kanban.scss`.
-- [ ] Ajuste `showKanbanTab` (default `true`) en `AgendaPluginSettings`/`DEFAULT_SETTINGS`, con su toggle en ambas rutas de `setting-tab.ts`, y la pestaña en el encabezado.
-- [ ] Selector de agrupado de columnas: estado (por defecto), prioridad, etiqueta, carpeta; orden ascendente/descendente con `TaskSorter`.
-- [ ] Arrastre entre columnas por estado con `upsertTaskStatus()` + `updateTaskLine()`, incluida la ocurrencia siguiente de tareas recurrentes; por prioridad con `upsertPriority()`.
-- [ ] Gestos de tarjeta iguales al resto del plugin (clic edita, doble clic abre la nota, clic derecho abre el menú de estado).
-- [ ] Claves i18n nuevas en los 6 locales.
+- [x] `KanbanView` + `KANBAN_VIEW_TYPE`, registrada en `ViewManager`/`index.ts`/`TEMPLATE_LOADERS`, con `kanban-view.hbs` y `_kanban.scss`.
+- [x] Ajuste `showKanbanTab` (default `true`) en `AgendaPluginSettings`/`DEFAULT_SETTINGS`, con su toggle en ambas rutas de `setting-tab.ts`, y la pestaña en el encabezado.
+- [x] Selector de agrupado de columnas: estado (por defecto), prioridad, etiqueta, carpeta; orden ascendente/descendente con `TaskSorter`.
+- [x] Arrastre entre columnas por estado con `upsertTaskStatus()` + `updateTaskLine()`, incluida la ocurrencia siguiente de tareas recurrentes; por prioridad con `upsertPriority()`.
+- [x] Gestos de tarjeta iguales al resto del plugin (clic edita, doble clic abre la nota, clic derecho abre el menú de estado).
+- [x] Claves i18n nuevas en los 6 locales.
 - [ ] Verificable sola: arrastrar una tarjeta a "Hecho" agrega ✅ en el archivo y refresca el tablero; arrastrarla de vuelta lo quita.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fase B2 — Refinamientos del tablero (implementados; pendiente de prueba manual; depende de B)
+- [x] `src/core/kanban-collapse.ts` (puro): `resolveCollapsed()` (la elección guardada manda; sin ella, una columna vacía está plegada) y la clave de almacenamiento por agrupado y columna.
+- [x] Plantilla y estilos: encabezado como botón con `aria-expanded`; columna plegada de ancho fijo con el nombre en vertical (`writing-mode`) y el contador; el clic en el encabezado o en la barra alterna y guarda la elección.
+- [x] Soltar sobre una columna plegada: sigue aceptando y resaltándose; al recibir la tarjeta se borra la elección guardada y la columna se despliega.
+- [x] Altura: columnas ajustadas al contenido hasta la altura visible del panel (menos la barra de filtros, con `ResizeObserver`); encabezado fijo y tarjetas con desplazamiento propio.
+- [x] Claves i18n `kanban_collapse_column` y `kanban_expand_column` en los 6 locales.
+- [ ] Verificable sola: Node (`resolveCollapsed()` y la plantilla con columnas plegadas). Prueba manual: plegar, desplegar y recargar; las vacías arrancan plegadas; soltar sobre una plegada; una columna con muchas tareas desplaza por su cuenta y el arrastre sigue funcionando dentro de ella; panel dividido y teléfono emulado.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
+- [ ] **Decisión abierta (no se implementa aún)**: agrupar el tablero por área y sub-área (Especificación §11.3, opciones A, B y C).
 
 ### Fase C — Reordenar dentro de una columna (depende de B)
 - [ ] Resolver dónde se persiste el orden manual (candidato: `data.json`, por `ruta:línea` o `🆔`) y cómo se invalida cuando cambia el archivo.
@@ -552,6 +562,31 @@ Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones
 
 ### Fuera de alcance
 Crear carpetas sin preguntar; botones nuevos en las vistas; migrar hábitos existentes.
+
+## Próxima fase — v1.1.13: ajustes de filtros y rótulos (diseño)
+
+> Comportamiento: [[Especificación de vistas]] §13.2, §14.7 y §18.6. Mecanismo: [[Arquitectura técnica]] §26. **Nada de esta fase está implementado.** Sin decisiones abiertas. Orden de trabajo: primero la Fase B2 de Kanban, después F1, F2 y F3.
+
+### Fase F1 — Opción «Raíz» en el filtro de Área
+- [ ] `ROOT_AREA` (`'/'`) en `src/core/area.ts`; `matchesTaskArea()` lo entiende (solo notas fuera de cualquier carpeta).
+- [ ] `TaskFilterBar`: «Raíz» al final del menú de Área, solo si hay tareas en la raíz; sin menú de sub-área al elegirla; el chip la muestra; `reconcileArea()` la conserva mientras haya tareas en la raíz.
+- [ ] Clave `area_root` en los 6 locales.
+- [ ] Verificable sola: Node (`matchesTaskArea()`, `filterTasksByViewState()` y la reconciliación). Prueba manual en Lista, Tabla y Kanban, con tareas dentro y fuera de carpetas.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fase F2 — Rótulos «Group:» y «Sort:» en las tareas
+- [ ] Claves `group_label` y `sort_label` en los 6 locales.
+- [ ] `TaskFilterBar` (orden) y Lista, Tabla y Kanban (agrupado) las usan en el texto visible; el `aria-label` conserva «Agrupar por» y «Ordenar por».
+- [ ] Verificable sola: Node (claves en los 6 locales). Prueba manual en los tres modos.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fase F3 — Opciones de orden de hábitos sin «By»
+- [ ] Texto de las seis claves `habit_sort_*` en los 6 locales (Especificación §18.6).
+- [ ] Verificable sola: el chequeo de locales. Prueba manual en Cuadrícula, Semanal y Rutina.
+- [ ] `npm run build` y ESLint sobre los archivos tocados.
+
+### Fuera de alcance
+Cambiar el texto de «Sin área» en el agrupado; los títulos «By area» y «By daytime» del Dashboard de hábitos; un filtro de raíz para la sub-área.
 
 ## Próxima fase — v1.1.15: sincronía con Google Calendar (diseño)
 

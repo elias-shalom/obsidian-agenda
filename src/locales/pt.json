@@ -359,12 +359,18 @@
   "habit_folder_create_failed": "Não foi possível criar a pasta '{path}': {reason}",
   "show_whats_new_on_update": "Mostrar as novidades após uma atualização",
   "show_whats_new_on_update_desc": "Abre uma janela com as novidades na primeira inicialização após atualizar o plugin",
+  "kanban_view_tab": "Kanban",
+  "kanban_view_title": "Kanban",
+  "kanban_empty_column": "Sem tarefas",
+  "show_kanban_tab": "Mostrar aba Kanban",
+  "kanban_collapse_column": "Recolher coluna",
+  "kanban_expand_column": "Expandir coluna",
   "whats_new": {
     "title": "Novidades do Agenda Tasks",
     "close": "Fechar",
     "v1_1_13": {
       "title": "Abas, pasta de hábitos e rótulos",
-      "items": "Um único interruptor para a aba Tarefas substitui os de Lista e Tabela, e um novo interruptor oculta toda a aba Hábitos.\nSe a pasta de hábitos não existir, ao criar o primeiro hábito é oferecido criá-la, e as configurações indicam se ela existe.\nOs seletores de ordem e agrupamento das visualizações de hábitos agora têm um rótulo (Ordem: / Grupo:).\nEsta janela: após uma atualização você verá as novidades uma única vez; você pode desativá-la nas configurações."
+      "items": "Uma nova aba Kanban mostra suas tarefas em colunas por status, prioridade, etiqueta ou pasta; arraste um cartão para outra coluna de status ou prioridade para alterá-lo.\nUm único interruptor para a aba Tarefas substitui os de Lista e Tabela, e um novo interruptor oculta toda a aba Hábitos.\nSe a pasta de hábitos não existir, ao criar o primeiro hábito é oferecido criá-la, e as configurações indicam se ela existe.\nOs seletores de ordem e agrupamento das visualizações de hábitos agora têm um rótulo (Ordem: / Grupo:).\nEsta janela: após uma atualização você verá as novidades uma única vez; você pode desativá-la nas configurações."
     }
   },
   "habit_new_habit": "Novo hábito",

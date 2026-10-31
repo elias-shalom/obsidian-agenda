@@ -1,0 +1,154 @@
+@use '../variables' as *;
+
+// Tablero Kanban (v1.1.13): columnas de ancho fijo con desplazamiento horizontal
+.oa-kanban-board {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  flex-shrink: 0;
+}
+
+.oa-kanban-column {
+  --oa-column-color: var(--background-modifier-border);
+
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 280px;
+  min-width: 0;
+  // La altura visible del panel la fija la vista; sin ella la columna crece con sus tarjetas
+  max-height: var(--oa-kanban-max-height, none);
+  border: 1px solid var(--color-base-30);
+  border-top: 3px solid var(--oa-column-color);
+  border-radius: 8px;
+  background-color: color-mix(in srgb, $primary-bg-color 40%, transparent);
+  scroll-snap-align: start;
+
+  &--over {
+    outline: 2px dashed var(--interactive-accent);
+    outline-offset: -2px;
+  }
+
+  // Barra delgada: ocupa el alto del tablero y su cabecera se lee en vertical
+  &--collapsed {
+    flex-basis: 44px;
+    align-self: stretch;
+    min-height: 120px;
+  }
+
+  &__header {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 10px !important; // `.is-tablet button` de Obsidian impone 20 px laterales
+    border: none;
+    box-shadow: none;
+    background: transparent !important;
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  &--collapsed &__header {
+    writing-mode: vertical-rl;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 10px 0 !important;
+  }
+
+  &__title {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  &__count {
+    font-size: 12px;
+    font-weight: normal;
+    color: var(--text-muted);
+  }
+
+  // Plegada, el contador va arriba y en horizontal
+  &--collapsed &__count {
+    order: -1;
+    writing-mode: horizontal-tb;
+  }
+
+  &__cards {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+    padding: 0 8px 8px;
+    overflow-y: auto;
+  }
+
+  &--collapsed &__cards {
+    display: none;
+  }
+
+  &__empty {
+    padding: 12px 0;
+    font-size: 12px;
+    text-align: center;
+    color: var(--text-faint);
+  }
+}
+
+.oa-kanban-card {
+  padding: 8px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background-color: var(--background-primary);
+  cursor: grab;
+
+  &:hover {
+    border-color: var(--interactive-accent);
+  }
+
+  &.oa-dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+  }
+
+  &__title {
+    font-size: 0.9em;
+    overflow-wrap: anywhere;
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    margin-top: 6px;
+    font-size: 0.75em;
+    color: var(--text-muted);
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  &__tag {
+    padding: 0 6px;
+    border-radius: 10px;
+    background-color: var(--background-modifier-hover);
+  }
+}
+
+.oa-kanban-empty {
+  margin: 0;
+  padding: 12px;
+}
+
+// En teléfono cada columna casi llena el ancho para recorrer el tablero columna a columna
+.is-phone .oa-kanban-column {
+  flex-basis: 85vw;
+}

@@ -381,8 +381,8 @@
     "title": "Novedades de Agenda Tasks",
     "close": "Cerrar",
     "v1_1_13": {
-      "title": "Pestañas, carpeta de hábitos y rótulos",
-      "items": "Una nueva pestaña Kanban muestra tus tareas en columnas por estado, prioridad, etiqueta o carpeta; arrastra una tarjeta a otra columna de estado o prioridad para cambiarlo.\nUn solo interruptor «Mostrar pestaña Tareas» sustituye a los de Lista y Tabla, y el nuevo «Mostrar pestaña Hábitos» oculta toda la pestaña de Hábitos.\nSi la carpeta de hábitos no existe, al crear tu primer hábito se ofrece crearla, y Ajustes indica si existe.\nLos selectores de orden y agrupación de las vistas de hábitos tienen ahora un rótulo (Orden: / Grupo:).\nEsta ventana: tras actualizar verás las novedades una sola vez; puedes desactivarla en Ajustes."
+      "title": "Kanban, Gantt y más",
+      "items": "Una nueva pestaña Kanban muestra tus tareas en columnas por estado, prioridad, etiqueta o carpeta; arrastra una tarjeta a otra columna de estado o prioridad para cambiarlo y pliega las columnas que no necesites.\nUna nueva pestaña Gantt dibuja tus tareas en una línea de tiempo; arrastra una barra para moverla, arrastra sus bordes para cambiar una fecha o estira un hito hasta convertirlo en barra.\nUn solo interruptor «Mostrar pestaña Tareas» sustituye a los de Lista y Tabla, y el nuevo «Mostrar pestaña Hábitos» oculta toda la pestaña de Hábitos.\nEl filtro de Área tiene una opción «Raíz» para las notas fuera de cualquier carpeta, y el de Sub-área una para las notas que están directamente en la carpeta del área.\nSi la carpeta de hábitos no existe, al crear tu primer hábito se ofrece crearla, y Ajustes indica si existe.\nLos selectores de orden y agrupación ahora tienen un rótulo (Orden: / Grupo:).\nLas vistas de calendario Semana, Semana laboral y Lista muestran los nombres correctos de los días cuando la semana no empieza en domingo (gracias a @AidanAJoyce).\nEsta ventana: tras actualizar verás las novedades una sola vez; puedes desactivarla en Ajustes."
     }
   },
   "habit_new_habit": "Nuevo hábito",

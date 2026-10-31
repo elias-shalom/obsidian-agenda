@@ -40,6 +40,33 @@ A quick reference of every click, double-click, right-click, and drag across the
 
 Search, filters, grouping, and sort order are shared by the List and Table views and remembered when you return from editing a task or switch views; column widths adapt to the rows visible after filtering.
 
+## Kanban
+
+| Gesture | Where | Result |
+|---|---|---|
+| Click | A card | Opens the **Edit Task** modal, prefilled with that task's data |
+| Double-click | A card | Opens the underlying note, cursor on that line |
+| Right-click | A card | Opens a context menu to change the task's status |
+| Drag | A card to another column (grouped by status) | Changes the task's status; Done adds ✅ and a recurring task creates its next occurrence |
+| Drag | A card to another column (grouped by priority) | Changes the task's priority; the Normal column removes the priority icon |
+| Click | A column header | Folds the column into a thin bar, or opens it again; your choice is remembered |
+| Drop | A card on a folded column | Moves the task there and opens the column |
+
+## Gantt
+
+| Gesture | Where | Result |
+|---|---|---|
+| Drag | A bar or milestone | Moves all of its dates by whole days |
+| Drag | The left or right edge of a bar | Rewrites only the field that edge shows (start, scheduled or due); the end never goes before the start |
+| Drag | The handle beside a milestone | Stretches it into a bar, creating the next date (start → scheduled → due; a due-only milestone creates a start date) |
+| Hover | A bar or milestone | Shows all of the task's dates |
+| Click | A row | Opens the **Edit Task** modal |
+| Double-click | A row | Opens the underlying note, cursor on that line |
+| Right-click | A row | Opens a context menu to change the task's status |
+| Click | A group header | Collapses or expands the group; its state is remembered |
+| Click | A zoom button (7, 14, 21, month), ◀ / ▶, **Today**, a month tab or the year arrows | Changes the zoom or moves the window |
+| Click | **Tasks without a date** | Shows or hides that list (collapsed by default) |
+
 ## Habit Tracker
 
 | Gesture | Where | Result |

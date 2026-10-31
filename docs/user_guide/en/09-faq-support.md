@@ -20,6 +20,15 @@ Check **Settings ▸ Calendar**: completed tasks might be hidden, or the date ty
 **Habits and tasks look unrelated — is that intentional?**
 Yes. The Habit Tracker is a separate module for recurring habits (backed by their own notes), independent from the task views. See [6. Habit Tracker](05-habit-tracker.md).
 
+**The "what's new" window appeared after an update — can I turn it off?**
+Yes: turn off **Show what's new after an update** in **Settings ▸ Agenda Tasks**. The window appears once per update and is shown in your language.
+
+**Why can't I drop a Kanban card on another tag or folder column?**
+Tag and folder columns are read-only: moving a task to another folder would mean moving it to another note. Group by **Status** or **Priority** to change those by dragging.
+
+**Why does a task not appear in the Gantt chart?**
+A task needs at least one of 🛫, ⏳ or 📅. Tasks without any date are listed in the **Tasks without a date** group below the chart (collapsed by default), and a task outside the visible window shows up when you move the window or change the zoom.
+
 ## Getting help
 
 - 📖 Check the project [Wiki](https://github.com/elias-shalom/obsidian-agenda/wiki).

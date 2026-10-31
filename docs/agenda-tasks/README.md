@@ -22,7 +22,7 @@ tags:
 
 ## Objetivo
 
-Documentar, tal como existe hoy en el código, el módulo de **gestión de tareas** del plugin **Obsidian Agenda** (`C:\Code\obsidian\obsidian-agenda`): el modelo de datos, el motor de extracción/filtrado/ordenamiento, las vistas (Overview, Lista, Tabla, Calendario en sus 5 variantes, Timeline y Gantt) y el modal de creación/edición.
+Documentar, tal como existe hoy en el código, el módulo de **gestión de tareas** del plugin **Obsidian Agenda** (`C:\Code\obsidian\obsidian-agenda`): el modelo de datos, el motor de extracción/filtrado/ordenamiento, las vistas (Overview, Lista, Tabla, Kanban, Gantt, Calendario en sus 6 variantes y Timeline) y el modal de creación/edición.
 
 A diferencia de `docs/habit-tracker-agenda/` (que documentó un módulo nuevo **antes** de construirlo), este conjunto de documentos es **retrospectivo**: describe funcionalidad que ya está implementada y en uso desde la v1.0.0, para dejar una base de referencia sólida antes de tocar el código — en particular, antes de abordar el pendiente de la v1.1.4 (roadmap en `docs/todo.md`): compatibilidad con la programación de tareas según la hora del día.
 
@@ -32,7 +32,7 @@ A diferencia de `docs/habit-tracker-agenda/` (que documentó un módulo nuevo **
 - **Extracción**: `TaskExtractor` lee cada archivo (usando primero el cache de metadatos de Obsidian — `MetadataCache.listItems` — y, si no está disponible, un parseo manual línea por línea con expresiones regulares) y construye objetos `Task` con fechas, prioridad, tags, recurrencia, dependencias y demás campos.
 - **Cache**: `TaskCache` mantiene un cache de dos niveles (por archivo + global) con TTL de 5 minutos, invalidado automáticamente por los eventos `create`/`modify`/`delete`/`rename` del vault.
 - **Filtrado y orden**: `TaskFilter`/`TaskSorter` aplican criterios (estado, fecha, prioridad, tags, texto, carpeta) y ordenamientos/agrupaciones multi-campo bajo demanda de cada vista.
-- **Vistas**: Overview (dashboard), Lista (jerárquica por carpeta o plana), Tabla (ordenable/filtrable), Calendario (Día, Semana, Semana laboral, Mes, Año), y dos vistas registradas pero incompletas (Timeline, Gantt).
+- **Vistas**: Overview (dashboard), Lista (jerárquica por carpeta o plana), Tabla (ordenable/filtrable), Kanban y Gantt (v1.1.13), Calendario (Día, Semana, Semana laboral, Mes, Año, Lista), y una vista registrada pero incompleta (Timeline).
 - **Creación/edición**: `TaskModal` + `TaskWriter` generan/anexan líneas de tarea en formato emoji al archivo elegido; la edición de tareas existentes (`"edit-task"`, reescritura en el lugar) está implementada.
 - **Compatibilidad**: el mismo texto de tarea es reconocido tanto en formato **emoji** (el que usa el plugin [Obsidian Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks)) como en formato **Dataview** (`due:: 2026-10-01`), mapeados a los mismos campos internos.
 
@@ -52,7 +52,8 @@ A diferencia de `docs/habit-tracker-agenda/` (que documentó un módulo nuevo **
 - [x] Módulo de tareas documentado (retrospectivo, basado en el código actual)
 - [x] Vistas Overview / Lista / Tabla / Calendario (5 variantes) completas y en uso
 - [ ] Vista Timeline (placeholder, sin lógica propia de posicionamiento temporal)
-- [ ] Vista Gantt (placeholder, sin cálculo de duración/dependencias visual)
+- [x] Vista Gantt (v1.1.13): barras, hitos, ventana de 7/14/21 días o mes, agrupado por área y edición de fechas; pendiente de prueba manual; sin flechas de dependencia (solo una insignia)
+- [x] Vista Kanban (v1.1.13): columnas por estado, prioridad, etiqueta o carpeta, arrastre de estado y prioridad y columnas plegables; pendiente de prueba manual
 - [x] Edición de tareas existentes desde el modal (clic simple en el calendario, doble clic abre el archivo)
 - [ ] Programación por hora del día (v1.1.4, ver `docs/todo.md`)
 

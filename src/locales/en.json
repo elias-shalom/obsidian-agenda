@@ -382,8 +382,8 @@
     "title": "What's new in Agenda Tasks",
     "close": "Close",
     "v1_1_13": {
-      "title": "Tabs, habit folder and labels",
-      "items": "A new Kanban tab shows your tasks as columns by status, priority, tag or folder; drag a card to another status or priority column to change it.\nA single Show Tasks tab switch replaces the List and Table switches, and a new Show Habits tab switch hides the whole Habits tab.\nIf the habits folder does not exist, creating your first habit offers to create it, and Settings tells you whether it exists.\nThe sort and group selectors of the habit views now have a label (Sort: / Group:).\nThis window: after an update you will see what's new once; you can turn it off in Settings."
+      "title": "Kanban, Gantt and more",
+      "items": "A new Kanban tab shows your tasks as columns by status, priority, tag or folder; drag a card to another status or priority column to change it, and collapse the columns you do not need.\nA new Gantt tab draws your tasks on a timeline; drag a bar to move it, drag its edges to change a date, or stretch a milestone into a bar.\nA single Show Tasks tab switch replaces the List and Table switches, and a new Show Habits tab switch hides the whole Habits tab.\nThe Area filter has a Root option for notes outside any folder, and the Sub-area filter has one for notes directly in an area's folder.\nIf the habits folder does not exist, creating your first habit offers to create it, and Settings tells you whether it exists.\nThe sort and group selectors now have a label (Sort: / Group:).\nThe Week, Work Week and List calendar views show the right weekday names when the week does not start on Sunday (thanks to @AidanAJoyce).\nThis window: after an update you will see what's new once; you can turn it off in Settings."
     }
   },
   "habit_new_habit": "New habit",

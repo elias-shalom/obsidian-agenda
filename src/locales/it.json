@@ -380,8 +380,8 @@
     "title": "Novità di Agenda Tasks",
     "close": "Chiudi",
     "v1_1_13": {
-      "title": "Schede, cartella delle abitudini ed etichette",
-      "items": "Una nuova scheda Kanban mostra le attività in colonne per stato, priorità, tag o cartella; trascina una scheda in un'altra colonna di stato o priorità per cambiarla.\nUn solo interruttore per la scheda Attività sostituisce quelli di Elenco e Tabella, e un nuovo interruttore nasconde l'intera scheda Abitudini.\nSe la cartella delle abitudini non esiste, creando la prima abitudine ti viene proposto di crearla, e le impostazioni indicano se esiste.\nI selettori di ordinamento e raggruppamento delle viste delle abitudini ora hanno un'etichetta (Ordine: / Gruppo:).\nQuesta finestra: dopo un aggiornamento vedrai le novità una sola volta; puoi disattivarla nelle impostazioni."
+      "title": "Kanban, Gantt e altro",
+      "items": "Una nuova scheda Kanban mostra le attività in colonne per stato, priorità, tag o cartella; trascina una scheda in un'altra colonna di stato o priorità per cambiarla e comprimi le colonne che non ti servono.\nUna nuova scheda Gantt disegna le attività su una linea del tempo; trascina una barra per spostarla, trascina i suoi bordi per cambiare una data o allunga una pietra miliare fino a farne una barra.\nUn solo interruttore per la scheda Attività sostituisce quelli di Elenco e Tabella, e un nuovo interruttore nasconde l'intera scheda Abitudini.\nIl filtro Area ha un'opzione Radice per le note fuori da qualsiasi cartella e il filtro Sotto-area una per le note direttamente nella cartella di un'area.\nSe la cartella delle abitudini non esiste, creando la prima abitudine ti viene proposto di crearla, e le impostazioni indicano se esiste.\nI selettori di ordinamento e raggruppamento ora hanno un'etichetta (Ordine: / Gruppo:).\nLe viste calendario Settimana, Settimana lavorativa ed Elenco mostrano i giorni corretti quando la settimana non inizia di domenica (grazie a @AidanAJoyce).\nQuesta finestra: dopo un aggiornamento vedrai le novità una sola volta; puoi disattivarla nelle impostazioni."
     }
   },
   "habit_new_habit": "Nuova abitudine",

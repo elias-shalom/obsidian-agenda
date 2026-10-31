@@ -40,6 +40,33 @@ Una referencia rápida de cada clic, doble clic, clic derecho y arrastre en el p
 
 La búsqueda, los filtros, el agrupado y el orden son comunes a las vistas Lista y Tabla y se recuerdan al volver de editar una tarea o cambiar de vista; el ancho de las columnas se adapta a las filas visibles tras filtrar.
 
+## Kanban
+
+| Gesto | Dónde | Resultado |
+|---|---|---|
+| Clic | Una tarjeta | Abre el modal **Editar tarea**, prellenado con los datos de esa tarea |
+| Doble clic | Una tarjeta | Abre la nota subyacente, con el cursor en esa línea |
+| Clic derecho | Una tarjeta | Abre un menú contextual para cambiar el estado de la tarea |
+| Arrastrar | Una tarjeta a otra columna (agrupado por estado) | Cambia el estado de la tarea; Hecho añade ✅ y una tarea recurrente crea su siguiente ocurrencia |
+| Arrastrar | Una tarjeta a otra columna (agrupado por prioridad) | Cambia la prioridad de la tarea; la columna Normal quita el ícono de prioridad |
+| Clic | El encabezado de una columna | Pliega la columna en una barra delgada, o la abre otra vez; tu elección se recuerda |
+| Soltar | Una tarjeta sobre una columna plegada | Mueve la tarea ahí y abre la columna |
+
+## Gantt
+
+| Gesto | Dónde | Resultado |
+|---|---|---|
+| Arrastrar | Una barra o un hito | Mueve todas sus fechas por días completos |
+| Arrastrar | El borde izquierdo o derecho de una barra | Reescribe solo el campo que muestra ese borde (inicio, programada o vencimiento); el fin nunca queda antes del inicio |
+| Arrastrar | La manija junto a un hito | Lo estira hasta convertirlo en barra, creando la siguiente fecha (inicio → programada → vencimiento; un hito con solo vencimiento crea una fecha de inicio) |
+| Pasar el mouse | Una barra o un hito | Muestra todas las fechas de la tarea |
+| Clic | Una fila | Abre el modal **Editar tarea** |
+| Doble clic | Una fila | Abre la nota subyacente, con el cursor en esa línea |
+| Clic derecho | Una fila | Abre un menú contextual para cambiar el estado de la tarea |
+| Clic | La cabecera de un grupo | Contrae o expande el grupo; su estado se recuerda |
+| Clic | Un botón de zoom (7, 14, 21, mes), ◀ / ▶, **Hoy**, una pestaña de mes o las flechas del año | Cambia el zoom o mueve la ventana |
+| Clic | **Tareas sin fecha** | Muestra u oculta esa lista (plegada por defecto) |
+
 ## Seguimiento de hábitos
 
 | Gesto | Dónde | Resultado |

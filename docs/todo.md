@@ -369,69 +369,79 @@ Orden de trabajo sugerido: fixes de Ajustes, enlace al manual, modal de novedade
   - [x] Columnas de fechas y filtros por fecha (U7): tabla con todas las fechas y sin Inicio ni Cerrada; filtros de los tres tipos; orden desde el encabezado y desde la barra; `colspan` de las cabeceras de grupo; anchos en escritorio, tableta y teléfono emulados
   - [x] Refresco automático (U8): editar una tarea en otro panel y ver el cambio en Lista, Tabla y Calendario; guardar una nota sin tareas no redibuja; escribir en la búsqueda mientras se edita en otro panel; arrastrar en el Calendario mientras llegan cambios; la Rutina pasada la medianoche; scroll, filtros y grupos plegados conservados; vista en otra pestaña que se actualiza al volver; editar desde la propia Tabla (un solo redibujo)
 
-- [ ] **[v1.1.13] Fix: Ajustes de visibilidad de pestañas** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §18.2 y `Arquitectura técnica.md` §25.1; fase S1 en `Plan de implementación.md`; viene de «Próximas Características»)
-  - [ ] Un solo interruptor **Show Tasks tab** reemplaza a List y Table (el conmutador Lista | Tabla siempre muestra los dos modos); se eliminan `showListTab` y `showTableTab`
-  - [ ] Nuevo interruptor maestro **Show Habits tab** (`showHabitTab`); las cinco subvistas de hábitos se conservan y la pestaña aparece solo con el maestro activo y alguna subvista activa
-  - [ ] Migración: `showTasksTab` queda desactivado solo si List y Table estaban ambos desactivados; quien había ocultado un solo modo ve ahora los dos
-  - [ ] Ambas rutas de Ajustes (`getSettingDefinitions()` y `display()`) y los 6 idiomas
-- [ ] **[v1.1.13] Fix: carpeta de hábitos inexistente** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §18.3 y `Arquitectura técnica.md` §25.2 a §25.4; fases S2 a S4 en `Plan de implementación.md`; viene de «Habit Tracker», más abajo)
-  - [ ] Al guardar un hábito nuevo con la carpeta inexistente, un diálogo con la ruta editable (prellenada) y los botones Crear y Cancelar; Crear crea toda la ruta y guarda la ruta nueva en Ajustes si cambió; Cancelar no crea nada
-  - [ ] Rutas relativas a la bóveda, sin `..`, sin ruta absoluta y sin `: * ? " < > |`; una ruta vacía usa la ruta por defecto
-  - [ ] Las cinco vistas de hábitos se ven sin errores con cero hábitos o sin carpeta, con el mensaje y la ruta (Rutina y Dashboard hoy no la indican) y el botón +
-  - [ ] Ajustes avisa bajo el campo de la ruta (existe, no existe, ruta no válida), sin impedir guardar y sin botón Crear ahora
-  - [ ] Verificable con scripts de Node (validación de la ruta, migración de ajustes y creación de carpetas con un vault simulado)
-- [ ] **[v1.1.13] Fix: combos de orden y agrupación de hábitos sin rótulo** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §18.6 y `Arquitectura técnica.md` §25.8; fase S5 en `Plan de implementación.md`)
-  - [ ] Prefijo corto dentro de cada combo, siempre visible: `Sort:` y `Group:` en inglés, `Orden:` y `Grupo:` en español (y sus equivalentes en pt, it, fr y de), con `aria-label` y `title`
-  - [ ] En Cuadrícula y Semanal (orden) y en Rutina (orden y agrupar); la Tabla y el Dashboard no cambian
-  - [ ] El combo de agrupar de Rutina usa «Momento del día» y «Área»; en español «Por daytime» pasa a «Por momento del día»
-  - [ ] Solo cambia el texto: lo guardado no cambia
+- [x] **[v1.1.13] Fix: Ajustes de visibilidad de pestañas** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §18.2 y `Arquitectura técnica.md` §25.1; fase S1 en `Plan de implementación.md`; viene de «Próximas Características»)
+  - [x] Un solo interruptor **Show Tasks tab** reemplaza a List y Table (el conmutador Lista | Tabla siempre muestra los dos modos); se eliminan `showListTab` y `showTableTab`
+  - [x] Nuevo interruptor maestro **Show Habits tab** (`showHabitTab`); las cinco subvistas de hábitos se conservan y la pestaña aparece solo con el maestro activo y alguna subvista activa
+  - [x] Migración: `showTasksTab` queda desactivado solo si List y Table estaban ambos desactivados; quien había ocultado un solo modo ve ahora los dos
+  - [x] Ambas rutas de Ajustes (`getSettingDefinitions()` y `display()`) y los 6 idiomas
+- [x] **[v1.1.13] Fix: carpeta de hábitos inexistente** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §18.3 y `Arquitectura técnica.md` §25.2 a §25.4; fases S2 a S4 en `Plan de implementación.md`; viene de «Habit Tracker», más abajo)
+  - [x] Al guardar un hábito nuevo con la carpeta inexistente, un diálogo con la ruta editable (prellenada) y los botones Crear y Cancelar; Crear crea toda la ruta y guarda la ruta nueva en Ajustes si cambió; Cancelar no crea nada
+  - [x] Rutas relativas a la bóveda, sin `..`, sin ruta absoluta y sin `: * ? " < > |`; una ruta vacía usa la ruta por defecto
+  - [x] Las cinco vistas de hábitos se ven sin errores con cero hábitos o sin carpeta, con el mensaje y la ruta (Rutina y Dashboard hoy no la indican) y el botón +
+  - [x] Ajustes avisa bajo el campo de la ruta (existe, no existe, ruta no válida), sin impedir guardar y sin botón Crear ahora
+  - [x] Verificable con scripts de Node (validación de la ruta, migración de ajustes y creación de carpetas con un vault simulado)
+- [x] **[v1.1.13] Fix: combos de orden y agrupación de hábitos sin rótulo** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §18.6 y `Arquitectura técnica.md` §25.8; fase S5 en `Plan de implementación.md`)
+  - [x] Prefijo corto dentro de cada combo, siempre visible: `Sort:` y `Group:` en inglés, `Orden:` y `Grupo:` en español (y sus equivalentes en pt, it, fr y de), con `aria-label` y `title`
+  - [x] En Cuadrícula y Semanal (orden) y en Rutina (orden y agrupar); la Tabla y el Dashboard no cambian
+  - [x] El combo de agrupar de Rutina usa «Momento del día» y «Área»; en español «Por daytime» pasa a «Por momento del día»
+  - [x] Solo cambia el texto: lo guardado no cambia
 - [x] **[v1.1.13] README: referencia al manual de usuario** (el README no enlaza hoy `docs/user_guide/`, que se creó en v1.1.11)
   - [x] Enlaces a las dos versiones del manual, inglés (`docs/user_guide/en`) y español (`docs/user_guide/es`), desde el README
   - [x] Ubicación: entrada en la tabla de contenidos y mención en "Getting Help" y en "Quick Start"
-- [ ] **[v1.1.13] Modal de "novedades" al actualizar** ("What's New"; pasa de v1.1.12; diseño en `docs/agenda-tasks/Especificación de vistas.md` §10 y `Arquitectura técnica.md` §19; fases en `Plan de implementación.md`) — investigado a partir del mecanismo equivalente del plugin [QuickAdd](https://github.com/chhoumann/quickadd); decidido **no** replicar su fetch en vivo a GitHub Releases, sino embeber el contenido localizado en `src/locales/*.json`
-  - [ ] Nuevo setting `lastSeenVersion` (comparado contra `manifest.version` en `onload()`) y `showWhatsNewOnUpdate` (toggle, default activado)
-  - [ ] Se muestra una sola vez por versión, acumulando las novedades de todas las versiones saltadas (no solo la última)
-  - [ ] Contenido localizado (6 idiomas), sin dependencia de red
-- [ ] **[v1.1.13] Kanban view** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §11 y `Arquitectura técnica.md` §20; fases A–C en `Plan de implementación.md`; investigado a partir del plugin [Tasks Kanban](https://community.obsidian.md/plugins/tasks-kanban); entrada original en "Próximas Características" más abajo, sección Task Management Views)
-  - [ ] Ubicación: nueva pestaña de nivel superior, junto a Overview/Lista/Tabla/Calendario/Hábitos — mismo patrón de registro en `ViewManager` + tab de visibilidad propio que el resto de vistas
-  - [ ] Columnas: por los 6 estados fijos actuales (`CoreTaskStatus`), más la opción de agrupar por prioridad/etiqueta/carpeta — sin estados personalizables en esta fase (ver más abajo)
-  - [ ] Motor de filtros/orden: reutilizar `TaskFilter`/`TaskSorter` (no un mini-lenguaje de query nuevo); `TaskSorter.sortTasksByMultipleFields()` ya soporta ascendente/descendente por campo
-  - [ ] Usa las piezas compartidas de v1.1.12 (agrupado genérico, barra de filtros, gestos, ids separados y escritura segura; ver la sección v1.1.12 más arriba)
+- [x] **[v1.1.13] Modal de "novedades" al actualizar** ("What's New"; pasa de v1.1.12; diseño en `docs/agenda-tasks/Especificación de vistas.md` §10 y `Arquitectura técnica.md` §19; fases en `Plan de implementación.md`) — investigado a partir del mecanismo equivalente del plugin [QuickAdd](https://github.com/chhoumann/quickadd); decidido **no** replicar su fetch en vivo a GitHub Releases, sino embeber el contenido localizado en `src/locales/*.json`
+  - [x] Nuevo setting `lastSeenVersion` (comparado contra `manifest.version` en `onload()`) y `showWhatsNewOnUpdate` (toggle, default activado)
+  - [x] Se muestra una sola vez por versión, acumulando las novedades de todas las versiones saltadas (no solo la última)
+  - [x] Contenido localizado (6 idiomas), sin dependencia de red
+- [x] **[v1.1.13] Kanban view** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §11 y `Arquitectura técnica.md` §20; fases A–C en `Plan de implementación.md`; investigado a partir del plugin [Tasks Kanban](https://community.obsidian.md/plugins/tasks-kanban); entrada original en "Próximas Características" más abajo, sección Task Management Views)
+  - [x] Ubicación: nueva pestaña de nivel superior, junto a Overview/Lista/Tabla/Calendario/Hábitos — mismo patrón de registro en `ViewManager` + tab de visibilidad propio que el resto de vistas
+  - [x] Columnas: por los 6 estados fijos actuales (`CoreTaskStatus`), más la opción de agrupar por prioridad/etiqueta/carpeta — sin estados personalizables en esta fase (ver más abajo)
+  - [x] Motor de filtros/orden: reutilizar `TaskFilter`/`TaskSorter` (no un mini-lenguaje de query nuevo); `TaskSorter.sortTasksByMultipleFields()` ya soporta ascendente/descendente por campo
+  - [x] Usa las piezas compartidas de v1.1.12 (agrupado genérico, barra de filtros, gestos, ids separados y escritura segura; ver la sección v1.1.12 más arriba)
   - [ ] Tableros múltiples guardados: no en esta fase — un solo tablero con los filtros actuales del plugin; varios tableros queda para una versión futura
   - [ ] Reordenar tarjetas dentro de una columna: por arrastre, con un orden manual persistido — **pasa a v1.1.14** (ítem propio más abajo; no es necesario para v1.1.13)
   - [ ] **Decisión técnica pendiente, ahora en v1.1.14**: dónde persistir el orden manual (propuesta en el ítem de v1.1.14 más abajo) — Fase C del plan
   - [x] **Decidido y hecho en la Fase B**: el arrastre entre columnas solo cambia estado y prioridad; etiqueta y carpeta son agrupado de solo lectura (mover de carpeta implicaría mover la tarea de archivo)
   - [ ] **Estados personalizados/configurables** (tipo [Custom Statuses de Tasks](https://publish.obsidian.md/tasks/Getting+Started/Statuses/Custom+Statuses)) — diferido, **no** es prerequisito de Kanban v1; anotado para evaluar como ítem propio de v1.1.14 (ver nota en "Próximas Características")
-- [ ] **[v1.1.13] Kanban: refinamientos del tablero** (acordados al probar la Fase B; diseño en `docs/agenda-tasks/Especificación de vistas.md` §11.3 y `Arquitectura técnica.md` §20.8; fase B2 en `Plan de implementación.md`)
-  - [ ] Columnas plegables: el encabezado las pliega a una barra delgada con el nombre en vertical y el contador; las vacías arrancan plegadas; se recuerda solo lo que el usuario cambia a mano
-  - [ ] La barra plegada acepta la tarjeta al soltarla y se resalta al arrastrar; al recibir una tarea, la columna se despliega sola
-  - [ ] Altura: la columna se ajusta a su contenido hasta la altura visible del panel; encabezado fijo y scroll propio de las tarjetas
+- [x] **[v1.1.13] Kanban: refinamientos del tablero** (acordados al probar la Fase B; diseño en `docs/agenda-tasks/Especificación de vistas.md` §11.3 y `Arquitectura técnica.md` §20.8; fase B2 en `Plan de implementación.md`)
+  - [x] Columnas plegables: el encabezado las pliega a una barra delgada con el nombre en vertical y el contador; las vacías arrancan plegadas; se recuerda solo lo que el usuario cambia a mano
+  - [x] La barra plegada acepta la tarjeta al soltarla y se resalta al arrastrar; al recibir una tarea, la columna se despliega sola
+  - [x] Altura: la columna se ajusta a su contenido hasta la altura visible del panel; encabezado fijo y scroll propio de las tarjetas
   - [ ] Agrupar el tablero por área y sub-área: **pasa a v1.1.14** (opciones A, B y C en la Especificación §11.3; ítem propio más abajo)
-- [ ] **[v1.1.13] Fix: etiquetas del día de la semana desplazadas en Semana, Semana laboral y Lista** (reportado y corregido por [@AidanAJoyce](https://github.com/AidanAJoyce) en el PR [#58](https://github.com/elias-shalom/obsidian-agenda/pull/58); diseño en `docs/agenda-tasks/Arquitectura técnica.md` §27; fase W1 en `Plan de implementación.md`; relacionado con el issue #35, que corrigió la alineación en la vista Mes)
+- [x] **[v1.1.13] Fix: etiquetas del día de la semana desplazadas en Semana, Semana laboral y Lista** (reportado y corregido por [@AidanAJoyce](https://github.com/AidanAJoyce) en el PR [#58](https://github.com/elias-shalom/obsidian-agenda/pull/58); diseño en `docs/agenda-tasks/Arquitectura técnica.md` §27; fase W1 en `Plan de implementación.md`; relacionado con el issue #35, que corrigió la alineación en la vista Mes)
   - [x] Con el inicio de semana en lunes, el 31 de octubre de 2026 (sábado) aparecía como «Sun 31 Oct» en Semana, Semana laboral y Lista; las etiquetas usaban `weekday % 7`, que solo vale con inicio en domingo, sobre una lista de nombres que `getLocalizedDayNames()` rota según `weekStartDay`
   - [x] Corregido con `(weekday - weekStartDay + 7) % 7` en las tres vistas; no cambian los rangos de fechas, la asignación de tareas ni las vistas Día, Mes y Año
   - [x] Pruebas aportadas en el mismo PR: `tests/calendar-weekday-labels.test.cjs` (21 pruebas; `node --test`), el primer archivo de pruebas del repo
   - [x] Integrado en `features/develop` con la autoría de Aidan; el PR sigue abierto con un comentario hasta que la versión llegue a `main`; crédito en la sección Contributors del README
-  - [ ] Pendiente: prueba manual con el inicio de semana en lunes y en domingo (Semana, Semana laboral y Lista), y una nota en el Changelog de la versión con el crédito a @AidanAJoyce
-- [ ] **[v1.1.13] Ajustes de filtros y rótulos** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §13.2, §14.7 y §18.6 y `Arquitectura técnica.md` §26; fases F1 a F3 en `Plan de implementación.md`)
-  - [ ] Filtro de Área: opción «Raíz» / «Root» que muestra solo las tareas fuera de cualquier carpeta
-  - [ ] Filtro de Sub-área: opción «Raíz» / «Root» que muestra solo las tareas de las notas directas del área, sin subcarpeta
+  - [x] Nota en el Changelog de la versión con el crédito a @AidanAJoyce (README, versión 1.1.13)
+  - [ ] Pendiente: prueba manual con el inicio de semana en lunes y en domingo (Semana, Semana laboral y Lista)
+- [x] **[v1.1.13] Ajustes de filtros y rótulos** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §13.2, §14.7 y §18.6 y `Arquitectura técnica.md` §26; fases F1 a F3 en `Plan de implementación.md`)
+  - [x] Filtro de Área: opción «Raíz» / «Root» que muestra solo las tareas fuera de cualquier carpeta
+  - [x] Filtro de Sub-área: opción «Raíz» / «Root» que muestra solo las tareas de las notas directas del área, sin subcarpeta
   - [x] Combos de agrupado y orden de las tareas (Lista, Tabla y Kanban): «Group:» y «Sort:» (en español «Grupo:» y «Orden:») en lugar de «Group by» y «Sort by»
   - [x] Combo de orden de hábitos (Cuadrícula, Semanal y Rutina): opciones sin «By» / «Por» («Area», «Priority»…, «Área», «Prioridad»…) en los 6 idiomas
-- [ ] **[v1.1.13] Vista Gantt** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §12 y `Arquitectura técnica.md` §21; fases G1–G2 en `Plan de implementación.md`; referencia visual: Timelineal; entrada original en "Próximas Características" más abajo, sección Timeline & Planning Views) — **lectura (G1) y edición de fechas (G2) implementadas**: vista registrada, pestaña con `showGanttTab`, ventana de 7/14/21 días o mes natural, agrupado por área y sub-área, barras, hitos y tareas sin fecha, y mover o redimensionar barras y extender hitos; pendiente la prueba manual
-  - [ ] Pestaña de nivel superior con `showGanttTab`; mismos filtros que Tabla y Kanban (barra compartida, sin combo de agrupado) y mismos gestos que el calendario (helper compartido)
+- [x] **[v1.1.13] Vista Gantt** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §12 y `Arquitectura técnica.md` §21; fases G1–G2 en `Plan de implementación.md`; referencia visual: Timelineal; entrada original en "Próximas Características" más abajo, sección Timeline & Planning Views) — **lectura (G1) y edición de fechas (G2) implementadas**: vista registrada, pestaña con `showGanttTab`, ventana de 7/14/21 días o mes natural, agrupado por área y sub-área, barras, hitos y tareas sin fecha, y mover o redimensionar barras y extender hitos; pendiente la prueba manual
+  - [x] Pestaña de nivel superior con `showGanttTab`; mismos filtros que Tabla y Kanban (barra compartida, sin combo de agrupado) y mismos gestos que el calendario (helper compartido)
   - [x] Ajustes visuales tras la primera revisión (2026-10-31): zoom con el número de días y el icono de calendario para el mes; cabecera de grupo sin barra resumen; tareas sin fecha como grupo plegable al estilo de la Lista (ancho máximo del 80 %, plegado por defecto); periodo a la izquierda y zoom y `◀ Hoy ▶` a la derecha, como el calendario; cuadrícula vertical (línea de día, línea de semana más marcada y fines de semana sombreados)
   - [x] Columna de nombres con estado, icono de prioridad y el texto de la tarea un poco más pequeño (0,9 em) (pendiente de prueba manual)
   - [ ] Combo de agrupado del Gantt: decidido pasarlo a v1.1.14 (ítem propio más abajo)
-  - [ ] Dos o más fechas: barra (inicio = `start` o `scheduled`, fin = `due` o `scheduled`); una sola fecha: hito; ninguna: contador «sin fecha»
-  - [ ] Zoom 7/14/21 días o mes natural (la ventana usa los días reales del mes, 28 a 31); cabecera con pestañas de mes, año, franja de días, bandas de semana y línea de «hoy»
-  - [ ] Agrupado por área y sub-área (nombre de la primera carpeta y resto de la ruta, anidado), plegable
+  - [x] Dos o más fechas: barra (inicio = `start` o `scheduled`, fin = `due` o `scheduled`); una sola fecha: hito; ninguna: contador «sin fecha»
+  - [x] Zoom 7/14/21 días o mes natural (la ventana usa los días reales del mes, 28 a 31); cabecera con pestañas de mes, año, franja de días, bandas de semana y línea de «hoy»
+  - [x] Agrupado por área y sub-área (nombre de la primera carpeta y resto de la ruta, anidado), plegable
   - [x] Editar fechas desde la vista: mover la barra, redimensionar cada borde (reescribe el campo que define ese borde), mover hitos y convertirlos en barra con su manija (implementado; pendiente de prueba manual)
-  - [ ] Dependencias: solo una insignia 🔗; las flechas entre barras quedan para una versión posterior
+  - [x] Dependencias: solo una insignia 🔗; las flechas entre barras quedan para una versión posterior
   - [x] **Decidido (2026-10-31)**: las ventanas de 7/14/21 días empiezan en el primer día de semana configurado que contiene la fecha de referencia
   - [x] **Decidido (2026-10-31)**: un hito se convierte en barra arrastrando su manija; con solo 🛫 crea ⏳ y con solo ⏳ crea 📅
   - [x] **Decidido (2026-10-31)**: un hito con solo 📅 vencimiento se extiende hacia la izquierda creando 🛫 inicio (la manija queda a la izquierda)
   - [x] **Decidido (2026-10-31)**: un fin anterior al inicio en datos escritos a mano se dibuja como hito en la fecha de inicio, con un aviso
+
+- [ ] **[v1.1.13] Pruebas manuales pendientes** (todo lo de esta sección está implementado; falta probarlo en Obsidian antes de publicar)
+  - [ ] Kanban (Fases B y B2): columnas por estado, prioridad, etiqueta y carpeta; arrastrar entre columnas de estado y de prioridad; plegar y desplegar columnas; altura y scroll de las columnas; filtros y estado propio
+  - [ ] Ajustes (S1 a S5): interruptores de pestañas y la migración desde Lista y Tabla; carpeta de hábitos inexistente (diálogo, aviso en Ajustes y mensaje en las cinco vistas); rótulos «Group:» y «Sort:»
+  - [ ] Filtros (F1 a F3): «Raíz» en Área y en Sub-área; rótulos de los combos y de los combos de hábitos
+  - [ ] Modal de novedades: primera apertura tras actualizar, una sola vez, con versiones acumuladas y con el ajuste desactivado; idioma
+  - [ ] Etiquetas del día de la semana (Semana, Semana laboral y Lista) con el inicio de semana en lunes y en domingo
+  - [ ] Gantt (G1 y G2): ventanas de 7, 14, 21 días y mes; cuadrícula, hoy y fines de semana; mover y redimensionar barras; extender hitos; tooltip con las fechas; grupo «Tareas sin fecha»; refresco al soltar; escritorio, tableta y teléfono
+- [x] **Documentación al cerrar la versión**: README (badge, What's New, News, Features, Gestures, Configuration, Changelog con el crédito a @AidanAJoyce y lista de próximas versiones), manual de usuario en/es (introducción, primeros pasos, vistas generales con Kanban y Gantt, gestos, configuración y preguntas frecuentes), entrada `whats_new.v1_1_13` en los 6 idiomas y la documentación de desarrollo; el número de versión en `package.json`, `manifest.json` y `versions.json` se sube al publicar (`npm version 1.1.13 --no-git-tag-version`)
 
 ### Pendientes de versiones anteriores y dónde quedan
 

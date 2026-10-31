@@ -2,11 +2,11 @@
 
 > A comprehensive task management and calendar plugin for Obsidian
 
-[![Release](https://img.shields.io/badge/version-1.1.12-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
+[![Release](https://img.shields.io/badge/version-1.1.13-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Obsidian](https://img.shields.io/badge/Obsidian-1.8.7+-purple.svg)](https://obsidian.md)
 
-> 🆕 **What's New in v1.1.12** — List and Table now live in one **Tasks** tab with a shared filter bar (search, filter chips, grouping and sort), tasks gain **areas and sub-areas** based on your folders, the Table splits its dates into Start, Scheduled, Due and Closed columns with a filter for each date, and every view refreshes by itself when your notes change. [See details](#news) · [Full changelog](#changelog).
+> 🆕 **What's New in v1.1.13** — two new tabs: a **Kanban** board (drag cards to change a task's status or priority) and a **Gantt** chart (move bars and drag their edges to change dates), a window that tells you what's new after an update, simpler tab settings (one **Tasks** switch and a **Habits** switch), a **Root** option in the Area and Sub-area filters, a safer habits folder, and the right weekday names in the Week, Work Week and List calendar views. [See details](#news) · [Full changelog](#changelog).
 
 ## Overview
 
@@ -41,7 +41,19 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 
 ## 🆕 News
 
-### v1.1.12 (latest)
+### v1.1.13 (latest)
+- **Kanban tab**: your tasks as a board. Columns by **Status** (default), **Priority**, **Tags** or **Folder**, with the shared filter bar (search, filters, sort) and its own remembered settings. Drag a card to another status column to change its status (moving it to Done adds ✅ and completing a recurring task creates its next occurrence) or to another priority column to change its priority. Click edits, double-click opens the note and right-click changes the status
+- **Collapsible columns**: click a column header to fold it into a thin bar with its name and task count (empty columns start folded). A folded column still accepts a dropped card and opens by itself; tall columns scroll on their own with a fixed header
+- **Gantt tab**: one row per task on a time axis, grouped by area and sub-area. Zoom to 7, 14 or 21 days or a calendar month, with month tabs, year arrows, week bands, a thin vertical day grid with weekends shaded and a line for today. A task with two or more of 🛫, ⏳ and 📅 is a bar, one with a single date is a milestone, and the rest wait in a collapsible "Tasks without a date" group below. Hover a bar to see all its dates; 🔗 marks tasks with dependencies. Status and priority show next to each name
+- **Edit dates from the Gantt**: drag a bar to move all its dates, drag an edge to rewrite only the field that edge shows (start, scheduled or due), or stretch a milestone into a bar. A tooltip shows what will be written, a bar can never end before it starts, and the 🆔/⛔ links and the creation and done dates are left alone
+- **Simpler tab settings**: one **Show Tasks tab** switch replaces the List and Table ones, **Show Habits tab** hides the whole Habits tab, and there are new **Show Kanban tab** and **Show Gantt tab** switches
+- **What's new window**: after an update, a window shows the news once, translated to your language (turn it off in Settings ▸ Show what's new after an update)
+- **Habits folder**: if the folder does not exist, creating your first habit offers to create it (with an editable path), Settings tells you whether it exists, and every habit view shows a clear message instead of an error when there are no habits
+- **Filters and labels**: the Area filter has a **Root** option for notes outside any folder and the Sub-area filter has one for notes directly in an area's folder. Group and sort selectors now read "Group:" and "Sort:", and the habit sort options lost their "By" prefix
+- **Fix**: the Week, Work Week and List calendar views showed shifted weekday names when the week did not start on Sunday. Thanks to [@AidanAJoyce](https://github.com/AidanAJoyce) ([#58](https://github.com/elias-shalom/obsidian-agenda/pull/58))
+- The README now links to the user manual, in English and Spanish
+
+### v1.1.12
 - **One "Tasks" tab**: the List and Table views share a tab with a **List | Table** switch. Search, filters, grouping and sort order are shared and remembered, so switching mode (or coming back from editing a task) keeps what you were looking at
 - **Areas and sub-areas**: a task's area is the first folder of its note and its sub-area is the rest of the folder path (any depth); notes in the vault root are "No area". Use them to filter and to group (nested sub-areas, colored group headers); tasks sitting directly in an area's folder are listed last under "No sub-area"
 - **New filter bar**: a **+ Filter** button opens step-by-step menus (type, then value) for Priority, Status, Area (with sub-area), Start, Scheduled and Due. Active filters appear as removable chips with a **Clear** button; search sits on the right and drops to its own line on narrow windows
@@ -155,6 +167,20 @@ See the [full changelog](#changelog) below for older versions.
 - Quick task creation at specific times
 - Syncs with native Obsidian daily notes
 
+#### Kanban View (new in 1.1.13)
+- Board of real tasks: moving a card rewrites the task line in its note
+- Columns by status (default), priority, tags or folder; the same search, filters and sort order as the Tasks tab, saved separately
+- Drag a card to another status column to change its status, or to another priority column to change its priority (tags and folders are read-only)
+- Collapsible columns that remember your choice, with empty ones folded by default
+- Click a card to edit it, double-click to open its note, right-click to change its status
+
+#### Gantt View (new in 1.1.13)
+- One row per task on a time axis, grouped by area and sub-area (collapsible), with a vertical day grid and weekends shaded
+- Zoom 7, 14 or 21 days or a calendar month; month tabs, year arrows and a line for today
+- Bars from start to due (with a notch for the scheduled date), milestones for tasks with a single date, and a collapsible list of tasks without a date
+- Move bars, drag their edges to change a single date, or stretch a milestone into a bar; a tooltip shows exactly what will be written
+- Same search, filters and gestures as the other task views
+
 #### Habit Tracker (new in 1.1.0)
 - **Habit Grid** - GitHub-style day-by-day grid with a merged streak "pill", per-occurrence rows for multi-daytime habits, and a configurable sort order
 - **Daily Routine** - Today's habits grouped by daytime or by area (toggle), with weighted progress bars and quick actions to open the note or edit the habit
@@ -168,6 +194,8 @@ See the [full changelog](#changelog) below for older versions.
 - ✅ Compatible with [Obsidian Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) syntax
 - ✅ Real-time task updates, with views that refresh by themselves
 - ✅ Areas and sub-areas derived from your folder structure
+- ✅ Kanban board and Gantt chart that edit your tasks in place
+- ✅ A "what's new" window after each update, in your language
 - ✅ Built-in Habit Tracker module (Grid, Routine, Dashboard, Weekly and Table views, plus a habit creator/editor)
 - ✅ Customizable interface with themes support
 - ✅ Keyboard shortcuts for common actions
@@ -281,6 +309,31 @@ A quick reference of clicks, double-clicks and drags across the plugin — handy
 
 Search, filters, grouping and sort order are shared by the List and Table views and remembered when you return from editing a task or switch views. Column widths adapt to the rows visible after filtering.
 
+### 🗂️ Kanban
+
+| Gesture | Where | Result |
+|---|---|---|
+| Click | A card | Opens the **Edit Task** modal, prefilled with that task's data |
+| Double-click | A card | Opens the underlying note, cursor on that line |
+| Right-click | A card | Opens a context menu to change the task's status |
+| Drag | A card to another column (grouped by status) | Changes the task's status; Done adds ✅ and a recurring task creates its next occurrence |
+| Drag | A card to another column (grouped by priority) | Changes the task's priority; the Normal column removes the priority icon |
+| Click | A column header | Folds the column into a thin bar, or opens it again; your choice is remembered |
+| Drop | A card on a folded column | Moves the task there and opens the column |
+
+### 📊 Gantt
+
+| Gesture | Where | Result |
+|---|---|---|
+| Drag | A bar or milestone | Moves all of its dates by whole days |
+| Drag | The left or right edge of a bar | Rewrites only the field that edge shows (start, scheduled or due); the end never goes before the start |
+| Drag | The handle beside a milestone | Stretches it into a bar, creating the next date (start → scheduled → due; a due-only milestone creates a start date) |
+| Hover | A bar or milestone | Shows all of the task's dates |
+| Click / double-click / right-click | A row | Opens the **Edit Task** modal, opens the note, or opens the status menu |
+| Click | A group header | Collapses or expands the group; its state is remembered |
+| Click | A zoom button, ◀ / ▶, **Today**, a month tab or the year arrows | Changes the zoom or moves the window |
+| Click | "Tasks without a date" | Shows or hides that list (collapsed by default) |
+
 ### 🔥 Habit Tracker
 
 | Gesture | Where | Result |
@@ -334,7 +387,7 @@ The plugin recognizes and properly handles all standard Obsidian Tasks metadata,
 ## ⚙️ Configuration
 
 ### View Settings
-- **Tab Visibility** - Choose which views to display in the header
+- **Tab Visibility** - Choose which tabs to display in the header: Overview, Tasks, Kanban, Gantt, Calendar and Habits (plus each Habit Tracker view)
 - **Default View** - Set your preferred view on plugin load
 - **Theme Integration** - Customize colors and appearance
 
@@ -344,7 +397,7 @@ The plugin recognizes and properly handles all standard Obsidian Tasks metadata,
 - **List View: Days to Show** (new in 1.1.10) - Number of days shown in the calendar's List view window (7–14, default 14)
 
 ### Filtering & Sorting
-- **Type filters** (+ Filter, List and Table views) - Priority, Status, Area (with sub-area), Start, Scheduled and Due
+- **Type filters** (+ Filter; List, Table, Kanban and Gantt) - Priority, Status, Area (with sub-area), Start, Scheduled and Due; Area and Sub-area also offer **Root**
 - **Date filters** - Each of Start, Scheduled and Due: With date, Overdue/Past, Today, Next 7 days, Future or No date ("Overdue" counts only open tasks)
 - **Search** - Free text over the task description
 - **Grouping** - None, Area and sub-area, Folder, Status, Priority, Tags or Due date
@@ -354,6 +407,7 @@ The plugin recognizes and properly handles all standard Obsidian Tasks metadata,
 - **Keyboard Shortcuts** - Customize shortcuts for common actions, including inserting a task field from the editor without opening a modal
 - **Widget Configuration** - Personalize dashboard widgets
 - **Display Preferences** - Adjust how tasks are displayed
+- **Show what's new after an update** - Opens a window with the news the first time you start Obsidian after updating (on by default)
 - **Task Modal mode** - The "More fields" (advanced) section of the Create/Edit Task modal remembers whether you left it expanded or collapsed, per device
 
 ### Habit Tracker Settings
@@ -369,6 +423,17 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 ---
 
 ## 📋 Changelog
+
+### Version 1.1.13 📊
+- **Kanban view** (`kanban-view`, icon `square-kanban`): columns by status, priority, tags or folder built by `kanban-board.ts`, with the shared filter bar and its own saved state (`kanban-state.ts`). Dropping a card on a status column goes through the same status logic as the calendar menu (✅ added or removed, next occurrence of recurring tasks); on a priority column it rewrites the priority emoji. Tags and folders are read-only groupings. Columns fold into a thin bar (`kanban-collapse.ts`): empty ones start folded, only manual choices are remembered, a folded column accepts drops and opens itself, and each column scrolls on its own up to the visible height
+- **Gantt view** (`gantt-view`, icon `chart-gantt`): pure logic in `task-gantt.ts` (bar, milestone or nothing from 🛫/⏳/📅, 7/14/21-day or calendar-month windows aligned to the configured week start, percentage positions, week bands, grouped rows and a dependency index), state in `gantt-state.ts`, grouped by area and sub-area. A bar that leaves the window is clipped; a hand-written range that ends before it starts is drawn as a milestone with a warning. Tasks without dates sit in a collapsible group below the chart (max width 80%)
+- **Gantt editing**: pointer events with one-day steps; `shiftTaskDates()` was extracted from `task-recurrence.ts` so moving a bar and creating the next occurrence share it (it only touches 🛫, ⏳ and 📅 and keeps the time and duration of ⏳). Edges rewrite one field with the existing line helpers; a milestone handle creates the next date in the start → scheduled → due chain. Writes go through `updateTaskLine()` with the line text shown by the view
+- **Settings**: `showListTab`/`showTableTab` became `showTasksTab` (off only if both were off), new `showHabitTab`, `showKanbanTab` and `showGanttTab`, in both settings code paths and all six languages
+- **What's new window**: `lastSeenVersion` and `showWhatsNewOnUpdate` settings, localized entries in `src/locales/*.json` (no network), shown once and accumulating skipped versions; installing from scratch shows nothing
+- **Habits folder**: the first habit of a missing folder offers to create the path (validated: relative, no `..`, no forbidden characters), Settings reports whether the folder exists, and Routine and Dashboard now name the folder like the other habit views
+- **Filters and labels**: "Root" in the Area and Sub-area filters (`ROOT_AREA`, `hasDirectTasks()`), "Group:" and "Sort:" labels, habit sort options without "By"
+- **Calendar fix**: Week, Work Week and List used `weekday % 7` on a list rotated by the week start; they now use `(weekday - weekStartDay + 7) % 7`. Reported and fixed by [@AidanAJoyce](https://github.com/AidanAJoyce) in [#58](https://github.com/elias-shalom/obsidian-agenda/pull/58), with the repository's first test file (`tests/calendar-weekday-labels.test.cjs`)
+- **Documentation**: the README links to the user manual (English and Spanish), which now covers Kanban, Gantt and the new settings
 
 ### Version 1.1.12 🗂️
 - **Shared building blocks**: a generic grouping engine (`groupTasksByField`), a shared filter bar and view state, and a shared gesture helper (`attachTaskGestures`) now used by the calendar, List and Table; the calendar and these views no longer carry their own copies
@@ -539,12 +604,12 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 
 ## 🗓️ Planned for Future Versions
 
-- ⬜ "What's new" notice after updating
-- ⬜ Kanban and Gantt views
 - ⬜ Custom task statuses and closer compatibility with the Tasks plugin
+- ⬜ Filters that accept several values (for example, several statuses or areas)
+- ⬜ Filters in the calendar views
 - ⬜ Table: customizable columns and layout, and CSV export
-- ⬜ Kanban: manual ordering of cards within a column
-- ⬜ Kanban: grouping by area and sub-area
+- ⬜ Kanban: manual ordering of cards within a column, and grouping by area and sub-area
+- ⬜ Gantt: a grouping selector
 - ⬜ Google Calendar sync, followed by Google Tasks and Microsoft
 
 ---

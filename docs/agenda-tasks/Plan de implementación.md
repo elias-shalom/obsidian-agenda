@@ -345,7 +345,7 @@ Un paso de build/generación de los manuales (son Markdown plano, sin plantilla 
 - [x] Nuevas claves de "novedades" por versión en `src/locales/*.json` (6 idiomas), espejando (resumido) el bloque "News" que ya se redacta a mano en `README.md` por cada release.
 - [x] Función que, dado `lastSeenVersion`, resuelve la lista de versiones posteriores con contenido a mostrar, de la más reciente a la más antigua (acumulativo, no solo la última versión).
 
-- [ ] Cierre de v1.1.13 (Fase 9): revisar la entrada `whats_new.v1_1_13` en los 6 idiomas y completarla con lo que se publique (Kanban, Gantt).
+- [x] Cierre de v1.1.13 (Fase 9): entrada `whats_new.v1_1_13` revisada y completada en los 6 idiomas (Kanban, Gantt, ajustes de pestañas, carpeta de hábitos, filtros y etiquetas, y la corrección de las etiquetas del día).
 
 ### Fase C — Modal (depende de A y B)
 - [x] Nuevo `src/modals/whats-new-modal.ts` + `src/modals/templates/whats-new-modal.hbs`.
@@ -584,7 +584,7 @@ Crear carpetas sin preguntar; botones nuevos en las vistas; migrar hábitos exis
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 - [x] Integración: revisión del PR, merge en `features/develop` con la autoría de Aidan y comentario en el PR, que queda abierto hasta que la versión llegue a `main` (Arquitectura §27.1).
 - [x] README: sección Contributors con el crédito.
-- [ ] Al cerrar la versión (Fase 9): nota en el Changelog de la versión con el crédito a @AidanAJoyce (PR #58).
+- [x] Al cerrar la versión (Fase 9): nota en el Changelog de la versión con el crédito a @AidanAJoyce (PR #58), en el README.
 
 ### Fuera de alcance
 La alineación de la vista Semana con `weekStartDay` (usa la semana ISO de Luxon; ver Especificación §4.7) y las vistas Día, Mes y Año.

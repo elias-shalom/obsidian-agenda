@@ -380,8 +380,8 @@
     "title": "Novidades do Agenda Tasks",
     "close": "Fechar",
     "v1_1_13": {
-      "title": "Abas, pasta de hábitos e rótulos",
-      "items": "Uma nova aba Kanban mostra suas tarefas em colunas por status, prioridade, etiqueta ou pasta; arraste um cartão para outra coluna de status ou prioridade para alterá-lo.\nUm único interruptor para a aba Tarefas substitui os de Lista e Tabela, e um novo interruptor oculta toda a aba Hábitos.\nSe a pasta de hábitos não existir, ao criar o primeiro hábito é oferecido criá-la, e as configurações indicam se ela existe.\nOs seletores de ordem e agrupamento das visualizações de hábitos agora têm um rótulo (Ordem: / Grupo:).\nEsta janela: após uma atualização você verá as novidades uma única vez; você pode desativá-la nas configurações."
+      "title": "Kanban, Gantt e mais",
+      "items": "Uma nova aba Kanban mostra suas tarefas em colunas por status, prioridade, etiqueta ou pasta; arraste um cartão para outra coluna de status ou prioridade para alterá-lo e recolha as colunas de que não precisa.\nUma nova aba Gantt desenha suas tarefas em uma linha do tempo; arraste uma barra para movê-la, arraste suas bordas para alterar uma data ou estique um marco até virar uma barra.\nUm único interruptor para a aba Tarefas substitui os de Lista e Tabela, e um novo interruptor oculta toda a aba Hábitos.\nO filtro de Área tem uma opção Raiz para notas fora de qualquer pasta, e o de Subárea uma para notas diretamente na pasta de uma área.\nSe a pasta de hábitos não existir, ao criar o primeiro hábito é oferecido criá-la, e as configurações indicam se ela existe.\nOs seletores de ordem e agrupamento agora têm um rótulo (Ordem: / Grupo:).\nAs visualizações de calendário Semana, Semana útil e Lista mostram os dias corretos quando a semana não começa no domingo (obrigado a @AidanAJoyce).\nEsta janela: após uma atualização você verá as novidades uma única vez; você pode desativá-la nas configurações."
     }
   },
   "habit_new_habit": "Novo hábito",

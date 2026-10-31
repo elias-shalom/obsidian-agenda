@@ -582,7 +582,7 @@ La alineación de la vista Semana con `weekStartDay` (usa la semana ISO de Luxon
 
 ## Próxima fase — v1.1.13: ajustes de filtros y rótulos (diseño)
 
-> Comportamiento: [[Especificación de vistas]] §13.2, §14.7 y §18.6. Mecanismo: [[Arquitectura técnica]] §26. **F1 implementada (pendiente de prueba manual); F2 y F3, pendientes.** Sin decisiones abiertas. Orden de trabajo: primero la Fase B2 de Kanban, después F1, F2 y F3.
+> Comportamiento: [[Especificación de vistas]] §13.2, §14.7 y §18.6. Mecanismo: [[Arquitectura técnica]] §26. **F1, F2 y F3 implementadas (pendientes de prueba manual).** Sin decisiones abiertas. Orden de trabajo: primero la Fase B2 de Kanban, después F1, F2 y F3.
 
 ### Fase F1 — Opción «Raíz» en el filtro de Área
 - [x] `ROOT_AREA` (`'/'`) en `src/core/area.ts`; `matchesTaskArea()` lo entiende (solo notas fuera de cualquier carpeta).
@@ -593,15 +593,15 @@ La alineación de la vista Semana con `weekStartDay` (usa la semana ISO de Luxon
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase F2 — Rótulos «Group:» y «Sort:» en las tareas
-- [ ] Claves `group_label` y `sort_label` en los 6 locales.
-- [ ] `TaskFilterBar` (orden) y Lista, Tabla y Kanban (agrupado) las usan en el texto visible; el `aria-label` conserva «Agrupar por» y «Ordenar por».
+- [x] Claves `group_label` y `sort_label` en los 6 locales.
+- [x] `TaskFilterBar` (orden) y Lista, Tabla y Kanban (agrupado) las usan en el texto visible; el `aria-label` conserva «Agrupar por» y «Ordenar por».
 - [ ] Verificable sola: Node (claves en los 6 locales). Prueba manual en los tres modos.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase F3 — Opciones de orden de hábitos sin «By»
-- [ ] Texto de las seis claves `habit_sort_*` en los 6 locales (Especificación §18.6).
+- [x] Texto de las seis claves `habit_sort_*` en los 6 locales (Especificación §18.6).
 - [ ] Verificable sola: el chequeo de locales. Prueba manual en Cuadrícula, Semanal y Rutina.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
 Cambiar el texto de «Sin área» en el agrupado; los títulos «By area» y «By daytime» del Dashboard de hábitos; un filtro de raíz para la sub-área.

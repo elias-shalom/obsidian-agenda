@@ -416,8 +416,8 @@ Orden de trabajo sugerido: fixes de Ajustes, enlace al manual, modal de novedade
 - [ ] **[v1.1.13] Ajustes de filtros y rótulos** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §13.2, §14.7 y §18.6 y `Arquitectura técnica.md` §26; fases F1 a F3 en `Plan de implementación.md`)
   - [ ] Filtro de Área: opción «Raíz» / «Root» que muestra solo las tareas fuera de cualquier carpeta
   - [ ] Filtro de Sub-área: opción «Raíz» / «Root» que muestra solo las tareas de las notas directas del área, sin subcarpeta
-  - [ ] Combos de agrupado y orden de las tareas (Lista, Tabla y Kanban): «Group:» y «Sort:» (en español «Grupo:» y «Orden:») en lugar de «Group by» y «Sort by»
-  - [ ] Combo de orden de hábitos (Cuadrícula, Semanal y Rutina): opciones sin «By» / «Por» («Area», «Priority»…, «Área», «Prioridad»…) en los 6 idiomas
+  - [x] Combos de agrupado y orden de las tareas (Lista, Tabla y Kanban): «Group:» y «Sort:» (en español «Grupo:» y «Orden:») en lugar de «Group by» y «Sort by»
+  - [x] Combo de orden de hábitos (Cuadrícula, Semanal y Rutina): opciones sin «By» / «Por» («Area», «Priority»…, «Área», «Prioridad»…) en los 6 idiomas
 - [ ] **[v1.1.13] Vista Gantt** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §12 y `Arquitectura técnica.md` §21; fases G1–G2 en `Plan de implementación.md`; referencia visual: Timelineal; entrada original en "Próximas Características" más abajo, sección Timeline & Planning Views) — hoy **no está registrada ni visible** (registro y botón del encabezado comentados, plantilla `gantt-view.hbs` vacía); corrige una nota anterior que la daba por registrada
   - [ ] Pestaña de nivel superior con `showGanttTab`; mismos filtros que Tabla y Kanban (barra compartida) y mismos gestos que el calendario (helper compartido)
   - [ ] Dos o más fechas: barra (inicio = `start` o `scheduled`, fin = `due` o `scheduled`); una sola fecha: hito; ninguna: contador «sin fecha»

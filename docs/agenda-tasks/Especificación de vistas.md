@@ -669,7 +669,7 @@ Con las cuatro fechas visibles la suma de mínimos es de unos 790 px; con Inicio
 
 **Fuera de alcance**: refresco parcial por fila (se redibuja la vista entera, como hoy al refrescar a mano) y cambios en la configuración (ya refrescan las vistas desde los ajustes).
 
-### 14.7 Rótulos de agrupado y orden sin «por» (v1.1.13 — acordado, no implementado)
+### 14.7 Rótulos de agrupado y orden sin «por» (v1.1.13 — implementado; pendiente de prueba manual)
 
 - Los combos de agrupado y orden de la barra de tareas (Lista, Tabla y Kanban) pasan de «Group by: Status» y «Sort by: Priority» a **«Group: Status»** y **«Sort: Priority»**: las mismas palabras que los combos de hábitos (§18.6). «Sin agrupar» no lleva prefijo. El `aria-label` de cada combo conserva «Agrupar por» y «Ordenar por».
 
@@ -994,7 +994,7 @@ Límites: un evento fuera de la ventana descargada (de −3 a +6 meses) no se re
 
 - **Opciones del combo de agrupar** (Rutina): pasan a «Momento del día» y «Área», con las claves que ya existen (`habit_daytime` y `habit_area`), para no parecerse a las del combo de orden.
 - **Español**: «Por daytime» pasó a «Por momento del día».
-- **Opciones de orden sin «By» / «Por»** (ajuste posterior, acordado, no implementado): como el rótulo del combo ya dice que es el orden, sus opciones pierden el «By» / «Por» y quedan como texto plano.
+- **Opciones de orden sin «By» / «Por»** (ajuste posterior, implementado; pendiente de prueba manual): como el rótulo del combo ya dice que es el orden, sus opciones pierden el «By» / «Por» y quedan como texto plano.
 
 | Idioma | Alfabético | Área | Momento del día | Prioridad | Racha | % cumplimiento |
 |---|---|---|---|---|---|---|

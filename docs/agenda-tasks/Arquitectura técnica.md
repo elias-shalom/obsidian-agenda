@@ -1137,7 +1137,7 @@ Comportamiento: [[Especificación de vistas]] §18.6.
 - **i18n**: claves nuevas `habit_sort_label` y `habit_group_label` en los 6 idiomas; en español `habit_sort_daytime` pasó a «Por momento del día»; el ajuste posterior (§26.3) quita el «By» / «Por» de todas las opciones `habit_sort_*`.
 - **Riesgo**: el texto de `::before` no lo anuncian los lectores de pantalla ni se puede seleccionar, por eso el `aria-label` y el `title`.
 
-## 26. Ajustes de filtros y rótulos (v1.1.13; F1 implementada, pendiente de prueba manual; F2 y F3 acordadas, no implementadas)
+## 26. Ajustes de filtros y rótulos (v1.1.13, implementados; pendientes de prueba manual)
 
 Comportamiento: [[Especificación de vistas]] §13.2, §14.7 y §18.6.
 
@@ -1152,7 +1152,7 @@ Comportamiento: [[Especificación de vistas]] §13.2, §14.7 y §18.6.
 
 ### 26.2 Rótulos «Group:» y «Sort:» en las tareas
 
-Claves nuevas `group_label` y `sort_label` (valores de la tabla de §14.7) en los 6 locales. `TaskFilterBar` usa `sort_label` en el texto de las opciones de orden (hoy `sort_by`) y Lista, Tabla y Kanban usan `group_label` en el de agrupado (hoy `group_by`). `group_by` y `sort_by` se conservan para el `aria-label`.
+Claves nuevas `group_label` y `sort_label` (valores de la tabla de §14.7, ya con los dos puntos) en los 6 locales; el texto visible es la clave, un espacio y el nombre del campo («Group: Status»). `TaskFilterBar` usa `sort_label` en el texto de las opciones de orden (hoy `sort_by`) y Lista, Tabla y Kanban usan `group_label` en el de agrupado (hoy `group_by`). `group_by` y `sort_by` se conservan para el `aria-label`.
 
 ### 26.3 Opciones de orden de hábitos
 

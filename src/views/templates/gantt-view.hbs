@@ -1,0 +1,124 @@
+{{!-- Gantt View (v1.1.13): una fila por tarea sobre un eje de tiempo, agrupadas por área y sub-área --}}
+<div class="oa-gantt-toolbar"></div>
+
+<div class="oa-gantt">
+  <div class="oa-gantt-controls">
+    <span class="oa-gantt-period">{{periodLabel}}</span>
+    <div class="oa-gantt-actions">
+      <div class="oa-calendar-view-segmented oa-gantt-zoom" role="group">
+        {{#each zoomOptions}}
+        <button type="button" class="oa-calendar-view-btn{{#if this.active}} oa-active{{/if}}" data-zoom="{{this.value}}" title="{{this.title}}" aria-label="{{this.title}}">{{this.label}}</button>
+        {{/each}}
+      </div>
+      <div class="oa-gantt-nav">
+        <button type="button" class="oa-gantt-btn oa-gantt-btn--round" data-action="prev" aria-label="{{previousLabel}}" title="{{previousLabel}}">◀</button>
+        <button type="button" class="oa-gantt-btn" data-action="today">{{todayLabel}}</button>
+        <button type="button" class="oa-gantt-btn oa-gantt-btn--round" data-action="next" aria-label="{{nextLabel}}" title="{{nextLabel}}">▶</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="oa-gantt-head">
+    <div class="oa-gantt-head-row">
+      <div class="oa-gantt-label oa-gantt-year">
+        <button type="button" class="oa-gantt-btn" data-action="prev-year" aria-label="{{previousLabel}}" title="{{previousLabel}}">◀</button>
+        <span>{{year}}</span>
+        <button type="button" class="oa-gantt-btn" data-action="next-year" aria-label="{{nextLabel}}" title="{{nextLabel}}">▶</button>
+      </div>
+      <div class="oa-gantt-months">
+        {{#each months}}
+        <button type="button" class="oa-gantt-month{{#if this.active}} oa-active{{/if}}" data-month="{{this.index}}">{{this.label}}</button>
+        {{/each}}
+      </div>
+    </div>
+    <div class="oa-gantt-head-row">
+      <div class="oa-gantt-label"></div>
+      <div class="oa-gantt-track oa-gantt-weeks">
+        {{#each weekBands}}
+        <span class="oa-gantt-week" style="left: {{this.left}}%; width: {{this.width}}%">{{this.label}}</span>
+        {{/each}}
+      </div>
+    </div>
+    <div class="oa-gantt-head-row">
+      <div class="oa-gantt-label"></div>
+      <div class="oa-gantt-days">
+        {{#each days}}
+        <span class="oa-gantt-day{{#if this.today}} oa-gantt-day--today{{/if}}{{#if this.weekend}} oa-gantt-day--weekend{{/if}}"><small>{{this.weekday}}</small><b>{{this.day}}</b></span>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+
+  <div class="oa-gantt-body">
+    {{#if rows.length}}
+      <div class="oa-gantt-grid" aria-hidden="true">
+        {{#each days}}<span class="oa-gantt-grid-day{{#if this.weekend}} oa-gantt-grid-day--weekend{{/if}}{{#if this.weekStart}} oa-gantt-grid-day--week-start{{/if}}"></span>{{/each}}
+      </div>
+      {{#each rows}}
+        {{#if this.isGroup}}
+        <div class="oa-gantt-row oa-gantt-row--group" {{#if this.color}}data-group-color="{{this.color}}"{{/if}}>
+          <div class="oa-gantt-label" style="padding-left: {{this.indent}}px">
+            <button type="button" class="oa-gantt-group-toggle{{#if this.collapsed}} oa-collapsed{{/if}}" data-group-key="{{this.key}}" aria-expanded="{{#if this.collapsed}}false{{else}}true{{/if}}">
+              <span class="oa-gantt-chevron" aria-hidden="true">▾</span>
+              <span class="oa-gantt-group-name">{{this.label}}</span>
+              <span class="oa-gantt-count">{{this.count}}</span>
+            </button>
+          </div>
+          <div class="oa-gantt-track">
+            {{#if @root.todayLeft}}<span class="oa-gantt-today" style="left: {{@root.todayLeft}}%"></span>{{/if}}
+          </div>
+        </div>
+        {{else}}
+        <div class="oa-gantt-row oa-gantt-row--task" data-task-row data-file-path="{{this.filePath}}" data-line-number="{{this.lineNumber}}" data-status="{{this.status}}" data-priority="{{this.priority}}" {{#if this.color}}data-group-color="{{this.color}}"{{/if}}>
+          <div class="oa-gantt-label" style="padding-left: {{this.indent}}px" title="{{this.filePath}}">
+            <span class="oa-gantt-status">{{this.emoji}}</span>
+            <span class="oa-gantt-title">{{this.desc}}</span>
+            {{#if this.linkTitle}}<span class="oa-gantt-badge" title="{{this.linkTitle}}">🔗</span>{{/if}}
+            {{#if this.invalidTitle}}<span class="oa-gantt-badge oa-gantt-badge--warn" title="{{this.invalidTitle}}">⚠</span>{{/if}}
+          </div>
+          <div class="oa-gantt-track">
+            {{#if @root.todayLeft}}<span class="oa-gantt-today" style="left: {{@root.todayLeft}}%"></span>{{/if}}
+            {{#if this.isMilestone}}
+              <span class="oa-gantt-milestone" style="left: {{this.centerLeft}}%" title="{{this.barTitle}}"></span>
+            {{else}}
+              <span class="oa-gantt-bar{{#if this.clippedLeft}} oa-gantt-bar--clipped-left{{/if}}{{#if this.clippedRight}} oa-gantt-bar--clipped-right{{/if}}" style="left: {{this.left}}%; width: {{this.width}}%" title="{{this.barTitle}}"></span>
+              {{#if this.markLeft}}<span class="oa-gantt-notch" style="left: {{this.markLeft}}%"></span>{{/if}}
+            {{/if}}
+          </div>
+        </div>
+        {{/if}}
+      {{/each}}
+    {{else}}
+      <p class="oa-gantt-empty">{{emptyMessage}}</p>
+    {{/if}}
+  </div>
+
+  {{#if undatedCount}}
+  <div class="oa-gantt-undated">
+    <div class="oa-folder-group{{#unless showUndated}} oa-collapsed{{/unless}}">
+      <h3 class="oa-folder-name" data-action-undated role="button" tabindex="0" aria-expanded="{{#if showUndated}}true{{else}}false{{/if}}">
+        <span class="oa-folder-toggle" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right">
+            <path d="m9 18 6-6-6-6"/>
+          </svg>
+        </span>
+        <span class="oa-folder-title">{{undatedTitle}}</span>
+        <span class="oa-task-count">({{undatedCount}})</span>
+      </h3>
+      <ul class="oa-folder-tasks">
+        {{#each undated}}
+        <li class="oa-task-item" data-task-row data-file-path="{{this.filePath}}" data-line-number="{{this.lineNumber}}" data-priority="{{this.priority}}">
+          <div class="oa-task-priority">{{priorityIcon this.priority}}</div>
+          <div class="oa-task-content">
+            <div class="oa-task-description">{{this.desc}}</div>
+            <div class="oa-task-metadata">
+              <span class="oa-task-path">📄 {{this.filePath}}</span>
+            </div>
+          </div>
+        </li>
+        {{/each}}
+      </ul>
+    </div>
+  </div>
+  {{/if}}
+</div>

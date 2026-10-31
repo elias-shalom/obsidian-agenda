@@ -3,6 +3,7 @@ export interface AgendaPluginSettings {
   showOverviewTab: boolean;
   showTasksTab: boolean;
   showKanbanTab: boolean;
+  showGanttTab: boolean;
   showCalendarTab: boolean;
   showHabitTab: boolean;
   /** Versión del plugin cuyas novedades ya se anunciaron (v1.1.13); vacío si nunca se guardó. */
@@ -36,6 +37,7 @@ export const DEFAULT_SETTINGS: AgendaPluginSettings = {
   showOverviewTab: true,
   showTasksTab: true,
   showKanbanTab: true,
+  showGanttTab: true,
   showCalendarTab: true,
   showHabitTab: true,
   lastSeenVersion: "",

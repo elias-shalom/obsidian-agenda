@@ -394,9 +394,9 @@ Tras actualizar el plugin a una versión nueva, en el primer arranque se abre **
 ### 10.1 Fuera de alcance
 Traer el contenido en vivo desde los releases de GitHub; renderizado de Markdown libre (imágenes, video, bloques de código embebidos); una preferencia granular de "solo versiones con funcionalidad nueva" (mayor/menor) vs. todas (puede evaluarse más adelante); cualquier mecanismo de feedback tipo formulario.
 
-## 11. Kanban View (v1.1.13, con las piezas compartidas en v1.1.12 — Fase B implementada, pendiente de prueba manual; orden manual pendiente)
+## 11. Kanban View (v1.1.13, con las piezas compartidas en v1.1.12 — Fase B implementada, pendiente de prueba manual; orden manual pospuesto a v1.1.14)
 
-> **Estado**: diseño acordado en sesión de discusión; las columnas y el arrastre de estado y prioridad están implementados (Fase B), falta el orden manual (Fase C). Mecanismo: [[Arquitectura técnica]] §20. Referencia investigada: el plugin [Tasks Kanban](https://community.obsidian.md/plugins/tasks-kanban) (ver comparación en §20.6).
+> **Estado**: diseño acordado en sesión de discusión; las columnas y el arrastre de estado y prioridad están implementados (Fase B), el orden manual (Fase C) pasa a v1.1.14. Mecanismo: [[Arquitectura técnica]] §20. Referencia investigada: el plugin [Tasks Kanban](https://community.obsidian.md/plugins/tasks-kanban) (ver comparación en §20.6).
 
 Un tablero donde cada tarjeta es una tarea real del vault (la misma `.oa-calendar-task`-style de las demás vistas, no una copia ni una nota aparte) y cada columna agrupa tareas por un criterio. Mover una tarjeta reescribe la línea de la tarea en su archivo origen.
 
@@ -406,7 +406,7 @@ Un tablero donde cada tarjeta es una tarea real del vault (la misma `.oa-calenda
 - **Filtros**: una barra compartida y configurable, usada por Lista, Tabla, Kanban y Gantt, que incluye el filtro por estado (hoy la Tabla tiene sus propios controles, hardcodeados en su plantilla; se reemplazan por esta barra común).
 - **Arrastrar entre columnas** (agrupando por estado): cambia el estado de la tarea al de la columna destino, con el mismo efecto que el menú contextual del calendario (§4.9): marcar "Hecho" agrega ✅, salir de "Hecho" lo quita, y completar una tarea recurrente genera su siguiente ocurrencia.
 - **Arrastrar entre columnas** (agrupando por prioridad): cambia la prioridad de la tarea; la columna «Normal» quita el emoji de prioridad. Las columnas por etiqueta y carpeta son de solo lectura: no admiten soltar.
-- **Reordenar dentro de una columna**: sí, arrastrando una tarjeta a otra posición de la misma columna. Requiere persistir un orden manual (ver §20.4, decisión pendiente).
+- **Reordenar dentro de una columna** (pospuesto a v1.1.14; no es necesario para v1.1.13): arrastrando una tarjeta a otra posición de la misma columna. Requiere persistir un orden manual (propuesta y preguntas abiertas en §20.4).
 - **Gestos de tarjeta**: iguales al resto del plugin — clic edita, doble clic abre la nota, clic derecho abre el menú de estado.
 - **Un solo tablero**: sin tableros guardados/nombrados múltiples por ahora. Su búsqueda, filtros, orden y agrupado se guardan aparte de los de Lista y Tabla.
 - **Columnas vacías**: por estado y por prioridad se muestran siempre todas las columnas, aunque estén vacías, porque son destinos de arrastre.
@@ -425,11 +425,11 @@ Tableros múltiples guardados/nombrados; mini-lenguaje de query propio; estados 
 - **Memoria del plegado.** Se recuerda por agrupado y por columna, pero solo lo que el usuario cambia a mano: una columna vacía que el usuario despliega sigue desplegada, y una con tareas que pliega sigue plegada. Sin una elección del usuario manda el valor por defecto (vacía = plegada).
 - **Soltar sobre una columna plegada.** La barra plegada acepta la tarjeta y se resalta mientras se arrastra, de modo que «Hecho», «Cancelada» o «En espera» siguen siendo destinos aunque estén vacías. Al recibir una tarea la columna se despliega sola; esa acción descarta la elección de plegado que el usuario hubiera guardado para ella.
 - **Altura.** Cada columna se ajusta a su contenido (como mínimo lo que ocupan sus tareas) hasta un máximo: la altura visible del panel donde está la vista. Si lo supera, las tarjetas se desplazan dentro de la columna con la rueda mientras el cursor está sobre ella, y el encabezado queda fijo. El desplazamiento de la vista entera no cambia.
-- **Decisión abierta: agrupar por área y sub-área.** Hoy el combo de agrupado ofrece «Carpeta» (una columna por primera carpeta, sin sub-áreas); §11 decía «área con sus sub-áreas» y se simplificó porque las columnas no se anidan. Opciones en estudio: **A** «Área» y «Sub-área» como agrupados distintos (una columna por ruta completa de sub-área); **B** solo renombrar «Carpeta» a «Área» y dejar las sub-áreas al filtro; **C** «Área», que con un área filtrada muestra una columna por sub-área (más «Sin sub-área» para las notas directas). El usuario lo está pensando: no se implementa hasta decidir.
+- **Decisión abierta: agrupar por área y sub-área.** Hoy el combo de agrupado ofrece «Carpeta» (una columna por primera carpeta, sin sub-áreas); §11 decía «área con sus sub-áreas» y se simplificó porque las columnas no se anidan. Opciones en estudio: **A** «Área» y «Sub-área» como agrupados distintos (una columna por ruta completa de sub-área); **B** solo renombrar «Carpeta» a «Área» y dejar las sub-áreas al filtro; **C** «Área», que con un área filtrada muestra una columna por sub-área (más «Sin sub-área» para las notas directas). **Pasa a v1.1.14** (decisión del 2026-10-31): se retomará con calma; mientras tanto el combo conserva «Carpeta».
 
-## 12. Gantt View (v1.1.13 — diseño, no implementado)
+## 12. Gantt View (v1.1.13 — lectura implementada, pendiente de prueba manual; edición de fechas pendiente)
 
-> **Estado**: diseño acordado en sesión de discusión, nada implementado todavía. Mecanismo: [[Arquitectura técnica]] §21. Reemplaza al placeholder de §6. Referencia visual: la vista de semanas y estancias del plugin Timelineal (captura aportada en la discusión, no incluida en el repositorio).
+> **Estado**: diseño acordado en sesión de discusión; las decisiones de §12.7 se tomaron el 2026-10-31 y no queda ninguna abierta; la lectura del diagrama (Fase G1) está implementada, pendiente de prueba manual, y la edición de fechas (G2) no. Mecanismo: [[Arquitectura técnica]] §21. Reemplaza al placeholder de §6. Referencia visual: la vista de semanas y estancias del plugin Timelineal (captura aportada en la discusión, no incluida en el repositorio).
 
 Un diagrama de tareas sobre un eje de tiempo, pensado para proyectos largos: una fila por tarea, con una barra que va de su fecha de inicio a su fecha de fin. Mismos filtros y orden que Tabla y Kanban (barra de filtros compartida, §11), y los mismos gestos de tarea que el calendario.
 
@@ -445,7 +445,7 @@ La barra necesita dos fechas, pero la mayoría de las tareas solo tiene una (el 
 | `start` y `scheduled` | Barra de `start` a `scheduled` |
 | `scheduled` y `due` | Barra de `scheduled` a `due` |
 | Una sola de las tres | Hito (marcador sin duración) en esa fecha |
-| Ninguna | Fuera del diagrama; un contador «N tareas sin fecha» con un toggle para mostrarlas aparte |
+| Ninguna | Fuera del diagrama; se listan aparte, debajo, en un grupo plegable «Tareas sin fecha (N)» con el aspecto de la Lista y un ancho máximo del 80 % |
 
 Regla general: el **inicio** es 🛫 `start` y, si falta, ⏳ `scheduled`; el **fin** es 📅 `due` y, si falta, ⏳ `scheduled`. La hora y la duración de `scheduled` se ignoran: en una escala de días no se ven. Una barra cuyo inicio y fin caen el mismo día ocupa una columna.
 
@@ -453,22 +453,27 @@ El calendario ancla una tarea a un día con la prioridad `scheduled` > `due` > `
 
 ### 12.2 Escala y navegación
 
-- **Zoom**: 7, 14 o 21 días, o **mes natural**. No hay zoom por día: un Gantt sirve para proyectos largos.
+- **Zoom**: 7, 14 o 21 días, o **mes natural**, en botones redondos: el número de días (con el texto completo como ayuda) y, para el mes, el icono de calendario del selector de la vista Mes. No hay zoom por día: un Gantt sirve para proyectos largos.
 - **Mes natural**: la ventana tiene los días reales del mes (28, 29, 30 o 31). Las columnas se reparten el ancho disponible, así que el largo del mes no rompe nada. ◀▶ y las pestañas de mes se mueven por mes.
 - **7/14/21 días**: ◀▶ mueven la ventana completa.
+- **Controles**: igual que en el calendario, el periodo a la izquierda y, a la derecha, el zoom y `◀ Hoy ▶`.
+- **Cuadrícula**: una línea vertical muy fina por día, más marcada al inicio de cada semana, y los fines de semana sombreados.
 - **Cabecera** (tomada de la referencia): pestañas de mes con el actual subrayado, año con flechas, franja de números de día con hoy resaltado, bandas de semana con su número y una línea vertical de «hoy».
 - Una barra que sale de la ventana se recorta e indica que continúa.
 - La ventana parte de la fecha de referencia compartida (v1.1.9) y el zoom se recuerda, igual que el modo 1/3/5 de la vista Día.
+- **Alineación** (decidido el 2026-10-31): las ventanas de 7, 14 y 21 días empiezan en el primer día de semana configurado (`weekStartDay`) que contiene la fecha de referencia, para que coincidan con las bandas de semana; el mes natural no cambia.
 
 ### 12.3 Agrupado por área y sub-área
 
-Según §13: el grupo principal es el **área** (nombre de la primera carpeta) y debajo van las **sub-áreas** (el resto de la ruta, anidado por carpeta). Cada grupo es plegable, recuerda su estado y muestra en su cabecera una barra resumen, del inicio más temprano al fin más tardío de sus tareas. Las tareas de archivos sin carpeta van a un grupo propio.
+> El combo de agrupado de la barra de filtros no se ofrece en v1.1.13: el Gantt siempre agrupa por área. Pasa a v1.1.14 (ninguno, área, estado y prioridad; «ninguno» sería un modo plano sin cabeceras).
+
+Según §13: el grupo principal es el **área** (nombre de la primera carpeta) y debajo van las **sub-áreas** (el resto de la ruta, anidado por carpeta). Cada grupo es plegable, recuerda su estado y, en su cabecera, solo la etiqueta y el número de tareas (sin barra resumen, decidido tras verla en uso). Las tareas de archivos sin carpeta van a un grupo propio.
 
 ### 12.4 Editar fechas desde la vista
 
 - **Mover la barra**: arrastrarla desplaza el mismo número de días las fechas 🛫, ⏳ y 📅 que tenga la tarea. No se tocan ➕ creada ni ✅ hecha.
 - **Redimensionar**: arrastrar el borde izquierdo o derecho reescribe el campo que define ese borde. Una tooltip indica cuál (por ejemplo «📅 vencimiento»), para que no se edite `scheduled` sin que el usuario lo sepa.
-- **Hito**: arrastrarlo mueve su única fecha.
+- **Hito**: arrastrar su cuerpo mueve su única fecha; una manija en el lado de extensión lo convierte en barra escribiendo la segunda fecha (§12.7, decisión 2).
 - No se permite dejar el fin antes del inicio.
 - Todo en pasos de un día.
 
@@ -480,11 +485,11 @@ Iguales a los del calendario, mediante el helper compartido ([[Arquitectura téc
 
 Una insignia 🔗 en la barra de las tareas con `🆔`/`⛔`, con una tooltip «depende de: …». Las flechas entre barras y el aviso de dependencias rotas quedan fuera de esta versión.
 
-### 12.7 Decisiones abiertas
+### 12.7 Decisiones (acordadas el 2026-10-31; sin decisiones abiertas)
 
-1. Alineación de las ventanas de 7/14/21 días: propuesta de que empiecen en el inicio de semana configurado (`weekStartDay`) que contiene la fecha de referencia, para que coincidan con las bandas de semana. Sin confirmar.
-2. Convertir un hito en barra arrastrando. Mientras tanto, la segunda fecha se agrega desde el modal de edición (clic).
-3. Fin anterior al inicio en datos ya escritos a mano: propuesta de tratarlo como hito en `start` con un aviso.
+1. **Alineación de las ventanas de 7/14/21 días: opción A**, empiezan en el primer día de semana configurado que contiene la fecha de referencia. La vista Semana del calendario sigue empezando siempre en lunes (§4.7); con otro inicio de semana las dos vistas no coincidirán hasta que se corrija aparte.
+2. **Convertir un hito en barra arrastrando: sí.** La fecha que se crea depende de la única fecha que tenga el hito, siguiendo la cadena inicio → programada → vencimiento: con solo 🛫 `start`, extenderlo hacia la derecha crea ⏳ `scheduled` (barra `start` → `scheduled`); con solo ⏳ `scheduled`, crea 📅 `due` (barra `scheduled` → `due`). Con solo 📅 `due` no hay un campo posterior para extenderlo a la derecha, así que **la manija queda a la izquierda y crea 🛫 `start`** (opción A, acordada; barra `start` → `due`), lo que deja ⏳ libre para planificar. Descartadas: crear ⏳ `scheduled` en su lugar, preguntar al soltar qué fecha crear y no permitirlo con un aviso.
+3. **Fin anterior al inicio en datos escritos a mano: opción A**, se dibuja como hito en la fecha de inicio, con un aviso.
 
 ### 12.8 Fuera de alcance
 Flechas de dependencia y su aviso de rotura; desplazar en cascada las tareas dependientes; zoom por día; tareas de varios archivos o proyectos como entidad propia (el agrupado se resuelve con áreas y sub-áreas, §13).
@@ -562,7 +567,7 @@ Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones
 
 El ajuste de las columnas al ancho disponible, decidido durante la 1.1.11, se implementa en v1.1.12: la referencia es el ancho real del contenedor (la ventana en escritorio y el ancho del dispositivo en tableta y teléfono), y las columnas flexibles se reducen en proporción sin bajar de su mínimo.
 
-El README y el manual de usuario anuncian para la Tabla **columnas y diseño personalizables** y **exportación a CSV**, que no existen en el código. Se decidió **no** hacerlos en v1.1.12 y pasarlos a v1.1.18; mientras tanto se quitó el anuncio del README y del manual. Sin diseño todavía; a decidir: qué columnas se pueden mostrar, ocultar y reordenar, dónde se guarda esa elección (hoy el estado de la Tabla va en `TABLE_VIEW_STATE_KEY`, §3), qué filas y columnas exporta el CSV (todas o solo las visibles tras filtrar), el separador y la codificación, y dónde se guarda o descarga el archivo.
+El README y el manual de usuario anuncian para la Tabla **columnas y diseño personalizables** y **exportación a CSV**, que no existen en el código. Se decidió **no** hacerlos en v1.1.12 y pasarlos a v1.1.14; mientras tanto se quitó el anuncio del README y del manual. Sin diseño todavía; a decidir: qué columnas se pueden mostrar, ocultar y reordenar, dónde se guarda esa elección (hoy el estado de la Tabla va en `TABLE_VIEW_STATE_KEY`, §3), qué filas y columnas exporta el CSV (todas o solo las visibles tras filtrar), el separador y la codificación, y dónde se guarda o descarga el archivo.
 
 ### 14.4 Barra de filtros con chips (v1.1.12 — implementado y probado a mano)
 
@@ -1007,3 +1012,40 @@ Límites: un evento fuera de la ventana descargada (de −3 a +6 meses) no se re
 
 - Solo cambia el texto: los valores guardados (orden y agrupación elegidos) no cambian y no hay migración.
 - **Fuera de alcance**: criterios nuevos de orden o agrupación y combos en la Tabla o el Dashboard.
+
+## 19. Filtros con varios valores y filtros en el calendario (v1.1.14 — diseño, no implementado)
+
+> **Estado**: propuesta de la discusión del 2026-10-31, con las decisiones cerradas el 2026-10-31 (§19.4). Mecanismo: [[Arquitectura técnica]] §28. Plan: fases M1–M2, CF1 y CF2.
+
+### 19.1 Varios valores por filtro
+
+- **Prioridad**, **estado** y **área** (con sus sub-áreas) aceptan varios valores. Los tres filtros de fecha (inicio, programada y vencimiento) siguen con uno solo.
+- Dentro de un mismo tipo la tarea basta con que cumpla uno (**O**); entre tipos distintos tiene que cumplirlos todos (**Y**). Vacío = todos.
+- Un chip por tipo con los valores unidos («Estado: Todo, En progreso»); con más de dos, solo el número («Estado: 3»). Al pasar el cursor, un tooltip lista todos los valores.
+- **Área en dos pasos dentro del mismo popover**: arriba las áreas (con «Raíz») y, debajo, las sub-áreas de las áreas marcadas, con el área por delante («Trabajo › Proyectos»). **Gana lo más específico**: dentro de cada área, si hay sub-áreas marcadas solo se usan esas; si no, el área completa. Con `Trabajo`, `Trabajo/Proyectos` y `Personal` marcados se ven las tareas de Proyectos y todas las de Personal. «Raíz» de una sub-área (las notas directamente en la carpeta del área) cuenta como una sub-área más.
+- Las casillas viven en un **popover propio** que no se cierra al marcar (se cierra con un clic fuera o con Esc) y aplica el filtro en cada marca. El menú de Obsidian no sirve: se cierra al hacer clic y reabrirlo parpadea.
+- Lo heredan Lista, Tabla, Kanban y Gantt porque comparten la barra. Cada vista conserva su propio estado guardado y lo guardado con un solo valor se convierte al leerlo.
+
+### 19.2 Filtros en el calendario
+
+- Solo **prioridad**, **estado**, **área** y **búsqueda**. Los filtros de fecha chocan con el calendario, que ya decide qué fecha ancla cada tarea (ADR-T4 y los ajustes de fechas mostradas); el agrupado y el orden no aplican. Retoma «filtrar el calendario por estado», aplazado desde v1.1.10.
+- La barra va **siempre visible, justo debajo de las pestañas principales**, con el mismo aspecto que en las demás vistas y sin botón para abrirla. Resta algo de alto a las subvistas, la Día incluida, y se acepta.
+- Un solo estado guardado para el calendario, compartido por sus seis subvistas, como la fecha de referencia. Afecta a todo lo que dibuja tareas: celdas, listas, contadores de la vista Año y selector de fecha acoplado de la vista Día.
+- Se combina con el ajuste de mostrar u ocultar las tareas completadas.
+
+### 19.3 Funciones que pasan a esta versión
+
+Las previstas antes para v1.1.18: columnas y diseño personalizables y exportación a CSV de la Tabla (§14.3), orden manual de las tarjetas de Kanban (§11 y Arquitectura §20.4), agrupado de Kanban por área y sub-área (§11.3) y combo de agrupado del Gantt (§12.3).
+
+### 19.4 Decisiones (cerradas el 2026-10-31)
+
+| Decisión | Resultado |
+|---|---|
+| Filtros con varios valores | Prioridad, estado y área; los de fecha siguen con uno solo |
+| Selección | Popover propio con casillas, que no se cierra al marcar |
+| Área | Dos pasos en el mismo popover (áreas y, debajo, sub-áreas de las áreas marcadas); gana lo más específico |
+| Chips | Uno por tipo con los valores unidos; un tooltip lista todos |
+| Calendario: filtros | Prioridad, estado, área y búsqueda |
+| Calendario: barra | Siempre visible bajo las pestañas principales, como en las demás vistas; sin botón |
+| Calendario: estado | Uno compartido por las 6 subvistas |
+| Orden de trabajo | Primero los filtros múltiples (M1–M2) y después el calendario (CF1–CF2) |

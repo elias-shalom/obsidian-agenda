@@ -359,7 +359,7 @@ Fetch en vivo desde GitHub Releases; renderizado de Markdown libre (imágenes, v
 
 ## Próxima fase — v1.1.13: Kanban view (diseño; la Fase A, las piezas compartidas, va en v1.1.12)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §11. Mecanismo: [[Arquitectura técnica]] §20. **Fases A y B implementadas (la B, pendiente de prueba manual); la C, pendiente.** El arrastre se resolvió: solo estado y prioridad. Sigue abierta la persistencia del orden manual (Fase C, ver §20.4). La Fase B2 (columnas plegables y altura máxima) está implementada, pendiente de prueba manual; queda abierta la decisión de agrupar por área y sub-área (Especificación §11.3).
+> Comportamiento y decisiones: [[Especificación de vistas]] §11. Mecanismo: [[Arquitectura técnica]] §20. **Fases A y B implementadas (la B, pendiente de prueba manual); la C pasa a v1.1.14.** El arrastre se resolvió: solo estado y prioridad. El orden manual (Fase C) se pospone a v1.1.14 (ver §20.4). La Fase B2 (columnas plegables y altura máxima) está implementada, pendiente de prueba manual; el agrupado por área y sub-área pasa a v1.1.14 (Especificación §11.3).
 
 ### Fase A — Piezas compartidas (base para Kanban y Gantt, sin vista nueva)
 - [x] `TaskSorter.groupTasksByField(tasks, field)` genérico, con las columnas de estado en orden de flujo de trabajo (el del menú de estado: To-do, En progreso, En espera, Hecho, Cancelada, No es tarea; siempre las 6, aunque estén vacías). Para `path` devuelve un árbol de carpetas; la lógica vive en `src/core/task-grouping.ts` y `BaseView.groupTasksByFolder()` delega en ella. Falta `'area'`/`'subArea'` (AR2) y que Lista y Tabla lo usen (U2/U3).
@@ -388,9 +388,10 @@ Fetch en vivo desde GitHub Releases; renderizado de Markdown libre (imágenes, v
 - [x] Claves i18n `kanban_collapse_column` y `kanban_expand_column` en los 6 locales.
 - [ ] Verificable sola: Node (`resolveCollapsed()` y la plantilla con columnas plegadas). Prueba manual: plegar, desplegar y recargar; las vacías arrancan plegadas; soltar sobre una plegada; una columna con muchas tareas desplaza por su cuenta y el arrastre sigue funcionando dentro de ella; panel dividido y teléfono emulado.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
-- [ ] **Decisión abierta (no se implementa aún)**: agrupar el tablero por área y sub-área (Especificación §11.3, opciones A, B y C).
+- [ ] Agrupar el tablero por área y sub-área: **pasa a v1.1.14** (Especificación §11.3, opciones A, B y C).
 
-### Fase C — Reordenar dentro de una columna (depende de B)
+### Fase C — Reordenar dentro de una columna (pospuesta a v1.1.14; depende de B)
+- [ ] Aplazada por decisión del 2026-10-31: no es necesaria para v1.1.13. La propuesta de diseño y las preguntas abiertas están en [[Arquitectura técnica]] §20.4.
 - [ ] Resolver dónde se persiste el orden manual (candidato: `data.json`, por `ruta:línea` o `🆔`) y cómo se invalida cuando cambia el archivo.
 - [ ] Arrastrar una tarjeta a otra posición de la misma columna y conservar el orden entre recargas.
 
@@ -399,25 +400,31 @@ Tableros múltiples guardados; mini-lenguaje de query propio; carriles (swimlane
 
 ## Próxima fase — v1.1.13: Gantt view (diseño)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §12. Mecanismo: [[Arquitectura técnica]] §21. **Nada de esta fase está implementado.** Depende de la Fase A de Kanban (piezas compartidas). Tres decisiones menores siguen abiertas (Especificación §12.7).
+> Comportamiento y decisiones: [[Especificación de vistas]] §12. Mecanismo: [[Arquitectura técnica]] §21. **G1 implementada (pendiente de prueba manual); G2, pendiente.** Depende de la Fase A de Kanban (piezas compartidas). Las decisiones de la Especificación §12.7 se tomaron el 2026-10-31 y no queda ninguna abierta.
 
 ### Fase G1 — Gantt de lectura (depende de la Fase A de Kanban)
-- [ ] `resolveGanttSpan(task)` en `src/core/task-gantt.ts`: barra, hito o ninguna, según [[Especificación de vistas]] §12.1.
-- [ ] Reescribir `GanttView` con el `taskManager` inyectado; registrarla en `ViewManager`, descomentar el botón de `header.hbs` y agregar `showGanttTab` (default `true`) en ambas rutas de `setting-tab.ts`.
-- [ ] Plantilla y estilos: cabecera con pestañas de mes, año, franja de días, bandas de semana y línea de «hoy»; barras, hitos y muesca de `scheduled`.
-- [ ] Zoom 7/14/21/mes natural con posiciones precalculadas en porcentaje; ◀▶ por ventana o por mes; zoom recordado en `localStorage`.
-- [ ] Agrupado por área y sub-área (anidado por carpeta), plegable, con barra resumen por grupo.
-- [ ] Contador «N tareas sin fecha» y barras recortadas cuando salen de la ventana.
-- [ ] Insignia 🔗 con la tooltip «depende de» en las tareas con `🆔`/`⛔`.
-- [ ] Barra de filtros compartida y gestos con `attachTaskGestures()`.
-- [ ] Claves i18n nuevas en los 6 locales.
+- [x] `resolveGanttSpan(task)` en `src/core/task-gantt.ts`: barra, hito o ninguna, según [[Especificación de vistas]] §12.1.
+- [x] Reescribir `GanttView` con el `taskManager` inyectado; registrarla en `ViewManager`, descomentar el botón de `header.hbs` y agregar `showGanttTab` (default `true`) en ambas rutas de `setting-tab.ts`.
+- [x] Plantilla y estilos: cabecera con pestañas de mes, año, franja de días, bandas de semana y línea de «hoy»; barras, hitos y muesca de `scheduled`.
+- [x] Zoom 7/14/21/mes natural con posiciones precalculadas en porcentaje; las ventanas de 7/14/21 días empiezan en el primer día de semana configurado que contiene la fecha de referencia; ◀▶ por ventana o por mes; zoom recordado en `localStorage`.
+- [x] Agrupado por área y sub-área (anidado por carpeta), plegable; la cabecera de grupo no lleva barra resumen (retirada tras la primera revisión visual).
+- [x] Barra de controles a la derecha (zoom y `◀ Hoy ▶`, como el calendario) y cuadrícula vertical (línea de día, línea de semana más marcada, fines de semana sombreados).
+- [ ] Combo de agrupado del Gantt: pasa a v1.1.14 (Arquitectura §21.9).
+- [x] Ajustes visuales tras la revisión: zoom con número e icono de mes, cabecera de grupo sin barra y tareas sin fecha como grupo plegable al estilo de la Lista (máx. 80 %).
+- [x] Contador «N tareas sin fecha» y barras recortadas cuando salen de la ventana.
+- [x] Fin anterior al inicio en datos escritos a mano: se dibuja como hito en la fecha de inicio, con un aviso.
+- [x] Insignia 🔗 con la tooltip «depende de» en las tareas con `🆔`/`⛔`.
+- [x] Barra de filtros compartida y gestos con `attachTaskGestures()`.
+- [x] Claves i18n nuevas en los 6 locales.
+- [x] Pruebas de Node: `resolveGanttSpan()` en todos los casos de §12.1 (incluido el fin anterior al inicio y la hora de ⏳ ignorada), ventanas de 7/14/21 días con cada inicio de semana y mes natural de 28 a 31 días, posiciones recortadas por cada lado, un cambio de hora, bandas de semana, filas agrupadas (solo tareas dentro de la ventana, grupos plegados y vacíos), dependencias, estado y zoom, plantilla, encabezado y los 6 locales (98 comprobaciones).
 - [ ] Verificable sola: con tareas de una, dos y tres fechas se ven hitos y barras correctas; cambiar de zoom y de mes (28 a 31 días) mantiene las posiciones.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase G2 — Edición de fechas (depende de G1)
 - [ ] Extraer `shiftTaskDates(line, deltaDays)` de `task-recurrence.ts`, sin tocar ➕ ni ✅.
 - [ ] Mover la barra o el hito, y redimensionar cada borde, con eventos de puntero y pasos de un día; escritura con `updateTaskLine()`.
 - [ ] Tooltip que indica qué campo escribe cada borde; bloquear fin anterior al inicio.
+- [ ] Convertir un hito en barra con su manija: `start` crea `scheduled`, `scheduled` crea `due` y un hito con solo `due` crea `start` con la manija a la izquierda (Especificación §12.7).
 - [ ] Verificable sola: arrastrar un borde cambia solo el campo indicado en la nota; mover la barra desplaza las tres fechas sin tocar `🆔`/`⛔`.
 - [ ] `npm run build` y ESLint sobre los archivos tocados.
 
@@ -479,10 +486,10 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [x] Verificable sola: cambiar de modo conserva búsqueda, filtros, agrupado y orden; la pestaña se ilumina en ambos modos (el estado se comprobó con script de Node; falta la comprobación visual en Obsidian). (probado a mano)
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
-### Fase U5 — Funciones anunciadas de la Tabla (pasa a v1.1.18; por diseñar, depende de U3 y U7)
+### Fase U5 — Funciones anunciadas de la Tabla (pasa a v1.1.14; por diseñar, depende de U3 y U7)
 - [ ] Diseñar y agregar columnas y diseño personalizables de la Tabla (Especificación §14.3).
 - [ ] Diseñar y agregar la exportación a CSV (Especificación §14.3).
-- [ ] Verificable sola: el README y el manual de usuario dicen lo mismo que hace la Tabla (al implementarlo en v1.1.18 se vuelven a anunciar).
+- [ ] Verificable sola: el README y el manual de usuario dicen lo mismo que hace la Tabla (al implementarlo en v1.1.14 se vuelven a anunciar).
 
 ### Fase U6 — Barra de filtros con chips (pulido estético, depende de U1; diseño en [[Especificación de vistas]] §14.4 y [[Arquitectura técnica]] §23.7)
 - [x] **U6.1 Lógica pura**: nuevo `src/core/task-filter-chips.ts` con `FilterChipId`, `getActiveFilterChips()`, `clearFilterChip()`, `clearAllFilters()` y `getFilterValueOptions()`; `PRIORITY_OPTIONS` y `DUE_OPTIONS` se movieron allí desde `task-filter-bar.ts`.
@@ -648,3 +655,30 @@ Cambiar el texto de «Sin área» en el agrupado; los títulos «By area» y «B
 
 ### Fuera de alcance
 Google Tasks, Microsoft y el plugin Tasks; varias cuentas de Google; `🔁` ↔ RRULE; el botón directo sin credenciales propias; inicio de sesión por copiar y pegar en móvil.
+
+## Próxima fase — v1.1.14: filtros con varios valores y filtros en el calendario (diseño)
+
+> Comportamiento: [[Especificación de vistas]] §19. Mecanismo: [[Arquitectura técnica]] §28. **Nada de esta fase está implementada.** Decisiones cerradas el 2026-10-31 (Especificación §19.4). En esta versión entran también las funciones que estaban previstas para v1.1.18 (Fase U5 de la Tabla, Fase C de Kanban, agrupado de Kanban por área y combo de agrupado del Gantt).
+
+### Fase M1 — Modelo y filtrado (independiente)
+- [ ] `TaskViewState`: `priority`, `status` y las áreas pasan a listas; `parseTaskViewState()` convierte el estado guardado con un solo valor.
+- [ ] `filterTasksByViewState()`: O dentro de un tipo, Y entre tipos; `matchesTaskArea()` acepta varias rutas y gana la más específica.
+- [ ] Verificable sola: Node (conversión del estado antiguo, O/Y, regla de lo más específico, «Raíz»).
+
+### Fase M2 — Barra y chips (depende de M1)
+- [ ] `src/core/task-filter-popover.ts`: popover con casillas que no se cierra al marcar (clic fuera o Esc), anclado al chip o botón, accesible con teclado y en móvil.
+- [ ] `TaskFilterBar` lo usa para prioridad, estado y área; el del área tiene dos secciones (áreas y sub-áreas de las marcadas); `reconcileArea()` descarta las rutas que ya no existen.
+- [ ] `task-filter-chips.ts`: un chip por tipo con los valores unidos (con más de dos, el número) y tooltip con la lista completa; `clearFilterChip()` y `getActiveFilterChips()` adaptados.
+- [ ] Prueba manual en Lista, Tabla, Kanban y Gantt.
+
+### Fase CF1 — Estado y filtrado del calendario (depende de M1)
+- [ ] `src/core/calendar-state.ts` con la clave `obsidian-agenda-calendar-view-state`, compartida por las 6 subvistas.
+- [ ] `CalendarView` filtra en `getTasksForDate()` y en la lista del calendario, junto a `calendarShowCompletedTasks`.
+
+### Fase CF2 — Barra en el calendario (depende de M2 y CF1)
+- [ ] Opción `filterTypes` en `TaskFilterBar` (prioridad, estado, área; sin fechas, agrupado ni orden).
+- [ ] Barra siempre visible justo bajo las pestañas principales, con el mismo aspecto que en las demás vistas (sin botón para abrirla); no se pierde ni pierde el foco al navegar (redibujado parcial o montaje fuera de la zona que se redibuja).
+- [ ] Prueba manual en las 6 subvistas, con el buscador y con el foco.
+
+### Fuera de alcance
+Varios valores en los filtros de fecha; excluir valores («no es»); agrupado y orden en el calendario.

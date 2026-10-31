@@ -62,7 +62,7 @@ export class KanbanView extends BaseView {
   }
 
   getIcon(): string {
-    return 'kanban';
+    return 'square-kanban';
   }
 
   async onOpen(): Promise<void> {

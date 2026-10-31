@@ -40,10 +40,10 @@ OBS Agenda transforma tu bóveda en un potente sistema de productividad al ofrec
 ### Vista de tabla
 - ✅ Gestión de tareas estilo hoja de cálculo, con la misma barra de filtros y agrupado que la Lista
 - ✅ Columnas de fechas Inicio, Programada, Vencimiento y Cerrada (se ocultan si ninguna tarea las tiene)
-- ⬜ Columnas y diseños personalizables (planeado en v1.1.18)
+- ⬜ Columnas y diseños personalizables (planeado en v1.1.14)
 - ✅ Columnas ordenables y redimensionables, ajustadas al ancho disponible
 - ✅ Entrada y edición rápida de atributos de tarea
-- ⬜ Exportación a CSV (planeado en v1.1.18)
+- ⬜ Exportación a CSV (planeado en v1.1.14)
 - ✅ Formato condicional
 
 ### Vista de calendario
@@ -353,7 +353,7 @@ Orden de trabajo por dependencias: piezas compartidas, áreas, Lista y Tabla y d
     - [x] Primera columna sin números de fila (solo el total en el encabezado), y Prioridad, Estado y Tarea más estrechas para que quepan las cuatro fechas
     - [x] Filtros por fecha: el tipo «Fecha» se divide en **Vencimiento**, **Inicio** y **Programada** (seis tipos en + Filtro), con los mismos valores para los tres; «Vencidas» solo cuenta tareas abiertas y se corrigen los textos «Vencidas hoy» y «Vencidas esta semana» por «Vencen hoy» y «Vencen en los próximos 7 días»; «Con fecha» y «Sin fecha» pasan a ser por tipo
     - [x] Orden por Inicio, Programada, Vencimiento y Cerrada (también en la Lista, que comparte el combo de orden)
-  - [x] Tabla: columnas y diseño personalizables y exportación a CSV: decidido **no** hacerlos en esta versión; pasan a v1.1.18 (ver más abajo). Se quitó el anuncio del README y del manual de usuario
+  - [x] Tabla: columnas y diseño personalizables y exportación a CSV: decidido **no** hacerlos en esta versión; pasan a v1.1.14 (ver más abajo). Se quitó el anuncio del README y del manual de usuario
 - [x] **Documentación al cerrar la versión**: README (badge, What's New, News, Changelog), manual de usuario en/es (Lista, Tabla, áreas, gestos, configuración e introducción) y la lista de características de este archivo (Lista y Tabla); el número de versión en `package.json`, `manifest.json` y `versions.json` se sube al publicar (`npm version 1.1.12 --no-git-tag-version`)
 
 ## 🎯 Características (v1.1.13)
@@ -398,15 +398,15 @@ Orden de trabajo sugerido: fixes de Ajustes, enlace al manual, modal de novedade
   - [ ] Motor de filtros/orden: reutilizar `TaskFilter`/`TaskSorter` (no un mini-lenguaje de query nuevo); `TaskSorter.sortTasksByMultipleFields()` ya soporta ascendente/descendente por campo
   - [ ] Usa las piezas compartidas de v1.1.12 (agrupado genérico, barra de filtros, gestos, ids separados y escritura segura; ver la sección v1.1.12 más arriba)
   - [ ] Tableros múltiples guardados: no en esta fase — un solo tablero con los filtros actuales del plugin; varios tableros queda para una versión futura
-  - [ ] Reordenar tarjetas dentro de una columna: sí, por arrastre — implica un orden manual persistido
-  - [ ] **Decisión técnica pendiente**: dónde persistir el orden manual (candidato: `data.json` por `ruta:línea` o `🆔`; la clave `ruta:línea` queda obsoleta si se editan las notas) — Fase C del plan
+  - [ ] Reordenar tarjetas dentro de una columna: por arrastre, con un orden manual persistido — **pasa a v1.1.14** (ítem propio más abajo; no es necesario para v1.1.13)
+  - [ ] **Decisión técnica pendiente, ahora en v1.1.14**: dónde persistir el orden manual (propuesta en el ítem de v1.1.14 más abajo) — Fase C del plan
   - [x] **Decidido y hecho en la Fase B**: el arrastre entre columnas solo cambia estado y prioridad; etiqueta y carpeta son agrupado de solo lectura (mover de carpeta implicaría mover la tarea de archivo)
   - [ ] **Estados personalizados/configurables** (tipo [Custom Statuses de Tasks](https://publish.obsidian.md/tasks/Getting+Started/Statuses/Custom+Statuses)) — diferido, **no** es prerequisito de Kanban v1; anotado para evaluar como ítem propio de v1.1.14 (ver nota en "Próximas Características")
 - [ ] **[v1.1.13] Kanban: refinamientos del tablero** (acordados al probar la Fase B; diseño en `docs/agenda-tasks/Especificación de vistas.md` §11.3 y `Arquitectura técnica.md` §20.8; fase B2 en `Plan de implementación.md`)
   - [ ] Columnas plegables: el encabezado las pliega a una barra delgada con el nombre en vertical y el contador; las vacías arrancan plegadas; se recuerda solo lo que el usuario cambia a mano
   - [ ] La barra plegada acepta la tarjeta al soltarla y se resalta al arrastrar; al recibir una tarea, la columna se despliega sola
   - [ ] Altura: la columna se ajusta a su contenido hasta la altura visible del panel; encabezado fijo y scroll propio de las tarjetas
-  - [ ] **Decisión abierta (no se implementa aún)**: agrupar el tablero por área y sub-área (opciones A, B y C en la Especificación §11.3)
+  - [ ] Agrupar el tablero por área y sub-área: **pasa a v1.1.14** (opciones A, B y C en la Especificación §11.3; ítem propio más abajo)
 - [ ] **[v1.1.13] Fix: etiquetas del día de la semana desplazadas en Semana, Semana laboral y Lista** (reportado y corregido por [@AidanAJoyce](https://github.com/AidanAJoyce) en el PR [#58](https://github.com/elias-shalom/obsidian-agenda/pull/58); diseño en `docs/agenda-tasks/Arquitectura técnica.md` §27; fase W1 en `Plan de implementación.md`; relacionado con el issue #35, que corrigió la alineación en la vista Mes)
   - [x] Con el inicio de semana en lunes, el 31 de octubre de 2026 (sábado) aparecía como «Sun 31 Oct» en Semana, Semana laboral y Lista; las etiquetas usaban `weekday % 7`, que solo vale con inicio en domingo, sobre una lista de nombres que `getLocalizedDayNames()` rota según `weekStartDay`
   - [x] Corregido con `(weekday - weekStartDay + 7) % 7` en las tres vistas; no cambian los rangos de fechas, la asignación de tareas ni las vistas Día, Mes y Año
@@ -418,15 +418,17 @@ Orden de trabajo sugerido: fixes de Ajustes, enlace al manual, modal de novedade
   - [ ] Filtro de Sub-área: opción «Raíz» / «Root» que muestra solo las tareas de las notas directas del área, sin subcarpeta
   - [x] Combos de agrupado y orden de las tareas (Lista, Tabla y Kanban): «Group:» y «Sort:» (en español «Grupo:» y «Orden:») en lugar de «Group by» y «Sort by»
   - [x] Combo de orden de hábitos (Cuadrícula, Semanal y Rutina): opciones sin «By» / «Por» («Area», «Priority»…, «Área», «Prioridad»…) en los 6 idiomas
-- [ ] **[v1.1.13] Vista Gantt** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §12 y `Arquitectura técnica.md` §21; fases G1–G2 en `Plan de implementación.md`; referencia visual: Timelineal; entrada original en "Próximas Características" más abajo, sección Timeline & Planning Views) — hoy **no está registrada ni visible** (registro y botón del encabezado comentados, plantilla `gantt-view.hbs` vacía); corrige una nota anterior que la daba por registrada
+- [ ] **[v1.1.13] Vista Gantt** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §12 y `Arquitectura técnica.md` §21; fases G1–G2 en `Plan de implementación.md`; referencia visual: Timelineal; entrada original en "Próximas Características" más abajo, sección Timeline & Planning Views) — **lectura implementada (G1)**: vista registrada, pestaña con `showGanttTab`, ventana de 7/14/21 días o mes natural, agrupado por área y sub-área, barras, hitos y tareas sin fecha; pendientes la prueba manual y la edición de fechas (G2)
   - [ ] Pestaña de nivel superior con `showGanttTab`; mismos filtros que Tabla y Kanban (barra compartida) y mismos gestos que el calendario (helper compartido)
   - [ ] Dos o más fechas: barra (inicio = `start` o `scheduled`, fin = `due` o `scheduled`); una sola fecha: hito; ninguna: contador «sin fecha»
   - [ ] Zoom 7/14/21 días o mes natural (la ventana usa los días reales del mes, 28 a 31); cabecera con pestañas de mes, año, franja de días, bandas de semana y línea de «hoy»
-  - [ ] Agrupado por área y sub-área (nombre de la primera carpeta y resto de la ruta, anidado), plegable, con barra resumen por grupo
+  - [ ] Agrupado por área y sub-área (nombre de la primera carpeta y resto de la ruta, anidado), plegable
   - [ ] Editar fechas desde la vista: mover la barra, redimensionar cada borde (reescribe el campo que define ese borde) y mover hitos
   - [ ] Dependencias: solo una insignia 🔗; las flechas entre barras quedan para una versión posterior
-  - [ ] **Decisión abierta**: alinear las ventanas de 7/14/21 días al inicio de semana configurado (propuesto, sin confirmar)
-  - [ ] **Decisión abierta**: convertir un hito en barra arrastrando; fin anterior al inicio en datos escritos a mano
+  - [x] **Decidido (2026-10-31)**: las ventanas de 7/14/21 días empiezan en el primer día de semana configurado que contiene la fecha de referencia
+  - [x] **Decidido (2026-10-31)**: un hito se convierte en barra arrastrando su manija; con solo 🛫 crea ⏳ y con solo ⏳ crea 📅
+  - [x] **Decidido (2026-10-31)**: un hito con solo 📅 vencimiento se extiende hacia la izquierda creando 🛫 inicio (la manija queda a la izquierda)
+  - [x] **Decidido (2026-10-31)**: un fin anterior al inicio en datos escritos a mano se dibuja como hito en la fecha de inicio, con un aviso
 
 ### Pendientes de versiones anteriores y dónde quedan
 
@@ -436,7 +438,7 @@ Resumen de lo que otras versiones dejaron pendiente y dónde quedó:
 - [x] Búsqueda, filtros y orden de la Lista, y agrupado por atributos: hechos en v1.1.12 con la barra compartida y la unión Lista y Tabla
 - [x] Refresco automático de la Rutina y cambio de día a medianoche (de "Habit Tracker", más abajo): hechos y probados en v1.1.12
 - [x] Modal de novedades al actualizar: pasó de v1.1.12 a v1.1.13 (ítem propio, más arriba)
-- Columnas personalizables y CSV de la Tabla, anunciados antes de existir: pasan a v1.1.18
+- Columnas personalizables y CSV de la Tabla, anunciados antes de existir: pasan a v1.1.14
 - Estados personalizados y filtrar el calendario por estado (de v1.1.10): pasan a v1.1.14
 - Columnas personalizables y acciones masivas de la Lista: siguen sin planear
 - Tareas activas e inactivas para el porcentaje de completado de Hábitos: siguen sin versión, en "Habit Tracker"
@@ -449,11 +451,10 @@ Cada ítem lleva su versión entre corchetes. El reparto sigue dependencias: las
 |---|---|
 | v1.1.12 | Piezas compartidas (agrupado, barra de filtros, gestos), áreas y sub-áreas, Lista y Tabla en una pestaña |
 | v1.1.13 | Kanban y Gantt, modal de novedades, enlace al manual desde el README, fixes de Ajustes (pestañas y carpeta de hábitos) |
-| v1.1.14 | Estados personalizados y compatibilidad con el plugin Tasks (alcance por diseñar) |
+| v1.1.14 | Estados personalizados y compatibilidad con el plugin Tasks (alcance por diseñar); filtros con varios valores y filtros en el calendario; Tabla: columnas y diseño personalizables y exportación a CSV; Kanban: orden manual de las tarjetas y agrupado por área y sub-área; Gantt: combo de agrupado (todo lo que estaba en v1.1.14) |
 | v1.1.15 | Sincronía con Google Calendar |
 | v1.1.16 | Sincronía con Google Tasks |
 | v1.1.17 | Sincronía con Microsoft |
-| v1.1.18 | Tabla: columnas y diseño personalizables y exportación a CSV |
 
 - [ ] **[v1.1.15] Sincronía con Google Calendar** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §15 y `Arquitectura técnica.md` §24; fases GC1–GC5 en `Plan de implementación.md`; referencias estudiadas: Full Calendar (remastered), pubcyberry/obsidian-google-cal-sync y mcuste/obsidian-gcal-sync; entrada original en "Próximas Características" más abajo, sección External Integrations) — Google Tasks, Microsoft, el plugin Tasks y TaskNotes son ítems aparte (más abajo; TaskNotes, en el backlog)
   - [ ] Bidireccional desde la primera versión; es la primera vez que el plugin usa la red (sincronía apagada por defecto y uso de red declarado en el README)
@@ -474,7 +475,22 @@ Cada ítem lleva su versión entre corchetes. El reparto sigue dependencias: las
   - [ ] Sin decisiones de diseño abiertas
 - [ ] **[v1.1.16] Sincronía con Google Tasks** (idea, discusión pendiente, ítem aparte con su propio diseño; la API y el permiso (`tasks`) son distintos a los de Calendar; las tareas de Google solo tienen fecha de vencimiento y dos estados)
 - [ ] **[v1.1.17] Sincronía con Microsoft** (Outlook Calendar y Microsoft To Do; idea, discusión pendiente, ítem aparte con su propio diseño)
-- [ ] **[v1.1.18] Tabla: columnas y diseño personalizables y exportación a CSV** (pasa de v1.1.12; diseño pendiente, Especificación §14.3 y fase U5 en `Plan de implementación.md`; reutilizará el modelo de columnas de la fase U7, `task-table-columns.ts`; a decidir: qué columnas se pueden mostrar, ocultar y reordenar y dónde se guarda, qué filas y columnas exporta el CSV, separador, codificación y destino del archivo)
+- [ ] **[v1.1.14] Tabla: columnas y diseño personalizables y exportación a CSV** (pasa de v1.1.12; diseño pendiente, Especificación §14.3 y fase U5 en `Plan de implementación.md`; reutilizará el modelo de columnas de la fase U7, `task-table-columns.ts`; a decidir: qué columnas se pueden mostrar, ocultar y reordenar y dónde se guarda, qué filas y columnas exporta el CSV, separador, codificación y destino del archivo)
+- [ ] **[v1.1.14] Kanban: orden manual de las tarjetas dentro de una columna** (pasa de v1.1.13 por decisión del 2026-10-31; diseño en `docs/agenda-tasks/Arquitectura técnica.md` §20.4 y fase C en `Plan de implementación.md`)
+  - [ ] Propuesta sin decidir: una lista global ordenada en `data.json` con la clave `ruta + título` (o `🆔` si lo tiene), una opción «Manual» en el combo de orden y la posición calculada junto a la tarjeta vecina; las tarjetas fuera de la lista salen después, con el orden normal
+  - [ ] Preguntas abiertas: si «Manual» es una opción del combo o el tablero pasa a orden manual al reordenar; si al soltar en otra columna la tarjeta cae donde se suelta; dónde van las tareas nuevas
+- [ ] **[v1.1.14] Kanban: agrupar por área y sub-área** (pasa de v1.1.13 por decisión del 2026-10-31; opciones A, B y C en `docs/agenda-tasks/Especificación de vistas.md` §11.3; hoy el combo ofrece «Carpeta», una columna por primera carpeta)
+- [ ] **[v1.1.14] Gantt: combo de agrupado en la barra de filtros** (decidido el 2026-10-31; hoy siempre agrupa por área y sub-área)
+  - [ ] Opciones: Ninguno (modo plano, sin cabeceras), Área (por defecto), Estado y Prioridad; Carpeta, Etiquetas y Vencimiento quedan fuera
+  - [ ] Hace falta: modo plano en `buildGanttRows()`, claves de plegado con prefijo por campo (como `toGroupViewModels()`) y color de grupo solo para el área
+- [ ] **[v1.1.14] Filtros con varios valores en un mismo tipo** (decidido el 2026-10-31; diseño en `docs/agenda-tasks/Especificación de vistas.md` §19 y `Arquitectura técnica.md` §28; fases M1–M2 en `Plan de implementación.md`; los heredan Lista, Tabla, Kanban y Gantt)
+  - [ ] Prioridad, estado y área (con sus sub-áreas) aceptan varios valores; los filtros de fecha siguen con uno solo; O dentro de un tipo, Y entre tipos
+  - [ ] Un chip por tipo con los valores unidos; el estado guardado con un solo valor se convierte al leerlo
+  - [ ] Decidido (2026-10-31): casillas en un popover propio que no se cierra al marcar; el área en dos pasos dentro del mismo popover y gana lo más específico; un tooltip lista los valores del chip
+- [ ] **[v1.1.14] Filtros en el calendario** (decidido el 2026-10-31; retoma «filtrar el calendario por estado» de v1.1.10; diseño en Especificación §19.2 y Arquitectura §28.3; fases CF1 y CF2 en el Plan; depende de los filtros con varios valores)
+  - [ ] Solo prioridad, estado, área y búsqueda; sin filtros de fecha, agrupado ni orden
+  - [ ] Barra siempre visible bajo las pestañas principales, con el mismo aspecto que en las otras vistas (sin botón para abrirla); estado propio compartido por las 6 subvistas
+  - [ ] Riesgo técnico: el calendario redibuja la vista entera en cada navegación y el buscador perdería el foco; hay que redibujar solo la parte del calendario o montar la barra fuera de ella
 - [ ] **[v1.1.14] Compatibilidad con el plugin Tasks** (diseño preliminar en `docs/agenda-tasks/Especificación de vistas.md` §17; no es una sincronía: mismo archivo y mismo formato de línea; arquitectura y plan por escribir al cerrar el diseño)
   - [ ] Ya coincide: emojis, Dataview, nueva ocurrencia una línea arriba, eliminación de `🆔`/`⛔` al repetir y `when done`
   - [ ] Fecha de referencia de la recurrencia: se mantiene la nuestra (`scheduled > due > start`) aunque Tasks use `due > scheduled > start`; se advierte en el manual

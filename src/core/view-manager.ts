@@ -6,7 +6,7 @@ import { AgendaPlugin } from '../types/interfaces';
 import { OverviewView, OVERVIEW_VIEW_TYPE, CalendarMonthView, CALENDAR_MONTH_VIEW_TYPE, CalendarWeekView, CALENDAR_WEEK_VIEW_TYPE,
   CalendarWorkWeekView, CALENDAR_WORK_WEEK_VIEW_TYPE, CalendarDayView, CALENDAR_DAY_VIEW_TYPE, ListView, LIST_VIEW_TYPE,
   CalendarYearView, CALENDAR_YEAR_VIEW_TYPE, CalendarListView, CALENDAR_LIST_VIEW_TYPE,
-  TableView, TABLE_VIEW_TYPE, KanbanView, KANBAN_VIEW_TYPE } from "../views";
+  TableView, TABLE_VIEW_TYPE, KanbanView, KANBAN_VIEW_TYPE, GanttView, GANTT_VIEW_TYPE } from "../views";
 
 import { HabitGridView, HABIT_GRID_VIEW_TYPE} from "../views/habit-grid-view";
 import { HabitRoutineView, HABIT_ROUTINE_VIEW_TYPE} from "../views/habit-routine-view";
@@ -30,6 +30,7 @@ export class ViewManager {
     this.plugin.registerView(LIST_VIEW_TYPE, (leaf: WorkspaceLeaf) => new ListView(leaf, this.plugin as AgendaPlugin, this.i18n, this.taskManager));
     this.plugin.registerView(TABLE_VIEW_TYPE, (leaf: WorkspaceLeaf) => new TableView(leaf, this.plugin, this.i18n, this.taskManager));
     this.plugin.registerView(KANBAN_VIEW_TYPE, (leaf: WorkspaceLeaf) => new KanbanView(leaf, this.plugin as AgendaPlugin, this.i18n, this.taskManager));
+    this.plugin.registerView(GANTT_VIEW_TYPE, (leaf: WorkspaceLeaf) => new GanttView(leaf, this.plugin as AgendaPlugin, this.i18n, this.taskManager));
 
     // Habit views
     this.plugin.registerView(HABIT_GRID_VIEW_TYPE, (leaf: WorkspaceLeaf) => new HabitGridView(leaf, this.plugin as AgendaPlugin, this.i18n, this.taskManager, this.habitManager));
@@ -39,8 +40,6 @@ export class ViewManager {
     this.plugin.registerView(HABIT_TABLE_VIEW_TYPE, (leaf: WorkspaceLeaf) => new HabitTableView(leaf, this.plugin as AgendaPlugin, this.i18n, this.taskManager, this.habitManager));
 
     //this.plugin.registerView(TIMELINE_VIEW_TYPE, (leaf: WorkspaceLeaf) => new TimelineView(leaf, this.plugin as AgendaPlugin, this.i18n));
-
-    //this.plugin.registerView(GANTT_VIEW_TYPE, (leaf: WorkspaceLeaf) => new GanttView(leaf, this.plugin as AgendaPlugin, this.i18n));
 
   }
 

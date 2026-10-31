@@ -700,7 +700,7 @@ Queda fuera, como mejora opcional: que las vistas se refresquen solas al cambiar
 - **Entre columnas (estado)**: reutiliza `upsertTaskStatus()` + `TaskWriter.updateTaskLine()` (v1.1.10, §14) y, al completar, `buildRecurrenceOccurrence()` + `insertLineAbove()` (§16), exactamente como el menú contextual del calendario. El payload de `dragstart` sigue el patrón de `TaskDragPayload` (`filePath`, `lineNumber`); `dragover` solo resalta la columna y llama a `preventDefault()` sin leer el payload (limitación de `dataTransfer.getData()` ya documentada para el calendario), y se valida en `drop`.
 - **Entre columnas (prioridad/etiqueta/carpeta)**: usa `upsertPriority()` para prioridad. Etiqueta y carpeta no tienen una operación de escritura equivalente; mover a otra carpeta implicaría mover la tarea de archivo, algo que el plugin no hace hoy (el campo de archivo es solo lectura al editar). **Decidido (Fase B)**: el arrastre entre columnas se restringe a estado y prioridad; etiqueta y carpeta son agrupados de solo lectura (no admiten soltar).
 - **Implementación (Fase B)**: `src/core/kanban-board.ts` (puro) tiene `buildKanbanColumns()` (por estado y prioridad salen siempre todas las columnas, también las vacías; por etiqueta y carpeta, solo las que tienen tareas), `taskColumnKey()` y `priorityLineTransform()` (`normal` quita el emoji, porque la tarea sin prioridad explícita ya cuenta como normal). `src/core/kanban-state.ts` guarda el estado del tablero con su propia clave de `localStorage`, aparte del de Lista y Tabla, para que agrupar por estado aquí no cambie el agrupado de aquellas. `changeTaskStatus()` se exporta de `task-gestures.ts` y el tablero la reutiliza (incluida la siguiente ocurrencia de una tarea recurrente). Soltar sobre la misma columna no hace nada; la columna «sin prioridad» solo aparece si hay tareas con una prioridad no reconocida y no admite soltar. El arrastre usa el tipo `application/x-agenda-kanban-task` para no aceptar arrastres ajenos, y la tarjeta lleva `.oa-dragging` mientras se arrastra para que el refresco automático espere.
-- **Reordenar dentro de una columna**: requiere un orden manual persistido. La línea de la tarea no tiene un campo de orden y la posición en el archivo no sirve (cada tarea vive en su propia nota). **Decisión pendiente**: persistir el orden en `data.json` del plugin, por clave `ruta:línea` o por `🆔` cuando exista; el riesgo es que la clave `ruta:línea` queda obsoleta si se editan las notas. Se resuelve en la Fase C del plan.
+- **Reordenar dentro de una columna**: requiere un orden manual persistido. La línea de la tarea no tiene un campo de orden y la posición en el archivo no sirve (cada tarea vive en su propia nota). **Pospuesto a v1.1.14** (decisión del 2026-10-31: no es necesario para v1.1.13; Fase C del plan). Propuesta para entonces, sin decidir: una lista global ordenada en `data.json`, con la clave `ruta + título` de cada tarea (o su `🆔` si lo tiene) en lugar de `ruta:línea`, que queda obsoleta al editar las notas; la posición se calcula junto a la tarjeta vecina, así que una sola lista sirve para cualquier agrupado; una opción «Manual» en el combo de orden; las tarjetas que no estén en la lista salen después, con el orden normal; al guardar se descartan las claves de tareas que ya no existen. Preguntas abiertas: si «Manual» es una opción del combo o el tablero pasa a orden manual al reordenar, si al soltar en otra columna la tarjeta cae donde se suelta y dónde van las tareas nuevas. Alternativas descartadas por ahora: escribir un campo de orden en la línea de la tarea (modifica las notas) y la clave `ruta:línea`.
 
 ### 20.5 Archivos afectados (estimado)
 
@@ -740,9 +740,9 @@ Comportamiento: [[Especificación de vistas]] §11.3.
 - **Altura**: `.oa-kanban-column` pasa a ser una columna flex con `max-height` igual a la altura visible del contenedor de contenido menos su relleno, la barra de filtros y un margen de 16 px para la barra de desplazamiento horizontal (con un mínimo de 160 px); `__cards` lleva `overflow-y: auto` y `min-height: 0`, y el encabezado queda fuera de esa zona. Como el contenedor de contenido desplaza, un `100%` en CSS no sirve: la vista mide el contenedor y expone `--oa-kanban-max-height` con un `ResizeObserver` (también al cambiar el tamaño del panel). Las columnas siguen con `align-items: flex-start`, así que se ajustan al contenido hasta ese máximo.
 - **Riesgo**: el arrastre nativo de HTML5 desplaza solo al acercarse a los bordes de un contenedor con scroll en Chromium; se comprueba a mano dentro de una columna con muchas tareas.
 - **Pruebas**: Node para `resolveCollapsed()` y para la plantilla con columnas plegadas; prueba manual de plegado, recarga, soltar sobre una columna plegada y scroll por columna.
-- **Decisión abierta**: agrupar por área y sub-área (Especificación §11.3, opciones A, B y C); no afecta al diseño de arriba.
+- **Pospuesto a v1.1.14**: agrupar por área y sub-área (Especificación §11.3, opciones A, B y C); no afecta al diseño de arriba.
 
-## 21. Gantt View (v1.1.13, diseño — no implementado)
+## 21. Gantt View (v1.1.13; G1 implementada, pendiente de prueba manual; G2 pendiente)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §12. Comparte con Kanban el motor de agrupado (§20.2), la barra de filtros (§20.3) y el helper de gestos (§20.3.1).
 
@@ -756,11 +756,11 @@ Función pura `resolveGanttSpan(task)` en `src/core/task-gantt.ts`, sin dependen
 
 ### 21.3 Ventana y escala
 
-`GanttZoom = 7 | 14 | 21 | 'month'`. Para `'month'` la ventana es `startOf('month')` con `daysInMonth` de Luxon (28 a 31); para los demás, N días desde la fecha de referencia (ver decisión abierta 1 en la Especificación). La posición de cada barra se precalcula en TypeScript como porcentaje de la ventana (`left = desfase / N`, `width = días / N`), de modo que el largo del mes no importa y se evita `calc()` con variables anidadas en el SCSS, que el minificador rompe. Navegación: ◀▶ mueven N días, o un mes en modo `'month'`. Usa `getReferenceDate()`/`setReferenceDate()` de `calendar-reference-date.ts`; el zoom se guarda en `localStorage` (`oa_gantt_zoom`).
+`GanttZoom = 7 | 14 | 21 | 'month'`. Para `'month'` la ventana es `startOf('month')` con `daysInMonth` de Luxon (28 a 31); para los demás, N días desde el primer día de semana configurado (`weekStartDay`) que contiene la fecha de referencia (decisión 1 de la Especificación §12.7). La posición de cada barra se precalcula en TypeScript como porcentaje de la ventana (`left = desfase / N`, `width = días / N`), de modo que el largo del mes no importa y se evita `calc()` con variables anidadas en el SCSS, que el minificador rompe. Navegación: ◀▶ mueven N días, o un mes en modo `'month'`. Usa `getReferenceDate()`/`setReferenceDate()` de `calendar-reference-date.ts`; el zoom se guarda en `localStorage` (`oa_gantt_zoom`).
 
 ### 21.4 Agrupado por área y sub-área
 
-`groupTasksByField(tasks, 'area')` (§22.4) devuelve un árbol área → sub-área (anidado por carpeta, sin tope de niveles). La barra resumen de cada grupo es el mínimo de inicios y el máximo de fines de sus tareas con barra. El estado plegado se guarda por grupo en `localStorage` (`oa_gantt_collapsed:<ruta>`), como los grupos de Rutina.
+`groupTasksByField(tasks, 'area')` (§22.4) devuelve un árbol área → sub-área (anidado por carpeta, sin tope de niveles). El estado plegado se guarda por grupo en `localStorage` (`oa_gantt_collapsed:<ruta>`), como los grupos de Rutina.
 
 ### 21.5 Edición de fechas
 
@@ -769,6 +769,8 @@ Eventos de puntero (no arrastre HTML5), para redimensionar con precisión de un 
 - **Redimensionar**: `upsertSimpleDate()` para 🛫/📅 y `upsertScheduledDate()` para ⏳, según `startField`/`endField`.
 - **Mover**: desplaza 🛫, ⏳ y 📅 el mismo número de días. `buildNextOccurrenceLine()` ya desplaza fechas pero también elimina `🆔`/`⛔`, así que se extrae su parte de desplazamiento a `shiftTaskDates(line, deltaDays)`, que no toca ➕ ni ✅.
 - Se bloquea el arrastre que deje el fin antes del inicio. Las manijas llaman a `stopPropagation()` en el clic, como la manija de la vista Día.
+- **Hito a barra**: el hito lleva una manija en su lado de extensión. `resolveGanttSpan()` devuelve además `extendField`, el campo que se crearía al extender, según la cadena inicio → programada → vencimiento: solo `start` → `scheduled`; solo `scheduled` → `due`; solo `due` → `start`, con la manija a la izquierda porque `due` ya es el último campo (Especificación §12.7).
+- **Datos incoherentes**: si el fin queda antes del inicio, `resolveGanttSpan()` devuelve un hito en la fecha de inicio marcado con un aviso.
 
 ### 21.6 Dependencias
 
@@ -790,6 +792,21 @@ Eventos de puntero (no arrastre HTML5), para redimensionar con precisión de un 
 ### 21.8 Fuera de alcance (v1.1.13)
 
 Flechas de dependencia y aviso de rotura; desplazamiento en cascada de dependientes; zoom por día; Timeline view.
+
+### 21.9 Implementación de la Fase G1 (lectura)
+
+- **Lógica pura** en `src/core/task-gantt.ts`: `resolveGanttSpan()`, `splitUndated()`, `ganttWindow()` y `shiftGanttReference()`, `ganttPosition()` y `ganttCenter()` (porcentajes de la ventana con tres decimales, recortados a sus bordes; el desfase se redondea a días enteros para que un cambio de hora no lo mueva), `ganttWeekBands()`, `buildGanttRows()` y `buildDependencyIndex()`.
+- **Estado** en `src/core/gantt-state.ts`, aparte del de Lista, Tabla y Kanban: filtros y orden con su propia clave (por defecto orden por inicio ascendente), zoom (`oa_gantt_zoom`; 14 días si no hay valor válido), grupos plegados (`oa_gantt_collapsed:<clave>`) y «sin fecha» visibles (`oa_gantt_show_undated`). La fecha de referencia es la compartida de `calendar-reference-date.ts`: moverse en el Gantt la actualiza para el calendario.
+- **Vista** `src/views/gantt-view.ts` (reescrita: recibe el `taskManager` inyectado, se registra en `ViewManager` y usa el icono `chart-gantt`), plantilla `gantt-view.hbs` y estilos `_gantt.scss`. La barra de filtros no ofrece agrupado: el diagrama siempre agrupa por área (ofrecer más agrupados pasa a v1.1.14). Cada cambio de zoom, ventana, filtro o plegado redibuja solo `.oa-gantt`, no la barra de filtros, para conservar el foco del buscador.
+- **Filas**: una cabecera por grupo (solo la etiqueta y el contador, sin barra en la pista) y, si no está plegado, sus tareas y subgrupos. Solo hay fila para las tareas que tocan la ventana y un grupo sin ninguna se omite. Las tareas sin fecha van aparte, debajo del diagrama, como un grupo plegable con el mismo marcado y estilo que los de la Lista (`oa-folder-group`, `oa-task-item`), con un ancho máximo del 80 %; se pliega por la cabecera sin volver a dibujar el diagrama y empieza plegado.
+- **Barra de controles**: como la del calendario, el periodo a la izquierda y a la derecha el zoom y `◀ Hoy ▶` (`◀` y `▶` son botones redondos con `round-icon-button`; clases propias `oa-gantt-*`, no las `oa-calendar-*`, porque `.oa-calendar-today` también estiliza celdas).
+- **Cuadrícula**: una capa `.oa-gantt-grid` dentro de `.oa-gantt-body`, absoluta y sin eventos, con un `span` por día en un flex de columnas iguales como el de la cabecera (así las líneas coinciden con ella sin calcular porcentajes). Cada columna lleva una línea fina; la de inicio de semana (según `weekStartDay`) es más marcada y los fines de semana se sombrean.
+- **Selector de zoom**: los botones de 7, 14 y 21 días llevan solo el número (el texto completo va en `title` y `aria-label`) y el de mes usa el icono `calendar-days`, que `wireChart()` coloca con `setIcon()` tras cada dibujado; así ninguna etiqueta se sale del círculo.
+- **Cabecera**: año con flechas, doce pestañas de mes (la del mes de inicio de la ventana subrayada; pulsarla lleva la referencia al día 1 de ese mes), bandas de semana («W44», prefijo localizado) y franja de días con hoy y fines de semana resaltados; en ventanas de más de 14 días el día de la semana se abrevia a una letra. Es fija al desplazar. La línea de «hoy» es un elemento por fila, así que forma una línea continua sin cálculos de CSS.
+- **Barras**: color del área; hecha, cancelada y «no es tarea» se atenúan; el borde recortado por la ventana se dibuja punteado; el hito es un rombo en el centro de su columna; la muesca de ⏳ solo aparece con 🛫 y 📅.
+- **Dependencias**: la insignia 🔗 aparece en las tareas con `⛔` («Depende de: …») y en las que otras esperan («Bloquea: …»), con los títulos resueltos por el `🆔`.
+- **Pestaña**: `showGanttTab` (en ambas rutas de Ajustes), entre Kanban y Calendario; la Timeline sigue comentada en el encabezado.
+- **Gestos** compartidos (`attachTaskGestures()`) sobre cada fila y cada tarea sin fecha.
 
 ## 22. Áreas y sub-áreas de tareas (v1.1.12, diseño — núcleo implementado)
 
@@ -1176,3 +1193,31 @@ La corrección la aportó [@AidanAJoyce](https://github.com/AidanAJoyce) desde u
 - **Integración**: el PR apuntaba a `main`, pero el trabajo de la versión vive en `features/develop`. Se descargó con `git fetch origin pull/58/head` y se mezcló en `features/develop` con `git merge --no-ff`, lo que conserva la autoría de sus cuatro commits. El PR se deja abierto con un comentario hasta que la versión llegue a `main`, momento en que GitHub lo marca como mergeado.
 - **Permisos**: un PR desde un fork no da acceso de escritura al repositorio; cualquier cambio futuro de la misma persona pasa por otro PR que se revisa igual.
 - **Crédito**: README (sección Contributors) y la nota del Changelog de la versión.
+
+## 28. Filtros con varios valores y filtros en el calendario (v1.1.14, diseño — no implementado)
+
+Comportamiento: [[Especificación de vistas]] §19.
+
+### 28.1 Modelo y filtrado
+
+- `TaskViewState` (`task-view-state.ts`): `priority` y `status` pasan de `string` a `string[]`, y el área y la sub-área a una lista de rutas (`Área`, `Área/sub/ruta`, `ROOT_AREA` para la raíz). `[]` equivale a «todos». Los filtros de fecha no cambian.
+- `parseTaskViewState()` convierte lo guardado: `'all'` pasa a `[]` y un valor suelto a una lista de uno; Kanban y Gantt lo usan también, así que no hay estados antiguos aparte.
+- `filterTasksByViewState()`: `TaskFilterCriteria.priority.is` y `.status` ya son listas; `criteria.location` y `matchesTaskArea()` (`area.ts`) pasan a aceptar varias rutas. Una ruta marcada es **efectiva** si ninguna otra ruta marcada cuelga de ella; la tarea cumple si su ruta está bajo alguna ruta efectiva (gana la más específica, Especificación §19.1).
+
+### 28.2 Barra y chips
+
+- Componente nuevo `src/core/task-filter-popover.ts`: un popover con casillas nativas, anclado bajo el chip o el botón pulsado (el ancla se mide al abrir, porque el chip se redibuja al marcar), que no se cierra al marcar y sí con un clic fuera o con Esc; accesible con teclado y utilizable en móvil. Llama a `onChange` en cada marca.
+- `TaskFilterBar` lo usa para prioridad, estado y área. El popover del área tiene dos secciones: las áreas (con «Raíz») y, debajo, las sub-áreas de las áreas marcadas, que se actualizan al marcar. `reconcileArea()` descarta las rutas que ya no tienen tareas.
+- `task-filter-chips.ts`: un chip por tipo; `getActiveFilterChips()` une los valores (con más de dos, el número) y aporta la lista completa para el tooltip; `clearFilterChip()` vacía la lista del tipo.
+- Opción nueva `filterTypes?: FilterChipId[]`: limita los tipos del menú «Añadir filtro» (el calendario no ofrece fechas).
+
+### 28.3 Calendario
+
+- Estado propio en `src/core/calendar-state.ts` (clave `obsidian-agenda-calendar-view-state`), cargado en `CalendarView` y compartido por las seis subvistas.
+- El filtrado va en un solo punto: `getTasksForDate()` de `calendar-view.ts` y la lista del calendario recorren las tareas visibles, no `this.tasks`.
+- **Riesgo**: `refreshCalendar()` llama a `render()` y reconstruye toda la vista en cada navegación, de modo que una barra dentro del calendario perdería el foco del buscador en cada tecla. El Gantt lo evita redibujando solo `.oa-gantt`; el calendario necesita lo mismo (redibujado parcial) o montar la barra fuera de la zona que se redibuja.
+- La barra va siempre visible justo bajo las pestañas principales, con el mismo marcado (`oa-filter-bar`) que en las demás vistas, sin botón de mostrar u ocultar.
+
+### 28.4 Pruebas
+
+Node: conversión del estado antiguo, O dentro de un tipo y Y entre tipos, la regla de lo más específico, «Raíz», chips y reconciliación del área. Prueba manual en las seis subvistas del calendario.

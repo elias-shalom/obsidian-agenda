@@ -543,6 +543,8 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 - ⬜ Kanban and Gantt views
 - ⬜ Custom task statuses and closer compatibility with the Tasks plugin
 - ⬜ Table: customizable columns and layout, and CSV export
+- ⬜ Kanban: manual ordering of cards within a column
+- ⬜ Kanban: grouping by area and sub-area
 - ⬜ Google Calendar sync, followed by Google Tasks and Microsoft
 
 ---

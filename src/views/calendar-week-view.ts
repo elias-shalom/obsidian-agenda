@@ -42,7 +42,7 @@ export class CalendarWeekView extends CalendarView {
     
     for (let i = 0; i < daysToGenerate; i++) {
       const dayTasks = this.getTasksForDate(currentDay);
-      const dayIndex = currentDay.weekday % 7; // Asegura que el índice sea 0-6
+      const dayIndex = (currentDay.weekday - this.getWeekStartDay() + 7) % 7;
       
       days.push({
         date: currentDay,

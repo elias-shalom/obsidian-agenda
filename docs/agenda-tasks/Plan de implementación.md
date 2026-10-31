@@ -565,15 +565,17 @@ Crear carpetas sin preguntar; botones nuevos en las vistas; migrar hábitos exis
 
 ## Corrección — v1.1.13: etiquetas del día de la semana (implementado; pendiente de prueba manual)
 
-> Mecanismo: [[Arquitectura técnica]] §27. Reportado por un usuario con un parche propuesto.
+> Mecanismo: [[Arquitectura técnica]] §27. Reportado y corregido por @AidanAJoyce (PR #58).
 
 ### Fase W1 — Índice del nombre del día
-- [x] `src/core/calendar-week.ts`: `weekdayNameIndex(weekday, weekStartDay)` puro.
-- [x] `CalendarWeekView`, `CalendarWorkWeekView` y `CalendarListView` lo usan en lugar de `weekday % 7`.
-- [x] Verificable sola: Node (49 pares de inicio de semana y día, el caso reportado, inicio en domingo sin cambios, semana completa desde cada inicio y semana laboral).
+- [x] Corrección aportada en el PR #58 (@AidanAJoyce): el índice del nombre del día es `(weekday - weekStartDay + 7) % 7`; no hay función aparte.
+- [x] `CalendarWeekView`, `CalendarWorkWeekView` y `CalendarListView` usan esa expresión con `this.getWeekStartDay()` en lugar de `weekday % 7`.
+- [x] Verificable sola: `node --test tests/calendar-weekday-labels.test.cjs` (21 pruebas del PR: 3 vistas por los 7 inicios de semana, en inglés y español, con tres zonas horarias y fechas límite); 21 de 21 pasan.
 - [ ] Prueba manual: inicio de semana en lunes y en domingo; 31 de octubre de 2026 es «Sat», 1 de noviembre «Sun» y 2 de noviembre «Mon» en Semana, Semana laboral y Lista; las tareas siguen en su fecha.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
-- [ ] Al cerrar la versión (Fase 9): nota en el Changelog de la versión.
+- [x] Integración: revisión del PR, merge en `features/develop` con la autoría de Aidan y comentario en el PR, que queda abierto hasta que la versión llegue a `main` (Arquitectura §27.1).
+- [x] README: sección Contributors con el crédito.
+- [ ] Al cerrar la versión (Fase 9): nota en el Changelog de la versión con el crédito a @AidanAJoyce (PR #58).
 
 ### Fuera de alcance
 La alineación de la vista Semana con `weekStartDay` (usa la semana ISO de Luxon; ver Especificación §4.7) y las vistas Día, Mes y Año.

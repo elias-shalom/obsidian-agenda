@@ -1160,10 +1160,19 @@ Solo cambia el texto de `habit_sort_alphabetical`, `habit_sort_area`, `habit_sor
 
 ## 27. Corrección: etiquetas del día en Semana, Semana laboral y Lista (v1.1.13, implementado; pendiente de prueba manual)
 
-**Síntoma.** Con el inicio de semana en lunes, el 31 de octubre de 2026 (sábado) se etiquetaba «Sun 31 Oct» en las vistas Semana, Semana laboral y Lista; Mes y Año ya estaban bien (issue #35). Lo reportó un usuario en macOS con Obsidian 1.14.5 y propuso la corrección.
+**Síntoma.** Con el inicio de semana en lunes, el 31 de octubre de 2026 (sábado) se etiquetaba «Sun 31 Oct» en las vistas Semana, Semana laboral y Lista; Mes y Año ya estaban bien (issue #35). Lo reportó [@AidanAJoyce](https://github.com/AidanAJoyce), usuario en macOS con Obsidian 1.14.5, y propuso la corrección en el PR [#58](https://github.com/elias-shalom/obsidian-agenda/pull/58).
 
 **Causa.** `CalendarView.getLocalizedDayNames()` devuelve los siete nombres rotados para empezar en `weekStartDay`, pero `generateViewData()` de las tres vistas los indexaba con `currentDay.weekday % 7`, que supone una lista que empieza en domingo. Coincide solo con inicio en domingo.
 
-**Corrección.** Nueva función pura `weekdayNameIndex(weekday, weekStartDay)` en `src/core/calendar-week.ts`, que devuelve `(weekday - weekStartDay + 7) % 7`; las tres vistas la usan con `this.getWeekStartDay()`. Solo cambian esos tres cálculos de etiqueta: los rangos de fechas, la asignación de tareas, las fechas guardadas y las vistas Día, Mes y Año quedan igual.
+**Corrección.** Las tres vistas calculan el índice como `(currentDay.weekday - this.getWeekStartDay() + 7) % 7`. No se extrajo una función aparte: es una expresión de una línea y las pruebas ejercitan las vistas reales. Solo cambian esos tres cálculos de etiqueta: los rangos de fechas, la asignación de tareas, las fechas guardadas y las vistas Día, Mes y Año quedan igual (los dos archivos de Semana y Semana laboral ganan además un salto de línea final).
 
-**Pruebas.** Script de Node: los 49 pares de inicio de semana y día dan el nombre real; el caso reportado (inicio en lunes, 31 de octubre de 2026 es sábado, 1 de noviembre domingo y 2 de noviembre lunes); con inicio en domingo no cambia nada; una semana completa desde cada inicio y la semana laboral con los siete inicios. Prueba manual pendiente en Obsidian.
+**Pruebas.** `tests/calendar-weekday-labels.test.cjs`, aportado en el mismo PR y primer archivo de pruebas del repo (no hay script `npm test`): transpila las vistas reales con `typescript` y las ejecuta sobre un `CalendarView` mínimo, sin Obsidian. Son 21 pruebas (3 vistas por los 7 inicios de semana) que comprueban, en inglés y español, con UTC, Bucarest y Nueva York y con fechas límite (fin de año, bisiesto, cambio de hora), el nombre del día, la fecha, el número de días y que la tarea queda en su fecha. Se ejecutan con `node --test tests/calendar-weekday-labels.test.cjs`. En la revisión: 21 de 21 pasan, y `npm run build` y ESLint quedan limpios. Prueba manual pendiente en Obsidian.
+
+### 27.1 Participación externa
+
+La corrección la aportó [@AidanAJoyce](https://github.com/AidanAJoyce) desde un fork (PR [#58](https://github.com/elias-shalom/obsidian-agenda/pull/58), «fix(calendar): respect week start in weekday labels»), con la reproducción, la causa, el cambio, las pruebas y la validación manual en macOS.
+
+- **Revisión**: se leyó el diff completo (tres vistas y el archivo de pruebas) antes de integrarlo; el código de las pruebas no hace nada fuera de la lógica de las vistas.
+- **Integración**: el PR apuntaba a `main`, pero el trabajo de la versión vive en `features/develop`. Se descargó con `git fetch origin pull/58/head` y se mezcló en `features/develop` con `git merge --no-ff`, lo que conserva la autoría de sus cuatro commits. El PR se deja abierto con un comentario hasta que la versión llegue a `main`, momento en que GitHub lo marca como mergeado.
+- **Permisos**: un PR desde un fork no da acceso de escritura al repositorio; cualquier cambio futuro de la misma persona pasa por otro PR que se revisa igual.
+- **Crédito**: README (sección Contributors) y la nota del Changelog de la versión.

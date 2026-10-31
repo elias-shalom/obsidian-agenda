@@ -569,7 +569,16 @@ npm run dev
 
 # Build for production
 npm run build
+
+# Run the calendar weekday label tests
+node --test tests/calendar-weekday-labels.test.cjs
 ```
+
+### 🙌 Contributors
+
+Thank you to everyone who has helped improve Agenda Tasks:
+
+- [@AidanAJoyce](https://github.com/AidanAJoyce) — fixed the weekday labels of the Week, Work week and List calendar views when the week does not start on Sunday, and added tests for it ([#58](https://github.com/elias-shalom/obsidian-agenda/pull/58), shipped in 1.1.13).
 
 ### 🚀 Releasing a New Version
 

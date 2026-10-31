@@ -216,6 +216,11 @@
 
   &--task {
     cursor: pointer;
+
+    // Estado, prioridad y título un poco más pequeños que el texto normal
+    .oa-gantt-label {
+      font-size: 0.9em;
+    }
   }
 }
 
@@ -257,6 +262,11 @@
   font-weight: normal;
 }
 
+.oa-gantt-status,
+.oa-gantt-priority {
+  flex-shrink: 0;
+}
+
 .oa-gantt-title {
   flex: 1 1 auto;
   min-width: 0;
@@ -288,6 +298,18 @@
   border-radius: 4px;
   background-color: var(--oa-gantt-color);
   opacity: 0.9;
+  cursor: grab;
+  touch-action: pan-y; // el desplazamiento vertical sigue funcionando en pantallas táctiles
+
+  &.oa-resizing {
+    cursor: grabbing;
+  }
+
+  // Vista previa de la barra que crea la manija de un hito mientras se arrastra
+  &--ghost {
+    opacity: 0.4;
+    pointer-events: none;
+  }
 
   &--clipped-left {
     border-left: 2px dashed color-mix(in srgb, var(--background-primary) 70%, transparent);
@@ -310,6 +332,81 @@
   border-radius: 2px;
   background-color: var(--oa-gantt-color);
   transform: rotate(45deg);
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+// Manijas de los bordes de una barra: visibles al pasar el cursor o mientras se arrastran
+.oa-gantt-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  touch-action: pan-y;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    width: 2px;
+    border-radius: 1px;
+    background-color: var(--background-primary);
+    opacity: 0.8;
+  }
+
+  &--start {
+    left: 0;
+
+    &::after { left: 2px; }
+  }
+
+  &--end {
+    right: 0;
+
+    &::after { right: 2px; }
+  }
+}
+
+.oa-gantt-bar:hover .oa-gantt-handle,
+.oa-gantt-handle.oa-resizing {
+  opacity: 1;
+}
+
+// Manija que convierte un hito en barra, a un lado del rombo
+.oa-gantt-extend {
+  position: absolute;
+  top: 7px;
+  z-index: 3;
+  box-sizing: border-box;
+  width: 10px;
+  height: 16px;
+  border: 1px dashed var(--oa-gantt-color);
+  border-radius: 3px;
+  cursor: ew-resize;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  touch-action: pan-y;
+
+  &--right { margin-left: 10px; }
+
+  &--left { margin-left: -20px; }
+}
+
+.oa-gantt-row--task:hover .oa-gantt-extend,
+.oa-gantt-extend.oa-resizing {
+  opacity: 0.9;
+}
+
+// Sin cursor que pase por encima, las manijas se dejan a la vista
+@media (hover: none) {
+  .oa-gantt-handle,
+  .oa-gantt-extend {
+    opacity: 0.7;
+  }
 }
 
 .oa-gantt-notch {

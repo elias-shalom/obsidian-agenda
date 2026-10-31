@@ -1,7 +1,7 @@
 {{!-- Gantt View (v1.1.13): una fila por tarea sobre un eje de tiempo, agrupadas por área y sub-área --}}
 <div class="oa-gantt-toolbar"></div>
 
-<div class="oa-gantt">
+<div class="oa-gantt" data-days="{{days.length}}">
   <div class="oa-gantt-controls">
     <span class="oa-gantt-period">{{periodLabel}}</span>
     <div class="oa-gantt-actions">
@@ -72,6 +72,7 @@
         <div class="oa-gantt-row oa-gantt-row--task" data-task-row data-file-path="{{this.filePath}}" data-line-number="{{this.lineNumber}}" data-status="{{this.status}}" data-priority="{{this.priority}}" {{#if this.color}}data-group-color="{{this.color}}"{{/if}}>
           <div class="oa-gantt-label" style="padding-left: {{this.indent}}px" title="{{this.filePath}}">
             <span class="oa-gantt-status">{{this.emoji}}</span>
+            {{#if this.hasPriority}}<span class="oa-gantt-priority">{{priorityIcon this.priority}}</span>{{/if}}
             <span class="oa-gantt-title">{{this.desc}}</span>
             {{#if this.linkTitle}}<span class="oa-gantt-badge" title="{{this.linkTitle}}">🔗</span>{{/if}}
             {{#if this.invalidTitle}}<span class="oa-gantt-badge oa-gantt-badge--warn" title="{{this.invalidTitle}}">⚠</span>{{/if}}
@@ -79,9 +80,13 @@
           <div class="oa-gantt-track">
             {{#if @root.todayLeft}}<span class="oa-gantt-today" style="left: {{@root.todayLeft}}%"></span>{{/if}}
             {{#if this.isMilestone}}
-              <span class="oa-gantt-milestone" style="left: {{this.centerLeft}}%" title="{{this.barTitle}}"></span>
+              <span class="oa-gantt-milestone" style="left: {{this.centerLeft}}%" title="{{this.barTitle}}" data-drag="move"></span>
+              {{#if this.extendSide}}<span class="oa-gantt-extend oa-gantt-extend--{{this.extendSide}}" style="left: {{this.centerLeft}}%" title="{{this.extendTitle}}" data-drag="extend" data-center="{{this.centerLeft}}"></span>{{/if}}
             {{else}}
-              <span class="oa-gantt-bar{{#if this.clippedLeft}} oa-gantt-bar--clipped-left{{/if}}{{#if this.clippedRight}} oa-gantt-bar--clipped-right{{/if}}" style="left: {{this.left}}%; width: {{this.width}}%" title="{{this.barTitle}}"></span>
+              <span class="oa-gantt-bar{{#if this.clippedLeft}} oa-gantt-bar--clipped-left{{/if}}{{#if this.clippedRight}} oa-gantt-bar--clipped-right{{/if}}" style="left: {{this.left}}%; width: {{this.width}}%" title="{{this.barTitle}}" data-drag="move" data-left="{{this.left}}" data-width="{{this.width}}">
+                {{#unless this.clippedLeft}}<span class="oa-gantt-handle oa-gantt-handle--start" title="{{this.startHandleTitle}}" data-drag="resize-start"></span>{{/unless}}
+                {{#unless this.clippedRight}}<span class="oa-gantt-handle oa-gantt-handle--end" title="{{this.endHandleTitle}}" data-drag="resize-end"></span>{{/unless}}
+              </span>
               {{#if this.markLeft}}<span class="oa-gantt-notch" style="left: {{this.markLeft}}%"></span>{{/if}}
             {{/if}}
           </div>

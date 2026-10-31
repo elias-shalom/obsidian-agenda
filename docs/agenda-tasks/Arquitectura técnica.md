@@ -742,7 +742,7 @@ Comportamiento: [[Especificación de vistas]] §11.3.
 - **Pruebas**: Node para `resolveCollapsed()` y para la plantilla con columnas plegadas; prueba manual de plegado, recarga, soltar sobre una columna plegada y scroll por columna.
 - **Pospuesto a v1.1.14**: agrupar por área y sub-área (Especificación §11.3, opciones A, B y C); no afecta al diseño de arriba.
 
-## 21. Gantt View (v1.1.13; G1 implementada, pendiente de prueba manual; G2 pendiente)
+## 21. Gantt View (v1.1.13; G1 y G2 implementadas, pendientes de prueba manual)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §12. Comparte con Kanban el motor de agrupado (§20.2), la barra de filtros (§20.3) y el helper de gestos (§20.3.1).
 
@@ -772,6 +772,19 @@ Eventos de puntero (no arrastre HTML5), para redimensionar con precisión de un 
 - **Hito a barra**: el hito lleva una manija en su lado de extensión. `resolveGanttSpan()` devuelve además `extendField`, el campo que se crearía al extender, según la cadena inicio → programada → vencimiento: solo `start` → `scheduled`; solo `scheduled` → `due`; solo `due` → `start`, con la manija a la izquierda porque `due` ya es el último campo (Especificación §12.7).
 - **Datos incoherentes**: si el fin queda antes del inicio, `resolveGanttSpan()` devuelve un hito en la fecha de inicio marcado con un aviso.
 
+### 21.10 Implementación de la Fase G2 (edición de fechas)
+
+- **Lógica pura** en `src/core/task-gantt.ts`: `GanttDragMode` (`move`, `resize-start`, `resize-end`, `extend`), `clampGanttDelta()` (el inicio no pasa del fin, el fin no pasa del inicio y la manija de un hito solo va hacia su lado), `planGanttEdit()` (un `GanttEdit`: `shift` de N días o `set` de un campo con su fecha; `null` si no cambia nada) y `applyGanttEdit()`, que reescribe la línea con `shiftTaskDates()` o con `upsertSimpleDate()`/`upsertScheduledDate()` (esta conserva la hora y la duración de ⏳).
+- **`shiftTaskDates(line, deltaDays)`** se extrajo de `buildNextOccurrenceLine()` en `task-recurrence.ts`; solo toca 🛫, ⏳ y 📅. La ocurrencia siguiente la sigue usando y después quita `🆔`/`⛔`; el Gantt no los quita.
+- **Tooltip**: `datesTitle(task, deltaDays)` une las fechas presentes en el orden 🛫 → ⏳ → 📅; lo usan el `title` de la barra y del hito y la insignia al mover.
+- **Plantilla**: la barra lleva `data-drag="move"` y, si su borde es visible, las manijas `resize-start`/`resize-end` (sin manija en el lado recortado); el hito lleva `data-drag="move"` y, si se puede extender, una manija `extend` con su lado. `.oa-gantt` expone `data-days` y la barra su `data-left`/`data-width`, de modo que el arrastre no recalcula la ventana.
+- **Vista** (`gantt-view.ts`, `wireDrag()`): eventos de puntero con captura (mismo enfoque que la manija de la vista Día) y pasos de un día (`dayPx = ancho de la pista / días`). Mientras se arrastra: mover desplaza barra, muesca y hito con la propiedad CSS `translate`; redimensionar cambia `left`/`width`; extender dibuja una barra fantasma. Una insignia (`oa-calendar-resize-tooltip`) muestra el campo que se escribirá y su fecha. El elemento lleva `oa-resizing`, que también hace que el refresco automático espere.
+- **Escritura**: `TaskWriter.updateTaskLine()` con el texto de la tarea tal como se dibujó, y aviso `task_line_changed` si la nota cambió. Al soltar se refresca con `refreshView()`; si no cambia nada, se restaura lo que se movió.
+- **Clic**: las manijas detienen el clic; el cuerpo de la barra o del hito solo lo detiene si hubo un arrastre efectivo, así que un clic simple sigue abriendo el modal y el doble clic la nota.
+- **Táctil**: `touch-action: pan-y` en barra, hito y manijas, para que el desplazamiento vertical siga funcionando; sin cursor (`hover: none`) las manijas quedan visibles.
+- Sin claves de traducción nuevas: el título de cada manija reutiliza `start_date`, `scheduled_date` y `due_date` con su emoji.
+- **Límite**: un borde recortado por la ventana no tiene manija; para tocarlo hay que mover la ventana.
+
 ### 21.6 Dependencias
 
 `id` y `dependsOn` ya se parsean. En esta versión solo se agrega la insignia 🔗 con la tooltip «depende de». Las flechas requieren una capa SVG recalculada al hacer scroll, cambiar el zoom o plegar grupos, y quedan para una versión posterior.
@@ -800,6 +813,7 @@ Flechas de dependencia y aviso de rotura; desplazamiento en cascada de dependien
 - **Vista** `src/views/gantt-view.ts` (reescrita: recibe el `taskManager` inyectado, se registra en `ViewManager` y usa el icono `chart-gantt`), plantilla `gantt-view.hbs` y estilos `_gantt.scss`. La barra de filtros no ofrece agrupado: el diagrama siempre agrupa por área (ofrecer más agrupados pasa a v1.1.14). Cada cambio de zoom, ventana, filtro o plegado redibuja solo `.oa-gantt`, no la barra de filtros, para conservar el foco del buscador.
 - **Filas**: una cabecera por grupo (solo la etiqueta y el contador, sin barra en la pista) y, si no está plegado, sus tareas y subgrupos. Solo hay fila para las tareas que tocan la ventana y un grupo sin ninguna se omite. Las tareas sin fecha van aparte, debajo del diagrama, como un grupo plegable con el mismo marcado y estilo que los de la Lista (`oa-folder-group`, `oa-task-item`), con un ancho máximo del 80 %; se pliega por la cabecera sin volver a dibujar el diagrama y empieza plegado.
 - **Barra de controles**: como la del calendario, el periodo a la izquierda y a la derecha el zoom y `◀ Hoy ▶` (`◀` y `▶` son botones redondos con `round-icon-button`; clases propias `oa-gantt-*`, no las `oa-calendar-*`, porque `.oa-calendar-today` también estiliza celdas).
+- **Columna de nombres**: estado (`emoji`), prioridad (`hasPriority`, calculado con `TaskPriority`, más el helper `priorityIcon`) y título; `.oa-gantt-row--task .oa-gantt-label` baja el tamaño a `0.9em`.
 - **Cuadrícula**: una capa `.oa-gantt-grid` dentro de `.oa-gantt-body`, absoluta y sin eventos, con un `span` por día en un flex de columnas iguales como el de la cabecera (así las líneas coinciden con ella sin calcular porcentajes). Cada columna lleva una línea fina; la de inicio de semana (según `weekStartDay`) es más marcada y los fines de semana se sombrean.
 - **Selector de zoom**: los botones de 7, 14 y 21 días llevan solo el número (el texto completo va en `title` y `aria-label`) y el de mes usa el icono `calendar-days`, que `wireChart()` coloca con `setIcon()` tras cada dibujado; así ninguna etiqueta se sale del círculo.
 - **Cabecera**: año con flechas, doce pestañas de mes (la del mes de inicio de la ventana subrayada; pulsarla lleva la referencia al día 1 de ese mes), bandas de semana («W44», prefijo localizado) y franja de días con hoy y fines de semana resaltados; en ventanas de más de 14 días el día de la semana se abrevia a una letra. Es fija al desplazar. La línea de «hoy» es un elemento por fila, así que forma una línea continua sin cálculos de CSS.
@@ -894,6 +908,8 @@ La barra incorpora un combo de agrupado y un control de orden. El agrupado usa `
 Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones masivas.
 
 ### 23.7 Barra de filtros con chips (v1.1.12, implementado y probado a mano)
+
+> **Cambia en v1.1.14**: modelo con listas, popover con casillas y regla de lo más específico para el área (§28). Lo descrito abajo es el diseño actual.
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.4. Es un cambio solo de la capa de interfaz de `TaskFilterBar`: `TaskViewState`, `filterTasksByViewState()` y las vistas no cambian.
 

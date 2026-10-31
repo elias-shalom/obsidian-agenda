@@ -5,6 +5,8 @@
 import { DateTime } from 'luxon';
 import { ITask } from '../types/interfaces';
 import { TaskGroup } from './task-grouping';
+import { upsertScheduledDate, upsertSimpleDate } from './task-line-fields';
+import { shiftTaskDates } from './task-recurrence';
 
 /** Campo de la tarea que define un borde de la barra. */
 export type GanttField = 'start' | 'scheduled' | 'due';
@@ -96,6 +98,58 @@ export interface GanttWindow {
 
 const dayDiff = (a: DateTime, b: DateTime): number => Math.round(a.startOf('day').diff(b.startOf('day'), 'days').days);
 const percent = (value: number): number => Math.round(value * 1000) / 1000;
+
+/** Qué se arrastra: la barra o el hito entero, un borde de la barra o la manija de extensión de un hito. */
+export type GanttDragMode = 'move' | 'resize-start' | 'resize-end' | 'extend';
+
+/** Cambio que produce un arrastre: desplazar todas las fechas o escribir una sola. */
+export type GanttEdit =
+  | { kind: 'shift'; deltaDays: number }
+  | { kind: 'set'; field: GanttField; date: DateTime };
+
+const spanLength = (span: GanttSpan): number => (span.start && span.end ? dayDiff(span.end, span.start) : 0);
+
+/**
+ * Límite del desplazamiento en días de un arrastre (Especificación §12.4): el inicio no pasa del fin
+ * ni el fin del inicio, y la manija de un hito solo se arrastra hacia su lado.
+ */
+export function clampGanttDelta(span: GanttSpan, mode: GanttDragMode, delta: number): number {
+  switch (mode) {
+    case 'move': return delta;
+    case 'resize-start': return Math.min(delta, spanLength(span));
+    case 'resize-end': return Math.max(delta, -spanLength(span));
+    case 'extend': return span.extendSide === 'left' ? Math.min(delta, 0) : Math.max(delta, 0);
+  }
+}
+
+/** Cambio a escribir para un arrastre de `delta` días; `null` si no cambia nada o no se puede. */
+export function planGanttEdit(span: GanttSpan, mode: GanttDragMode, delta: number): GanttEdit | null {
+  const days = clampGanttDelta(span, mode, delta);
+  if (days === 0 || !span.start || !span.end) return null;
+
+  switch (mode) {
+    case 'move':
+      return { kind: 'shift', deltaDays: days };
+    case 'resize-start':
+      return span.kind === 'bar' && span.startField ? { kind: 'set', field: span.startField, date: span.start.plus({ days }) } : null;
+    case 'resize-end':
+      return span.kind === 'bar' && span.endField ? { kind: 'set', field: span.endField, date: span.end.plus({ days }) } : null;
+    case 'extend':
+      return span.extendField ? { kind: 'set', field: span.extendField, date: span.start.plus({ days }) } : null;
+  }
+}
+
+/** Reescribe la línea de la tarea con el cambio: desplaza las fechas o escribe solo el campo indicado. */
+export function applyGanttEdit(line: string, edit: GanttEdit): string {
+  if (edit.kind === 'shift') return shiftTaskDates(line, edit.deltaDays);
+
+  const iso = edit.date.toISODate() ?? '';
+  switch (edit.field) {
+    case 'start': return upsertSimpleDate(line, '🛫', iso);
+    case 'due': return upsertSimpleDate(line, '📅', iso);
+    case 'scheduled': return upsertScheduledDate(line, iso);
+  }
+}
 
 /**
  * Ventana de tiempo para una fecha de referencia: el mes natural (28 a 31 días) o N días que

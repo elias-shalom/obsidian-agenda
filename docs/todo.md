@@ -418,12 +418,15 @@ Orden de trabajo sugerido: fixes de Ajustes, enlace al manual, modal de novedade
   - [ ] Filtro de Sub-área: opción «Raíz» / «Root» que muestra solo las tareas de las notas directas del área, sin subcarpeta
   - [x] Combos de agrupado y orden de las tareas (Lista, Tabla y Kanban): «Group:» y «Sort:» (en español «Grupo:» y «Orden:») en lugar de «Group by» y «Sort by»
   - [x] Combo de orden de hábitos (Cuadrícula, Semanal y Rutina): opciones sin «By» / «Por» («Area», «Priority»…, «Área», «Prioridad»…) en los 6 idiomas
-- [ ] **[v1.1.13] Vista Gantt** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §12 y `Arquitectura técnica.md` §21; fases G1–G2 en `Plan de implementación.md`; referencia visual: Timelineal; entrada original en "Próximas Características" más abajo, sección Timeline & Planning Views) — **lectura implementada (G1)**: vista registrada, pestaña con `showGanttTab`, ventana de 7/14/21 días o mes natural, agrupado por área y sub-área, barras, hitos y tareas sin fecha; pendientes la prueba manual y la edición de fechas (G2)
-  - [ ] Pestaña de nivel superior con `showGanttTab`; mismos filtros que Tabla y Kanban (barra compartida) y mismos gestos que el calendario (helper compartido)
+- [ ] **[v1.1.13] Vista Gantt** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §12 y `Arquitectura técnica.md` §21; fases G1–G2 en `Plan de implementación.md`; referencia visual: Timelineal; entrada original en "Próximas Características" más abajo, sección Timeline & Planning Views) — **lectura (G1) y edición de fechas (G2) implementadas**: vista registrada, pestaña con `showGanttTab`, ventana de 7/14/21 días o mes natural, agrupado por área y sub-área, barras, hitos y tareas sin fecha, y mover o redimensionar barras y extender hitos; pendiente la prueba manual
+  - [ ] Pestaña de nivel superior con `showGanttTab`; mismos filtros que Tabla y Kanban (barra compartida, sin combo de agrupado) y mismos gestos que el calendario (helper compartido)
+  - [x] Ajustes visuales tras la primera revisión (2026-10-31): zoom con el número de días y el icono de calendario para el mes; cabecera de grupo sin barra resumen; tareas sin fecha como grupo plegable al estilo de la Lista (ancho máximo del 80 %, plegado por defecto); periodo a la izquierda y zoom y `◀ Hoy ▶` a la derecha, como el calendario; cuadrícula vertical (línea de día, línea de semana más marcada y fines de semana sombreados)
+  - [x] Columna de nombres con estado, icono de prioridad y el texto de la tarea un poco más pequeño (0,9 em) (pendiente de prueba manual)
+  - [ ] Combo de agrupado del Gantt: decidido pasarlo a v1.1.14 (ítem propio más abajo)
   - [ ] Dos o más fechas: barra (inicio = `start` o `scheduled`, fin = `due` o `scheduled`); una sola fecha: hito; ninguna: contador «sin fecha»
   - [ ] Zoom 7/14/21 días o mes natural (la ventana usa los días reales del mes, 28 a 31); cabecera con pestañas de mes, año, franja de días, bandas de semana y línea de «hoy»
   - [ ] Agrupado por área y sub-área (nombre de la primera carpeta y resto de la ruta, anidado), plegable
-  - [ ] Editar fechas desde la vista: mover la barra, redimensionar cada borde (reescribe el campo que define ese borde) y mover hitos
+  - [x] Editar fechas desde la vista: mover la barra, redimensionar cada borde (reescribe el campo que define ese borde), mover hitos y convertirlos en barra con su manija (implementado; pendiente de prueba manual)
   - [ ] Dependencias: solo una insignia 🔗; las flechas entre barras quedan para una versión posterior
   - [x] **Decidido (2026-10-31)**: las ventanas de 7/14/21 días empiezan en el primer día de semana configurado que contiene la fecha de referencia
   - [x] **Decidido (2026-10-31)**: un hito se convierte en barra arrastrando su manija; con solo 🛫 crea ⏳ y con solo ⏳ crea 📅
@@ -451,7 +454,7 @@ Cada ítem lleva su versión entre corchetes. El reparto sigue dependencias: las
 |---|---|
 | v1.1.12 | Piezas compartidas (agrupado, barra de filtros, gestos), áreas y sub-áreas, Lista y Tabla en una pestaña |
 | v1.1.13 | Kanban y Gantt, modal de novedades, enlace al manual desde el README, fixes de Ajustes (pestañas y carpeta de hábitos) |
-| v1.1.14 | Estados personalizados y compatibilidad con el plugin Tasks (alcance por diseñar); filtros con varios valores y filtros en el calendario; Tabla: columnas y diseño personalizables y exportación a CSV; Kanban: orden manual de las tarjetas y agrupado por área y sub-área; Gantt: combo de agrupado (todo lo que estaba en v1.1.14) |
+| v1.1.14 | Estados personalizados y compatibilidad con el plugin Tasks (alcance por diseñar); filtros con varios valores y filtros en el calendario; Tabla: columnas y diseño personalizables y exportación a CSV; Kanban: orden manual de las tarjetas y agrupado por área y sub-área; Gantt: combo de agrupado (todo lo que estaba previsto para v1.1.18); cambio del modal «Set scheduled time» (por definir) |
 | v1.1.15 | Sincronía con Google Calendar |
 | v1.1.16 | Sincronía con Google Tasks |
 | v1.1.17 | Sincronía con Microsoft |
@@ -491,6 +494,7 @@ Cada ítem lleva su versión entre corchetes. El reparto sigue dependencias: las
   - [ ] Solo prioridad, estado, área y búsqueda; sin filtros de fecha, agrupado ni orden
   - [ ] Barra siempre visible bajo las pestañas principales, con el mismo aspecto que en las otras vistas (sin botón para abrirla); estado propio compartido por las 6 subvistas
   - [ ] Riesgo técnico: el calendario redibuja la vista entera en cada navegación y el buscador perdería el foco; hay que redibujar solo la parte del calendario o montar la barra fuera de ella
+- [ ] **[v1.1.14] Modal «Set scheduled time»: cambio por definir** (anotado el 2026-10-31; el cambio concreto se discutirá más adelante; código en `src/modals/task-time-picker-modal.ts`, la rueda de horas y minutos de la v1.1.4, Arquitectura §6)
 - [ ] **[v1.1.14] Compatibilidad con el plugin Tasks** (diseño preliminar en `docs/agenda-tasks/Especificación de vistas.md` §17; no es una sincronía: mismo archivo y mismo formato de línea; arquitectura y plan por escribir al cerrar el diseño)
   - [ ] Ya coincide: emojis, Dataview, nueva ocurrencia una línea arriba, eliminación de `🆔`/`⛔` al repetir y `when done`
   - [ ] Fecha de referencia de la recurrencia: se mantiene la nuestra (`scheduled > due > start`) aunque Tasks use `due > scheduled > start`; se advierte en el manual
@@ -538,6 +542,9 @@ Cada ítem lleva su versión entre corchetes. El reparto sigue dependencias: las
 - [ ] Resumen cada mañana antes que empieze
 - [ ] Agente de revision, cada noche repasa que fue bien y que fue mal. y cada semana un resumen de en que puedes mejorar
 
+- [ ] Poner en el overve los widget de los habios.
+- [ ] Agregar heatmap de tareas
+
 - [ ] Configuración de sonidos de notificaciones
 - [ ] Tool tips o help que diga como usar el plugin
 - [ ] Más widgets en la vista del panel
@@ -549,6 +556,7 @@ Cada ítem lleva su versión entre corchetes. El reparto sigue dependencias: las
 - [ ] Calendario. Secciones extra ![vista agenda ](attachments/extra-section.png)
 - [ ] Agregar días feriados de diferentes paises
 - [ ] Proyectar los dias recurrentes un mes hacia delante
+- [ ] Sombreado de fines de semana
 
 ### 🐛 Correcciones Pendientes
 - [ ] Ancho de las filas de la tabla en la vista tablas — se quitó la columna Archivo en v1.1.11; el ajuste al ancho disponible entra en v1.1.12 (ver esa sección)

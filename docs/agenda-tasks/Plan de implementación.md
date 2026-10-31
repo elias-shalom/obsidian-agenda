@@ -400,7 +400,7 @@ Tableros múltiples guardados; mini-lenguaje de query propio; carriles (swimlane
 
 ## Próxima fase — v1.1.13: Gantt view (diseño)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §12. Mecanismo: [[Arquitectura técnica]] §21. **G1 implementada (pendiente de prueba manual); G2, pendiente.** Depende de la Fase A de Kanban (piezas compartidas). Las decisiones de la Especificación §12.7 se tomaron el 2026-10-31 y no queda ninguna abierta.
+> Comportamiento y decisiones: [[Especificación de vistas]] §12. Mecanismo: [[Arquitectura técnica]] §21. **G1 y G2 implementadas (pendientes de prueba manual).** Depende de la Fase A de Kanban (piezas compartidas). Las decisiones de la Especificación §12.7 se tomaron el 2026-10-31 y no queda ninguna abierta.
 
 ### Fase G1 — Gantt de lectura (depende de la Fase A de Kanban)
 - [x] `resolveGanttSpan(task)` en `src/core/task-gantt.ts`: barra, hito o ninguna, según [[Especificación de vistas]] §12.1.
@@ -408,6 +408,7 @@ Tableros múltiples guardados; mini-lenguaje de query propio; carriles (swimlane
 - [x] Plantilla y estilos: cabecera con pestañas de mes, año, franja de días, bandas de semana y línea de «hoy»; barras, hitos y muesca de `scheduled`.
 - [x] Zoom 7/14/21/mes natural con posiciones precalculadas en porcentaje; las ventanas de 7/14/21 días empiezan en el primer día de semana configurado que contiene la fecha de referencia; ◀▶ por ventana o por mes; zoom recordado en `localStorage`.
 - [x] Agrupado por área y sub-área (anidado por carpeta), plegable; la cabecera de grupo no lleva barra resumen (retirada tras la primera revisión visual).
+- [x] Columna de nombres con el icono de prioridad junto al de estado y el texto un poco más pequeño (0,9 em).
 - [x] Barra de controles a la derecha (zoom y `◀ Hoy ▶`, como el calendario) y cuadrícula vertical (línea de día, línea de semana más marcada, fines de semana sombreados).
 - [ ] Combo de agrupado del Gantt: pasa a v1.1.14 (Arquitectura §21.9).
 - [x] Ajustes visuales tras la revisión: zoom con número e icono de mes, cabecera de grupo sin barra y tareas sin fecha como grupo plegable al estilo de la Lista (máx. 80 %).
@@ -421,12 +422,13 @@ Tableros múltiples guardados; mini-lenguaje de query propio; carriles (swimlane
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase G2 — Edición de fechas (depende de G1)
-- [ ] Extraer `shiftTaskDates(line, deltaDays)` de `task-recurrence.ts`, sin tocar ➕ ni ✅.
-- [ ] Mover la barra o el hito, y redimensionar cada borde, con eventos de puntero y pasos de un día; escritura con `updateTaskLine()`.
-- [ ] Tooltip que indica qué campo escribe cada borde; bloquear fin anterior al inicio.
-- [ ] Convertir un hito en barra con su manija: `start` crea `scheduled`, `scheduled` crea `due` y un hito con solo `due` crea `start` con la manija a la izquierda (Especificación §12.7).
-- [ ] Verificable sola: arrastrar un borde cambia solo el campo indicado en la nota; mover la barra desplaza las tres fechas sin tocar `🆔`/`⛔`.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] Extraer `shiftTaskDates(line, deltaDays)` de `task-recurrence.ts`, sin tocar ➕ ni ✅.
+- [x] Mover la barra o el hito, y redimensionar cada borde, con eventos de puntero y pasos de un día; escritura con `updateTaskLine()`.
+- [x] Tooltip que indica qué campo escribe cada borde; bloquear fin anterior al inicio.
+- [x] Convertir un hito en barra con su manija: `start` crea `scheduled`, `scheduled` crea `due` y un hito con solo `due` crea `start` con la manija a la izquierda (Especificación §12.7).
+- [x] Pruebas de Node: `shiftTaskDates()` (hora de ⏳, ➕/✅/`🆔`/`⛔` intactos, cambio de mes, año y hora), `clampGanttDelta()`, `planGanttEdit()` y `applyGanttEdit()` en los tres tipos de barra y de hito, el rango incoherente y la plantilla (manijas ocultas en el lado recortado; 47 comprobaciones).
+- [ ] Verificable sola: arrastrar un borde cambia solo el campo indicado en la nota; mover la barra desplaza las tres fechas sin tocar `🆔`/`⛔`; la vista se refresca sola al soltar y no se abre el modal.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
 Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de dependientes; zoom por día; Timeline view.

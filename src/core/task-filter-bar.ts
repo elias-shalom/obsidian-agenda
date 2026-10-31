@@ -7,7 +7,7 @@
 import { Menu, setIcon } from 'obsidian';
 import { ITask } from '../types/interfaces';
 import { I18n } from './i18n';
-import { listTaskAreas, listTaskSubAreas } from './area';
+import { ROOT_AREA, hasDirectTasks, hasRootTasks, listTaskAreas, listTaskSubAreas } from './area';
 import { TaskViewState, TaskViewMode } from './task-view-state';
 import {
   FILTER_CHIP_IDS, FILTER_STATE_KEYS, FilterChipId,
@@ -65,6 +65,7 @@ interface MenuAnchor {
 export class TaskFilterBar {
   private state: TaskViewState;
   private areas: string[];
+  private hasRootTasks: boolean;
   private filePaths: string[];
   private chipsEl: HTMLElement | null = null;
   private sortSelect: HTMLSelectElement | null = null;
@@ -74,6 +75,7 @@ export class TaskFilterBar {
     this.state = { ...options.state };
     this.filePaths = options.tasks.map(task => task.file.path);
     this.areas = listTaskAreas(this.filePaths);
+    this.hasRootTasks = hasRootTasks(this.filePaths);
     this.reconcileArea();
   }
 
@@ -260,6 +262,14 @@ export class TaskFilterBar {
           if (this.subAreasOf(area).length > 0) this.showNext(() => this.openSubAreaMenu(anchor));
         }));
     }
+    // Las notas fuera de cualquier carpeta no tienen sub-áreas: elegirla no abre otro menú
+    if (this.hasRootTasks) {
+      if (this.areas.length > 0) menu.addSeparator();
+      menu.addItem(item => item
+        .setTitle(this.options.i18n.t('area_root'))
+        .setChecked(this.state.area === ROOT_AREA)
+        .onClick(() => this.update({ area: ROOT_AREA, subArea: '' })));
+    }
     menu.showAtPosition(anchor);
   }
 
@@ -269,6 +279,13 @@ export class TaskFilterBar {
       .setTitle(this.options.i18n.t('all_sub_areas'))
       .setChecked(!this.state.subArea)
       .onClick(() => this.update({ subArea: '' })));
+    // Las notas que están directamente en la carpeta del área, sin subcarpeta
+    if (hasDirectTasks(this.filePaths, this.state.area)) {
+      menu.addItem(item => item
+        .setTitle(this.options.i18n.t('area_root'))
+        .setChecked(this.state.subArea === ROOT_AREA)
+        .onClick(() => this.update({ subArea: ROOT_AREA })));
+    }
     for (const path of this.subAreasOf(this.state.area)) {
       menu.addItem(item => item
         .setTitle(path)
@@ -284,11 +301,14 @@ export class TaskFilterBar {
 
   /** Un área o una sub-área guardadas que ya no tienen tareas se reinician. */
   private reconcileArea(): void {
-    if (this.state.area && !this.areas.includes(this.state.area)) {
+    const isRoot = this.state.area === ROOT_AREA;
+    if (this.state.area && !(isRoot ? this.hasRootTasks : this.areas.includes(this.state.area))) {
       this.state.area = '';
       this.state.subArea = '';
     }
-    if (this.state.subArea && !this.subAreasOf(this.state.area).includes(this.state.subArea)) {
+    if (this.state.subArea === ROOT_AREA) {
+      if (!hasDirectTasks(this.filePaths, this.state.area)) this.state.subArea = '';
+    } else if (this.state.subArea && !this.subAreasOf(this.state.area).includes(this.state.subArea)) {
       this.state.subArea = '';
     }
   }

@@ -61,7 +61,7 @@ El estado de búsqueda, filtros y orden se guarda en el almacenamiento local de 
 
 ## 4. Calendar View (abstracta, `calendar-view.ts`)
 
-Base común de las 5 vistas de calendario. Mantiene `tasks` y `currentDate` (Luxon `DateTime`); define `generateViewData()` y `getViewType()` como abstractos, y resuelve en común: `onOpen()` (carga tareas + `refreshCalendar()`), `formatHour(hour)` (formato 12h AM/PM), `getWeekStartDay()` (desde settings), `getLocalizedDayNames()` (rotados según `weekStartDay`) y `getTasksForDate(date)` (filtra por `date.due` igual al día dado).
+Base común de las 5 vistas de calendario. Mantiene `tasks` y `currentDate` (Luxon `DateTime`); define `generateViewData()` y `getViewType()` como abstractos, y resuelve en común: `onOpen()` (carga tareas + `refreshCalendar()`), `formatHour(hour)` (formato 12h AM/PM), `getWeekStartDay()` (desde settings), `getLocalizedDayNames()` (rotados según `weekStartDay`; para elegir el nombre de un día concreto se usa `weekdayNameIndex(weekday, weekStartDay)` de `src/core/calendar-week.ts`, no `weekday % 7`, que solo vale con inicio en domingo) y `getTasksForDate(date)` (filtra por `date.due` igual al día dado).
 
 ### 4.1 Calendar Month View (`calendar-month-view`)
 
@@ -517,7 +517,8 @@ El **área** es solo el nombre de la primera carpeta; la **sub-área** es la rut
 La barra de filtros compartida (§11, §20.3) incluye:
 
 - **Área**: un combobox con «Todas» más el nombre de la primera carpeta de cada área que tiene tareas.
-- **Raíz** (v1.1.13 — acordado, no implementado): el combobox de Área ofrece además «Raíz» / «Root», que muestra solo las tareas de notas fuera de cualquier carpeta (en la raíz de la bóveda). Se ofrece cuando hay tareas en la raíz y no tiene sub-áreas. El filtro de Sub-área no cambia. En el agrupado esas tareas siguen llamándose «Sin área».
+- **Raíz** (v1.1.13 — implementado; pendiente de prueba manual): el combobox de Área ofrece además «Raíz» / «Root», que muestra solo las tareas de notas fuera de cualquier carpeta (en la raíz de la bóveda). Se ofrece cuando hay tareas en la raíz y no tiene sub-áreas. En el agrupado esas tareas siguen llamándose «Sin área».
+- **Raíz en la sub-área** (v1.1.13 — implementado; pendiente de prueba manual): el combobox de Sub-área ofrece también «Raíz» / «Root» justo después de «Todas las sub-áreas», que muestra solo las tareas de las notas que están directamente en la carpeta del área elegida, sin ninguna subcarpeta (las notas de `B` y no las de `B/C`). Se ofrece cuando el área tiene notas directas. Hasta ahora no había forma de aislarlas, porque elegir una sub-área incluye también sus hijas. El chip lo muestra como «Work › Raíz».
 - **Sub-área**: un segundo combobox, con la ruta sin la primera carpeta. Aparece solo cuando se elige un área y ofrece las sub-áreas de esa área: cada ruta presente y también sus carpetas contenedoras (con tareas en `B/C/D` se ofrecen `B`, `B/C` y `B/C/D`). Se reinicia al cambiar de área y se oculta si el área no tiene sub-áreas. Elegir `B` incluye las tareas de `B` y de `B/*`; elegir `B/C` solo las de `B/C` y `B/C/*`.
 - Reemplaza al filtro de «carpeta» de la Tabla, que hoy es un filtro plano por carpeta de primer nivel. El valor que la Tabla tenía guardado se convierte al área equivalente, o se reinicia si no coincide.
 - Se usa en Lista, Tabla, Kanban y Gantt, y se recuerda por vista.

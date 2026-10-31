@@ -367,6 +367,7 @@
   "show_kanban_tab": "Show Kanban tab",
   "kanban_collapse_column": "Collapse column",
   "kanban_expand_column": "Expand column",
+  "area_root": "Root",
   "whats_new": {
     "title": "What's new in Agenda Tasks",
     "close": "Close",

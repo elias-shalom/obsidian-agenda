@@ -365,6 +365,7 @@
   "show_kanban_tab": "Tab \"Kanban\" anzeigen",
   "kanban_collapse_column": "Spalte einklappen",
   "kanban_expand_column": "Spalte ausklappen",
+  "area_root": "Hauptverzeichnis",
   "whats_new": {
     "title": "Neuigkeiten in Agenda Tasks",
     "close": "Schließen",

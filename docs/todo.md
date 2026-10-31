@@ -407,8 +407,13 @@ Orden de trabajo sugerido: fixes de Ajustes, enlace al manual, modal de novedade
   - [ ] La barra plegada acepta la tarjeta al soltarla y se resalta al arrastrar; al recibir una tarea, la columna se despliega sola
   - [ ] Altura: la columna se ajusta a su contenido hasta la altura visible del panel; encabezado fijo y scroll propio de las tarjetas
   - [ ] **Decisión abierta (no se implementa aún)**: agrupar el tablero por área y sub-área (opciones A, B y C en la Especificación §11.3)
+- [ ] **[v1.1.13] Fix: etiquetas del día de la semana desplazadas en Semana, Semana laboral y Lista** (reportado por un usuario con un parche propuesto; diseño en `docs/agenda-tasks/Arquitectura técnica.md` §27; fase W1 en `Plan de implementación.md`; relacionado con el issue #35, que corrigió la alineación en la vista Mes)
+  - [ ] Con el inicio de semana en lunes, el 31 de octubre de 2026 (sábado) aparecía como «Sun 31 Oct» en Semana, Semana laboral y Lista; las etiquetas usaban `weekday % 7`, que solo vale con inicio en domingo, sobre una lista de nombres que `getLocalizedDayNames()` rota según `weekStartDay`
+  - [ ] Corregido con `weekdayNameIndex(weekday, weekStartDay)` (`src/core/calendar-week.ts`); no cambian los rangos de fechas, la asignación de tareas ni las vistas Día, Mes y Año
+  - [ ] Pendiente: prueba manual con el inicio de semana en lunes y en domingo (Semana, Semana laboral y Lista), y una nota en el Changelog de la versión
 - [ ] **[v1.1.13] Ajustes de filtros y rótulos** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §13.2, §14.7 y §18.6 y `Arquitectura técnica.md` §26; fases F1 a F3 en `Plan de implementación.md`)
-  - [ ] Filtro de Área: opción «Raíz» / «Root» que muestra solo las tareas fuera de cualquier carpeta; la sub-área no cambia
+  - [ ] Filtro de Área: opción «Raíz» / «Root» que muestra solo las tareas fuera de cualquier carpeta
+  - [ ] Filtro de Sub-área: opción «Raíz» / «Root» que muestra solo las tareas de las notas directas del área, sin subcarpeta
   - [ ] Combos de agrupado y orden de las tareas (Lista, Tabla y Kanban): «Group:» y «Sort:» (en español «Grupo:» y «Orden:») en lugar de «Group by» y «Sort by»
   - [ ] Combo de orden de hábitos (Cuadrícula, Semanal y Rutina): opciones sin «By» / «Por» («Area», «Priority»…, «Área», «Prioridad»…) en los 6 idiomas
 - [ ] **[v1.1.13] Vista Gantt** (diseño en `docs/agenda-tasks/Especificación de vistas.md` §12 y `Arquitectura técnica.md` §21; fases G1–G2 en `Plan de implementación.md`; referencia visual: Timelineal; entrada original en "Próximas Características" más abajo, sección Timeline & Planning Views) — hoy **no está registrada ni visible** (registro y botón del encabezado comentados, plantilla `gantt-view.hbs` vacía); corrige una nota anterior que la daba por registrada

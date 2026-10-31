@@ -563,16 +563,32 @@ Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones
 ### Fuera de alcance
 Crear carpetas sin preguntar; botones nuevos en las vistas; migrar hábitos existentes.
 
+## Corrección — v1.1.13: etiquetas del día de la semana (implementado; pendiente de prueba manual)
+
+> Mecanismo: [[Arquitectura técnica]] §27. Reportado por un usuario con un parche propuesto.
+
+### Fase W1 — Índice del nombre del día
+- [x] `src/core/calendar-week.ts`: `weekdayNameIndex(weekday, weekStartDay)` puro.
+- [x] `CalendarWeekView`, `CalendarWorkWeekView` y `CalendarListView` lo usan en lugar de `weekday % 7`.
+- [x] Verificable sola: Node (49 pares de inicio de semana y día, el caso reportado, inicio en domingo sin cambios, semana completa desde cada inicio y semana laboral).
+- [ ] Prueba manual: inicio de semana en lunes y en domingo; 31 de octubre de 2026 es «Sat», 1 de noviembre «Sun» y 2 de noviembre «Mon» en Semana, Semana laboral y Lista; las tareas siguen en su fecha.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
+- [ ] Al cerrar la versión (Fase 9): nota en el Changelog de la versión.
+
+### Fuera de alcance
+La alineación de la vista Semana con `weekStartDay` (usa la semana ISO de Luxon; ver Especificación §4.7) y las vistas Día, Mes y Año.
+
 ## Próxima fase — v1.1.13: ajustes de filtros y rótulos (diseño)
 
-> Comportamiento: [[Especificación de vistas]] §13.2, §14.7 y §18.6. Mecanismo: [[Arquitectura técnica]] §26. **Nada de esta fase está implementado.** Sin decisiones abiertas. Orden de trabajo: primero la Fase B2 de Kanban, después F1, F2 y F3.
+> Comportamiento: [[Especificación de vistas]] §13.2, §14.7 y §18.6. Mecanismo: [[Arquitectura técnica]] §26. **F1 implementada (pendiente de prueba manual); F2 y F3, pendientes.** Sin decisiones abiertas. Orden de trabajo: primero la Fase B2 de Kanban, después F1, F2 y F3.
 
 ### Fase F1 — Opción «Raíz» en el filtro de Área
-- [ ] `ROOT_AREA` (`'/'`) en `src/core/area.ts`; `matchesTaskArea()` lo entiende (solo notas fuera de cualquier carpeta).
-- [ ] `TaskFilterBar`: «Raíz» al final del menú de Área, solo si hay tareas en la raíz; sin menú de sub-área al elegirla; el chip la muestra; `reconcileArea()` la conserva mientras haya tareas en la raíz.
-- [ ] Clave `area_root` en los 6 locales.
+- [x] `ROOT_AREA` (`'/'`) en `src/core/area.ts`; `matchesTaskArea()` lo entiende (solo notas fuera de cualquier carpeta).
+- [x] `TaskFilterBar`: «Raíz» al final del menú de Área, solo si hay tareas en la raíz; sin menú de sub-área al elegirla; el chip la muestra; `reconcileArea()` la conserva mientras haya tareas en la raíz.
+- [x] Clave `area_root` en los 6 locales.
+- [x] Ampliación acordada tras probar la F1: «Raíz» también en el filtro de Sub-área, con las notas que están directamente en la carpeta del área (`hasDirectTasks()`, `matchesTaskArea()` y el menú de sub-áreas).
 - [ ] Verificable sola: Node (`matchesTaskArea()`, `filterTasksByViewState()` y la reconciliación). Prueba manual en Lista, Tabla y Kanban, con tareas dentro y fuera de carpetas.
-- [ ] `npm run build` y ESLint sobre los archivos tocados.
+- [x] `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fase F2 — Rótulos «Group:» y «Sort:» en las tareas
 - [ ] Claves `group_label` y `sort_label` en los 6 locales.

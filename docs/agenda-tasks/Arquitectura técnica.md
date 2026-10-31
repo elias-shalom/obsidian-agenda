@@ -1137,14 +1137,15 @@ Comportamiento: [[Especificación de vistas]] §18.6.
 - **i18n**: claves nuevas `habit_sort_label` y `habit_group_label` en los 6 idiomas; en español `habit_sort_daytime` pasó a «Por momento del día»; el ajuste posterior (§26.3) quita el «By» / «Por» de todas las opciones `habit_sort_*`.
 - **Riesgo**: el texto de `::before` no lo anuncian los lectores de pantalla ni se puede seleccionar, por eso el `aria-label` y el `title`.
 
-## 26. Ajustes de filtros y rótulos (v1.1.13, diseño acordado — no implementado)
+## 26. Ajustes de filtros y rótulos (v1.1.13; F1 implementada, pendiente de prueba manual; F2 y F3 acordadas, no implementadas)
 
 Comportamiento: [[Especificación de vistas]] §13.2, §14.7 y §18.6.
 
 ### 26.1 Opción «Raíz» en el filtro de Área
 
 - `TaskViewState.area` admite el valor `ROOT_AREA` (`'/'`, exportado de `src/core/area.ts`): no puede chocar con el nombre de una carpeta porque Obsidian no permite `/` en ellos. `matchesTaskArea(filePath, { area: ROOT_AREA })` es verdadero solo si el área de la nota (`resolveTaskArea()`) está vacía, es decir, si está fuera de cualquier carpeta; la sub-área no cambia.
-- `listTaskAreas()` sigue sin incluir la raíz. `TaskFilterBar` añade «Raíz» al final del menú de Área, solo si alguna tarea cargada está en la raíz, y al elegirla no abre el menú de sub-áreas (no tiene). `reconcileArea()` conserva el valor mientras haya tareas en la raíz y lo reinicia si ya no las hay. El chip de Área muestra «Raíz».
+- `listTaskAreas()` sigue sin incluir la raíz. `TaskFilterBar` añade «Raíz» al final del menú de Área (tras un separador si hay áreas), solo si alguna tarea cargada está en la raíz (`hasRootTasks()`), y al elegirla no abre el menú de sub-áreas (no tiene). `reconcileArea()` conserva el valor mientras haya tareas en la raíz y lo reinicia si ya no las hay. El chip de Área muestra «Raíz».
+- **Raíz en la sub-área**: `TaskViewState.subArea` admite también `ROOT_AREA`. `matchesTaskArea()` lo trata como «solo las notas directas del área» (la sub-área resuelta está vacía), `hasDirectTasks(filePaths, area)` decide si se ofrece, y el menú de sub-áreas de `TaskFilterBar` lo añade tras «Todas las sub-áreas». `reconcileArea()` lo reinicia si el área ya no tiene notas directas. El chip lo muestra como «Área › Raíz». Reutiliza la clave `area_root`.
 - Clave `area_root`: Root, Raíz, Hauptverzeichnis, Racine, Radice, Raiz. En el agrupado esas tareas siguen llamándose «Sin área» (`no_area`).
 - El valor viaja en el estado guardado de Lista, Tabla y Kanban: `parseTaskViewState()` ya acepta cualquier texto en `area`.
 - Pruebas (Node): `matchesTaskArea()` con la raíz, con un área y con área y sub-área; `filterTasksByViewState()`; la reconciliación.
@@ -1156,3 +1157,13 @@ Claves nuevas `group_label` y `sort_label` (valores de la tabla de §14.7) en lo
 ### 26.3 Opciones de orden de hábitos
 
 Solo cambia el texto de `habit_sort_alphabetical`, `habit_sort_area`, `habit_sort_daytime`, `habit_sort_priority`, `habit_sort_streak` y `habit_sort_pct` en los 6 locales (tabla de §18.6). `habit_by_area` y `habit_by_daytime` (títulos del Dashboard) no cambian. Prueba: el chequeo de locales (mismas claves y ninguna de las seis empieza por «By» / «Por» o su equivalente).
+
+## 27. Corrección: etiquetas del día en Semana, Semana laboral y Lista (v1.1.13, implementado; pendiente de prueba manual)
+
+**Síntoma.** Con el inicio de semana en lunes, el 31 de octubre de 2026 (sábado) se etiquetaba «Sun 31 Oct» en las vistas Semana, Semana laboral y Lista; Mes y Año ya estaban bien (issue #35). Lo reportó un usuario en macOS con Obsidian 1.14.5 y propuso la corrección.
+
+**Causa.** `CalendarView.getLocalizedDayNames()` devuelve los siete nombres rotados para empezar en `weekStartDay`, pero `generateViewData()` de las tres vistas los indexaba con `currentDay.weekday % 7`, que supone una lista que empieza en domingo. Coincide solo con inicio en domingo.
+
+**Corrección.** Nueva función pura `weekdayNameIndex(weekday, weekStartDay)` en `src/core/calendar-week.ts`, que devuelve `(weekday - weekStartDay + 7) % 7`; las tres vistas la usan con `this.getWeekStartDay()`. Solo cambian esos tres cálculos de etiqueta: los rangos de fechas, la asignación de tareas, las fechas guardadas y las vistas Día, Mes y Año quedan igual.
+
+**Pruebas.** Script de Node: los 49 pares de inicio de semana y día dan el nombre real; el caso reportado (inicio en lunes, 31 de octubre de 2026 es sábado, 1 de noviembre domingo y 2 de noviembre lunes); con inicio en domingo no cambia nada; una semana completa desde cada inicio y la semana laboral con los siete inicios. Prueba manual pendiente en Obsidian.

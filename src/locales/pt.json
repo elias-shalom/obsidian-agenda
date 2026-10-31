@@ -365,6 +365,7 @@
   "show_kanban_tab": "Mostrar aba Kanban",
   "kanban_collapse_column": "Recolher coluna",
   "kanban_expand_column": "Expandir coluna",
+  "area_root": "Raiz",
   "whats_new": {
     "title": "Novidades do Agenda Tasks",
     "close": "Fechar",

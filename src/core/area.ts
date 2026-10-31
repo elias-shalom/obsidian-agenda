@@ -104,11 +104,17 @@ export function resolveTaskArea(filePath: string): TaskArea {
 /**
  * ¿La nota en `filePath` está en el área y la sub-área elegidas? Un criterio vacío no filtra. El
  * área se compara por nombre normalizado y la sub-área por prefijo: `B` incluye `B` y `B/C`.
+ * `ROOT_AREA` como área deja solo las notas fuera de cualquier carpeta (y no mira la sub-área); como
+ * sub-área, solo las notas que están directamente en la carpeta del área.
  */
 export function matchesTaskArea(filePath: string, selected: { area?: string; subArea?: string }): boolean {
   const { area, subArea } = resolveTaskArea(filePath);
 
+  if (selected.area === ROOT_AREA) return area === '';
+
   if (selected.area && normalizeAreaName(area) !== normalizeAreaName(selected.area)) return false;
+
+  if (selected.subArea === ROOT_AREA) return subArea === '';
 
   if (selected.subArea) {
     const wanted = normalizeSubAreaPath(selected.subArea);
@@ -117,6 +123,24 @@ export function matchesTaskArea(filePath: string, selected: { area?: string; sub
   }
 
   return true;
+}
+
+/** Valor del filtro de área para «solo las notas fuera de cualquier carpeta» y del de sub-área para «solo las notas directas del área»; `/` no puede ser un nombre de carpeta. */
+export const ROOT_AREA = '/';
+
+/** ¿Alguna nota está fuera de cualquier carpeta (en la raíz de la bóveda)? */
+export function hasRootTasks(filePaths: string[]): boolean {
+  return filePaths.some(filePath => resolveTaskArea(filePath).area === '');
+}
+
+/** ¿Alguna nota está directamente en la carpeta del área, sin subcarpeta? */
+export function hasDirectTasks(filePaths: string[], area: string): boolean {
+  const areaKey = normalizeAreaName(area);
+  if (!areaKey) return false;
+  return filePaths.some(filePath => {
+    const resolved = resolveTaskArea(filePath);
+    return normalizeAreaName(resolved.area) === areaKey && resolved.subArea === '';
+  });
 }
 
 /** Áreas presentes en las rutas dadas, sin repetir (por nombre normalizado) y ordenadas; la raíz del vault no cuenta. */

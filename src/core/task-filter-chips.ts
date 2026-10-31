@@ -3,6 +3,7 @@
 // docs/agenda-tasks/Arquitectura técnica.md §23.7). Un filtro está activo si su valor no es «todos».
 import { TaskViewState } from './task-view-state';
 import { STATUS_OPTIONS } from './task-status-options';
+import { ROOT_AREA } from './area';
 
 export type FilterChipId = 'priority' | 'status' | 'area' | 'start' | 'scheduled' | 'due';
 
@@ -83,9 +84,12 @@ export function getFilterTypeLabel(id: FilterChipId, translate: Translate): stri
   return translate(TYPE_LABEL_KEYS[id]);
 }
 
-/** Texto del valor de área: «Work» o «Work › Proj › Sub» con sub-área. */
-function areaValueLabel(area: string, subArea: string): string {
-  return subArea ? `${area} › ${subArea.split('/').join(' › ')}` : area;
+/** Texto del valor de área: «Work», «Work › Proj › Sub» con sub-área o «Work › Raíz»; «Raíz» sola para las notas fuera de cualquier carpeta. */
+function areaValueLabel(area: string, subArea: string, translate: Translate): string {
+  if (area === ROOT_AREA) return translate('area_root');
+  if (!subArea) return area;
+  const parts = subArea === ROOT_AREA ? [translate('area_root')] : subArea.split('/');
+  return `${area} › ${parts.join(' › ')}`;
 }
 
 /** Chips de los filtros activos, en el orden de `FILTER_CHIP_IDS`. */
@@ -99,7 +103,7 @@ export function getActiveFilterChips(state: TaskViewState, translate: Translate)
 
   if (state.priority !== 'all') add('priority', labelOf('priority', state.priority));
   if (state.status !== 'all') add('status', labelOf('status', state.status));
-  if (state.area) add('area', areaValueLabel(state.area, state.subArea));
+  if (state.area) add('area', areaValueLabel(state.area, state.subArea, translate));
   if (state.start !== 'all') add('start', labelOf('start', state.start));
   if (state.scheduled !== 'all') add('scheduled', labelOf('scheduled', state.scheduled));
   if (state.due !== 'all') add('due', labelOf('due', state.due));

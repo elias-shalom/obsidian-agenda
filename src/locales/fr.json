@@ -365,6 +365,7 @@
   "show_kanban_tab": "Afficher l'onglet Kanban",
   "kanban_collapse_column": "Réduire la colonne",
   "kanban_expand_column": "Développer la colonne",
+  "area_root": "Racine",
   "whats_new": {
     "title": "Nouveautés d'Agenda Tasks",
     "close": "Fermer",

@@ -12,6 +12,8 @@ Por defecto, todas las familias de vistas están visibles. Puedes ocultar las qu
 |---|---|
 | **Vista general** | Un panel con métricas clave, tareas próximas/vencidas y widgets de progreso |
 | **Tareas** | Una pestaña con un conmutador **Lista \| Tabla**: una lista compacta agrupada por área o una cuadrícula estilo hoja de cálculo, ambas con búsqueda, filtros, agrupado y orden |
+| **Kanban** | Un tablero con columnas por estado, prioridad, etiqueta o carpeta; arrastra una tarjeta para cambiar su estado o su prioridad |
+| **Gantt** | Una línea de tiempo con una barra por tarea; mueve barras o arrastra sus bordes para cambiar fechas |
 | **Calendario** | Seis diseños de calendario para ver las tareas en una línea de tiempo |
 | **Hábitos** | El módulo de Seguimiento de hábitos (separado de las tareas — ver [6. Seguimiento de hábitos](05-habit-tracker.md)) |
 

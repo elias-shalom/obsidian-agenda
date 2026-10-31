@@ -90,7 +90,11 @@ export function attachTaskGestures(el: HTMLElement, options: TaskGestureOptions)
 }
 
 /** Reescribe el estado de la tarea; devuelve `false` (con aviso) si la nota cambió y no se pudo localizar la línea. */
-async function changeTaskStatus(task: ITask, status: CoreTaskStatus, options: TaskGestureOptions): Promise<boolean> {
+export async function changeTaskStatus(
+  task: ITask,
+  status: CoreTaskStatus,
+  options: Pick<TaskGestureOptions, 'taskWriter' | 'i18n'>
+): Promise<boolean> {
   const { taskWriter, i18n } = options;
   const todayIso = DateTime.now().toFormat('yyyy-MM-dd');
   // Calculado antes de escribir: necesita la recurrencia/fechas tal como están ahora (ADR-R1).

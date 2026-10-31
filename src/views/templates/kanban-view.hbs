@@ -1,0 +1,35 @@
+{{!-- Kanban View (v1.1.13): una columna por estado, prioridad, etiqueta o carpeta --}}
+<div class="oa-kanban-toolbar"></div>
+
+<div class="oa-kanban-board">
+  {{#if columns.length}}
+    {{#each columns}}
+    <section class="oa-kanban-column{{#if this.collapsed}} oa-kanban-column--collapsed{{/if}}" data-column-key="{{this.key}}" data-droppable="{{#if this.droppable}}true{{else}}false{{/if}}" {{#if this.color}}data-column-color="{{this.color}}"{{/if}}>
+      <button type="button" class="oa-kanban-column__header" aria-expanded="{{#if this.collapsed}}false{{else}}true{{/if}}" title="{{#if this.collapsed}}{{t 'kanban_expand_column'}}{{else}}{{t 'kanban_collapse_column'}}{{/if}}">
+        <span class="oa-kanban-column__title">{{this.label}}</span>
+        <span class="oa-kanban-column__count">{{this.count}}</span>
+      </button>
+      <div class="oa-kanban-column__cards">
+        {{#each this.tasks}}
+        <article class="oa-kanban-card" draggable="true" data-file-path="{{file.path}}" data-line-number="{{line.number}}" data-priority="{{state.priority}}" title="{{file.path}}">
+          <div class="oa-kanban-card__title">{{section.desc}}</div>
+          <div class="oa-kanban-card__meta">
+            {{#if @root.showStatusIcon}}<span class="oa-kanban-card__badge">{{state.emoji}}</span>{{/if}}
+            {{#if @root.showPriorityIcon}}<span class="oa-kanban-card__badge">{{priorityIcon state.priority}}</span>{{/if}}
+            {{#if date.start}}<span class="oa-kanban-card__date" title="{{t 'start_date'}}">🛫 {{formatDate date.start}}</span>{{/if}}
+            {{#if date.scheduled}}<span class="oa-kanban-card__date" title="{{t 'scheduled_date'}}">⏳ {{formatDate date.scheduled}}{{#if date.scheduledTime}} 🕐 {{date.scheduledTime}}{{/if}}</span>{{/if}}
+            {{#if date.due}}<span class="oa-kanban-card__date" title="{{t 'due_date'}}">📅 {{formatDate date.due}}</span>{{/if}}
+            {{#each section.tags}}<span class="oa-kanban-card__tag">{{this}}</span>{{/each}}
+          </div>
+        </article>
+        {{/each}}
+        {{#unless this.tasks.length}}
+        <div class="oa-kanban-column__empty">{{t "kanban_empty_column"}}</div>
+        {{/unless}}
+      </div>
+    </section>
+    {{/each}}
+  {{else}}
+    <p class="oa-kanban-empty">{{#if vaultHasTasks}}{{t "no_tasks_match_filters"}}{{else}}{{t "no_tasks"}}{{/if}}</p>
+  {{/if}}
+</div>

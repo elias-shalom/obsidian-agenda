@@ -20,6 +20,15 @@ Revisa **Configuración ▸ Calendario**: las tareas completadas podrían estar 
 **Los hábitos y las tareas parecen no estar relacionados — ¿es intencional?**
 Sí. El Seguimiento de hábitos es un módulo separado para hábitos recurrentes (respaldado por sus propias notas), independiente de las vistas de tareas. Ver [6. Seguimiento de hábitos](05-habit-tracker.md).
 
+**La ventana de «novedades» apareció tras una actualización — ¿puedo desactivarla?**
+Sí: desactiva **Mostrar novedades al actualizar** en **Configuración ▸ Agenda Tasks**. La ventana aparece una sola vez por actualización y se muestra en tu idioma.
+
+**¿Por qué no puedo soltar una tarjeta de Kanban en otra columna de etiqueta o de carpeta?**
+Las columnas de etiqueta y de carpeta son de solo lectura: mover una tarea a otra carpeta implicaría moverla a otra nota. Agrupa por **Estado** o **Prioridad** para cambiarlos arrastrando.
+
+**¿Por qué una tarea no aparece en el diagrama de Gantt?**
+Una tarea necesita al menos una de 🛫, ⏳ o 📅. Las tareas sin ninguna fecha se listan en el grupo **Tareas sin fecha** bajo el diagrama (plegado por defecto), y una tarea fuera de la ventana visible aparece al mover la ventana o cambiar el zoom.
+
 ## Obtener ayuda
 
 - 📖 Consulta la [Wiki](https://github.com/elias-shalom/obsidian-agenda/wiki) del proyecto.

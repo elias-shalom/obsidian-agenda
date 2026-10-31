@@ -106,6 +106,41 @@
   margin-top: 0.5rem;
 }
 
+// Modal de novedades (v1.1.13): una sección por versión, con la lista desplazable si se acumulan varias
+.oa-whats-new {
+  &__heading {
+    margin-top: 0;
+  }
+
+  &__body {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+  }
+
+  &__version + &__version {
+    margin-top: 1.2rem;
+  }
+
+  &__version-title {
+    margin: 0 0 0.4rem;
+    font-size: 1.05rem;
+  }
+
+  &__items {
+    margin: 0;
+    padding-left: 1.2rem;
+
+    li + li {
+      margin-top: 0.3rem;
+    }
+  }
+
+  .oa-task-modal__actions {
+    margin-top: 1rem;
+  }
+}
+
 // Toggle de opciones avanzadas del Task Modal (v1.1.4, Fase E) — encabezado de sección
 // colapsable con el título a la izquierda y el caret a la derecha (estilo acordeón).
 .oa-advanced-toggle {

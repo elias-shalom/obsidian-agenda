@@ -5,10 +5,12 @@ Access every plugin setting via **Obsidian Settings → Community Plugins → Ag
 ## General settings
 
 - **Week starts on** — which weekday calendar views treat as the first day of the week.
+- **Show what's new after an update** — opens a window with the news the first time you start Obsidian after updating the plugin (on by default). It appears once per update and, if you skipped several versions, lists them all.
 
 ## Tab Visibility
 
-- Show/hide each top-level tab independently: **Overview**, **List**, **Table**, **Calendar**. List and Table are the two modes of the **Tasks** tab: with both visible you get the **List | Table** switch, with one visible the switch is hidden, and with none the tab is hidden.
+- Show/hide each top-level tab independently: **Overview**, **Tasks**, **Kanban**, **Gantt**, **Calendar** and **Habits**. **Show Tasks tab** replaces the old List and Table switches: the **List | Table** switch inside the tab always offers both modes (if you had hidden only one of them before, you now see both).
+- **Show Habits tab** hides the whole Habits tab; it appears only when it is on and at least one habit view is on.
 - Habit Tracker tabs have their own group (see **Habits** below).
 
 ## Calendar
@@ -19,7 +21,7 @@ Access every plugin setting via **Obsidian Settings → Community Plugins → Ag
 
 ## Habits
 
-- **Habits folder path** — the vault folder (scanned recursively) containing habit notes. Default: `daily plan/daily routine/habit`.
+- **Habits folder path** — the vault folder (scanned recursively) containing habit notes. Default: `daily plan/daily routine/habit`. Under the field, Settings tells you whether the folder exists (a missing folder does not stop you from saving). If it does not exist when you create your first habit, you are asked to create it, with an editable path.
 - **Days to show in grid** — number of day-columns rendered in the Habit Grid and history charts.
 - **Show streaks** — toggle streak indicators and counts.
 - **Show daytime for single-daytime habits** — show a small localized daytime badge beside the habit name in Grid and Weekly (on by default; multi-daytime rows always show the badge).

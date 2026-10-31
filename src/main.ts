@@ -7,12 +7,15 @@ import { SettingTab } from "./settings/setting-tab";
 import { TASK_MODAL_TYPE, ModalManager } from "./core/modal-manager";
 import { addTaskFieldMenuItems } from "./core/task-field-menu";
 import { isTaskLine } from "./core/task-line-fields";
-import { DEFAULT_SETTINGS, AgendaPluginSettings, } from "./settings/settings";
+import { DEFAULT_SETTINGS, AgendaPluginSettings, migrateTabSettings } from "./settings/settings";
 import { DayChangeWatcher } from "./core/day-change";
+import { getWhatsNewEntries, planUpdateAnnouncement } from "./core/whats-new";
+import { WhatsNewModal } from "./modals/whats-new-modal";
 
 export default class ObsidianAgenda extends Plugin {
   settings: AgendaPluginSettings = DEFAULT_SETTINGS;
   private dayChangeWatcher = new DayChangeWatcher();
+  private isFreshInstall = false;
   private viewManager: ViewManager ;
   private i18n: I18n;
   private taskManager: TaskManager;
@@ -24,7 +27,7 @@ export default class ObsidianAgenda extends Plugin {
       super(app, manifest);
       this.i18n = new I18n(app);
       this.taskManager = new TaskManager(app, this.i18n, this);
-      this.habitManager = new HabitManager(app, () => this.settings, this.i18n);
+      this.habitManager = new HabitManager(app, () => this.settings, this.i18n, () => this.saveSettings());
       this.viewManager = new ViewManager(this, this.i18n, this.taskManager, this.habitManager); // Pasar la instancia del plugin
       this.modalManager = new ModalManager(app, this.i18n, this.taskManager);
   }
@@ -126,6 +129,9 @@ export default class ObsidianAgenda extends Plugin {
 
       this.viewManager.registerViews();
       this.dayChangeWatcher.start();
+      this.app.workspace.onLayoutReady(() => {
+        this.announceUpdate().catch(console.error);
+      });
       //logger.info("Vistas registradas correctamente.");
 
     } catch (error) {
@@ -135,7 +141,9 @@ export default class ObsidianAgenda extends Plugin {
 
   async loadSettings(): Promise<void> {
     const raw: unknown = await this.loadData();
-    const data = (raw && typeof raw === "object") ? raw as Partial<AgendaPluginSettings> : {};
+    // Sin data.json es la primera instalación: no hay novedades que anunciar.
+    this.isFreshInstall = !(raw && typeof raw === "object");
+    const data = (raw && typeof raw === "object") ? migrateTabSettings(raw as Record<string, unknown>) : {};
 
     // Merge genérico: cualquier clave guardada sobrescribe su default, sin necesidad de listarla aquí.
     this.settings = { ...DEFAULT_SETTINGS, ...data };
@@ -143,6 +151,25 @@ export default class ObsidianAgenda extends Plugin {
 
   async saveSettings(): Promise<void> {
     await this.saveData(this.settings);
+  }
+
+  /** Muestra una sola vez las novedades de la versión instalada; la versión vista se guarda antes de abrir el modal. */
+  private async announceUpdate(): Promise<void> {
+    const currentVersion = this.manifest.version;
+    const plan = planUpdateAnnouncement({
+      lastSeenVersion: this.settings.lastSeenVersion,
+      currentVersion,
+      isFreshInstall: this.isFreshInstall,
+      enabled: this.settings.showWhatsNewOnUpdate,
+    });
+    if (!plan.persist) return;
+
+    this.settings.lastSeenVersion = currentVersion;
+    await this.saveSettings();
+    if (!plan.show) return;
+
+    const entries = getWhatsNewEntries(plan.since, currentVersion, (key) => this.i18n.t(key));
+    if (entries.length > 0) new WhatsNewModal(this.app, this.i18n, entries).open();
   }
 
 onunload() {

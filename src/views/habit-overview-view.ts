@@ -95,6 +95,7 @@ export class HabitOverviewView extends HabitView {
       currentStreak: dashboard.currentStreak,
       maxStreak: dashboard.maxStreak,
       totalHabits: dashboard.totalHabits,
+      emptyMessage: this.getEmptyMessage(),
       byArea,
       byDaytime,
       history30d,

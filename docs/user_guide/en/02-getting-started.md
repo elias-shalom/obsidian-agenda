@@ -12,6 +12,8 @@ By default, all view families are visible. You can hide the ones you don't use f
 |---|---|
 | **Overview** | A dashboard with key metrics, upcoming/overdue tasks and progress widgets |
 | **Tasks** | One tab with a **List \| Table** switch: a compact list grouped by area, or a spreadsheet-style grid, both with search, filters, grouping and sorting |
+| **Kanban** | A board with columns by status, priority, tag or folder; drag a card to change its status or priority |
+| **Gantt** | A timeline with a bar per task; move bars or drag their edges to change dates |
 | **Calendar** | Six calendar layouts to see tasks against a timeline |
 | **Habits** | The Habit Tracker module (separate from tasks — see [6. Habit Tracker](05-habit-tracker.md)) |
 

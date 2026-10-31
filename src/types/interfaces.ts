@@ -414,9 +414,9 @@ export interface TableViewData {
   tasks: ITask[];
   /** Filas a dibujar: cabeceras de grupo y tareas, en orden. */
   rows: TableRow[];
-  /** Qu\u00e9 columnas se dibujan (las de fechas se ocultan si ninguna tarea cargada tiene valor). */
+  /** Qué columnas se dibujan (las de fechas se ocultan si ninguna tarea cargada tiene valor). */
   columns: Record<string, boolean>;
-  /** Cu\u00e1ntas columnas se dibujan, para el `colspan` de las cabeceras de grupo. */
+  /** Cuántas columnas se dibujan, para el `colspan` de las cabeceras de grupo. */
   columnCount: number;
   /** Hay tareas en el vault, aunque los filtros las oculten (cambia el mensaje de tabla vacía). */
   vaultHasTasks: boolean;
@@ -487,13 +487,13 @@ export interface TaskGroupViewModel {
  */
 export interface ListViewData {
   tasks: ITask[];
-  /** Grupos a dibujar; vac\u00edo si no se agrupa (entonces se usa `flatTasks`). */
+  /** Grupos a dibujar; vacío si no se agrupa (entonces se usa `flatTasks`). */
   groups: TaskGroupViewModel[];
   /** Tareas filtradas y ordenadas, sin agrupar. */
   flatTasks: ITask[];
   /** Mostrar la ruta de la nota en cada tarea: solo cuando el grupo no la implica. */
   showPath: boolean;
-  /** Hay tareas en el vault, aunque los filtros las oculten (cambia el mensaje de lista vac\u00eda). */
+  /** Hay tareas en el vault, aunque los filtros las oculten (cambia el mensaje de lista vacía). */
   vaultHasTasks: boolean;
 }
 

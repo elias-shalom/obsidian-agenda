@@ -1,0 +1,475 @@
+@use '../variables' as *;
+
+// Gantt (v1.1.13): columna de nombres fija y eje de tiempo que reparte el resto del ancho; las
+// posiciones de barras y marcas son porcentajes calculados en TypeScript.
+.oa-gantt {
+  --oa-gantt-label-width: 240px;
+  --oa-gantt-color: var(--interactive-accent);
+
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.oa-gantt-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding: 8px 0;
+}
+
+.oa-gantt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.oa-gantt-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.oa-gantt-period {
+  color: var(--text-normal);
+  font-size: 1.2em;
+  font-weight: 600;
+}
+
+.oa-gantt-btn {
+  @include interactive-control;
+  border-radius: 6px;
+  padding: 2px 10px !important; // `.is-tablet button` de Obsidian impone 20 px laterales
+  line-height: 1.4;
+
+  &--round {
+    @include round-icon-button;
+  }
+}
+
+// Cabecera fija mientras se desplaza el diagrama
+.oa-gantt-head {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background-color: $primary-bg-color;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.oa-gantt-head-row {
+  display: flex;
+  align-items: stretch;
+}
+
+.oa-gantt-label {
+  display: flex;
+  flex: 0 0 var(--oa-gantt-label-width);
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 4px 8px;
+  overflow: hidden;
+}
+
+.oa-gantt-year {
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+.oa-gantt-months {
+  display: flex;
+  flex: 1 1 auto;
+  gap: 2px;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.oa-gantt-month {
+  flex: 1 1 0;
+  padding: 4px 6px !important;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none;
+  color: var(--text-muted);
+  font-size: 0.85em;
+  cursor: pointer;
+
+  &.oa-active {
+    border-bottom-color: var(--interactive-accent);
+    color: var(--text-normal);
+    font-weight: 600;
+  }
+}
+
+.oa-gantt-track {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.oa-gantt-weeks {
+  min-height: 20px;
+}
+
+.oa-gantt-week {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  padding-left: 4px;
+  border-left: 1px solid var(--background-modifier-border);
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.oa-gantt-days {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.oa-gantt-day {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  padding: 2px 0;
+  overflow: hidden;
+  border-left: 1px solid color-mix(in srgb, var(--background-modifier-border) 50%, transparent);
+  font-size: 11px;
+
+  small {
+    color: var(--text-muted);
+    font-size: 9px;
+    text-transform: capitalize;
+  }
+
+  b {
+    font-weight: 600;
+  }
+
+  &--weekend {
+    background-color: color-mix(in srgb, var(--background-modifier-hover) 60%, transparent);
+  }
+
+  &--today {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+
+    small {
+      color: inherit;
+    }
+  }
+}
+
+.oa-gantt-body {
+  position: relative;
+}
+
+// Misma división en columnas iguales que `.oa-gantt-days`, para que las líneas coincidan con la cabecera.
+.oa-gantt-grid {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--oa-gantt-label-width);
+  z-index: 0;
+  display: flex;
+  pointer-events: none;
+}
+
+.oa-gantt-grid-day {
+  flex: 1 1 0;
+  min-width: 0;
+  border-left: 1px solid color-mix(in srgb, var(--background-modifier-border) 35%, transparent);
+
+  &--week-start {
+    border-left-color: var(--background-modifier-border);
+  }
+
+  &--weekend {
+    background-color: color-mix(in srgb, var(--background-modifier-hover) 50%, transparent);
+  }
+}
+
+.oa-gantt-row {
+  display: flex;
+  min-height: 30px;
+  border-bottom: 1px solid color-mix(in srgb, var(--background-modifier-border) 40%, transparent);
+
+  &:hover {
+    background-color: var(--background-modifier-hover);
+  }
+
+  &--group {
+    background-color: color-mix(in srgb, var(--oa-gantt-color) 12%, transparent);
+    font-weight: 600;
+  }
+
+  &--task {
+    cursor: pointer;
+
+    // Estado, prioridad y título un poco más pequeños que el texto normal
+    .oa-gantt-label {
+      font-size: 0.9em;
+    }
+  }
+}
+
+.oa-gantt-group-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 0 !important;
+  border: none;
+  background: transparent !important;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &.oa-collapsed .oa-gantt-chevron {
+    transform: rotate(-90deg);
+  }
+}
+
+.oa-gantt-chevron {
+  display: inline-block;
+  color: var(--text-muted);
+  transition: transform 160ms ease;
+}
+
+.oa-gantt-group-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.oa-gantt-count {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.oa-gantt-status,
+.oa-gantt-priority {
+  flex-shrink: 0;
+}
+
+.oa-gantt-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.oa-gantt-badge {
+  flex-shrink: 0;
+  cursor: help;
+
+  &--warn {
+    color: var(--text-warning);
+  }
+}
+
+.oa-gantt-bar,
+.oa-gantt-milestone,
+.oa-gantt-notch {
+  position: absolute;
+  z-index: 2;
+}
+
+.oa-gantt-bar {
+  top: 7px;
+  height: 16px;
+  min-width: 6px;
+  border-radius: 4px;
+  background-color: var(--oa-gantt-color);
+  opacity: 0.9;
+  cursor: grab;
+  touch-action: pan-y; // el desplazamiento vertical sigue funcionando en pantallas táctiles
+
+  &.oa-resizing {
+    cursor: grabbing;
+  }
+
+  // Vista previa de la barra que crea la manija de un hito mientras se arrastra
+  &--ghost {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  &--clipped-left {
+    border-left: 2px dashed color-mix(in srgb, var(--background-primary) 70%, transparent);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  &--clipped-right {
+    border-right: 2px dashed color-mix(in srgb, var(--background-primary) 70%, transparent);
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+
+.oa-gantt-milestone {
+  top: 8px;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 2px;
+  background-color: var(--oa-gantt-color);
+  transform: rotate(45deg);
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+// Manijas de los bordes de una barra: visibles al pasar el cursor o mientras se arrastran
+.oa-gantt-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  touch-action: pan-y;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    width: 2px;
+    border-radius: 1px;
+    background-color: var(--background-primary);
+    opacity: 0.8;
+  }
+
+  &--start {
+    left: 0;
+
+    &::after { left: 2px; }
+  }
+
+  &--end {
+    right: 0;
+
+    &::after { right: 2px; }
+  }
+}
+
+.oa-gantt-bar:hover .oa-gantt-handle,
+.oa-gantt-handle.oa-resizing {
+  opacity: 1;
+}
+
+// Manija que convierte un hito en barra, a un lado del rombo
+.oa-gantt-extend {
+  position: absolute;
+  top: 7px;
+  z-index: 3;
+  box-sizing: border-box;
+  width: 10px;
+  height: 16px;
+  border: 1px dashed var(--oa-gantt-color);
+  border-radius: 3px;
+  cursor: ew-resize;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  touch-action: pan-y;
+
+  &--right { margin-left: 10px; }
+
+  &--left { margin-left: -20px; }
+}
+
+.oa-gantt-row--task:hover .oa-gantt-extend,
+.oa-gantt-extend.oa-resizing {
+  opacity: 0.9;
+}
+
+// Sin cursor que pase por encima, las manijas se dejan a la vista
+@media (hover: none) {
+  .oa-gantt-handle,
+  .oa-gantt-extend {
+    opacity: 0.7;
+  }
+}
+
+.oa-gantt-notch {
+  top: 9px;
+  width: 2px;
+  height: 12px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background-color: var(--background-primary);
+}
+
+// Hecha o cancelada: la barra se atenúa
+.oa-gantt-row[data-status='x'] .oa-gantt-bar,
+.oa-gantt-row[data-status='x'] .oa-gantt-milestone {
+  opacity: 0.45;
+}
+
+.oa-gantt-row[data-status='-'] .oa-gantt-bar,
+.oa-gantt-row[data-status='-'] .oa-gantt-milestone,
+.oa-gantt-row[data-status='~'] .oa-gantt-bar,
+.oa-gantt-row[data-status='~'] .oa-gantt-milestone {
+  opacity: 0.3;
+}
+
+.oa-gantt-today {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 2px;
+  margin-left: -1px;
+  background-color: var(--color-red, #e5484d);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.oa-gantt-empty {
+  margin: 0;
+  padding: 12px;
+}
+
+// Tareas sin fecha: mismo aspecto que un grupo de la Lista, sin ocupar todo el ancho
+.oa-gantt-undated {
+  max-width: 80%;
+  margin-top: 16px;
+
+  .oa-folder-name {
+    cursor: pointer;
+  }
+
+  .oa-task-item {
+    cursor: pointer;
+  }
+}
+
+.is-tablet .oa-gantt {
+  --oa-gantt-label-width: 180px;
+}
+
+.is-phone .oa-gantt {
+  --oa-gantt-label-width: 120px;
+
+  .oa-gantt-day small {
+    display: none;
+  }
+}

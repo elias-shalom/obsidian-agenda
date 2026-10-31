@@ -63,13 +63,13 @@ export class TableView extends BaseView {
       i18n: this.i18n,
       tasks: this.tasks,
       state: { ...saved, group: saved.group || TABLE_DEFAULT_GROUP },
-      modeSwitch: buildTaskModeSwitch(this.i18n, (this.plugin as AgendaPlugin).settings, 'table', (mode) => {
+      modeSwitch: buildTaskModeSwitch(this.i18n, 'table', (mode) => {
         saveTaskViewMode(this.app, mode);
         (this.plugin as AgendaPlugin).viewManager.activateView(TASK_MODE_VIEWS[mode], this.leaf);
       }),
       groupOptions: TASK_GROUP_OPTIONS.map(({ value, labelKey }) => ({
         value,
-        label: value === 'none' ? this.i18n.t(labelKey) : `${this.i18n.t('group_by')}: ${this.i18n.t(labelKey)}`,
+        label: value === 'none' ? this.i18n.t(labelKey) : `${this.i18n.t('group_label')} ${this.i18n.t(labelKey)}`,
       })),
       sortOptions: TASK_SORT_COLUMNS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
       onChange: (state, changed) => {

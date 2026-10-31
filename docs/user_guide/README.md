@@ -16,7 +16,7 @@ The manual is written once per language, in its own subfolder, with the same cha
 1. Introduction
 2. Installation
 3. Getting Started
-4. Views Overview (Overview, List, Table)
+4. Views Overview (Overview, Tasks tab with List and Table, Kanban, Gantt)
 5. Calendar Views
 6. Habit Tracker
 7. Task Format and Metadata

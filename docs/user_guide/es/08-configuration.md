@@ -5,10 +5,12 @@ Accede a todos los ajustes del plugin desde **Configuración de Obsidian → Plu
 ## Configuración general
 
 - **La semana empieza el** — qué día de la semana tratan las vistas de calendario como el primero de la semana.
+- **Mostrar novedades al actualizar** — abre una ventana con las novedades la primera vez que inicias Obsidian tras actualizar el plugin (activado por defecto). Aparece una sola vez por actualización y, si saltaste varias versiones, las muestra todas.
 
 ## Visibilidad de pestañas
 
-- Mostrar/ocultar cada pestaña principal de forma independiente: **Vista general**, **Lista**, **Tabla**, **Calendario**. Lista y Tabla son los dos modos de la pestaña **Tareas**: con ambos visibles aparece el conmutador **Lista | Tabla**, con uno visible el conmutador se oculta y con ninguno se oculta la pestaña.
+- Mostrar/ocultar cada pestaña principal de forma independiente: **Vista general**, **Tareas**, **Kanban**, **Gantt**, **Calendario** y **Hábitos**. **Mostrar pestaña Tareas** sustituye a los antiguos interruptores de Lista y Tabla: el conmutador **Lista | Tabla** dentro de la pestaña siempre ofrece los dos modos (si antes habías ocultado solo uno, ahora ves los dos).
+- **Mostrar pestaña Hábitos** oculta toda la pestaña de Hábitos; aparece solo cuando está activada y hay al menos una vista de hábitos activa.
 - Las pestañas del Seguimiento de hábitos tienen su propio grupo (ver **Hábitos** más abajo).
 
 ## Calendario
@@ -19,7 +21,7 @@ Accede a todos los ajustes del plugin desde **Configuración de Obsidian → Plu
 
 ## Hábitos
 
-- **Ruta de la carpeta de hábitos** — la carpeta de la bóveda (analizada recursivamente) que contiene las notas de hábitos. Por defecto: `daily plan/daily routine/habit`.
+- **Ruta de la carpeta de hábitos** — la carpeta de la bóveda (analizada recursivamente) que contiene las notas de hábitos. Por defecto: `daily plan/daily routine/habit`. Bajo el campo, Ajustes indica si la carpeta existe (una carpeta inexistente no impide guardar). Si no existe cuando creas tu primer hábito, se te ofrece crearla, con la ruta editable.
 - **Días a mostrar en la cuadrícula** — cantidad de columnas de día renderizadas en la Cuadrícula de hábitos y en los gráficos de historial.
 - **Mostrar rachas** — activa/desactiva los indicadores y conteos de racha.
 - **Mostrar momento del día para hábitos de un solo momento** — muestra una pequeña insignia localizada de momento del día junto al nombre del hábito en Cuadrícula y Semanal (activado por defecto; las filas con varios momentos siempre muestran la insignia).

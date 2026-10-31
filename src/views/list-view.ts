@@ -58,13 +58,13 @@ export class ListView extends BaseView {
       i18n: this.i18n,
       tasks: this.tasks,
       state: { ...saved, group: saved.group || LIST_DEFAULT_GROUP },
-      modeSwitch: buildTaskModeSwitch(this.i18n, this.plugin.settings, 'list', (mode) => {
+      modeSwitch: buildTaskModeSwitch(this.i18n, 'list', (mode) => {
         saveTaskViewMode(this.app, mode);
         this.plugin.viewManager.activateView(TASK_MODE_VIEWS[mode], this.leaf);
       }),
       groupOptions: TASK_GROUP_OPTIONS.map(({ value, labelKey }) => ({
         value,
-        label: value === 'none' ? this.i18n.t(labelKey) : `${this.i18n.t('group_by')}: ${this.i18n.t(labelKey)}`,
+        label: value === 'none' ? this.i18n.t(labelKey) : `${this.i18n.t('group_label')} ${this.i18n.t(labelKey)}`,
       })),
       sortOptions: TASK_SORT_COLUMNS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
       onChange: (state, changed) => {

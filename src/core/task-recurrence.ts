@@ -49,21 +49,26 @@ export function getNextOccurrenceDate(recurrenceText: string, referenceDate: Dat
   }
 }
 
+/** Desplaza `deltaDays` cada fecha presente (📅/🛫/⏳), conservando la hora y la duración de ⏳. No toca ➕ creada, ✅ hecha, 🆔 ni ⛔ (v1.1.13, Fase G2). */
+export function shiftTaskDates(line: string, deltaDays: number): string {
+  let shiftedLine = line;
+  (Object.keys(DATE_FIELD_REGEX) as Array<keyof typeof DATE_FIELD_REGEX>).forEach(emoji => {
+    const regex = DATE_FIELD_REGEX[emoji];
+    const match = shiftedLine.match(regex);
+    if (!match) return;
+    const shifted = DateTime.fromISO(match[1]).plus({ days: deltaDays }).toISODate();
+    shiftedLine = shiftedLine.replace(regex, `${emoji} ${shifted}`);
+  });
+  return shiftedLine;
+}
+
 /** Construye la línea de la siguiente ocurrencia a partir de `originalLine` (ya reiniciada a
  * `Todo`, sin ✅): desplaza cada fecha presente (📅/🛫/⏳) la misma cantidad de días entre
  * `referenceDate` y `nextDate`, preservando su distancia relativa original (ADR-R2), y quita
  * 🆔/⛔ (ADR-R4). */
 export function buildNextOccurrenceLine(originalLine: string, referenceDate: DateTime, nextDate: DateTime): string {
   const deltaDays = nextDate.startOf("day").diff(referenceDate.startOf("day"), "days").days;
-
-  let line = originalLine;
-  (Object.keys(DATE_FIELD_REGEX) as Array<keyof typeof DATE_FIELD_REGEX>).forEach(emoji => {
-    const regex = DATE_FIELD_REGEX[emoji];
-    const match = line.match(regex);
-    if (!match) return;
-    const shifted = DateTime.fromISO(match[1]).plus({ days: deltaDays }).toISODate();
-    line = line.replace(regex, `${emoji} ${shifted}`);
-  });
+  const line = shiftTaskDates(originalLine, deltaDays);
 
   return line.replace(ID_CHUNK_REGEX, "").replace(DEPENDS_CHUNK_REGEX, "").replace(/\s{2,}/g, " ").trimEnd();
 }

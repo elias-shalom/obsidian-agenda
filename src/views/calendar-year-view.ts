@@ -84,7 +84,7 @@ export class CalendarYearView extends CalendarView {
           date: currentDay,
           isCurrentMonth,
           isToday: currentDay.hasSame(today, 'day'),
-          // Solo se marca dentro del mes actual, para no duplicarse en los d\u00edas vecinos repetidos (v1.1.9)
+          // Solo se marca dentro del mes actual, para no duplicarse en los días vecinos repetidos (v1.1.9)
           isSelected: isCurrentMonth && currentDay.hasSame(this.currentDate, 'day'),
           dayOfMonth: currentDay.day,
           hasTasksDue: tasksForDay.length > 0,

@@ -1,0 +1,19 @@
+{{!-- What's New modal (v1.1.13): una sección por versión, de la más reciente a la más antigua --}}
+<div class="oa-whats-new">
+  <h2 class="oa-whats-new__heading">{{heading}}</h2>
+  <div class="oa-whats-new__body">
+    {{#each entries}}
+    <section class="oa-whats-new__version">
+      <h3 class="oa-whats-new__version-title">v{{this.version}} · {{this.title}}</h3>
+      <ul class="oa-whats-new__items">
+        {{#each this.items}}
+        <li>{{this}}</li>
+        {{/each}}
+      </ul>
+    </section>
+    {{/each}}
+  </div>
+  <div class="oa-task-modal__actions">
+    <button id="oa-whats-new-close" type="button" class="oa-btn oa-btn--primary">{{closeLabel}}</button>
+  </div>
+</div>

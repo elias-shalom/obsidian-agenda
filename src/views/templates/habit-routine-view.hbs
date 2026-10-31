@@ -8,8 +8,8 @@
     <button id="oa-habit-new-btn" type="button" class="oa-habit-new-btn" aria-label="{{t 'habit_new_habit'}}" title="{{t 'habit_new_habit'}}">+</button>
   </div>
   <div class="oa-habit-nav-container">
-    <div class="oa-habit-view-selector">
-      <select id="oa-habit-routine-sort" class="oa-habit-view-dropdown">
+    <div class="oa-habit-view-selector oa-habit-view-selector--labeled" data-label="{{t 'habit_sort_label'}}">
+      <select id="oa-habit-routine-sort" class="oa-habit-view-dropdown" aria-label="{{t 'habit_sort_label'}}" title="{{t 'habit_sort_label'}}">
         <option value="alphabetical" {{#eq sortBy "alphabetical"}}selected{{/eq}}>{{t "habit_sort_alphabetical"}}</option>
         <option value="area" {{#eq sortBy "area"}}selected{{/eq}}>{{t "habit_sort_area"}}</option>
         <option value="daytime" {{#eq sortBy "daytime"}}selected{{/eq}}>{{t "habit_sort_daytime"}}</option>
@@ -18,10 +18,10 @@
         <option value="pct" {{#eq sortBy "pct"}}selected{{/eq}}>{{t "habit_sort_pct"}}</option>
       </select>
     </div>
-    <div class="oa-habit-view-selector">
-      <select id="oa-habit-routine-group" class="oa-habit-view-dropdown">
-        <option value="daytime" {{#eq groupBy "daytime"}}selected{{/eq}}>{{t "habit_sort_daytime"}}</option>
-        <option value="area" {{#eq groupBy "area"}}selected{{/eq}}>{{t "habit_sort_area"}}</option>
+    <div class="oa-habit-view-selector oa-habit-view-selector--labeled" data-label="{{t 'habit_group_label'}}">
+      <select id="oa-habit-routine-group" class="oa-habit-view-dropdown" aria-label="{{t 'habit_group_label'}}" title="{{t 'habit_group_label'}}">
+        <option value="daytime" {{#eq groupBy "daytime"}}selected{{/eq}}>{{t "habit_daytime"}}</option>
+        <option value="area" {{#eq groupBy "area"}}selected{{/eq}}>{{t "habit_area"}}</option>
       </select>
     </div>
     <div class="oa-habit-routine-nav">
@@ -102,7 +102,7 @@
     </div>
   {{/each}}
   {{else}}
-    <div class="oa-habit-routine-empty">{{t "habit_no_habits"}}</div>
+    <div class="oa-habit-routine-empty">{{emptyMessage}}</div>
   {{/if}}
 
   <div class="oa-habit-routine-area-summary">

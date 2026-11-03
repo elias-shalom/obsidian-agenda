@@ -282,6 +282,7 @@ export interface TaskFilterCriteria {
     folder?: string;                   // Carpeta donde se encuentra la tarea
     area?: string;                     // Área: primera carpeta de la ruta de la nota
     subArea?: string;                  // Sub-área: resto de la ruta de carpetas; coincide por prefijo
+    routes?: string[];                 // Varias rutas de área (`Área`, `Área/sub`, `Área/`, `/`): O entre ellas, gana la más específica
     file?: string;                     // Archivo específico
   };
   

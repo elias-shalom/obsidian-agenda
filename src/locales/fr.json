@@ -98,7 +98,7 @@
   "highest_priority": "Plus élevé",
   "no_priority": "Sans priorité",
   "none": "Aucun",
-  "all_sub_areas": "Tous les sous-domaines",
+  "filter_sub_areas": "Sous-domaines",
   "filter_add": "+ Filtre",
   "filter_clear": "Effacer",
   "filter_remove": "Retirer le filtre : {filter}",

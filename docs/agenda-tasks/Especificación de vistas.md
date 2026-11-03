@@ -1027,15 +1027,15 @@ Límites: un evento fuera de la ventana descargada (de −3 a +6 meses) no se re
 - Solo cambia el texto: los valores guardados (orden y agrupación elegidos) no cambian y no hay migración.
 - **Fuera de alcance**: criterios nuevos de orden o agrupación y combos en la Tabla o el Dashboard.
 
-## 19. Filtros con varios valores y filtros en el calendario (v1.1.14 — diseño, no implementado)
+## 19. Filtros con varios valores y filtros en el calendario (v1.1.14 — filtros con varios valores implementados el 2026-11-03; calendario, diseño no implementado)
 
-> **Estado**: propuesta de la discusión del 2026-10-31, con las decisiones cerradas el 2026-10-31 (§19.4). Mecanismo: [[Arquitectura técnica]] §28. Plan: fases M1–M2, CF1 y CF2.
+> **Estado**: propuesta de la discusión del 2026-10-31, con las decisiones cerradas el 2026-10-31 (§19.4). **§19.1 (varios valores) está implementado (fases M1 y M2) y falta la prueba manual; §19.2 (calendario) sigue sin implementar.** Mecanismo: [[Arquitectura técnica]] §28. Plan: fases M1–M2, CF1 y CF2.
 
 ### 19.1 Varios valores por filtro
 
 - **Prioridad**, **estado** y **área** (con sus sub-áreas) aceptan varios valores. Los tres filtros de fecha (inicio, programada y vencimiento) siguen con uno solo.
 - Dentro de un mismo tipo la tarea basta con que cumpla uno (**O**); entre tipos distintos tiene que cumplirlos todos (**Y**). Vacío = todos.
-- Un chip por tipo con los valores unidos («Estado: Todo, En progreso»); con más de dos, solo el número («Estado: 3»). Al pasar el cursor, un tooltip lista todos los valores.
+- Un chip por tipo; con un valor muestra su nombre («Estado: Todo») y con **dos o más** solo el número («Estado: 2»), para que el chip no crezca (decidido el 2026-11-03; antes el límite era «más de dos»). Al pasar el cursor, un tooltip lista todos los valores.
 - **Área en dos pasos dentro del mismo popover**: arriba las áreas (con «Raíz») y, debajo, las sub-áreas de las áreas marcadas, con el área por delante («Trabajo › Proyectos»). **Gana lo más específico**: dentro de cada área, si hay sub-áreas marcadas solo se usan esas; si no, el área completa. Con `Trabajo`, `Trabajo/Proyectos` y `Personal` marcados se ven las tareas de Proyectos y todas las de Personal. «Raíz» de una sub-área (las notas directamente en la carpeta del área) cuenta como una sub-área más.
 - Las casillas viven en un **popover propio** que no se cierra al marcar (se cierra con un clic fuera o con Esc) y aplica el filtro en cada marca. El menú de Obsidian no sirve: se cierra al hacer clic y reabrirlo parpadea.
 - Lo heredan Lista, Tabla, Kanban y Gantt porque comparten la barra. Cada vista conserva su propio estado guardado y lo guardado con un solo valor se convierte al leerlo.
@@ -1069,7 +1069,7 @@ La barra de chips de §20 se construye sobre la de este apartado: los chips de f
 | Filtros con varios valores | Prioridad, estado y área; los de fecha siguen con uno solo |
 | Selección | Popover propio con casillas, que no se cierra al marcar |
 | Área | Dos pasos en el mismo popover (áreas y, debajo, sub-áreas de las áreas marcadas); gana lo más específico |
-| Chips | Uno por tipo con los valores unidos; un tooltip lista todos |
+| Chips | Uno por tipo: el nombre con un valor y solo el número con dos o más (2026-11-03); un tooltip lista todos |
 | Calendario: filtros | Prioridad, estado, área y búsqueda |
 | Calendario: barra | Siempre visible bajo las pestañas principales, como en las demás vistas; sin botón |
 | Calendario: estado | Uno compartido por las 6 subvistas |

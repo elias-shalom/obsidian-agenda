@@ -178,3 +178,63 @@
     order: 1;
   }
 }
+
+// Popover con casillas de prioridad, estado y área (src/core/task-filter-popover.ts). Vive en
+// `document.body`, fuera de `.oa-filter-bar`, así que no hereda sus estilos.
+.oa-filter-popover {
+  position: fixed;
+  z-index: 100;
+  width: max-content; // se ajusta al texto más largo, sin espacio vacío a la derecha
+  min-width: 120px;
+  max-width: min(320px, calc(100vw - 16px));
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
+  padding: 4px;
+  --checkbox-size: 14px; // la casilla nativa de Obsidian mide 18px y se ve grande junto a la letra
+  border: 1px solid var(--divider-color);
+  border-radius: 8px;
+  background: var(--background-primary);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+
+  .oa-filter-popover__title {
+    padding: 8px 10px 2px;
+    color: var(--text-muted);
+    font-size: 0.7em;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .oa-filter-popover__option {
+    display: flex;
+    min-height: 32px;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+
+    &:hover {
+      background: var(--background-modifier-hover);
+    }
+
+    input {
+      flex: none;
+      margin: 0;
+    }
+  }
+
+  .oa-filter-popover__label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// Objetivo táctil más grande en móvil y tableta
+.is-mobile .oa-filter-popover .oa-filter-popover__option,
+.is-tablet .oa-filter-popover .oa-filter-popover__option {
+  min-height: 40px;
+}

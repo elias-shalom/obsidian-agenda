@@ -99,7 +99,7 @@
   "highest_priority": "Highest",
   "no_priority": "No priority",
   "none": "None",
-  "all_sub_areas": "All sub-areas",
+  "filter_sub_areas": "Sub-areas",
   "filter_add": "+ Filter",
   "filter_clear": "Clear",
   "filter_remove": "Remove filter: {filter}",

@@ -470,10 +470,11 @@ Los filtros tienen diseño en `docs/agenda-tasks/Especificación de vistas.md` �
 
 **Diseño documentado el 2026-11-03** (todo «diseño, no implementado»): Especificación de vistas §20 a §25 (y §17), Arquitectura técnica §29 a §35, Modelo de datos §12 a §16 y Plan de implementación con las fases L1–L4 (v1.1.14), NL/FE/PR/HC1 (v1.1.15), HM1–DR1 (v1.1.16) y ES/TK/TM/TB (v1.1.17), todo en `docs/agenda-tasks/`; y en `docs/habit-tracker-agenda/`: Especificación §11 a §14, Modelo de datos §8, Arquitectura §10 y las fases HA1, HV1 y HU1 del Plan. Los puntos que aún piden decisión están en las listas «Por resolver al diseñar» de cada sección.
 
-- [ ] **[v1.1.14] Filtros con varios valores en un mismo tipo** (decidido el 2026-10-31; diseño en `docs/agenda-tasks/Especificación de vistas.md` §19 y `Arquitectura técnica.md` §28; fases M1–M2 en `Plan de implementación.md`; los heredan Lista, Tabla, Kanban y Gantt)
-  - [ ] Prioridad, estado y área (con sus sub-áreas) aceptan varios valores; los filtros de fecha siguen con uno solo; O dentro de un tipo, Y entre tipos
-  - [ ] Un chip por tipo con los valores unidos; el estado guardado con un solo valor se convierte al leerlo
-  - [ ] Decidido (2026-10-31): casillas en un popover propio que no se cierra al marcar; el área en dos pasos dentro del mismo popover y gana lo más específico; un tooltip lista los valores del chip
+- [x] **[v1.1.14] Filtros con varios valores en un mismo tipo** (decidido el 2026-10-31; **implementado el 2026-11-03, fases M1 y M2; falta la prueba manual**; diseño en `docs/agenda-tasks/Especificación de vistas.md` §19 y `Arquitectura técnica.md` §28; los heredan Lista, Tabla, Kanban y Gantt)
+  - [x] Prioridad, estado y área (con sus sub-áreas) aceptan varios valores; los filtros de fecha siguen con uno solo; O dentro de un tipo, Y entre tipos
+  - [x] Un chip por tipo: el nombre con un valor y solo el número con dos o más («Estado: 2», decidido el 2026-11-03, para que no crezca), con un tooltip que lista todos; el estado guardado con un solo valor se convierte al leerlo
+  - [x] Decidido (2026-10-31): casillas en un popover propio que no se cierra al marcar; el área en dos pasos dentro del mismo popover y gana lo más específico; un tooltip lista los valores del chip
+  - [ ] Prueba manual en Lista, Tabla, Kanban y Gantt (también en móvil y tableta)
 - [ ] **[v1.1.14] Filtros en el calendario** (decidido el 2026-10-31; retoma «filtrar el calendario por estado» de v1.1.10; diseño en Especificación §19.2 y Arquitectura §28.3; fases CF1 y CF2 en el Plan; depende de los filtros con varios valores)
   - [ ] Solo prioridad, estado, área y búsqueda; sin filtros de fecha, agrupado ni orden
   - [ ] Barra siempre visible bajo las pestañas principales, con el mismo aspecto que en las otras vistas (sin botón para abrirla); estado propio compartido por las 6 subvistas

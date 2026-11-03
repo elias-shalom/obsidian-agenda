@@ -128,6 +128,115 @@ export function matchesTaskArea(filePath: string, selected: { area?: string; sub
 /** Valor del filtro de área para «solo las notas fuera de cualquier carpeta» y del de sub-área para «solo las notas directas del área»; `/` no puede ser un nombre de carpeta. */
 export const ROOT_AREA = '/';
 
+/**
+ * Ruta de filtro de área (v1.1.14, Fase M1; ver Arquitectura técnica §28.1). Una selección es una lista de rutas:
+ * `Work` (toda el área), `Work/Proj/Sub` (una sub-área, con sus subcarpetas), `Work/` (solo las notas
+ * directamente en la carpeta del área) y `ROOT_AREA` (las notas fuera de cualquier carpeta).
+ */
+export type AreaRoute =
+  | { kind: 'root' }
+  | { kind: 'area'; area: string }
+  | { kind: 'direct'; area: string }
+  | { kind: 'subArea'; area: string; subArea: string };
+
+export function parseAreaRoute(route: string): AreaRoute {
+  if (route === ROOT_AREA) return { kind: 'root' };
+  const slash = route.indexOf('/');
+  if (slash === -1) return { kind: 'area', area: route };
+  const area = route.slice(0, slash);
+  const subArea = route.slice(slash + 1);
+  return subArea === '' ? { kind: 'direct', area } : { kind: 'subArea', area, subArea };
+}
+
+/** Ruta de un área y, opcionalmente, una sub-área; `ROOT_AREA` como sub-área son las notas directas del área. */
+export function buildAreaRoute(area: string, subArea = ''): string {
+  if (area === ROOT_AREA) return ROOT_AREA;
+  if (subArea === ROOT_AREA) return `${area}/`;
+  return subArea ? `${area}/${subArea}` : area;
+}
+
+/** Convierte el filtro de un solo área y sub-área, guardado antes de v1.1.14, en una lista de rutas. */
+export function areaRoutesFromLegacy(area: unknown, subArea: unknown): string[] {
+  if (typeof area !== 'string' || !area) return [];
+  return [buildAreaRoute(area, typeof subArea === 'string' ? subArea : '')];
+}
+
+/** ¿Hay alguna ruta marcada de esa área (el área completa, una sub-área o sus notas directas)? */
+export function isAreaMarked(routes: readonly string[], area: string): boolean {
+  const key = normalizeAreaName(area);
+  return routes.some(route => {
+    const parsed = parseAreaRoute(route);
+    return parsed.kind !== 'root' && normalizeAreaName(parsed.area) === key;
+  });
+}
+
+/**
+ * Marca o desmarca una ruta en la selección. Desmarcar un área quita también sus sub-áreas marcadas;
+ * marcar una sub-área no toca el área, que sigue marcada (gana la más específica, ver `effectiveAreaRoutes`).
+ */
+export function toggleAreaRoute(routes: readonly string[], route: string): string[] {
+  const parsed = parseAreaRoute(route);
+  if (parsed.kind === 'area') {
+    if (!isAreaMarked(routes, parsed.area)) return [...routes, route];
+    const key = normalizeAreaName(parsed.area);
+    return routes.filter(candidate => {
+      const other = parseAreaRoute(candidate);
+      return other.kind === 'root' || normalizeAreaName(other.area) !== key;
+    });
+  }
+  return routes.includes(route) ? routes.filter(candidate => candidate !== route) : [...routes, route];
+}
+
+/** ¿`child` cuelga de `parent`? El área contiene a sus sub-áreas y a sus notas directas; una sub-área, a las más profundas. */
+function isDescendantRoute(child: AreaRoute, parent: AreaRoute): boolean {
+  if (child.kind === 'root' || parent.kind === 'root' || parent.kind === 'direct') return false;
+  if (normalizeAreaName(child.area) !== normalizeAreaName(parent.area)) return false;
+  if (parent.kind === 'area') return child.kind === 'direct' || child.kind === 'subArea';
+  if (child.kind !== 'subArea') return false;
+  return normalizeSubAreaPath(child.subArea).startsWith(`${normalizeSubAreaPath(parent.subArea)}/`);
+}
+
+/** Rutas que se usan de verdad: gana lo más específico, así que se descartan las que tienen otra marcada por debajo. */
+export function effectiveAreaRoutes(routes: readonly string[]): string[] {
+  const parsed = routes.map(parseAreaRoute);
+  return routes.filter((_, index) => !parsed.some((other, otherIndex) => otherIndex !== index && isDescendantRoute(other, parsed[index])));
+}
+
+function matchesAreaRoute(task: TaskArea, route: AreaRoute): boolean {
+  if (route.kind === 'root') return task.area === '';
+  if (normalizeAreaName(task.area) !== normalizeAreaName(route.area)) return false;
+  if (route.kind === 'area') return true;
+  if (route.kind === 'direct') return task.subArea === '';
+
+  const wanted = normalizeSubAreaPath(route.subArea);
+  const actual = normalizeSubAreaPath(task.subArea);
+  return actual === wanted || actual.startsWith(`${wanted}/`);
+}
+
+/** ¿La nota en `filePath` cumple la selección? O entre las rutas efectivas; una lista vacía no filtra. */
+export function matchesTaskAreas(filePath: string, routes: readonly string[]): boolean {
+  if (routes.length === 0) return true;
+  const task = resolveTaskArea(filePath);
+  return effectiveAreaRoutes(routes).some(route => matchesAreaRoute(task, parseAreaRoute(route)));
+}
+
+/**
+ * Descarta las rutas que ya no tienen ninguna nota (p. ej., una carpeta renombrada). Una sub-área o las
+ * notas directas que ya no existen recaen en su área, como hacía la barra con un solo valor; si el
+ * área tampoco tiene notas, la ruta se descarta. Sin repetidos.
+ */
+export function reconcileAreaRoutes(routes: readonly string[], filePaths: readonly string[]): string[] {
+  const hasNotes = (route: string): boolean => filePaths.some(filePath => matchesTaskAreas(filePath, [route]));
+  const result: string[] = [];
+
+  for (const route of routes) {
+    const parsed = parseAreaRoute(route);
+    const kept = hasNotes(route) ? route : (parsed.kind === 'direct' || parsed.kind === 'subArea') && hasNotes(parsed.area) ? parsed.area : null;
+    if (kept !== null && !result.includes(kept)) result.push(kept);
+  }
+  return result;
+}
+
 /** ¿Alguna nota está fuera de cualquier carpeta (en la raíz de la bóveda)? */
 export function hasRootTasks(filePaths: string[]): boolean {
   return filePaths.some(filePath => resolveTaskArea(filePath).area === '');

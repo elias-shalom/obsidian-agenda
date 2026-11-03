@@ -623,17 +623,19 @@ Cambiar el texto de «Sin área» en el agrupado; los títulos «By area» y «B
 >
 > **Orden de trabajo**: M1 → M2 → CF1 → CF2 para los filtros; L1 en paralelo (es independiente); L2 cuando estén L1 y M2; L3 y L4 después de L2; CV14 cierra la versión. Cada fase se prueba por separado; las dependencias van en su título.
 
-### Fase M1 — Modelo y filtrado (independiente)
-- [ ] `TaskViewState`: `priority`, `status` y las áreas pasan a listas; `parseTaskViewState()` convierte el estado guardado con un solo valor.
-- [ ] `filterTasksByViewState()`: O dentro de un tipo, Y entre tipos; `matchesTaskArea()` acepta varias rutas y gana la más específica.
-- [ ] Verificable sola: Node (conversión del estado antiguo, O/Y, regla de lo más específico, «Raíz»).
+### Fase M1 — Modelo y filtrado (independiente) — **implementada el 2026-11-03**
+- [x] `TaskViewState`: `priority` y `status` pasan a listas y `area` + `subArea` a una sola lista `areas` de rutas (`Área`, `Área/sub/ruta`, `Área/` para las notas directas del área y `ROOT_AREA`); `parseTaskViewState()` convierte el estado guardado con un solo valor (`'all'` pasa a `[]`).
+- [x] `filterTasksByViewState()`: O dentro de un tipo, Y entre tipos; `matchesTaskAreas()` (`area.ts`) acepta varias rutas y gana la más específica (`TaskFilterCriteria.location.routes`).
+- [x] Verificable sola: Node (`tests/task-filters.test.cjs`, con el cargador `tests/helpers/load-source.cjs`): conversión del estado antiguo, O/Y, regla de lo más específico, «Raíz» y chips.
+- [x] La barra y los chips se adaptaron sin cambiar su comportamiento (selección única); `reconcileAreaRoutes()` descarta las rutas sin notas. El popover con casillas es la Fase M2.
 
-### Fase M2 — Barra y chips (depende de M1)
-- [ ] `src/core/task-filter-popover.ts`: popover con casillas que no se cierra al marcar (clic fuera o Esc), anclado al chip o botón, accesible con teclado y en móvil.
-- [ ] `TaskFilterBar` lo usa para prioridad, estado y área; el del área tiene dos secciones (áreas y sub-áreas de las marcadas); `reconcileArea()` descarta las rutas que ya no existen.
-- [ ] `task-filter-chips.ts`: un chip por tipo con los valores unidos (con más de dos, el número) y tooltip con la lista completa; `clearFilterChip()` y `getActiveFilterChips()` adaptados.
-- [ ] La lista del filtro de estado sale de una función y no de la constante `STATUS_OPTIONS` directamente, para que los estados personalizados de v1.1.17 (fase ES4) no obliguen a rehacer esta fase.
-- [ ] Prueba manual en Lista, Tabla, Kanban y Gantt.
+### Fase M2 — Barra y chips (depende de M1) — **implementada el 2026-11-03; falta la prueba manual**
+- [x] `src/core/task-filter-popover.ts`: popover con casillas que no se cierra al marcar (clic fuera o Esc), anclado al chip o botón, accesible con teclado y con objetivo táctil mayor en móvil; solo hay uno abierto.
+- [x] `TaskFilterBar` lo usa para prioridad, estado y área; el del área tiene dos secciones (áreas y sub-áreas de las marcadas, con «Área › Raíz» para las notas directas); `reconcileAreaRoutes()` (M1) descarta las rutas que ya no existen. Los filtros de fecha siguen con el menú de elección única.
+- [x] `task-filter-chips.ts`: un chip por tipo (el nombre con un valor y solo el número con dos o más, decidido el 2026-11-03) y tooltip con la lista completa (`FilterChip.title`); `toggleFilterValue()`, `buildAreaFilterSections()` y `toggleAreaRoute()` (`area.ts`) son puras y se prueban con Node.
+- [x] La lista del filtro de estado sale de `getStatusOptions()` y no de la constante `STATUS_OPTIONS` directamente, para que los estados personalizados de v1.1.17 (fase ES4) no obliguen a rehacer esta fase.
+- [x] Clave `filter_sub_areas` en los 6 idiomas (sustituye a `all_sub_areas`, que ya no se usa).
+- [ ] Prueba manual en Lista, Tabla, Kanban y Gantt: marcar Normal y Medium a la vez, varios estados y áreas con sub-áreas, el chip con dos o más valores («Estado: 2») y su tooltip, Esc y clic fuera, teclado, y en `is-tablet` e `is-phone`.
 
 ### Fase CF1 — Estado y filtrado del calendario (depende de M1)
 - [ ] `src/core/calendar-state.ts` con la clave `obsidian-agenda-calendar-view-state`, compartida por las 6 subvistas.

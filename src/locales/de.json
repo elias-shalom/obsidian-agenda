@@ -98,7 +98,7 @@
   "highest_priority": "Höchste",
   "no_priority": "Keine priorität",
   "none": "Keine",
-  "all_sub_areas": "Alle Unterbereiche",
+  "filter_sub_areas": "Unterbereiche",
   "filter_add": "+ Filter",
   "filter_clear": "Zurücksetzen",
   "filter_remove": "Filter entfernen: {filter}",

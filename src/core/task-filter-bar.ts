@@ -7,12 +7,14 @@
 import { Menu, setIcon } from 'obsidian';
 import { ITask } from '../types/interfaces';
 import { I18n } from './i18n';
-import { ROOT_AREA, hasDirectTasks, hasRootTasks, listTaskAreas, listTaskSubAreas } from './area';
+import { hasDirectTasks, hasRootTasks, listTaskAreas, listTaskSubAreas, reconcileAreaRoutes, toggleAreaRoute } from './area';
 import { TaskViewState, TaskViewMode } from './task-view-state';
 import {
   FILTER_CHIP_IDS, FILTER_STATE_KEYS, FilterChipId,
-  clearAllFilters, clearFilterChip, getActiveFilterChips, getFilterTypeLabel, getFilterValueOptions,
+  buildAreaFilterSections, clearAllFilters, clearFilterChip, getActiveFilterChips, getFilterTypeLabel, getFilterValueOptions,
+  toggleFilterValue,
 } from './task-filter-chips';
+import { openFilterPopover } from './task-filter-popover';
 
 export interface FilterBarOption {
   value: string;
@@ -60,6 +62,12 @@ export interface TaskFilterBarOptions {
 interface MenuAnchor {
   x: number;
   y: number;
+}
+
+/** Igualdad de un valor de filtro: las listas se comparan por contenido, no por referencia. */
+function sameFilterValue(a: unknown, b: unknown): boolean {
+  if (Array.isArray(a) && Array.isArray(b)) return a.length === b.length && a.every((value, index) => value === b[index]);
+  return a === b;
 }
 
 export class TaskFilterBar {
@@ -194,7 +202,7 @@ export class TaskFilterBar {
       const chipEl = container.createDiv({ cls: 'oa-filter-chip' });
       const text = `${chip.typeLabel}: ${chip.valueLabel}`;
 
-      const label = chipEl.createEl('button', { cls: 'oa-filter-chip__label', text, attr: { type: 'button', title: text } });
+      const label = chipEl.createEl('button', { cls: 'oa-filter-chip__label', text, attr: { type: 'button', title: chip.title } });
       label.addEventListener('click', () => this.openValueMenu(chip.id, this.anchorOf(label)));
 
       const remove = chipEl.createEl('button', {
@@ -235,11 +243,17 @@ export class TaskFilterBar {
   }
 
   private openValueMenu(id: FilterChipId, anchor: MenuAnchor): void {
+    // Prioridad, estado y área aceptan varios valores: popover con casillas que no se cierra al marcar
     if (id === 'area') {
-      this.openAreaMenu(anchor);
+      this.openAreaPopover(anchor);
+      return;
+    }
+    if (id === 'priority' || id === 'status') {
+      this.openListPopover(id, anchor);
       return;
     }
 
+    // Los filtros de fecha siguen con un solo valor
     const menu = new Menu();
     for (const option of getFilterValueOptions(id, key => this.options.i18n.t(key))) {
       menu.addItem(item => item
@@ -250,67 +264,45 @@ export class TaskFilterBar {
     menu.showAtPosition(anchor);
   }
 
-  private openAreaMenu(anchor: MenuAnchor): void {
-    const menu = new Menu();
-    for (const area of this.areas) {
-      menu.addItem(item => item
-        .setTitle(area)
-        .setChecked(this.state.area === area)
-        .onClick(() => {
-          // Otra área reinicia la sub-área; la misma vuelve a abrir el menú de sub-áreas, que es cómo se cambia
-          this.update({ area, subArea: area === this.state.area ? this.state.subArea : '' });
-          if (this.subAreasOf(area).length > 0) this.showNext(() => this.openSubAreaMenu(anchor));
-        }));
-    }
-    // Las notas fuera de cualquier carpeta no tienen sub-áreas: elegirla no abre otro menú
-    if (this.hasRootTasks) {
-      if (this.areas.length > 0) menu.addSeparator();
-      menu.addItem(item => item
-        .setTitle(this.options.i18n.t('area_root'))
-        .setChecked(this.state.area === ROOT_AREA)
-        .onClick(() => this.update({ area: ROOT_AREA, subArea: '' })));
-    }
-    menu.showAtPosition(anchor);
+  private openListPopover(id: 'priority' | 'status', anchor: MenuAnchor): void {
+    const translate = (key: string): string => this.options.i18n.t(key);
+    const options = getFilterValueOptions(id, translate);
+    const order = options.map(option => option.value);
+
+    openFilterPopover({
+      anchor,
+      ariaLabel: getFilterTypeLabel(id, translate),
+      getSections: () => [{ options: options.map(option => ({ ...option, checked: this.state[id].includes(option.value) })) }],
+      onToggle: value => this.update({ [id]: toggleFilterValue(this.state[id], value, order) }),
+    });
   }
 
-  private openSubAreaMenu(anchor: MenuAnchor): void {
-    const menu = new Menu();
-    menu.addItem(item => item
-      .setTitle(this.options.i18n.t('all_sub_areas'))
-      .setChecked(!this.state.subArea)
-      .onClick(() => this.update({ subArea: '' })));
-    // Las notas que están directamente en la carpeta del área, sin subcarpeta
-    if (hasDirectTasks(this.filePaths, this.state.area)) {
-      menu.addItem(item => item
-        .setTitle(this.options.i18n.t('area_root'))
-        .setChecked(this.state.subArea === ROOT_AREA)
-        .onClick(() => this.update({ subArea: ROOT_AREA })));
-    }
-    for (const path of this.subAreasOf(this.state.area)) {
-      menu.addItem(item => item
-        .setTitle(path)
-        .setChecked(this.state.subArea === path)
-        .onClick(() => this.update({ subArea: path })));
-    }
-    menu.showAtPosition(anchor);
+  /** Dos pasos en el mismo popover: las áreas y, debajo, las sub-áreas de las áreas marcadas. */
+  private openAreaPopover(anchor: MenuAnchor): void {
+    const translate = (key: string): string => this.options.i18n.t(key);
+
+    openFilterPopover({
+      anchor,
+      ariaLabel: getFilterTypeLabel('area', translate),
+      getSections: () => buildAreaFilterSections({
+        routes: this.state.areas,
+        areas: this.areas,
+        hasRootTasks: this.hasRootTasks,
+        subAreasOf: area => this.subAreasOf(area),
+        hasDirectTasks: area => hasDirectTasks(this.filePaths, area),
+        translate,
+      }),
+      onToggle: route => this.update({ areas: toggleAreaRoute(this.state.areas, route) }),
+    });
   }
 
   private subAreasOf(area: string): string[] {
     return listTaskSubAreas(this.filePaths, area);
   }
 
-  /** Un área o una sub-área guardadas que ya no tienen tareas se reinician. */
+  /** Las rutas de área guardadas que ya no tienen tareas se descartan. */
   private reconcileArea(): void {
-    const isRoot = this.state.area === ROOT_AREA;
-    if (this.state.area && !(isRoot ? this.hasRootTasks : this.areas.includes(this.state.area))) {
-      this.state.area = '';
-      this.state.subArea = '';
-    }
-    if (this.state.subArea === ROOT_AREA) {
-      if (!hasDirectTasks(this.filePaths, this.state.area)) this.state.subArea = '';
-    } else if (this.state.subArea && !this.subAreasOf(this.state.area).includes(this.state.subArea)) {
-      this.state.subArea = '';
-    }
+    this.state.areas = reconcileAreaRoutes(this.state.areas, this.filePaths);
   }
 
   private updateSortDirectionButton(): void {
@@ -327,7 +319,7 @@ export class TaskFilterBar {
   private replaceFilters(next: TaskViewState): void {
     const changes: Partial<TaskViewState> = {};
     for (const key of FILTER_STATE_KEYS) {
-      if (next[key] !== this.state[key]) Object.assign(changes, { [key]: next[key] });
+      if (!sameFilterValue(next[key], this.state[key])) Object.assign(changes, { [key]: next[key] });
     }
     this.update(changes);
   }

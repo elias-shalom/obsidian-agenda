@@ -331,7 +331,7 @@ type GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags';
 
 | Vista | Clave de `localStorage` | Valores por defecto relevantes |
 |---|---|---|
-| Lista y Tabla (compartido) | `obsidian-agenda-task-view-state` | `mode: 'list'`, `search: ''`, `priority: 'all'`, `status: 'all'`, `area: ''`, `subArea: ''`, `start`/`scheduled`/`due: 'all'`, `group: ''` (vacío = el de cada vista: Lista `LIST_DEFAULT_GROUP = 'area'`, Tabla `TABLE_DEFAULT_GROUP = 'none'`), `sortColumn: 'priority'`, `sortDirection: 'desc'` |
+| Lista y Tabla (compartido) | `obsidian-agenda-task-view-state` | `mode: 'list'`, `search: ''`, `priority: []`, `status: []`, `areas: []` (antes de v1.1.14 eran `priority: 'all'`, `status: 'all'`, `area: ''` y `subArea: ''`; el estado guardado así se convierte al leerlo), `start`/`scheduled`/`due: 'all'`, `group: ''` (vacío = el de cada vista: Lista `LIST_DEFAULT_GROUP = 'area'`, Tabla `TABLE_DEFAULT_GROUP = 'none'`), `sortColumn: 'priority'`, `sortDirection: 'desc'` |
 | Kanban | `obsidian-agenda-kanban-view-state` (mismo formato) | `group` válido entre `KANBAN_GROUP_OPTIONS` (`status`, `priority`, `tags`, `folder`), por defecto `KANBAN_DEFAULT_GROUP = 'status'`; columnas plegadas en `obsidian-agenda-kanban-collapsed` |
 | Gantt | `obsidian-agenda-gantt-view-state` (mismo formato) | orden por defecto `sortColumn: 'start'`, `sortDirection: 'asc'`; zoom en `oa_gantt_zoom` (`14`); grupos plegados en `oa_gantt_collapsed:<clave>`; «sin fecha» en `oa_gantt_show_undated`. Hoy no tiene `group` propio (agrupa siempre por área y sub-área) |
 

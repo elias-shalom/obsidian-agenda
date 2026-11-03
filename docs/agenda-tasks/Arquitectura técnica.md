@@ -922,7 +922,7 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.4. Es
 **`TaskFilterBar`** (`src/core/task-filter-bar.ts`):
 - `mount()` construye la fila principal (`.oa-filter-bar__main`: conmutador de modo, botón + Filtro, agrupado, orden y dirección, búsqueda con `margin-left: auto`) y la fila de chips (`.oa-filter-bar__chips`), que solo se muestra con chips activos. Los cinco `<select>` de filtro desaparecen; agrupado y orden conservan los suyos.
 - Menús con `Menu` de Obsidian, colocados con `showAtPosition({ x, y })` bajo el botón o el chip pulsado (`getBoundingClientRect()`), con `setChecked()` en el valor actual. Se encadenan: el primer menú elige el tipo, el segundo el valor y, para Área con sub-áreas, un tercero la sub-área. No se usan submenús: los tipos de Obsidian 1.14.4 instalados no exponen `setSubmenu()`, y `minAppVersion` es 1.8.7.
-- `renderChips()` se llama desde `update()`, que es el único punto por donde pasan los cambios; no hay estado propio de la barra aparte de `TaskViewState`. `reconcileArea()` sigue reajustando un área guardada que ya no tiene tareas, ahora antes de dibujar los chips.
+- `renderChips()` se llama desde `update()`, que es el único punto por donde pasan los cambios; no hay estado propio de la barra aparte de `TaskViewState`. `reconcileArea()` sigue reajustando un área guardada que ya no tiene tareas, ahora antes de dibujar los chips. (Desde v1.1.14 delega en `reconcileAreaRoutes()` de `area.ts`: una sub-área o «Raíz» que ya no existen recaen en su área; ver §28.)
 - Cada chip es un `<button>` (`.oa-filter-chip`) con una × interna enfocable (`.oa-filter-chip__remove`) y `aria-label` con i18n; `Limpiar` es `.oa-filter-bar__clear`.
 
 **Estilos** (`src/styles/components/_task-filter-bar.scss`):
@@ -1180,7 +1180,7 @@ Comportamiento: [[Especificación de vistas]] §13.2, §14.7 y §18.6.
 - `listTaskAreas()` sigue sin incluir la raíz. `TaskFilterBar` añade «Raíz» al final del menú de Área (tras un separador si hay áreas), solo si alguna tarea cargada está en la raíz (`hasRootTasks()`), y al elegirla no abre el menú de sub-áreas (no tiene). `reconcileArea()` conserva el valor mientras haya tareas en la raíz y lo reinicia si ya no las hay. El chip de Área muestra «Raíz».
 - **Raíz en la sub-área**: `TaskViewState.subArea` admite también `ROOT_AREA`. `matchesTaskArea()` lo trata como «solo las notas directas del área» (la sub-área resuelta está vacía), `hasDirectTasks(filePaths, area)` decide si se ofrece, y el menú de sub-áreas de `TaskFilterBar` lo añade tras «Todas las sub-áreas». `reconcileArea()` lo reinicia si el área ya no tiene notas directas. El chip lo muestra como «Área › Raíz». Reutiliza la clave `area_root`.
 - Clave `area_root`: Root, Raíz, Hauptverzeichnis, Racine, Radice, Raiz. En el agrupado esas tareas siguen llamándose «Sin área» (`no_area`).
-- El valor viaja en el estado guardado de Lista, Tabla y Kanban: `parseTaskViewState()` ya acepta cualquier texto en `area`.
+- El valor viaja en el estado guardado de Lista, Tabla y Kanban: `parseTaskViewState()` ya acepta cualquier texto en `area`. (Desde v1.1.14 `area` y `subArea` se sustituyen por la lista `areas` de rutas, y `ROOT_AREA` sigue siendo la ruta de la raíz del vault; §28.1.)
 - Pruebas (Node): `matchesTaskArea()` con la raíz, con un área y con área y sub-área; `filterTasksByViewState()`; la reconciliación.
 
 ### 26.2 Rótulos «Group:» y «Sort:» en las tareas
@@ -1210,21 +1210,21 @@ La corrección la aportó [@AidanAJoyce](https://github.com/AidanAJoyce) desde u
 - **Permisos**: un PR desde un fork no da acceso de escritura al repositorio; cualquier cambio futuro de la misma persona pasa por otro PR que se revisa igual.
 - **Crédito**: README (sección Contributors) y la nota del Changelog de la versión.
 
-## 28. Filtros con varios valores y filtros en el calendario (v1.1.14, diseño — no implementado)
+## 28. Filtros con varios valores y filtros en el calendario (v1.1.14 — §28.1 y §28.2 implementados el 2026-11-03; calendario, diseño no implementado)
 
 Comportamiento: [[Especificación de vistas]] §19.
 
 ### 28.1 Modelo y filtrado
 
-- `TaskViewState` (`task-view-state.ts`): `priority` y `status` pasan de `string` a `string[]`, y el área y la sub-área a una lista de rutas (`Área`, `Área/sub/ruta`, `ROOT_AREA` para la raíz). `[]` equivale a «todos». Los filtros de fecha no cambian.
+- `TaskViewState` (`task-view-state.ts`): `priority` y `status` pasan de `string` a `string[]`, y el área y la sub-área a una sola lista `areas` de rutas (`Área`, `Área/sub/ruta`, `Área/` para las notas directas del área y `ROOT_AREA` para la raíz). `[]` equivale a «todos». Los filtros de fecha no cambian. **Implementado el 2026-11-03 (Fase M1).**
 - `parseTaskViewState()` convierte lo guardado: `'all'` pasa a `[]` y un valor suelto a una lista de uno; Kanban y Gantt lo usan también, así que no hay estados antiguos aparte.
-- `filterTasksByViewState()`: `TaskFilterCriteria.priority.is` y `.status` ya son listas; `criteria.location` y `matchesTaskArea()` (`area.ts`) pasan a aceptar varias rutas. Una ruta marcada es **efectiva** si ninguna otra ruta marcada cuelga de ella; la tarea cumple si su ruta está bajo alguna ruta efectiva (gana la más específica, Especificación §19.1).
+- `filterTasksByViewState()`: `TaskFilterCriteria.priority.is` y `.status` ya son listas; `criteria.location` gana `routes` y `matchesTaskAreas()` (`area.ts`) acepta varias rutas. Una ruta marcada es **efectiva** si ninguna otra ruta marcada cuelga de ella (`effectiveAreaRoutes()`); la tarea cumple si su ruta está bajo alguna ruta efectiva (gana la más específica, Especificación §19.1). `reconcileAreaRoutes()` descarta las rutas que ya no tienen notas.
 
-### 28.2 Barra y chips
+### 28.2 Barra y chips (**implementado el 2026-11-03, Fase M2; falta la prueba manual**)
 
 - Componente nuevo `src/core/task-filter-popover.ts`: un popover con casillas nativas, anclado bajo el chip o el botón pulsado (el ancla se mide al abrir, porque el chip se redibuja al marcar), que no se cierra al marcar y sí con un clic fuera o con Esc; accesible con teclado y utilizable en móvil. Llama a `onChange` en cada marca.
 - `TaskFilterBar` lo usa para prioridad, estado y área. El popover del área tiene dos secciones: las áreas (con «Raíz») y, debajo, las sub-áreas de las áreas marcadas, que se actualizan al marcar. `reconcileArea()` descarta las rutas que ya no tienen tareas.
-- `task-filter-chips.ts`: un chip por tipo; `getActiveFilterChips()` une los valores (con más de dos, el número) y aporta la lista completa para el tooltip; `clearFilterChip()` vacía la lista del tipo.
+- `task-filter-chips.ts`: un chip por tipo; `getActiveFilterChips()` muestra el nombre con un valor y solo el número con dos o más (el chip no crece) y aporta la lista completa para el tooltip; `clearFilterChip()` vacía la lista del tipo.
 - Opción nueva `filterTypes?: FilterChipId[]`: limita los tipos del menú «Añadir filtro» (el calendario no ofrece fechas).
 - La disposición de la barra (fila 1: conmutador, buscador y «+ Filtro»; fila 2: chips `Lanes`/`Group`/`Sort`) se describe en §29.2; los chips de filtro activos siguen en su fila propia.
 

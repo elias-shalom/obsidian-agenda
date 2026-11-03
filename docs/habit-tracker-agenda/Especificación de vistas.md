@@ -21,6 +21,7 @@ tags:
 
 > Stack: Handlebars (`.hbs`) + TS + luxon + SCSS. Todas las cadenas visibles vía `i18n.t()`.
 > Convenciones de interacción/responsividad descritas en §8.
+> **Ampliaciones v1.1.15–v1.1.16 (diseño, no implementado)**: §11 selector de subvistas con botones circulares, §12 periodo activo, vacaciones y frecuencias que siguen los días no laborables, §13 hábitos en el calendario y §14 widgets de hábitos en el Dashboard. Plan por fases HA1, HV1 y HU1 en [[Plan de implementación]]; modelo en [[Modelo de datos]] §8; mecanismo en [[Arquitectura técnica]] §10.
 
 ## 1. Vista Grid (estilo Habit Tracker 21) — PRINCIPAL
 
@@ -249,3 +250,180 @@ Rol: catálogo de hábitos con metadata y stats.
 
 - Validación inline (mensaje de error bajo el formulario) y `Notice` en errores de escritura (nombre duplicado, etc.).
 - Guardar exitoso → emite `obsidian-agenda:habits-refresh` y cierra el modal.
+
+> **Ampliación v1.1.15**: el modal gana dos selectores de fecha (`desde` y `hasta`) y el switch de `status` pasa a escribir/borrar `hasta`; ver §12.1. Las frecuencias «Fin de semana» y «Lunes a viernes» pasan a seguir el ajuste de días no laborables; ver §12.3.
+
+## 11. Selector de subvistas con botones circulares (v1.1.15 — diseño, no implementado)
+
+Decidido el 2026-11-02. Hoy las cinco subvistas de hábitos se conmutan con un `<select id="oa-habit-view-dropdown" class="oa-habit-view-dropdown">` repetido en las cinco plantillas (`habit-grid-view.hbs`, `habit-overview-view.hbs`, `habit-routine-view.hbs`, `habit-weekly-view.hbs`, `habit-table-view.hbs`, en `src/views/templates/`). Pasa a un grupo de **botones circulares con solo icono**, el mismo componente que usan el selector de vista del calendario y el conmutador Lista | Tabla.
+
+### 11.1 Wireframe
+
+```
+Antes:  ┌ Dashboard Hábitos ──────────────  [Cuadrícula ▼] ┐
+Ahora:  ┌ Dashboard Hábitos [+] ──  (◫)(☀)(✓)(▦)(☰)       ┐   ← el activo resaltado
+         Grid, Semanal y Rutina: ◀ ▶ y los selectores de orden/agrupado conservan su sitio
+```
+
+### 11.2 Comportamiento
+
+- **Componente reutilizado**: contenedor `oa-calendar-view-segmented` (`role="group"`) con un `oa-calendar-view-btn` por subvista (la clase `oa-active` marca la actual). No se crea un componente nuevo ni se duplican estilos: los de `_calendar-common.scss` ya dan el aspecto circular, el resaltado con el color de acento y el atenuado al pasar el ratón.
+- **Solo icono**: cada botón lleva `title` (tooltip) y `aria-label` con el nombre de la subvista (claves existentes `habit_dashboard_tab`, `habit_routine_tab`, `habit_weekly_tab`, `habit_grid_tab`, `habit_list_tab`). En móvil el nombre aparece al mantener pulsado (comportamiento del `title`).
+- **Posición**: igual que hoy, en el extremo derecho de la barra, a la derecha del título y del botón `+`; el resto de controles de la barra no se mueven.
+- **Visibilidad**: respeta los ajustes `showHabitDashboardTab`, `showHabitRoutineTab`, `showHabitWeeklyTab`, `showHabitGridTab` y `showHabitListTab` (mismos `{{#if settings.…}}` que ya tienen las `<option>`); un botón por subvista visible, en el orden actual: Dashboard, Rutina, Semanal, Cuadrícula, Lista.
+- **Iconos (Lucide)**:
+
+| Subvista | `viewSubtype` | Icono |
+|---|---|---|
+| Dashboard | `dashboard` | `layout-dashboard` |
+| Rutina | `routine` | `sunrise` |
+| Semanal | `weekly` | `calendar-check-2` |
+| Cuadrícula | `grid` | `grid-3x3` |
+| Lista | `table` | `list-checks` |
+
+- **Clic**: conmuta la subvista igual que el `change` del `<select>` actual (`HabitView.switchToViewType()`); pulsar la subvista activa no hace nada.
+- **Sin cambios**: los selectores de **orden** (`oa-habit-grid-sort`, `oa-habit-weekly-sort`, `oa-habit-routine-sort`) y de **agrupado** (`oa-habit-routine-group`) conservan su etiqueta y su `<select>`; la clase `oa-habit-view-dropdown` se sigue usando para ellos.
+
+> **ADR-SUB1 — Reutilizar el segmentado del calendario**: se reutiliza `oa-calendar-view-segmented`/`oa-calendar-view-btn` en vez de un componente propio de hábitos. Racional: un solo aspecto circular en calendario, Lista | Tabla y hábitos; cero estilos nuevos. Consecuencia: el selector de hábitos hereda cualquier cambio futuro de ese componente.
+
+### 11.3 Casos límite
+
+- Con **una sola** subvista visible se muestra un único botón activo (no se oculta el grupo, para no mover la barra).
+- Con **todas** ocultas no se renderiza el grupo (hoy el `<select>` quedaría vacío).
+- Si la subvista actual está oculta por ajustes, no hay botón activo; los botones visibles siguen funcionando.
+
+### 11.4 Fuera de alcance
+
+Cambiar el orden de las subvistas, mostrar la etiqueta junto al icono, y tocar los selectores de orden o agrupado.
+
+### 11.5 Por resolver al diseñar
+
+- Los iconos de Lucide propuestos (`calendar-check-2`, `grid-3x3`…) deben existir en la versión de Lucide que incluye el `minAppVersion` del plugin; si alguno no existe, se elige el alias vigente.
+
+## 12. Periodo activo y vacaciones (v1.1.15 — diseño, no implementado)
+
+Decidido el 2026-11-02. Dos mecanismos distintos que evitan que cambiar el estado de un hábito o salir de viaje altere el historial: el **periodo activo** (por hábito, en su nota) y las **vacaciones** (global, en los ajustes). Modelo en [[Modelo de datos]] §8; mecanismo en [[Arquitectura técnica]] §10.
+
+### 12.1 Periodo activo (`desde` / `hasta`)
+
+- **Campos opcionales en el frontmatter** del hábito, además del `status` actual: `desde` (primer día activo) y `hasta` (último día activo), fechas `AAAA-MM-DD`. **Sin fechas, el hábito se comporta como hoy.**
+- **El porcentaje de una fecha o de un rango cuenta solo los hábitos activos ese día.** Desactivar un hábito hoy no cambia el historial: hoy `HabitManager.getHabits()` descarta los inactivos y el porcentaje de días pasados cambia retroactivamente.
+- **Un solo periodo**, no una lista. Al **desactivar** un hábito (switch de estado del Habit Creator) el plugin escribe `hasta` = hoy; al **reactivarlo** lo borra. Las pausas temporales se resuelven con las vacaciones (§12.2).
+- **Consecuencia asumida**: si alguien desactiva y reactiva un hábito sin usar vacaciones, el hueco cuenta como días sin cumplir.
+- **Habit Creator**: dos selectores de fecha (`desde` y `hasta`), con botón para vaciarlos.
+
+```
+│ Frecuencia      [ everyday ▼ ] / [lu][ma][mi][ju][vi][sá][do]│
+│ Periodo activo  Desde [ 2026-03-01 ✕ ]   Hasta [ 2026-09-30 ✕ ]│   ← nuevo
+│ Status          [ ⚪──⚫ ] Activo                              │
+```
+
+> **ADR-PER1 — Un periodo, no una lista**: un único par `desde`/`hasta` por hábito. Racional: cubre «empecé este hábito» y «lo dejé» sin una interfaz de rangos múltiples; las pausas puntuales ya tienen su mecanismo (vacaciones). Alternativa descartada: lista de periodos por hábito.
+
+### 12.2 Vacaciones
+
+- **Lista global de periodos en los ajustes de hábitos**: cada periodo tiene `desde`, `hasta` y un **nombre opcional** (p. ej. «Navidad: 20 dic → 2 ene»), con botones para añadir y borrar. Aplica a **todos** los hábitos y es la **fuente única**: la lista vive solo en los ajustes.
+- **Regla del día de vacaciones**:
+
+| Situación en un día de vacaciones | Racha | Porcentaje |
+|---|---|---|
+| Hábito **sin marcar** | Neutral: ni suma ni rompe | No entra en el denominador (ni cumplido ni incumplido) |
+| Hábito **marcado** por el usuario | Suma a la racha de **ese** hábito | Entra en el porcentaje de **ese** hábito (numerador y denominador) |
+
+  El porcentaje global del día (y por área/franja) se calcula entonces solo con los hábitos marcados ese día; si ninguno lo está, el día no tiene dato (no es 0 %).
+- **Vistas**: los días de vacaciones se muestran **atenuados y con un icono** en la **Cuadrícula** (§1), el **Semanal** (§4) y el **heatmap** anual (§3.1). El nombre del periodo sale en el tooltip.
+- **Botón «Vacaciones»** en la barra de Hábitos: abre los ajustes del plugin en esa sección con `app.setting.open()` y `app.setting.openTabById('agenda-tasks')`. **Es una API no documentada de Obsidian** (el plugin hoy no la usa); si falla, un `Notice` indica la ruta: «Ajustes → Agenda Tasks → Vacaciones».
+
+```
+Ajustes → Agenda Tasks → Vacaciones
+  [ 2026-12-20 ] → [ 2027-01-02 ]  [ Navidad          ]  [🗑]
+  [ + Añadir periodo ]
+
+Cuadrícula:   Agua   ▣ ▣ ▒🌴 ▒🌴 ▣(marcado en vacaciones) ▣     ▒ = atenuado con icono
+```
+
+> **ADR-VAC1 — Un día de vacaciones marcado cuenta solo para ese hábito**: marcar en vacaciones no obliga a marcar los demás ni los penaliza. Racional: premia al usuario que mantiene un hábito de viaje sin convertir el resto en incumplidos. Alternativa descartada: dar por cumplidos o saltados todos los hábitos del día.
+
+> **ADR-VAC2 — Lista solo en ajustes, con acceso directo desde Hábitos**: no hay editor de vacaciones dentro de las vistas de hábitos; el botón «Vacaciones» solo navega a los ajustes. Racional: una fuente única y menos interfaz que mantener.
+
+### 12.3 Frecuencias y días no laborables (se implementa en NL2)
+
+- Las frecuencias **«Fin de semana»** (`weekend`) y **«Lunes a viernes»** (`workweek`) **pasan a seguir el ajuste de días no laborables** (siete casillas, por defecto sábado y domingo; lo define NL1 en `docs/agenda-tasks/Especificación de vistas.md` §21): «Fin de semana» = los días marcados como no laborables y «Lunes a viernes» = los demás. Hoy ambas están fijas en `[6, 7]` y `[1..5]` en `habit-parser.ts` y `habit-editor.ts`.
+- Con el ajuste por defecto el resultado es idéntico al actual; solo cambia para quien modifique los días no laborables.
+- **Las listas de días explícitas** (`[monday, wednesday]`, modo «Personalizado» del Habit Creator) y `everyday` **no cambian**.
+- **Aviso** porque afecta a rachas y porcentajes: el ajuste muestra un **texto fijo** bajo las casillas y un **`Notice`** breve al cambiarlo (el texto exacto se define en NL1, con claves `habit_*` para la parte de hábitos).
+- El Habit Creator sigue mostrando «Fin de semana» y «Lunes a viernes» en el selector de frecuencia; el modo detectado al editar se calcula contra los conjuntos que resultan del ajuste vigente.
+
+> **ADR-FRQ1 — Los tokens siguen al ajuste; las listas no**: el token (`weekend`/`workweek`) se guarda tal cual en la nota y se resuelve al leerla. Racional: no se reescriben notas al cambiar el ajuste. Consecuencia: cambiar el ajuste reescribe, en el cálculo, el historial de rachas y porcentajes de esos hábitos (de ahí el aviso).
+
+### 12.4 Casos límite
+
+| Caso | Comportamiento |
+|---|---|
+| Hábito sin `desde`/`hasta` y `status: active` | Siempre activo (igual que hoy). |
+| `status: inactive` sin `hasta` (nota anterior a v1.1.15) | Nunca activo: ni en filas ni en porcentajes (igual que hoy). |
+| `status: inactive` con `hasta` | Activo hasta `hasta` en el cálculo histórico; no aparece como fila en Cuadrícula, Semanal ni Rutina (igual que un inactivo hoy). |
+| Fecha con formato inválido | Se ignora ese campo (patrón de `entries` inválidas). |
+| Día marcado fuera del periodo activo | No cuenta (mismo criterio que un día no programado, ADR-005 de [[Modelo de datos]]). |
+| Día de vacaciones **no programado** para el hábito | Sigue siendo neutral aunque esté marcado (el día no programado prevalece). |
+| Periodos de vacaciones solapados | Se unen; un día es de vacaciones si cae en alguno. |
+| Periodo de vacaciones con `hasta` < `desde` | Se rechaza al editarlo en ajustes; al leer `data.json` se ignora. |
+
+### 12.5 Fuera de alcance
+
+Lista de periodos activos por hábito; vacaciones por hábito o por área; que el calendario marque los días de vacaciones (por ahora no); recordatorios de vacaciones (el aviso de unas vacaciones que empiezan lo da, si aplica, el panel «Resumen del día» del Dashboard, ver `docs/agenda-tasks/Especificación de vistas.md` §22).
+
+### 12.6 Por resolver al diseñar
+
+- **Apertura directa de la sección «Vacaciones»** en los ajustes con la API declarativa de Obsidian 1.13 (`getSettingDefinitions()`) y con el `display()` de respaldo (el plugin usa ambos en `setting-tab.ts`).
+- **Extremos del periodo**: se propone que `desde` y `hasta` sean inclusivos (así «desactivar hoy» no quita el día de hoy del historial); confirmar al implementar.
+- **Visibilidad de filas**: se propone que la Cuadrícula, la Semanal y la Rutina sigan mostrando solo los hábitos con `status: active`, y que los días fuera del periodo se vean neutrales y atenuados (como los no programados); confirmar si un hábito con `hasta` pasado debe seguir en las filas.
+- **Icono de vacaciones y su botón**: icono (se propone `tree-palm` de Lucide), posición exacta del botón en la barra y cómo cabe el icono en las celdas pequeñas del heatmap (si no cabe, solo atenuado con tooltip).
+- **Cómo se ve un hábito marcado en vacaciones** en la Cuadrícula (se propone: celda marcada normal con el icono pequeño) y las rachas con `maxGap` > 0 (el «día límite» fantasma se calcula hoy por días naturales; falta decidir si salta vacaciones y días no laborables).
+- **Frecuencias con casillas extremas**: resuelto el 2026-11-03: el ajuste exige al menos un día marcado y uno sin marcar, así que «Fin de semana» y «Lunes a viernes» siempre tienen días.
+- **Habit Creator**: si el usuario ya fijó un `hasta` futuro y apaga el switch, si se sobrescribe con hoy.
+- **Rutina diaria** en un día de vacaciones: qué lista y qué porcentaje muestra (los hábitos sin marcar no cuentan; falta decidir si se listan atenuados u ocultos) y el de la Lista/Tabla (columnas de racha y 30 d).
+
+## 13. Hábitos en el calendario (v1.1.15 — diseño, no implementado)
+
+> Resumen; **el detalle (dibujo en cada vista, chip, popover, filtros y ajuste) está en `docs/agenda-tasks/Especificación de vistas.md` §21 y la arquitectura en `docs/agenda-tasks/Arquitectura técnica.md` §30**. Fase HC1 del Plan de agenda-tasks, que depende de HA1 y HV1 de [[Plan de implementación]].
+
+Decidido el 2026-11-02; reemplaza al ítem «ajuste para que los hábitos generen o no tareas concluidas».
+
+- **Entradas virtuales**: los hábitos se dibujan en el calendario sin escribir nada en ningún archivo (mismo enfoque que las recurrentes proyectadas). Cada día en que «toca» un hábito aparece una entrada con su nombre, en su franja (`daytime`) y con el color de su área; respeta el **periodo activo** (§12.1) y los **días de vacaciones** (§12.2).
+- **No son tareas**: no aparecen en Lista, Tabla, Kanban ni Gantt, ni en los conteos de tareas (para eso están los widgets y el heatmap, §14).
+- **Interacción**: clic marca o desmarca (reutiliza la escritura de `completions` de `habit-writer.ts`, [[Arquitectura técnica]] §2.4); doble clic abre la nota del hábito.
+- **Vistas**: Mes, Semana, Semana laboral, Día y Lista del calendario; **no** en Año.
+- **Presentación**: en Mes, Semana, Semana laboral y Lista, un **chip resumen por día** (`🔁 3/5`, cumplidos de los que tocan ese día) que abre un **popover** con la lista de hábitos de ese día y su casilla; en **Día**, una sección «Hábitos» completa **agrupada por franja** (despertar, mañana, tarde, noche).
+- **Ajuste «Mostrar hábitos en el calendario»**, desactivado por defecto; sin efecto si la pestaña Hábitos está oculta.
+- **Filtros**: la barra de filtros del calendario los afecta por **área** (el área del hábito) y por **búsqueda** (su nombre); prioridad y estado no aplican y no los ocultan.
+
+> **ADR-CAL1 — Entradas virtuales, no líneas `[x]`**: descartado escribir líneas `[x]` en la nota del hábito (riesgo de duplicados, líneas editadas a mano y notas que crecen) y descartado que cada ocurrencia sea una tarea. Racional: el estado del hábito ya vive en `completions`; el calendario solo lo muestra y lo edita por el mismo camino que las demás vistas.
+
+**Fuera de alcance**: que los hábitos generen tareas (descartado); hábitos en Año, Gantt, Lista, Tabla o Kanban; que el calendario marque los días de vacaciones (por ahora no).
+
+**Por resolver al diseñar**: cómo se ve en el calendario un hábito marcado dentro de un periodo de vacaciones (el hábito sin marcar no «toca» ese día, §12.2); se resuelve junto con agenda-tasks §21.
+
+## 14. Widgets de hábitos y heatmap compartido en el Dashboard (v1.1.16 — diseño, no implementado)
+
+> Resumen; **el detalle (panel de vida, pestañas, arrastre, catálogo de paneles y heatmap reutilizable) está en `docs/agenda-tasks/Especificación de vistas.md` §22 y la arquitectura en `docs/agenda-tasks/Arquitectura técnica.md` §31**. Fases HM1 y DW1 del Plan de agenda-tasks.
+
+Decidido el 2026-11-01 (en lo principal) y el 2026-11-02. El Overview de tareas incorpora widgets de hábitos que reutilizan el cálculo de `habit-stats.ts` y `habit-streak.ts`, por lo que **heredan el periodo activo y las vacaciones** de §12 sin lógica propia.
+
+| Widget | Muestra |
+|---|---|
+| **Hábitos de hoy** | Cumplidos de los que tocan hoy (p. ej. `3/5`), con barra. |
+| **Racha actual** | La mejor racha entre los hábitos activos, con la máxima de subtítulo. |
+| **Esta semana** | Siete anillos (uno por día) con el porcentaje semanal, como la imagen «Tu semana». |
+| **Heatmap anual de hábitos** | El del Dashboard de hábitos (§3.1), ahora como componente compartido. |
+
+- Cada uno es un panel del catálogo del panel de vida (hoy, una casilla del panel de widgets).
+- **Sin la pestaña Hábitos** (`showHabitTab` desactivado), los widgets de hábitos no aparecen en «Añadir panel» y los ya añadidos se ocultan sin perder su sitio en la disposición; vuelven al reactivar la pestaña.
+- **El heatmap de hábitos migra al componente de heatmap reutilizable** (métrica «% cumplido»; agnóstico: recibe una función `fecha → valor`, su escala de color y el texto del tooltip) y **debe quedar idéntico al actual**: 5 niveles según `pctWeighted`, columnas por semana, etiquetas de mes y día, año navegable `◀ AÑO ▶`, día actual resaltado y tooltip por celda. Se elimina el código duplicado `oa-habit-heatmap-*`.
+- El marcado de **vacaciones** del heatmap (§12.2) debe sobrevivir a la migración: el componente necesita una forma de marcar una celda como «atenuada con icono» sin saber de hábitos (ver [[Arquitectura técnica]] §10.8).
+
+> **ADR-DSH1 — Un componente de heatmap para tareas y hábitos**: el heatmap de hábitos es el primer consumidor del componente reutilizable y el criterio de aceptación es que no cambie. Racional: evitar dos implementaciones; el heatmap de tareas (DT1) se apoya en el mismo.
+
+**Fuera de alcance**: filtros globales del Dashboard (más adelante); que los widgets de hábitos existan sin la pestaña Hábitos.
+
+**Por resolver al diseñar**: cómo se relaciona visualmente el heatmap de hábitos con el de tareas dentro del panel de vida; qué muestra «Hábitos de hoy» cuando hoy es un día de vacaciones sin hábitos marcados (denominador 0, §12.2).

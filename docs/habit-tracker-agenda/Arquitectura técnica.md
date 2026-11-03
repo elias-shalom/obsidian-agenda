@@ -224,6 +224,8 @@ export interface AgendaPluginSettings {
   - Toggles de visibilidad por pestaña de hábitos.
   - Botón "Refrescar" → emite `obsidian-agenda:habits-refresh`.
 
+> **Ampliación v1.1.15 (diseño)**: ajuste `habitVacations` (lista de periodos de vacaciones) con su sección «Vacaciones» y el ajuste de días no laborables que comparten calendario, Gantt y frecuencias de hábitos; ver §10.3 y §10.6.
+
 ## 5. i18n
 
 Agregar en los 6 locales (`en.json`, `es.json`, `de.json`, `fr.json`, `it.json`, `pt.json`):
@@ -320,3 +322,147 @@ this.addCommand({ id: "oa-habit-edit", name: this.i18n.t("habit_edit_habit"),
 - [ ] SCSS importado; namespace `oa-habit-`.
 - [ ] `npm run build` y `npm run lint` en verde.
 - [ ] Limpieza de listeners en `onunload`/`onClose`.
+
+## 10. Periodo activo, vacaciones, selector circular y frecuencias con días no laborables (v1.1.15 — diseño, no implementado)
+
+Decidido el 2026-11-02 (hábitos en el calendario y widgets del Dashboard, en §10.7 y §10.8). Comportamiento en [[Especificación de vistas]] §11–§14; datos en [[Modelo de datos]] §8; fases HA1, HV1 y HU1 en [[Plan de implementación]]. Todo lo de esta sección es **diseño**: los archivos y funciones marcados «por crear» son propuestas.
+
+### 10.1 Archivos
+
+| Archivo | Cambio |
+|---|---|
+| `src/habits/habit-calendar.ts` | **Por crear.** Funciones puras, sin importar `obsidian`: `isActiveOn()`, `findVacation()`, `countsOn()` y los tipos `IHabitVacation`/`IHabitCalcContext` ([[Modelo de datos]] §8.2–§8.5). Es el único sitio con la regla; así se prueba con `node --test`. |
+| `src/habits/habit.ts` | `IHabit` gana `activeFrom`/`activeUntil`; `IHabitCell` y `IHabitDayStat` ganan `vacation`. `isScheduled()` se conserva (significa «toca ese día de la semana»). |
+| `src/habits/habit-parser.ts` | Lee `desde`/`hasta` (solo `AAAA-MM-DD`); `normalizeFrequencySet()` recibe los días no laborables y resuelve `weekend`/`workweek` con ellos (§10.6). |
+| `src/habits/habit-manager.ts` | Nuevo `getHabitsForStats()` (activos + inactivos con `hasta`) y `getCalcContext()` (lee `habitVacations` de los ajustes). `getHabits()` no cambia. `computeDashboard()` usa ambos. |
+| `src/habits/habit-streak.ts` | `computeCells`, `computeStats`, `computeOccurrenceCells`, `computeOccurrenceStats`, `isRunContinuous` e `isOccurrenceRunContinuous` reciben el contexto (parámetro opcional, por defecto sin vacaciones) y usan `countsOn()` donde hoy usan `isScheduled()` para decidir si un día cuenta. |
+| `src/habits/habit-stats.ts` | `computeAreaStats`, `computeDaytimeStats`, `computeHistory30d`, `computeYearHistory` y `computeDashboard` usan `countsOn()` en el denominador y rellenan `vacation` en `IHabitDayStat`. |
+| `src/habits/habit-editor.ts` | Dos `<input type="date">` (`desde`, `hasta`) con botón de vaciar; el switch de `status` autocompleta/borra `hasta`; `FREQUENCY_PRESETS` y `resolveFrequencyMode()` salen de los días no laborables; escribe `desde`/`hasta` en `createHabit()` y `updateHabit()` (y los borra si están vacíos). |
+| `src/habits/habit-writer.ts` | **Sin cambios**: el toggle sigue escribiendo solo `completions` y `entries`; el cálculo decide después qué cuenta. |
+| `src/views/habit-view.ts` | El `change` del `<select>` pasa a clic sobre los botones circulares; añade el botón «Vacaciones» (§10.4). |
+| `src/views/templates/habit-{grid,overview,routine,weekly,table}-view.hbs` | Se reemplaza el `<select id="oa-habit-view-dropdown">` por el grupo de botones (§10.5); se añade el botón «Vacaciones». |
+| `src/views/habit-grid-view.ts`, `habit-weekly-view.ts` | Pasan el contexto de vacaciones a las celdas y marcan `vacation` en las columnas. |
+| `src/settings/settings.ts` y `setting-tab.ts` | Ajuste `habitVacations` y su sección con `render:` propio (§10.3). |
+| `src/styles/_habit-common.scss`, `_habit-grid.scss`, `_habit-weekly.scss`, `_habit-overview.scss` | Estado `--oa-vacation` (atenuado + icono) en celdas y heatmap; el selector circular reutiliza `_calendar-common.scss`. |
+| `src/locales/*.json` (6 locales) | Claves nuevas (§10.9). |
+| `tests/habit-*.test.cjs` | **Por crear** (§10.10). |
+
+### 10.2 Periodo activo
+
+1. **Parser**: `parseHabit()` añade `activeFrom`/`activeUntil` = `fm.desde`/`fm.hasta` si son cadenas `AAAA-MM-DD` válidas (también la fecha real, `DateTime.isValid`); si no, `null`. Sin fechas y con `status` activo, nada cambia.
+2. **Manager**: `getHabits()` (filas de Grid, Semanal, Rutina y Dashboard «hoy») sigue filtrando por `status`. `getHabitsForStats()` devuelve además los inactivos con `hasta`, para que los porcentajes de días pasados no cambien al desactivar un hábito (ADR-DM1 de [[Modelo de datos]]). `getAllHabits()` (Lista) no cambia.
+3. **Cálculo**: cada función de `habit-stats.ts` y `habit-streak.ts` filtra por `isActiveOn(habit, iso)` dentro de `countsOn()`; los días fuera del periodo son neutrales, igual que los no programados.
+4. **Editor**: al **apagar** el switch de `status` se rellena el selector `hasta` con la fecha de hoy; al **encender** se vacía `hasta` (y se conserva `desde`). El guardado valida `desde ≤ hasta` con mensaje inline (`habit_period_invalid`). `updateHabit()` ya reconstruye un solo bloque YAML con `vault.process` (§3.3): se añaden `fm.desde`/`fm.hasta` o `delete` si están vacíos; `completions` y `entries` no se tocan.
+5. **Refresco**: sin eventos nuevos; el guardado ya llama a `refreshHabits()` y emite `obsidian-agenda:habits-refresh`.
+
+> **ADR-AR1 — La regla vive en `habit-calendar.ts` y no en cada función de cálculo**: `countsOn()` es el único lugar que decide si un día cuenta (programado, activo, vacaciones). Racional: hoy `isScheduled()` se repite en 11 funciones de `habit-streak.ts` y `habit-stats.ts`; añadir dos reglas en cada una las haría divergir. Consecuencia: el parámetro de contexto se propaga a todas.
+
+### 10.3 Vacaciones: ajustes y cálculo
+
+- **Estado guardado**: `habitVacations: IHabitVacation[]` en `data.json`, defecto `[]`; se valida al cargar con el patrón por campo de `loadSettings` (se descartan filas con fechas inválidas o `to < from`). No usa `localStorage`.
+- **Sección «Vacaciones»** en los ajustes de hábitos (junto a «Hábitos» en `setting-tab.ts`): un elemento con `render: (setting) => …` (como `renderHabitFolderField()`) que pinta la lista (dos `<input type="date">`, nombre opcional y papelera por fila) y el botón «Añadir periodo». Debe existir tanto en `getSettingDefinitions()` como en el `display()` de respaldo (Obsidian < 1.13).
+- **Al cambiar la lista**: guarda ajustes, `habitManager.refreshHabits()` y emite `obsidian-agenda:habits-refresh` (mismo camino que `habitShowSingleDaytimeLabel`).
+- **Contexto de cálculo**: `HabitManager.getCalcContext()` devuelve `{ vacations }` y lo reciben las vistas al construir celdas, filas y estadísticas; las funciones puras no leen los ajustes.
+- **Cuadrícula y Semanal**: `IHabitCell.vacation` añade la clase `--oa-vacation` (atenuado + icono pequeño; tooltip con el nombre del periodo); si la celda está marcada conserva `--oa-ticked`. En el Semanal se reutiliza el mismo generador de celdas. El `% ` de la fila usa `countsOn()`.
+- **Heatmap**: `IHabitDayStat.vacation` → la celda se atenúa con icono/tooltip (§10.8 para HM1).
+- **Racha con `maxGap`**: los días de vacaciones sin marca no consumen hueco (igual que los no programados). El «día límite» fantasma (`lastTick + maxGap + 1` en días naturales, `habit-streak.ts`) hoy tampoco salta los días no programados: **por resolver al diseñar** si debe saltar vacaciones y días no laborables.
+
+### 10.4 Botón «Vacaciones» y `app.setting.open()`
+
+```ts
+// por crear — src/habits/open-habit-settings.ts
+export function openPluginSettings(app: App, pluginId: string): boolean {
+  const setting = (app as unknown as { setting?: { open?: () => void; openTabById?: (id: string) => unknown } }).setting;
+  try {
+    if (typeof setting?.open !== 'function' || typeof setting.openTabById !== 'function') return false;
+    setting.open();
+    return Boolean(setting.openTabById(pluginId));   // pluginId = manifest.id ('agenda-tasks')
+  } catch {
+    return false;
+  }
+}
+// si devuelve false: new Notice(i18n.t('habit_vacations_open_failed'))  → «Ajustes → Agenda Tasks → Vacaciones»
+```
+
+- **API no documentada de Obsidian**: `app.setting` no está en `obsidian.d.ts`; el plugin hoy no la usa (no hay ninguna aparición de `openTabById` en `src/`). Por eso se accede con un cast defensivo y se avisa con un `Notice` si falla. Puede cambiar entre versiones de Obsidian.
+- El botón vive en la barra de Hábitos (las cinco plantillas) y se cablea en `HabitView.setupViewSpecificEventListeners()`, junto al botón `+` (`#oa-habit-new-btn`).
+- **Por resolver al diseñar**: abrir directamente la sección «Vacaciones» (hoy `openTabById` solo abre la pestaña del plugin; falta decidir si se hace scroll al encabezado o se coloca la sección arriba), con `getSettingDefinitions()` (1.13) y con `display()`.
+
+### 10.5 Selector de subvistas con botones circulares (HU1)
+
+- **Plantillas**: en cada `habit-*-view.hbs`, el `<div class="oa-habit-view-selector">` con el `<select id="oa-habit-view-dropdown">` pasa a:
+
+```hbs
+<div class="oa-calendar-view-segmented" role="group" aria-label="{{t 'habit_view_tab'}}">
+  {{#if settings.showHabitDashboardTab}}<button type="button" class="oa-calendar-view-btn {{#eq viewSubtype "dashboard"}}oa-active{{/eq}}" data-habit-subtype="dashboard" title="{{t 'habit_dashboard_tab'}}" aria-label="{{t 'habit_dashboard_tab'}}"></button>{{/if}}
+  {{!-- idem routine, weekly, grid, table con sus claves --}}
+</div>
+```
+
+  El plugin **no registra parciales** de Handlebars, así que el bloque se repite en las cinco plantillas (igual que hoy el `<select>`); si se prefiere un parcial, hay que registrarlo en `BaseView`.
+- **Iconos**: se inyectan con `setIcon(button, iconId)` desde un mapa `HABIT_VIEW_BUTTON_ICONS` (por crear, análogo a `CALENDAR_VIEW_BUTTON_ICONS` de `calendar-view.ts`): `dashboard → layout-dashboard`, `routine → sunrise`, `weekly → calendar-check-2`, `grid → grid-3x3`, `table → list-checks`.
+- **TS**: `HabitView.setupViewSpecificEventListeners()` deja de buscar `#oa-habit-view-dropdown` y recorre `.oa-calendar-view-btn[data-habit-subtype]` (`setIcon` + clic → `switchToViewType()`); su comentario de clase («dropdown») se actualiza.
+- **Estilos**: ninguno nuevo; `.oa-habit-view-dropdown` (`_habit-common.scss`) se sigue usando en los selectores de orden y agrupado con etiqueta. Se retiran, si quedan huérfanas, solo las reglas del contenedor del `<select>` de vista.
+- **Riesgos**: iconos inexistentes en la versión de Lucide de la `minAppVersion` (`setIcon` no lanza: deja el botón vacío; probar los cinco); con una sola subvista visible no hay que ocultar el grupo.
+
+### 10.6 Frecuencias con días no laborables (NL2)
+
+- `normalizeFrequencySet(value, nonWorkingDays)` (`habit-parser.ts`): `weekend` → `nonWorkingDays`, `workweek` → `{1..7} \ nonWorkingDays`; `everyday` y la lista de nombres no cambian. `parseHabit()` ya recibe `settings`, así que lee el ajuste (nombre propuesto `nonWorkingDays`, el que defina NL1 en `docs/agenda-tasks/Arquitectura técnica.md` §30).
+- `habit-editor.ts`: `FREQUENCY_PRESETS` se calcula con una función pura compartida (`frequencyPresets(nonWorkingDays)`, por crear) y `resolveFrequencyMode()` se extrae como función pura `(set, nonWorkingDays) => modo` para poder probarla en Node.
+- **Re-parseo**: `IHabit.frequencySet` se calcula al parsear; al cambiar el ajuste de días no laborables hay que llamar a `habitManager.refreshHabits()` y emitir `obsidian-agenda:habits-refresh`.
+- **Aviso**: texto fijo y `Notice` los pone el ajuste (NL1); aquí solo se añade la clave de la parte de hábitos.
+- **Resuelto el 2026-11-03**: el ajuste exige al menos un día marcado y uno sin marcar (`sanitizeNonWorkingDays()`, ver [[Modelo de datos]] §8.6), así que `weekend` y `workweek` nunca quedan vacíos; ya no hace falta decidir el caso de conjunto vacío.
+
+### 10.7 Hábitos en el calendario (HC1, v1.1.15) — resumen
+
+El detalle (cómo se pintan las entradas virtuales en cada vista, el chip `🔁 3/5` con popover, la sección «Hábitos» por franja en Día, el ajuste «Mostrar hábitos en el calendario» y los filtros) está en `docs/agenda-tasks/Arquitectura técnica.md` §30. Desde el lado de hábitos:
+
+- Los datos salen de `HabitManager`: `getHabits()` para las filas y `isScheduled()`/`countsOn()`/`getCalcContext()` para decidir qué «toca» cada día, respetando periodo activo y vacaciones.
+- Marcar o desmarcar reutiliza `HabitManager.toggleOccurrence()` → `habit-writer.ts` (§2.4); **no se escribe nada más** en archivos y los hábitos no entran en `TaskManager`.
+- Depende de HA1 y HV1; el calendario **no** marca los días de vacaciones (por ahora).
+
+### 10.8 Widgets de hábitos y heatmap compartido (HM1 y DW1, v1.1.16) — resumen
+
+Detalle en `docs/agenda-tasks/Arquitectura técnica.md` §31. Desde el lado de hábitos:
+
+- Los widgets «Hábitos de hoy», «Racha actual», «Esta semana» y el heatmap anual consumen `computeDashboard()`, `computeStats()` y `computeYearHistory()` con el contexto de §10.3, de modo que heredan periodo activo y vacaciones.
+- **Migración del heatmap**: el heatmap anual de hábitos (`oa-habit-heatmap-*` en `habit-overview-view`) pasa al componente reutilizable con la métrica «% cumplido» (`fecha → pctWeighted`) y **debe quedar idéntico** (5 niveles, columnas por semana, etiquetas, año navegable, día actual resaltado, tooltip). Se elimina el código duplicado.
+- **Marca de vacaciones**: el componente es agnóstico, así que su contrato de métrica debe admitir una marca por celda («atenuada con icono y tooltip») además del valor. Si HV1 (v1.1.15) llega antes que HM1, la marca se implementa primero en el heatmap actual y HM1 debe reproducirla.
+- Sin la pestaña Hábitos (`showHabitTab`), los widgets salen del catálogo (lo gestiona el registro de paneles, §31).
+
+### 10.9 i18n (6 locales)
+
+Claves nuevas propuestas: `habit_active_from`, `habit_active_until`, `habit_period_invalid`, `habit_vacations`, `habit_vacations_desc`, `habit_vacation_add`, `habit_vacation_from`, `habit_vacation_to`, `habit_vacation_name`, `habit_vacation_delete`, `habit_vacation_day` (tooltip), `habit_vacations_button`, `habit_vacations_open_failed` (con la ruta «Ajustes → Agenda Tasks → Vacaciones»), `habit_freq_nonworking_hint`. Los botones circulares reutilizan `habit_dashboard_tab`, `habit_routine_tab`, `habit_weekly_tab`, `habit_grid_tab` y `habit_list_tab`. Regla de siempre: ninguna cadena visible fuera de `i18n.t()`; los 6 locales con el mismo conjunto de claves.
+
+### 10.10 Pruebas
+
+**Node (`node --test`)**, en `tests/`, con el patrón de `calendar-weekday-labels.test.cjs` (transpilar el `.ts` con `typescript` y stubs de `obsidian`; las funciones de `habit-calendar.ts` no importan `obsidian`). `parseHabit()` se usa con un `file` simulado para generar `frequencySet`. Propuestos:
+
+| Archivo (por crear) | Casos |
+|---|---|
+| `habit-period.test.cjs` | **Periodo activo**: `isActiveOn` en los extremos (`desde`/`hasta` inclusivos); sin fechas siempre activo; `inactive` sin `hasta` nunca; `inactive` con `hasta`; fechas inválidas = ausentes; `desde > hasta` nunca activo. **Historial estable**: dos hábitos, uno desactivado con `hasta` = 10 de marzo; el porcentaje del 5 de marzo es igual antes y después de desactivar, y el del 15 solo cuenta al otro. Racha: los días antes de `desde` no rompen ni suman. |
+| `habit-vacations.test.cjs` | **Vacaciones**: `findVacation` con extremos inclusivos, solapados y descartados inválidos. Día sin marcar: racha 18, 19, (20–21 en vacaciones), 22 con `maxGap` 0 → continúa; sin vacaciones se corta. Denominador: dos hábitos y vacaciones sin marcas → `total` 0 y `vacation: true`. **Marca en vacaciones**: A marcado y B no → ese día `total` 1, `done` 1 (100 %, no 50 %) y la racha de A suma el día. Multi-daytime: solo una ocurrencia marcada → cuenta en esa daytime y no en la otra. Día no programado marcado en vacaciones → neutral. Marcado fuera del periodo → neutral. Celdas: `vacation` y clase; marcada conserva `ticked`. |
+| `habit-frequency.test.cjs` | **Frecuencias**: con `[6, 7]` el resultado es idéntico al actual (`weekend` `{6,7}`, `workweek` `{1..5}`); con `[5, 6]` → `weekend` `{5,6}` y `workweek` `{1,2,3,4,7}`; con `[7]`; `everyday` y la lista de nombres no cambian; `resolveFrequencyMode` extraída. **Racha**: un hábito `workweek` marcado de lunes a viernes mantiene la racha el sábado con `[6, 7]` y la rompe con `[7]` (documenta el riesgo). Casos de ajuste en extremo: ya no se dan, porque el ajuste rechaza «ningún día marcado» y «los siete marcados» (prueba de `sanitizeNonWorkingDays()` en el Plan de agenda-tasks, NL1). |
+| `habit-heatmap-parity.test.cjs` (HM1) | La métrica del heatmap migrado devuelve los mismos valores y niveles que `computeYearHistory()` para un conjunto fijo de hábitos (comparación con un resultado guardado antes de migrar). |
+
+**Manuales** (vault de prueba): desactivar y reactivar un hábito y ver que el historial no cambia; crear vacaciones que incluyan hoy, marcar un hábito y comprobar racha y porcentaje; botón «Vacaciones» en escritorio y móvil (y simulando la falla de `app.setting` para ver el `Notice`); los cinco botones circulares con los ajustes `showHabit*Tab` combinados y el tooltip/aria-label; cambiar los días no laborables y ver el aviso y el cambio de rachas; heatmap con vacaciones en claro y oscuro.
+
+### 10.11 Riesgos
+
+| Riesgo | Mitigación |
+|---|---|
+| Cambiar el ajuste de días no laborables **altera rachas y porcentajes** de los hábitos `weekend`/`workweek` | Aviso fijo y `Notice` en el ajuste; el token no reescribe notas; los valores por defecto dan el mismo resultado que hoy. |
+| `app.setting.open()`/`openTabById()` son **API no documentada** y pueden cambiar | Acceso defensivo con comprobación de tipos y `try/catch`; `Notice` con la ruta; probar en cada versión mínima y actual de Obsidian. |
+| La **migración del heatmap** (HM1) cambia su aspecto o sus valores | Criterio de aceptación «idéntico»: prueba de paridad de la métrica y comparación visual en claro/oscuro; la marca de vacaciones forma parte del contrato del componente. |
+| La regla de conteo se **duplica** en muchas funciones y diverge | `countsOn()` único en `habit-calendar.ts` (ADR-AR1) y pruebas de la tabla de [[Modelo de datos]] §8.5. |
+| Hábitos antiguos con `status: inactive` y sin `hasta` | Siguen excluidos de porcentajes (comportamiento actual); no se migran notas. |
+| `frequencySet` calculado al parsear queda **obsoleto** al cambiar el ajuste | Re-parseo con `refreshHabits()` + evento de refresco al cambiar el ajuste. |
+| Dos dispositivos con **ajustes distintos** (`data.json` sincronizado) | El ajuste y la lista de vacaciones viajan en `data.json`; se asume el último guardado. |
+
+### 10.12 Checklist de integración (v1.1.15)
+
+- [ ] HA1: `desde`/`hasta` leídos y escritos; el porcentaje de días pasados no cambia al desactivar.
+- [ ] HV1: lista de vacaciones en ajustes, cálculo, atenuado en Cuadrícula/Semanal/heatmap y botón «Vacaciones».
+- [ ] HU1: cinco plantillas con botones circulares y `showHabit*Tab` respetados.
+- [ ] NL2 (Plan de agenda-tasks): frecuencias `weekend`/`workweek` siguen los días no laborables, con aviso.
+- [ ] i18n en los 6 locales; `npm run build` y `npm run lint` en verde; `node --test tests` en verde.

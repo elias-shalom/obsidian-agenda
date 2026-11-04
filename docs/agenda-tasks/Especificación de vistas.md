@@ -575,7 +575,7 @@ El README y el manual de usuario anuncian para la Tabla **columnas y diseño per
 
 ### 14.4 Barra de filtros con chips (v1.1.12 — implementado y probado a mano)
 
-> **Cambia en v1.1.14**: un chip por tipo con varios valores, tooltip con la lista, popover con casillas y barra también en el calendario (§19); además, los combos de agrupado y orden pasan a los chips `Group` y `Sort` de una fila propia (con el chip nuevo `Lanes`) y el conmutador Lista | Tabla se coloca a la izquierda de «+ Filtro» (§20). Lo descrito abajo es el comportamiento actual.
+> **Cambia en v1.1.14**: un chip por tipo con varios valores, tooltip con la lista, popover con casillas y barra también en el calendario (§19); además, los combos de agrupado y orden pasan a los chips `Group` y `Sort` de una fila propia (con el chip nuevo `Lanes`) y el conmutador Lista | Tabla se coloca justo a la izquierda del buscador (§20). Lo descrito abajo es el comportamiento actual.
 
 **Problema.** Con todos los controles en una sola fila (conmutador de modo, cinco combos de filtro, agrupado, orden y dirección), la barra se parte donde cae el ancho: el orden salta a una segunda fila sin criterio, los combos tienen anchos distintos, la búsqueda queda lejos y flotando, y el combo de estado dice «All tasks», que se confunde con «todas las tareas».
 
@@ -1099,14 +1099,14 @@ Kanban · Lanes: Área · Group (columnas): Estado
 
 ### 20.2 Barra de chips
 
-Los combos de agrupado y orden de la barra (§14.4 y §14.7) pasan a **chips** que abren una **lista directa** (el mismo menú de Obsidian que «+ Filtro», sin modal) y van en la fila 1, junto a «+ Filtro», con su mismo aspecto. El conmutador Lista | Tabla se mueve al inicio de la fila 1; el buscador conserva su sitio y su tamaño. Los chips de filtro de §19.1 no cambian.
+Los combos de agrupado y orden de la barra (§14.4 y §14.7) pasan a **chips** que abren una **lista directa** (el mismo menú de Obsidian que «+ Filtro», sin modal) y van en la fila 1, junto a «+ Filtro», con su mismo aspecto. El conmutador Lista | Tabla va al final de la fila 1, justo a la izquierda del buscador, que conserva su sitio y su tamaño. Los chips de filtro de §19.1 no cambian.
 
 ```
-Fila 1   [◫ ☰]  [+ Filtro] [Lanes: Ninguno ▾] [Group: Estado ▾] [Sort: Prioridad ↓]    [ Buscar tareas… ]
+Fila 1   [+ Filtro] [Lanes: Ninguno ▾] [Group: Estado ▾] [Sort: Prioridad ↓]    [◫ ☰] [ Buscar tareas… ]
 Fila 2   [Prioridad: Alta ×] [Área: Trabajo ×]  [Limpiar]         (solo con filtros activos)
 ```
 
-- **Conmutador Lista | Tabla**: ya usa botones circulares (`mountModeSwitch()` en `src/core/task-filter-bar.ts`, clases `oa-calendar-view-segmented` y `oa-calendar-view-btn`); solo cambia de sitio. Va al inicio de la fila 1, a la izquierda de «+ Filtro», **siempre en la misma posición**, y solo existe en Lista y Tabla (Kanban y Gantt no tienen conmutador).
+- **Conmutador Lista | Tabla**: ya usa botones circulares (`mountModeSwitch()` en `src/core/task-filter-bar.ts`, clases `oa-calendar-view-segmented` y `oa-calendar-view-btn`); solo cambia de sitio. Va al final de la fila 1, justo a la izquierda del buscador, **siempre en la misma posición**, y solo existe en Lista y Tabla (Kanban y Gantt no tienen conmutador).
 - **Chips `Lanes`, `Group` y `Sort`**: cada uno muestra «Rótulo: valor» (los rótulos de §14.7: «Grupo:», «Orden:»; para Lanes, §20.6) y abre una lista directa con sus opciones; no hay modal. `Sort` lleva la dirección dentro del chip: ↑ o ↓ y un clic la invierte.
 - **Tooltip de Lanes**: «Divide la vista en varias, una por valor».
 - **Lanes = Ninguno** aparece atenuado, para que se vea que no hay carriles activos.
@@ -1193,7 +1193,7 @@ Arrastrar tareas entre carriles; carriles en el calendario, el Dashboard o los h
 | ADR | Decisión |
 |---|---|
 | ADR-LA1 | Lanes y Group son controles independientes y coexisten en todas las vistas; Lanes = Ninguno por defecto. |
-| ADR-LA2 | Cada control es un chip con el aspecto de «+ Filtro» y su mismo menú (lista directa, sin modal); los tres chips van en la fila 1, junto a «+ Filtro», y el conmutador Lista \| Tabla al inicio. |
+| ADR-LA2 | Cada control es un chip con el aspecto de «+ Filtro» y su mismo menú (lista directa, sin modal); los tres chips van en la fila 1, junto a «+ Filtro», y el conmutador Lista \| Tabla al final de la fila 1, junto al buscador. |
 | ADR-LA3 | Una función única `buildLanes()` (por crear) compartida por las cuatro vistas, con pruebas de Node de la partición, el orden y las etiquetas múltiples. |
 | ADR-LA4 | Lanes y Group no repiten campo (2026-11-03): opción atenuada con tooltip; en Kanban no se puede elegir; en Lista, Tabla y Gantt sí, y el otro chip pasa solo a Ninguno. |
 | ADR-LA5 | Los carriles son de solo lectura y los vacíos se ocultan; el plegado se recuerda por campo. |

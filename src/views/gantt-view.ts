@@ -276,6 +276,10 @@ export class GanttView extends BaseView {
     container.querySelectorAll<HTMLElement>('[data-group-color]').forEach(el => {
       el.setCssProps({ '--oa-gantt-color': el.dataset.groupColor ?? '' });
     });
+    // El borde de color de la cabecera de un carril lo pinta `--oa-group-color`, como en las demás vistas
+    container.querySelectorAll<HTMLElement>('.oa-lane[data-group-color]').forEach(lane => {
+      lane.setCssProps({ '--oa-group-color': lane.dataset.groupColor ?? '' });
+    });
     this.addLaneToggleListeners(container);
 
     container.querySelectorAll<HTMLElement>('[data-zoom]').forEach(button => {

@@ -34,6 +34,15 @@
     margin-left: auto;
   }
 
+  // El conmutador Lista | Tabla va pegado a la izquierda del buscador: él toma el margen automático
+  .oa-filter-bar__mode {
+    margin-left: auto;
+
+    + .oa-filter-bar__search {
+      margin-left: 0;
+    }
+  }
+
   .oa-filter-bar__search-input {
     @include interactive-control;
     width: 100%;

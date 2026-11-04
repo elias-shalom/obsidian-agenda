@@ -115,8 +115,6 @@ export class TaskFilterBar {
     root.addClass('oa-filter-bar');
 
     const main = root.createDiv({ cls: 'oa-filter-bar__main' });
-    this.mountModeSwitch(main);
-
     const addButton = main.createEl('button', { cls: 'oa-filter-bar__add', text: i18n.t('filter_add'), attr: { type: 'button' } });
     addButton.addEventListener('click', () => this.openTypeMenu(this.anchorOf(addButton)));
 
@@ -124,7 +122,8 @@ export class TaskFilterBar {
     this.axesEl = main.createDiv({ cls: 'oa-filter-bar__axes' });
     this.renderAxes();
 
-    // El buscador va al final de la fila, a la derecha, con su tamaño de siempre
+    // Al final de la fila, a la derecha: el conmutador Lista | Tabla (solo en esas vistas) y, pegado a él, el buscador
+    this.mountModeSwitch(main);
     this.mountSearch(main);
 
     this.chipsEl = root.createDiv({ cls: 'oa-filter-bar__chips' });
@@ -135,8 +134,8 @@ export class TaskFilterBar {
     const modeSwitch = this.options.modeSwitch;
     if (!modeSwitch) return;
 
-    // Mismas clases que el selector de vista del calendario
-    const group = parent.createDiv({ cls: 'oa-calendar-view-segmented', attr: { role: 'group', 'aria-label': this.options.i18n.t('tasks_view_tab') } });
+    // Mismas clases que el selector de vista del calendario; `oa-filter-bar__mode` lo lleva al borde derecho, junto al buscador
+    const group = parent.createDiv({ cls: 'oa-calendar-view-segmented oa-filter-bar__mode', attr: { role: 'group', 'aria-label': this.options.i18n.t('tasks_view_tab') } });
     for (const mode of modeSwitch.modes) {
       const button = group.createEl('button', {
         cls: 'oa-calendar-view-btn',

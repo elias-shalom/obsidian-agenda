@@ -27,8 +27,8 @@
   "timeline_view_tab": "Chronologie",
   "timeline_view_title": "Chronologie",
   "week_view": "Semaine",
-  "group_none": "Sans regroupement",
-  "group_area": "Domaine et sous-domaine",
+  "group_none": "Aucun",
+  "group_area": "Domaine et sous",
   "no_area": "Sans domaine",
   "no_sub_area": "Sans sous-domaine",
   "area": "Domaine",
@@ -98,7 +98,9 @@
   "highest_priority": "Plus élevé",
   "no_priority": "Sans priorité",
   "none": "Aucun",
-  "all_sub_areas": "Tous les sous-domaines",
+  "filter_sub_areas": "Sous-domaines",
+  "lane_sub_area": "Sous-domaine",
+  "lane_no_tag": "Sans étiquette",
   "filter_add": "+ Filtre",
   "filter_clear": "Effacer",
   "filter_remove": "Retirer le filtre : {filter}",
@@ -368,6 +370,12 @@
   "area_root": "Racine",
   "group_label": "Groupe :",
   "sort_label": "Tri :",
+  "lanes_label": "Couloirs :",
+  "lanes_tooltip": "Divise la vue en plusieurs, une par valeur",
+  "axis_in_use_by_group": "Utilisé par Groupe",
+  "axis_in_use_by_group_swap": "Utilisé par Groupe : le choisir remet Groupe sur Aucun",
+  "axis_in_use_by_lanes": "Utilisé par Couloirs",
+  "axis_in_use_by_lanes_swap": "Utilisé par Couloirs : le choisir remet Couloirs sur Aucun",
   "gantt_zoom_days": "{n} jours",
   "gantt_week_prefix": "S",
   "gantt_undated_title": "Tâches sans date",
@@ -379,6 +387,10 @@
   "whats_new": {
     "title": "Nouveautés d'Agenda Tasks",
     "close": "Fermer",
+    "v1_1_14": {
+      "title": "Couloirs et filtres à plusieurs valeurs",
+      "items": "Un nouveau bouton Couloirs divise Kanban, Liste, Tableau et Gantt en un widget indépendant par domaine, sous-domaine, statut, priorité, étiquette, dossier ou fichier ; repliez chaque couloir avec son ▼.\nLes filtres Priorité, Statut et Domaine acceptent désormais plusieurs valeurs à la fois ; un filtre à plusieurs valeurs n'affiche que leur nombre (par exemple Statut : 2).\nLes vues du calendrier ont leur propre barre de filtres avec recherche, Priorité, Statut et Domaine.\nGroupe et Tri sont désormais des boutons compacts à côté de + Filtre, et le commutateur Liste | Tableau se trouve à côté de la recherche.\nListe et Tableau peuvent regrouper par date de début et par date planifiée, et le Gantt a un nouveau sélecteur Groupe (Aucun, Domaine, Statut, Priorité).\nCouloirs et Groupe ne répètent jamais un champ : dans Kanban l'option en conflit est bloquée, et dans Liste, Tableau et Gantt l'autre bouton passe tout seul à Aucun."
+    },
     "v1_1_13": {
       "title": "Kanban, Gantt et plus",
       "items": "Un nouvel onglet Kanban affiche vos tâches en colonnes par statut, priorité, étiquette ou dossier ; faites glisser une carte vers une autre colonne de statut ou de priorité pour la modifier, et repliez les colonnes inutiles.\nUn nouvel onglet Gantt dessine vos tâches sur une frise chronologique ; faites glisser une barre pour la déplacer, glissez ses bords pour changer une date, ou étirez un jalon pour en faire une barre.\nUn seul interrupteur pour l'onglet Tâches remplace ceux de la Liste et du Tableau, et un nouvel interrupteur masque tout l'onglet Habitudes.\nLe filtre Domaine propose une option Racine pour les notes hors de tout dossier, et le filtre Sous-domaine une pour les notes directement dans le dossier d'un domaine.\nSi le dossier des habitudes n'existe pas, la création de votre première habitude propose de le créer, et les paramètres indiquent s'il existe.\nLes sélecteurs de tri et de regroupement ont maintenant un libellé (Tri : / Groupe :).\nLes vues de calendrier Semaine, Semaine de travail et Liste affichent les bons jours de la semaine quand la semaine ne commence pas le dimanche (merci à @AidanAJoyce).\nCette fenêtre : après une mise à jour, vous verrez les nouveautés une seule fois ; vous pouvez la désactiver dans les paramètres."

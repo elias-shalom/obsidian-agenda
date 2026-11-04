@@ -92,7 +92,7 @@ export abstract class BaseView extends ItemView {
 
   /** Hay algo en curso que un redibujado interrumpiría: modal, menú, selector de fecha, arrastre o un campo con foco. */
   private isInteracting(): boolean {
-    if (document.body.querySelector('.modal-container, .menu, .flatpickr-calendar.open')) return true;
+    if (document.body.querySelector('.modal-container, .menu, .flatpickr-calendar.open, .oa-filter-popover')) return true;
     if (this.containerEl.querySelector('.oa-dragging, .oa-resizing')) return true;
 
     const active = document.activeElement;
@@ -508,6 +508,19 @@ protected attachEventTabs(container: HTMLElement, plugin: AgendaPlugin, leaf: Wo
           group.classList.add('oa-collapsed');
         }
       }
+    });
+  }
+
+  /** Plegar y desplegar carriles (Lanes); se recuerda con la misma clave de `localStorage` que usan los grupos. */
+  protected addLaneToggleListeners(container: HTMLElement): void {
+    container.querySelectorAll<HTMLElement>('.oa-lane').forEach(lane => {
+      const storageKey = `folder_${lane.dataset.laneKey ?? ''}_collapsed`;
+      lane.toggleClass('oa-collapsed', this.app.loadLocalStorage(storageKey) === 'true');
+
+      lane.querySelector(':scope > .oa-lane-header')?.addEventListener('click', () => {
+        lane.toggleClass('oa-collapsed', !lane.hasClass('oa-collapsed'));
+        this.app.saveLocalStorage(storageKey, String(lane.hasClass('oa-collapsed')));
+      });
     });
   }
 

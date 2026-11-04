@@ -1,6 +1,6 @@
 import { ITask, TaskFilterCriteria } from "../types/interfaces";
 import { DateTime } from "luxon";
-import { matchesTaskArea } from "./area";
+import { matchesTaskArea, matchesTaskAreas } from "./area";
 
 /**
  * Clase responsable del filtrado de tareas según diversos criterios
@@ -332,8 +332,11 @@ export class TaskFilter {
       }
     }
 
-    // Filtrar por área y sub-área (ubicación física de la nota, v1.1.12)
+    // Filtrar por área y sub-área (ubicación física de la nota, v1.1.12) y por varias rutas de área (v1.1.14)
     if (!matchesTaskArea(task.file.path ?? '', criteria.location)) {
+      return false;
+    }
+    if (criteria.location.routes && !matchesTaskAreas(task.file.path ?? '', criteria.location.routes)) {
       return false;
     }
 

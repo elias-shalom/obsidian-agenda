@@ -359,7 +359,7 @@ Fetch en vivo desde GitHub Releases; renderizado de Markdown libre (imágenes, v
 
 ## Próxima fase — v1.1.13: Kanban view (diseño; la Fase A, las piezas compartidas, va en v1.1.12)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §11. Mecanismo: [[Arquitectura técnica]] §20. **Fases A y B implementadas (la B, probada a mano); la C pasa a v1.1.14.** El arrastre se resolvió: solo estado y prioridad. El orden manual (Fase C) se pospone a v1.1.14 (ver §20.4). La Fase B2 (columnas plegables y altura máxima) está implementada y probada a mano; el agrupado por área y sub-área pasa a v1.1.14 (Especificación §11.3).
+> Comportamiento y decisiones: [[Especificación de vistas]] §11. Mecanismo: [[Arquitectura técnica]] §20. **Fases A y B implementadas (la B, probada a mano); la C (orden manual) quedó descartada el 2026-11-02.** El arrastre se resolvió: solo estado y prioridad. El orden manual (Fase C) se había pospuesto a v1.1.14 (ver §20.4); el 2026-11-02 se descartó porque bastan los combos de orden. La Fase B2 (columnas plegables y altura máxima) está implementada y probada a mano; el agrupado por área y sub-área se resuelve en v1.1.14 con Lanes (Especificación §11.3 y §20).
 
 ### Fase A — Piezas compartidas (base para Kanban y Gantt, sin vista nueva)
 - [x] `TaskSorter.groupTasksByField(tasks, field)` genérico, con las columnas de estado en orden de flujo de trabajo (el del menú de estado: To-do, En progreso, En espera, Hecho, Cancelada, No es tarea; siempre las 6, aunque estén vacías). Para `path` devuelve un árbol de carpetas; la lógica vive en `src/core/task-grouping.ts` y `BaseView.groupTasksByFolder()` delega en ella. Falta `'area'`/`'subArea'` (AR2) y que Lista y Tabla lo usen (U2/U3).
@@ -388,15 +388,16 @@ Fetch en vivo desde GitHub Releases; renderizado de Markdown libre (imágenes, v
 - [x] Claves i18n `kanban_collapse_column` y `kanban_expand_column` en los 6 locales.
 - [x] Verificable sola: Node (`resolveCollapsed()` y la plantilla con columnas plegadas). Prueba manual: plegar, desplegar y recargar; las vacías arrancan plegadas; soltar sobre una plegada; una columna con muchas tareas desplaza por su cuenta y el arrastre sigue funcionando dentro de ella; panel dividido y teléfono emulado.
 - [x] `npm run build` y ESLint sobre los archivos tocados.
-- [ ] Agrupar el tablero por área y sub-área: **pasa a v1.1.14** (Especificación §11.3, opciones A, B y C).
+- [ ] Agrupar el tablero por área y sub-área: **pasa a v1.1.14 vía Lanes** (Área y Sub-área son opciones planas de Lanes, no de las columnas; fase L4 de este plan, Especificación §11.3 y §20).
 
-### Fase C — Reordenar dentro de una columna (pospuesta a v1.1.14; depende de B)
+### Fase C — Reordenar dentro de una columna (descartada el 2026-11-02; se conserva como historia)
+> **Descartada.** Aplazada primero el 2026-10-31 y descartada el 2026-11-02: bastan los combos de orden. No se implementa en ninguna versión; lo siguiente es el texto original.
 - [ ] Aplazada por decisión del 2026-10-31: no es necesaria para v1.1.13. La propuesta de diseño y las preguntas abiertas están en [[Arquitectura técnica]] §20.4.
 - [ ] Resolver dónde se persiste el orden manual (candidato: `data.json`, por `ruta:línea` o `🆔`) y cómo se invalida cuando cambia el archivo.
 - [ ] Arrastrar una tarjeta a otra posición de la misma columna y conservar el orden entre recargas.
 
 ### Fuera de alcance
-Tableros múltiples guardados; mini-lenguaje de query propio; carriles (swimlanes) plegables; estados personalizables (candidato a v1.1.14); unificar las pestañas Lista y Tabla.
+Tableros múltiples guardados; mini-lenguaje de query propio; unificar las pestañas Lista y Tabla (hecho en v1.1.12). Lo que esta lista dejaba para después ya tiene versión: los carriles (swimlanes) plegables entran en v1.1.14 como Lanes (Fase L4) y los estados personalizables en v1.1.17 (Fases ES1 a ES4).
 
 ## Próxima fase — v1.1.13: Gantt view (diseño)
 
@@ -410,7 +411,7 @@ Tableros múltiples guardados; mini-lenguaje de query propio; carriles (swimlane
 - [x] Agrupado por área y sub-área (anidado por carpeta), plegable; la cabecera de grupo no lleva barra resumen (retirada tras la primera revisión visual).
 - [x] Columna de nombres con el icono de prioridad junto al de estado y el texto un poco más pequeño (0,9 em).
 - [x] Barra de controles a la derecha (zoom y `◀ Hoy ▶`, como el calendario) y cuadrícula vertical (línea de día, línea de semana más marcada, fines de semana sombreados).
-- [ ] Combo de agrupado del Gantt: pasa a v1.1.14 (Arquitectura §21.9).
+- [ ] Combo de agrupado del Gantt: pasa a v1.1.14 como chip `Group` de la barra de chips, junto con Lanes (fase L4 de este plan; Arquitectura §21.9 y §29).
 - [x] Ajustes visuales tras la revisión: zoom con número e icono de mes, cabecera de grupo sin barra y tareas sin fecha como grupo plegable al estilo de la Lista (máx. 80 %).
 - [x] Contador «N tareas sin fecha» y barras recortadas cuando salen de la ventana.
 - [x] Fin anterior al inicio en datos escritos a mano: se dibuja como hito en la fecha de inicio, con un aviso.
@@ -488,10 +489,11 @@ Flechas de dependencia y su aviso de rotura; desplazamiento en cascada de depend
 - [x] Verificable sola: cambiar de modo conserva búsqueda, filtros, agrupado y orden; la pestaña se ilumina en ambos modos (el estado se comprobó con script de Node; falta la comprobación visual en Obsidian). (probado a mano)
 - [x] `npm run build` y ESLint sobre los archivos tocados.
 
-### Fase U5 — Funciones anunciadas de la Tabla (pasa a v1.1.14; por diseñar, depende de U3 y U7)
-- [ ] Diseñar y agregar columnas y diseño personalizables de la Tabla (Especificación §14.3).
-- [ ] Diseñar y agregar la exportación a CSV (Especificación §14.3).
-- [ ] Verificable sola: el README y el manual de usuario dicen lo mismo que hace la Tabla (al implementarlo en v1.1.14 se vuelven a anunciar).
+### Fase U5 — Funciones anunciadas de la Tabla (pasa a v1.1.17; se refina en TB1 y TB2; depende de U3 y U7)
+> Diseñada el 2026-11-02: columnas personalizables en TB1 y exportación a CSV en TB2 (Especificación §23 y Arquitectura §32). Las casillas siguientes quedan como historia y se cierran con esas fases.
+- [ ] Columnas y diseño personalizables de la Tabla (Especificación §14.3): fase TB1.
+- [ ] Exportación a CSV (Especificación §14.3): fase TB2.
+- [ ] Verificable sola: el README y el manual de usuario dicen lo mismo que hace la Tabla (al implementarlo en v1.1.17 se vuelven a anunciar).
 
 ### Fase U6 — Barra de filtros con chips (pulido estético, depende de U1; diseño en [[Especificación de vistas]] §14.4 y [[Arquitectura técnica]] §23.7)
 - [x] **U6.1 Lógica pura**: nuevo `src/core/task-filter-chips.ts` con `FilterChipId`, `getActiveFilterChips()`, `clearFilterChip()`, `clearAllFilters()` y `getFilterValueOptions()`; `PRIORITY_OPTIONS` y `DUE_OPTIONS` se movieron allí desde `task-filter-bar.ts`.
@@ -615,9 +617,294 @@ La alineación de la vista Semana con `weekStartDay` (usa la semana ISO de Luxon
 ### Fuera de alcance
 Cambiar el texto de «Sin área» en el agrupado; los títulos «By area» y «By daytime» del Dashboard de hábitos; un filtro de raíz para la sub-área.
 
-## Próxima fase — v1.1.15: sincronía con Google Calendar (diseño)
+## Próxima fase — v1.1.14: filtros con varios valores, filtros en el calendario y Lanes (diseño)
 
-> Comportamiento y decisiones: [[Especificación de vistas]] §15. Mecanismo: [[Arquitectura técnica]] §24. **Nada de esta fase está implementada.** Sin decisiones de diseño abiertas (Especificación §15.8). Como el repo no tiene pruebas automatizadas, cada fase incluye sus scripts de prueba de Node.
+> Comportamiento: [[Especificación de vistas]] §19 (filtros) y §20 (Lanes y barra de chips). Mecanismo: [[Arquitectura técnica]] §28 (filtros) y §29 (Lanes). **Nada de esta versión está implementada.** Alcance repartido el 2026-11-02: v1.1.14 es la versión **Filtros y Lanes**. Los filtros se cerraron el 2026-10-31 (Especificación §19.4) y Lanes el 2026-11-01 y 2026-11-03 (opciones en uso y traducción). Este bloque ya no incluye la Fase U5 de la Tabla (pasó a v1.1.17, fases TB1 y TB2) ni la Fase C de Kanban (descartada el 2026-11-02); el agrupado de Kanban por área y sub-área y el combo de agrupado del Gantt entran por Lanes y por el chip `Group` (fases L3 y L4).
+>
+> **Orden de trabajo**: M1 → M2 → CF1 → CF2 para los filtros; L1 en paralelo (es independiente); L2 cuando estén L1 y M2; L3 y L4 después de L2; CV14 cierra la versión. Cada fase se prueba por separado; las dependencias van en su título.
+
+### Fase M1 — Modelo y filtrado (independiente) — **implementada el 2026-11-03**
+- [x] `TaskViewState`: `priority` y `status` pasan a listas y `area` + `subArea` a una sola lista `areas` de rutas (`Área`, `Área/sub/ruta`, `Área/` para las notas directas del área y `ROOT_AREA`); `parseTaskViewState()` convierte el estado guardado con un solo valor (`'all'` pasa a `[]`).
+- [x] `filterTasksByViewState()`: O dentro de un tipo, Y entre tipos; `matchesTaskAreas()` (`area.ts`) acepta varias rutas y gana la más específica (`TaskFilterCriteria.location.routes`).
+- [x] Verificable sola: Node (`tests/task-filters.test.cjs`, con el cargador `tests/helpers/load-source.cjs`): conversión del estado antiguo, O/Y, regla de lo más específico, «Raíz» y chips.
+- [x] La barra y los chips se adaptaron sin cambiar su comportamiento (selección única); `reconcileAreaRoutes()` descarta las rutas sin notas. El popover con casillas es la Fase M2.
+
+### Fase M2 — Barra y chips (depende de M1) — **implementada y probada el 2026-11-03**
+- [x] `src/core/task-filter-popover.ts`: popover con casillas que no se cierra al marcar (clic fuera o Esc), anclado al chip o botón, accesible con teclado y con objetivo táctil mayor en móvil; solo hay uno abierto.
+- [x] `TaskFilterBar` lo usa para prioridad, estado y área; el del área tiene dos secciones (áreas y sub-áreas de las marcadas, con «Área › Raíz» para las notas directas); `reconcileAreaRoutes()` (M1) descarta las rutas que ya no existen. Los filtros de fecha siguen con el menú de elección única.
+- [x] `task-filter-chips.ts`: un chip por tipo (el nombre con un valor y solo el número con dos o más, decidido el 2026-11-03) y tooltip con la lista completa (`FilterChip.title`); `toggleFilterValue()`, `buildAreaFilterSections()` y `toggleAreaRoute()` (`area.ts`) son puras y se prueban con Node.
+- [x] La lista del filtro de estado sale de `getStatusOptions()` y no de la constante `STATUS_OPTIONS` directamente, para que los estados personalizados de v1.1.17 (fase ES4) no obliguen a rehacer esta fase.
+- [x] Clave `filter_sub_areas` en los 6 idiomas (sustituye a `all_sub_areas`, que ya no se usa).
+- [x] Prueba manual en Lista, Tabla, Kanban y Gantt: marcar Normal y Medium a la vez, varios estados y áreas con sub-áreas, el chip con dos o más valores («Estado: 2») y su tooltip, Esc y clic fuera, teclado, y en `is-tablet` e `is-phone`.
+
+### Fase CF1 — Estado y filtrado del calendario (depende de M1) — **implementada el 2026-11-03**
+- [x] `src/core/calendar-state.ts` con la clave `obsidian-agenda-calendar-view-state`, compartida por las 6 subvistas: mismo formato que `TaskViewState`, pero `parseCalendarState()` solo conserva búsqueda, prioridad, estado y área (los filtros de fecha, el agrupado y el orden vuelven a su valor por defecto).
+- [x] `CalendarView` filtra en `getTasksForDate()` (que recorre `visibleTasks`, calculado una vez en `onOpen()`), junto a `calendarShowCompletedTasks`; las seis subvistas, el selector de fecha y los contadores de la vista Año pasan por ese punto. `this.tasks` queda completa para buscar una tarea por su línea.
+- [x] Verificable sola: Node (`tests/calendar-filters.test.cjs`, 12 pruebas): estado y su conversión, filtrado por prioridad, estado, área y búsqueda, y la integración real con `CalendarView` (cargado con dobles de Obsidian). Sin barra todavía: el estado se escribe desde la Fase CF2.
+
+### Fase CF2 — Barra en el calendario (depende de M2 y CF1) — **implementada y probada el 2026-11-03**
+- [x] Opción `filterTypes` en `TaskFilterBar` (prioridad, estado, área; sin fechas, agrupado ni orden): `CALENDAR_FILTER_TYPES` en `calendar-state.ts`.
+- [x] Barra siempre visible justo bajo las pestañas principales, con el mismo aspecto que en las demás vistas y sin botón para abrirla: es el **primer elemento de `.agenda-content-container`**, igual que en Lista, Tabla, Kanban y Gantt (mismo espaciado bajo las pestañas, sin estilos propios). `CalendarView.onOpen()` la crea antes de filtrar (reajusta un área guardada que ya no existe) y `refreshCalendar()` la monta tras cada dibujado completo.
+- [x] No pierde el foco: un cambio de filtro llama a `redrawCalendarBody()`, que dibuja el calendario en un contenedor aparte y sustituye **todo el contenido salvo el nodo de la barra** (quitar y volver a poner el nodo desenfocaría el buscador). Un redibujado lento no pisa a otro más reciente (`redrawToken`). `BaseView.isInteracting()` cuenta el popover abierto para que un refresco automático no destruya la barra.
+- [x] Verificable con Node (`tests/calendar-filters.test.cjs`, 18 pruebas, con un DOM mínimo y un doble de la barra): tipos ofrecidos, barra como primer elemento del contenido, redibujado parcial que conserva el mismo nodo de la barra, redibujados que se pisan, y área guardada que ya no existe.
+- [x] Prueba manual en las 6 subvistas, con el buscador y con el foco: teclear varias letras seguidas sin perderlo, cambiar de subvista y navegar con filtros activos, el popover abierto durante un refresco, y en escritorio, `is-tablet` e `is-phone`.
+
+### Fase L1 — Núcleo de carriles (independiente; Especificación §20, Arquitectura §29) — **implementada el 2026-11-03**
+- [x] Función única `buildLanes()`, compartida por las 4 vistas, en `src/core/task-lanes.ts` (módulo puro): parte las tareas por el campo de Lanes y devuelve un carril (`Lane`: `key`, `label`, `tasks` y `color`) por valor; «Ninguno» o un campo desconocido devuelven `[]`.
+- [x] Opciones de Lanes (`LANE_OPTIONS`): Ninguno, Área, Sub-área, Estado, Prioridad, Etiqueta, Carpeta y Archivo. Área y Sub-área son planas (`Área › Sub-área`, con «Raíz» para notas sin carpeta o subcarpeta); Carpeta es la ruta completa y Archivo el nombre de la nota.
+- [x] Etiqueta: la tarea se repite en cada carril de sus etiquetas (sin distinguir mayúsculas, una sola vez por carril) y «Sin etiqueta» va al final. Carriles vacíos ocultos.
+- [x] Orden de carriles: natural para Estado y Prioridad (su orden lógico), alfabético sin distinguir mayúsculas para el resto, con «Raíz» y «Sin etiqueta» al final. En Sub-área, las notas directas del área (`Área › Raíz`) van las primeras de su área.
+- [x] Regla de campos en uso como función pura (por familia: Estado, Prioridad, Etiqueta, Archivo y la familia de ruta Área, Sub-área y Carpeta; Vencimiento libre): `isGroupOptionInUse()`, `isLaneOptionInUse()` y `resolveAxisConflict()`; en Kanban (`requiresGroup`) la opción en uso no se puede elegir; en Lista, Tabla y Gantt se puede elegir y el otro chip pasa solo a Ninguno (`'none'`), en los dos sentidos; `defaultGroup` resuelve el `group` vacío de cada vista (Lista = Área, Tabla = Ninguno, Kanban = Estado).
+- [x] Verificable sola: `node --test` sobre `buildLanes()` (`tests/task-lanes.test.cjs`, 38 pruebas): partición, orden, etiquetas múltiples, «Raíz», «Sin etiqueta», carriles vacíos, nombres no ASCII y notas homónimas, la regla de campos en uso y las claves de texto en los 6 idiomas. Aún no la usa ninguna vista (L2 a L4).
+- [x] Claves de texto nuevas en los 6 idiomas: `lane_sub_area` y `lane_no_tag`; `PRIORITY_ORDER` de `task-grouping.ts` se exporta para compartir el orden de prioridades.
+
+### Fase L2 — Barra de chips (depende de L1 y M2; Especificación §20, Arquitectura §29) — **implementada el 2026-11-03**
+- [x] Chips `Lanes`, `Group` y `Sort` en la fila 1, junto a «+ Filtro» y con su mismo aspecto; cada uno abre el mismo menú nativo de Obsidian que «+ Filtro», con la opción actual marcada, y elegir una la aplica; la flecha ↑/↓ va dentro del chip de `Sort`; reemplaza los combos `Group` y `Sort` de la barra (ver Especificación §14.4 y §19). Un chip solo existe si la vista le pasa sus opciones (`laneOptions`, `groupOptions`, `sortOptions`).
+- [x] El conmutador Lista | Tabla queda al final de la fila 1, justo a la izquierda del buscador (`[+ Filtro] [Lanes] [Group] [Sort] ··· [conmutador] [buscador]`), siempre en la misma posición (`mountModeSwitch()` en `src/core/task-filter-bar.ts`); solo en Lista y Tabla. El buscador conserva su sitio (derecha) y su tamaño de siempre (`clamp(180px, 25%, 300px)`). Primero se probó al inicio de la fila y el 2026-11-03 se movió junto al buscador. Los chips `Group` y `Sort` tienen el mismo aspecto que «+ Filtro».
+- [x] Opciones en uso: en Kanban la opción en uso por el otro chip se bloquea (`setDisabled`); en Lista, Tabla y Gantt se puede elegir y el otro chip pasa a Ninguno. El `Menu` nativo no permite atenuar ni tooltip por opción, así que los textos «En uso por Grupo» quedan en i18n sin mostrarse hasta que haga falta. Tooltip del chip `Lanes`: «Divide la vista en varias, una por valor».
+- [x] En móvil la fila se ajusta a 2 líneas (`flex-wrap`; en una barra estrecha el buscador baja a su propia línea con la regla `@container` de siempre).
+- [x] El `Group` de Lista y Tabla gana Inicio y Programada (2026-11-03): agrupan por día como Vencimiento, con «sin fecha» al final, y no chocan con ningún carril (`tests/task-grouping-dates.test.cjs`, 7 pruebas). Las etiquetas «Ninguno» y «Área y sub» sustituyen a «Sin agrupar» y «Área y sub-área» en los 6 idiomas.
+- [x] Estado guardado: `TaskViewState.lanes` (`''` por defecto, validado con `isLaneField()`); `group`, `sortColumn` y `sortDirection` siguen donde estaban.
+- [x] Claves i18n nuevas en los 6 locales (`lanes_label`, `lanes_tooltip`, `axis_in_use_by_group`, `axis_in_use_by_group_swap`, `axis_in_use_by_lanes`, `axis_in_use_by_lanes_swap`); «Lanes» se traduce como Lanes (en), Filas (es), Bahnen (de), Couloirs (fr), Corsie (it) y Raias (pt), **pendientes de revisión por hablantes nativos antes de publicar**.
+- [x] Modelo puro en `src/core/task-axis-chips.ts` (`buildAxisChips()`, `pickAxisOption()`, `toggleSortDirection()`); la barra dibuja la lista con `Menu` (`openAxisMenu()`). **Las vistas todavía no activan `laneOptions`**: el chip `Lanes` no aparece hasta que L3 (Lista y Tabla) y L4 (Kanban y Gantt) dibujen los carriles; Kanban ya pasa `axisRules: { requiresGroup: true }`.
+- [x] Verificable con Node (`tests/task-axis-chips.test.cjs`, 28 pruebas): chips ofrecidos y su orden, texto, atenuado y tooltip, opción marcada, choques por familia (incluida la de ruta), bloqueo en Kanban, elegir con y sin choque, `defaultGroup`, estado guardado y claves de los 6 idiomas.
+- [x] Prueba manual en Lista y Tabla con el conmutador, y en escritorio, `is-tablet` e `is-phone`: la barra con los chips en la fila 1, los menús de `Group` y `Sort`, la flecha del orden, el orden por clic en un encabezado de la Tabla (`setSort()`) y el ajuste a varias líneas en móvil.
+
+### Fase L3 — Lanes en Lista y Tabla (depende de L2; Especificación §20, §14 y Arquitectura §29) — **implementada el 2026-11-03**
+- [x] Lista: un widget por carril con su ▼ para plegar; el plegado se recuerda por campo y los carriles son de solo lectura.
+- [x] Tabla: encabezado de columnas repetido en cada carril, con columnas y anchos compartidos (una sola `<table>`; los anchos se fijan en `<colgroup>`, en el `<thead>` y en cada encabezado repetido; los encabezados repetidos también ordenan).
+- [x] El chip `Lanes` aparece en Lista y Tabla (`laneOptions`); un estado guardado que repite campo entre Lanes y Group se repara al abrir (`repairAxes()`: gana Lanes y el agrupado pasa a Ninguno sin guardarse).
+- [x] Verificable con Node (`tests/task-lane-views.test.cjs`, 14 pruebas): modelos por carril con su conteo y orden, `Group` dentro de cada carril, claves de plegado con prefijo por campo, color solo en área, etiqueta repetida en cada carril y `repairAxes()`. Las plantillas se comprobaron renderizándolas con Handlebars (carriles, encabezados repetidos y `<col>`).
+- [x] Prueba manual en Lista y Tabla con Lanes = Estado, Prioridad, Etiqueta, Área, Sub-área, Carpeta y Archivo, combinado con `Group`, filtros y `Sort`: plegar y recordar el plegado, que la Tabla alinee las columnas en todos los carriles, ordenar desde el encabezado de un carril, tareas con etiquetas repetidas, escritorio, `is-tablet` e `is-phone`.
+
+### Fase L4 — Lanes en Kanban y Gantt (depende de L2; Especificación §20, §11.3 y §12) — **implementada el 2026-11-03**
+- [x] Kanban: Lanes parte el tablero en un tablero por carril con las mismas columnas; así Área y Sub-área quedan cubiertas (cierra «Agrupar el tablero por área y sub-área»). Arrastrar no cruza carriles.
+  - [x] `buildKanbanLanes()` (`kanban-board.ts`) reparte las tareas con `buildLanes()` y arma las columnas de `Group` dentro de cada carril; `KanbanView` pasa `laneOptions` y dibuja un `<section class="oa-lane">` por carril (la plantilla usa un partial `columnTemplate` para las columnas).
+  - [x] Cada carril es un tablero independiente: el plegado de una columna se recuerda por carril (`collapseStorageKey(group, columna, carril)`) y, por defecto, una columna vacía arranca plegada en cada carril.
+  - [x] El arrastre queda dentro del carril: la tarjeta lleva la clave de su carril en el payload; `dragover` solo acepta las columnas del mismo carril y `drop` lo vuelve a validar.
+  - [x] Un estado guardado cuyos carriles repiten el campo de las columnas se arregla al leer (`parseKanbanState()` quita los carriles: las columnas son obligatorias).
+  - [x] El plegado del carril (▼) se comparte con Lista y Tabla (`addLaneToggleListeners()` en `BaseView`).
+  - [x] Verificable con Node (`tests/kanban-lanes.test.cjs`, 14 pruebas): carriles y columnas, destino de arrastre, etiquetas repetidas, claves de plegado, estado guardado y la plantilla renderizada con y sin carriles.
+  - [x] Prueba manual: Lanes en Kanban con Área, Sub-área, Estado, Prioridad, Etiqueta, Carpeta y Archivo; arrastrar dentro de un carril (estado y prioridad) y comprobar que no se puede soltar en otro; plegar columnas y carriles; escritorio, `is-tablet` e `is-phone`.
+- [x] Gantt: una sola ventana y un solo zoom, con la cabecera de fechas (año, meses, bandas de semana y días) repetida en cada carril (**a probar con uso real**). Los controles (periodo, zoom y navegación) salen una sola vez arriba; cada carril es un diagrama con su cabecera y sus filas, sobre la misma ventana. Un carril sin tareas dentro de la ventana no se dibuja. **Decidido el 2026-11-03**: la lista «Tareas sin fecha» va **una sola vez, al final**, con todas las tareas sin fecha (no por carril).
+- [x] Gantt: chip `Group` con Ninguno (modo plano), Área (por defecto), Estado y Prioridad. `buildGanttTaskRows()` y `buildGanttGroupedRows()` (`task-gantt.ts`) dan el modo plano y el agrupado; las claves de plegado llevan el campo como prefijo (`ganttGroupKey()`: `status:<clave>`, `priority:<clave>`; el área conserva la suya, así que no se pierde lo ya plegado); el color de grupo es solo del área (con Ninguno y Lanes: Área, las filas llevan el color del carril).
+- [x] Estado guardado del Gantt: `parseGanttState()` da el agrupado Área por defecto, devuelve a él un valor desconocido y, si repite el campo de los carriles, gana Lanes y el agrupado pasa a Ninguno.
+- [x] Verificable con Node (`tests/gantt-lanes.test.cjs`, 24 pruebas): modo plano, agrupado por área, estado y prioridad, claves de plegado, carriles sobre una ventana compartida y sin carriles vacíos, estado guardado y la plantilla renderizada con y sin carriles.
+- [x] Prueba manual del Gantt: Lanes con cada campo, `Group` en cada valor, arrastrar y redimensionar barras dentro de un carril, plegar carriles y grupos, cambiar el zoom y la ventana con varios carriles, y la cabecera repetida en escritorio, `is-tablet` e `is-phone`.
+
+### Fase CV14 — Cierre de v1.1.14: pruebas manuales y documentación (depende de M1 a L4) — **hecha el 2026-11-03**
+- [x] Pruebas manuales de lo implementado: filtros con varios valores en Lista, Tabla, Kanban y Gantt; barra del calendario en las 6 subvistas (foco del buscador); Lanes en las 4 vistas con cada campo; el conmutador junto al buscador; escritorio, `is-tablet` e `is-phone`; tema claro y oscuro.
+- [x] README: badge, What's New, News, Features, Gestures, Configuration, Changelog y la lista de próximas versiones.
+- [x] Manual de usuario en inglés y español (`docs/user_guide/`): introducción, primeros pasos, vistas generales (barra de filtros, filtros con varios valores y Lanes), vistas de calendario (barra de filtros), gestos y preguntas frecuentes; no hay ajustes nuevos, así que `08-configuration.md` no cambia.
+- [x] Entrada `whats_new.v1_1_14` en los 6 idiomas y `'1.1.14'` en `WHATS_NEW_VERSIONS` de `src/core/whats-new.ts`.
+- [x] Documentación de desarrollo: §19, §20 y §29 pasan a «implementado»; se actualizan este plan, `todo.md` y el README de `docs/agenda-tasks/`.
+- [x] `npm version 1.1.14 --no-git-tag-version`, `npm run build` y ESLint sobre los archivos tocados.
+
+### Fuera de alcance
+Varios valores en los filtros de fecha; excluir valores («no es»); agrupado y orden en el calendario; arrastrar tareas entre carriles; orden manual de Kanban (descartado).
+
+## Próxima fase — v1.1.15: calendario y hábitos (diseño)
+
+> Comportamiento: [[Especificación de vistas]] §21. Mecanismo: [[Arquitectura técnica]] §30. Los hábitos tienen su propio diseño en `docs/habit-tracker-agenda/` (periodo activo, vacaciones y selector circular, fases HA1, HV1 y HU1 de [[habit-tracker-agenda/Plan de implementación]]). **Nada de esta versión está implementado.** Decidido el 2026-11-01 y el 2026-11-02.
+>
+> **Orden de trabajo**: NL1 → NL2; FE1 → FE2; PR1 → PR2; HC1 al final, cuando HA1 y HV1 del plan de hábitos estén hechas. NL1, FE1 y PR1 son independientes entre sí. CV15 cierra la versión.
+
+### Fase NL1 — Días no laborables y sombreado (independiente; Especificación §21, Arquitectura §30)
+- [ ] Ajuste con siete casillas de días no laborables, por defecto sábado y domingo (nombre propuesto `nonWorkingDays`, ver Modelo de datos §13), en ambas rutas de `setting-tab.ts`.
+- [ ] Sombreado de esos días en Mes, Semana y Lista del calendario; no en Día, Año ni Semana laboral.
+- [ ] Semana laboral: oculta los días marcados; nunca queda vacía porque el ajuste exige al menos un día marcado y uno sin marcar (`sanitizeNonWorkingDays()`; el ajuste rechaza el cambio y muestra un `Notice`).
+- [ ] Gantt: el sombreado deja de ser fijo (`date.weekday >= 6` en `gantt-view.ts`) y usa el ajuste.
+- [ ] Verificable sola: Node (función de día no laborable, días visibles de la Semana laboral y regla de extremos: ninguno marcado y los siete marcados se rechazan); prueba manual cambiando el ajuste con el calendario y el Gantt abiertos.
+
+### Fase NL2 — Frecuencias de hábitos con el ajuste y aviso (depende de NL1)
+- [ ] Las frecuencias «Fin de semana» y «Lunes a viernes» de los hábitos usan el ajuste en lugar de `[6, 7]` fijo (`FREQUENCY_PRESETS` y `resolveFrequencyMode()` en `habit-editor.ts`, `habit-table-view.ts` y el caso `weekend` de `habit-parser.ts`).
+- [ ] Las recurrentes `every weekday` y `every weekend` siguen el ajuste (decidido el 2026-11-03): `TaskSection.convertToRRuleFormat()` y `getNextOccurrenceDate()` reciben `nonWorkingDays`; con `[6, 7]` el resultado es idéntico al actual (prueba de Node de regresión); nota bajo el campo de recurrencia del Task Modal cuando el ajuste no es sábado y domingo; el texto fijo y el `Notice` del ajuste mencionan las recurrentes.
+- [ ] Aviso al cambiar el ajuste: texto fijo bajo las casillas y un `Notice` breve (rachas y porcentajes de hábitos se ven afectados).
+- [ ] Verificable sola: Node (frecuencias con el ajuste por defecto, con otros días y la conversión del editor); el cálculo de rachas con el ajuste por defecto no cambia.
+
+### Fase FE1 — Motor de reglas de feriados (independiente; Especificación §21, Arquitectura §30)
+- [ ] Motor embebido, sin red, con las reglas: fecha fija; n-ésimo o último día de la semana del mes; relativo a la Pascua; observado (si cae en fin de semana se recorre); ciclo de años (transmisión del Poder Ejecutivo de México, cada 6 años) y lista explícita por año.
+- [ ] Datos de México y EE. UU. con sus estados o regiones; cada regla es oficial o no oficial (Día de las Madres, Día de Muertos, Halloween…); el formato queda documentado y abierto para añadir países (sin archivo del usuario por ahora).
+- [ ] Verificable sola: `node --test` con cada tipo de regla y fechas conocidas de varios años (los lunes de feb, mar y nov de México, MLK, Memorial Day, Acción de Gracias, Semana Santa, observado y el ciclo de 6 años).
+
+### Fase FE2 — Calendarios de feriados y marcado (depende de FE1; Especificación §21, Arquitectura §30)
+- [ ] Ajustes: lista de calendarios de feriados con país, región opcional, casillas Oficiales y No oficiales y un color; ninguno activo por defecto (Modelo de datos §13).
+- [ ] Marcado con tinte tenue en las 6 vistas del calendario y en el Gantt: etiqueta con el nombre en Mes, Semana, Semana laboral y Lista; encabezado en Día; punto con tooltip en Año; columna tintada en el Gantt.
+- [ ] Solo visual: no afectan a la Semana laboral, las rachas ni las tareas.
+- [ ] Verificable sola: con un calendario de México activo, el 1 de enero y el tercer lunes de noviembre aparecen en las vistas; con ninguno activo no cambia nada.
+
+### Fase PR1 — Proyección de recurrentes: cálculo y fantasmas (independiente; Especificación §21, Arquitectura §30)
+- [ ] Cálculo de N ocurrencias posteriores a la real con `getNextOccurrenceDate()` (`src/core/task-recurrence.ts`); las reglas `when done` no se proyectan.
+- [ ] Entradas fantasma de solo lectura (no se escriben en la nota, no se arrastran ni se completan) con la insignia `🔁` y aspecto atenuado; clic y doble clic llevan a la tarea real.
+- [ ] Verificable sola: `node --test` (N ocurrencias en diarias, semanales y mensuales; `when done` excluida; sin duplicar la real; con 0 no proyecta).
+
+### Fase PR2 — Ajuste N y vistas (depende de PR1)
+- [ ] Ajuste numérico N, por defecto 10; con 0 se desactiva.
+- [ ] Fantasmas en Mes, Semana, Semana laboral, Día y Lista del calendario; no en Año, Gantt, Lista, Tabla, Kanban ni Overview; respetan los filtros de la barra del calendario.
+- [ ] Al completar la real se escribe la siguiente como hoy (ADR-R1); una diaria desaparece pasados N días (consecuencia asumida).
+- [ ] Verificable sola: prueba manual con una diaria, una semanal y una mensual; completar la real no duplica la siguiente.
+
+### Fase HC1 — Hábitos en el calendario (depende de HA1 y HV1 de [[habit-tracker-agenda/Plan de implementación]]; Especificación §21, Arquitectura §30)
+- [ ] Ajuste «Mostrar hábitos en el calendario», desactivado por defecto; sin efecto si la pestaña Hábitos está oculta.
+- [ ] Entradas virtuales por día en que toca el hábito, respetando el periodo activo y los días de vacaciones; sin escribir en archivos y sin ser tareas (no entran en Lista, Tabla, Kanban, Gantt ni en los conteos).
+- [ ] Mes, Semana, Semana laboral y Lista: un chip resumen `🔁 3/5` por día con un popover de casillas; clic marca o desmarca (escritura de `completions` con `habit-writer.ts`) y doble clic abre la nota; Día: sección «Hábitos» por franja (despertar, mañana, tarde, noche); no en Año.
+- [ ] La barra de filtros del calendario afecta a los hábitos por área y búsqueda; prioridad y estado no aplican.
+- [ ] Verificable sola: con el ajuste activado, marcar un hábito desde el popover actualiza la nota del hábito y el Dashboard de hábitos; desactivado, no aparece nada.
+
+### Fase CV15 — Cierre de v1.1.15: pruebas manuales y documentación (depende de NL1 a HC1)
+- [ ] Pruebas manuales: sombreado y Semana laboral con distintos días marcados; hábitos con frecuencias que siguen el ajuste; feriados de México y EE. UU. en las 6 vistas y el Gantt; fantasmas con N = 0, 10 y 50; hábitos en el calendario con filtros y en móvil; selector circular de Hábitos, periodo activo y vacaciones (fases del plan de hábitos).
+- [ ] README (badge, What's New, News, Features, Gestures, Configuration, Changelog y lista de próximas versiones), manual de usuario en/es, `whats_new.v1_1_15` en los 6 idiomas, `'1.1.15'` en `WHATS_NEW_VERSIONS` de `src/core/whats-new.ts`.
+- [ ] Documentación de desarrollo: pasar §21 y §30 a «implementado».
+- [ ] `npm version 1.1.15 --no-git-tag-version`, `npm run build` y ESLint sobre los archivos tocados.
+
+### Fuera de alcance
+Archivo de feriados del usuario (feriados personales o un país nuevo); feriados que cambian la Semana laboral, las rachas o las tareas; proyectar en Año, Gantt, Lista, Tabla, Kanban u Overview; proyectar reglas `when done`; escribir los hábitos como tareas en las notas; marcar los días de vacaciones en el calendario.
+
+## Próxima fase — v1.1.16: Dashboard (diseño)
+
+> Comportamiento: [[Especificación de vistas]] §22. Mecanismo: [[Arquitectura técnica]] §31. Los widgets de hábitos y el heatmap compartido se resumen en el diseño de hábitos (Especificación de hábitos §14). **Nada de esta versión está implementada.** Decidido el 2026-11-01 y el 2026-11-02; la disposición por defecto de los paneles se define al diseñar (ver «Por resolver» en Especificación §22).
+>
+> **Orden de trabajo**: HM1 primero (DT1 y DW1 lo necesitan); DP1 → DP2 → DP3 para el panel de vida; DA1 y DR1 pueden ir en cuanto exista el registro de paneles (DP1). CV16 cierra la versión.
+
+### Fase HM1 — Componente de heatmap reutilizable (independiente; Especificación §22, Arquitectura §31)
+- [ ] Componente agnóstico: recibe una métrica (función `fecha → valor`), su escala de color y el texto del tooltip; no sabe de tareas ni de hábitos.
+- [ ] El heatmap de hábitos migra al componente (métrica «% cumplido») y debe quedar **idéntico al actual**; se elimina el código duplicado `oa-habit-heatmap-*` (hoy en `habit-overview-view.ts`).
+- [ ] Verificable sola: Node (la métrica y la escala devuelven lo mismo que el cálculo actual de hábitos); comparación visual antes y después en tema claro y oscuro.
+
+### Fase DT1 — Heatmap de tareas (depende de HM1)
+- [ ] Métricas Completadas (✅), Vencimientos (📅), Creadas (➕), Programadas (⏳) e Inicio (🛫), con un chip `Métrica` sobre el widget; año navegable con ◀ ▶.
+- [ ] Barra de filtros compartida (prioridad, estado, área y búsqueda) con estado guardado por widget (clave `dashboard.heatmap`); con filtros activos el widget lo indica de forma visible.
+- [ ] Verificable sola: Node (conteo por fecha de cada métrica con y sin filtros); prueba manual en el Overview.
+
+### Fase DW1 — Widgets de hábitos (depende de HM1)
+- [ ] «Hábitos de hoy» (cumplidos de los que tocan hoy, con barra), «Racha actual» (la mejor racha entre los activos, con la máxima de subtítulo), «Esta semana» (siete anillos por día con el porcentaje semanal) y el heatmap anual de hábitos; reutilizan `habit-stats.ts` y `habit-streak.ts`.
+- [ ] Con la pestaña Hábitos oculta, no aparecen en «Añadir panel» y los ya añadidos se ocultan sin perder la disposición.
+- [ ] Verificable sola: Node (los cuatro cálculos con y sin vacaciones y periodo activo); prueba manual en el Overview.
+
+### Fase DP1 — Registro de paneles y disposición (independiente; Especificación §22, Arquitectura §31)
+- [ ] Registro de paneles (cada widget actual y los nuevos con módulo: Hoy, Tareas, Hábitos, Progreso y tamaño fijo por tipo) y disposición (pestañas, paneles y orden) guardada en `data.json` (Modelo de datos §14).
+- [ ] Migración del estado actual de las casillas (`obsidian-agenda-widget-filters` en `localStorage`) a las 3 pestañas iniciales; el estado de filtros por widget se guarda con la clave `dashboard.<widget>`.
+- [ ] Verificable sola: Node (migración desde varias combinaciones de casillas, disposición vacía o inválida, al menos una pestaña); el Overview se ve igual que antes con la disposición migrada.
+
+### Fase DP2 — Pestañas y modo Editar (depende de DP1)
+- [ ] Pestañas del usuario (nombre, orden y paneles propios; un panel puede estar en varias); 3 iniciales (p. ej. Hoy, Tareas y Hábitos); siempre queda al menos una.
+- [ ] Modo «✎ Editar» (con «✓ Listo») que reemplaza al panel de casillas: `×` para quitar, «＋ Añadir panel» (lista directa sin modal, agrupada por módulo, con los ya presentes atenuados) y gestión de pestañas (renombrar, reordenar, borrar y `＋`).
+- [ ] Verificable sola: crear, renombrar, reordenar y borrar pestañas; quitar y añadir paneles; recargar y sincronizar `data.json`.
+
+### Fase DP3 — Arrastre en cuadrícula fluida (depende de DP2)
+- [ ] Asa ⠿ para reordenar paneles en una cuadrícula fluida de tamaño fijo por tipo (sin redimensionar ni posición libre); en móvil, columna única y arrastre solo en modo Editar.
+- [ ] Verificable sola: arrastre con ratón y táctil (`app.emulateMobile(true)` y dispositivo real); fuera del modo Editar el scroll no se interrumpe.
+
+### Fase DA1 — Panel «Agenda de hoy» (depende de DP1)
+- [ ] Lista del día ordenada por hora: tareas con `🕐` (con su duración y el color de su área), debajo las de todo el día y los hábitos del día como el chip `🔁 3/5`; reutiliza los datos y las entradas del calendario (HC1 de v1.1.15).
+- [ ] Verificable sola: con tareas con y sin hora y con hábitos, el orden y los conteos coinciden con la vista Día del calendario.
+
+### Fase DR1 — Paneles «Resumen del día» y «Revisión de la semana» (depende de DP1)
+- [ ] «Resumen del día»: líneas con número (tareas para hoy y cuántas con hora, vencidas, hábitos de hoy y cumplidos, próxima tarea con hora y el aviso de unas vacaciones que empiezan); las líneas sin datos se ocultan; pulsar una línea abre la vista correspondiente.
+- [ ] «Revisión de la semana»: siete anillos por día, porcentaje semanal con ▲/▼ contra la semana anterior, mejor día, día a mejorar, racha y tareas completadas contra la semana pasada.
+- [ ] Ambos son paneles seleccionables (no fijos), calculados en local, sin IA, sin red y sin notificaciones del sistema.
+- [ ] Verificable sola: Node (cada línea y comparación con semanas completas, vacías y con vacaciones).
+
+### Fase CV16 — Cierre de v1.1.16: pruebas manuales y documentación (depende de HM1 a DR1)
+- [ ] Pruebas manuales: heatmap de hábitos idéntico; heatmap de tareas con cada métrica y filtros; migración desde un `data.json` y un `localStorage` de la versión anterior; pestañas, modo Editar y arrastre en escritorio, tableta y teléfono; paneles nuevos con y sin datos; pestaña Hábitos oculta.
+- [ ] README (badge, What's New, News, Features, Gestures, Configuration, Changelog y lista de próximas versiones), manual de usuario en/es, `whats_new.v1_1_16` en los 6 idiomas, `'1.1.16'` en `WHATS_NEW_VERSIONS` de `src/core/whats-new.ts`.
+- [ ] Documentación de desarrollo: pasar §22 y §31 a «implementado».
+- [ ] `npm version 1.1.16 --no-git-tag-version`, `npm run build` y ESLint sobre los archivos tocados.
+
+### Fuera de alcance
+Filtros globales del Dashboard (solo la clave por widget); disposición aparte para móvil; redimensionar paneles o posición libre; el agente de revisión con un modelo de IA, la red y las notificaciones (dependen de decidir red, privacidad y notificaciones); «Día recomendado» (pasó a «Gestión de Tiempo Avanzada», sin versión).
+
+## Próxima fase — v1.1.17: tareas y estados (diseño)
+
+> Comportamiento: [[Especificación de vistas]] §17 (compatibilidad con Tasks), §23 (Tabla), §24 (reloj) y §25 (estados). Mecanismo: [[Arquitectura técnica]] §32 a §35. **Nada de esta versión está implementada.** Decidido el 2026-11-02. Los estados personalizados van al final porque tocan el modelo de estados de todo el plugin (`CoreTaskStatus` aparece unas 66 veces en 10 archivos); es el cambio de más riesgo de la versión.
+>
+> **Orden de trabajo**: ES1 → ES2 → ES4 (y ES3 en paralelo con ES2, después de ES1); TK1, TK2, TM1 y TB1 son independientes entre sí; TB2 necesita TB1 y L3 (v1.1.14, el CSV exporta el carril). CV17 cierra la versión.
+
+### Fase ES1 — Registro de estados y símbolo preservado (independiente; Especificación §25, Arquitectura §34)
+- [ ] Registro de estados: símbolo, nombre, icono y tipo (TODO, IN_PROGRESS, ON_HOLD, DONE, CANCELLED, NON_TASK); los 6 actuales son el punto de partida (editables en nombre e icono, no borrables; nombre traducido hasta que el usuario lo edite) (Modelo de datos §16).
+- [ ] Un símbolo sin definir se trata como Pendiente pero **conserva su símbolo y nunca se reescribe** (hoy `Task.extractStatusFromHeader()` lo reduce a Pendiente y lo pierde).
+- [ ] Verificable sola: Node (símbolo → estado y tipo con los 6 base y con un símbolo desconocido que se conserva al escribir la línea).
+
+### Fase ES2 — Comparaciones por tipo (depende de ES1; Arquitectura §34)
+- [ ] Reemplazar las comparaciones por símbolo (`=== CoreTaskStatus.Done`, `isTaskOpen()`, `isTaskCompleted`, el cambio de estado y la recurrencia) por preguntas al tipo: Hecho añade `✅`, dispara la recurrencia y cuenta como cerrado; Cancelada y No es tarea cuentan como cerrado; el resto como abierto.
+- [ ] Verificable sola: Node (traducción símbolo → tipo en cada punto reemplazado); con solo los 6 estados base, el plugin se comporta igual que en v1.1.16 (es la prueba de no regresión).
+
+### Fase ES3 — Ajustes de estados (depende de ES1; Especificación §25, Arquitectura §34)
+- [ ] Lista editable de estados en ambas rutas de los ajustes (cómo se edita con la API declarativa de Obsidian 1.13 queda por resolver al diseñar), con «Restablecer» de los nombres base.
+- [ ] Botón «Importar de Tasks» (una sola vez): lee símbolo, nombre y tipo de los ajustes de Tasks e ignora el próximo símbolo.
+- [ ] «Símbolos encontrados sin definir» (p. ej. `R (3 tareas)`) con un botón para definirlos.
+- [ ] Verificable sola: Node (importación desde un JSON de Tasks y conteo de símbolos sin definir); prueba manual en los ajustes.
+
+### Fase ES4 — Estados en barra, Kanban, `Group` y `Lanes` (depende de ES2)
+- [ ] `STATUS_OPTIONS` (`src/core/task-status-options.ts`, fuente única de menú, agrupado y barra) pasa a generarse desde la configuración.
+- [ ] Kanban, `Group: Estado` y `Lanes: Estado` generan un valor por estado en el orden de los ajustes; arrastrar a una columna asigna ese símbolo.
+- [ ] El filtro de estado de la barra compartida (incluida la del calendario) genera su lista desde la configuración, usando la función que preparó M2 de v1.1.14.
+- [ ] Verificable sola: Node (columnas, grupos y carriles por estado en el orden de ajustes) y prueba manual de arrastre con un estado nuevo.
+
+### Fase TK1 — `🏁 delete` con confirmación (independiente; Especificación §17, Arquitectura §35)
+- [ ] `keep` sigue siendo el comportamiento por defecto; `delete` se implementa al completar una tarea (menú de estado del calendario, modal y arrastre en Kanban) con una confirmación breve («Esta tarea se borrará del archivo»), la única acción destructiva de la versión.
+- [ ] Advertencia en el modal al crear y al editar con `🏁 delete`.
+- [ ] Método para borrar líneas en `TaskWriter` (por crear; nombre propuesto `deleteTaskLine()`, con la misma comprobación del texto esperado que `updateTaskLine()`); si la tarea es recurrente, se inserta primero la siguiente ocurrencia y luego se borra la línea completada.
+- [ ] Verificable sola: Node (cálculo de las líneas resultantes, con y sin recurrencia y con el texto esperado distinto); prueba manual con cancelar la confirmación.
+
+### Fase TK2 — Botón Generar `🆔` (independiente; Especificación §17)
+- [ ] Botón **Generar** en el campo `🆔` del modal (formato de Tasks: base 36 de 6 caracteres, sin repetir ids del vault); el modal no asigna `🆔` por defecto.
+- [ ] Verificable sola: Node (formato y no repetición con un vault de ejemplo); prueba manual en crear y editar.
+
+### Fase TM1 — Reloj de esfera (independiente; Especificación §24, Arquitectura §33)
+- [ ] `src/modals/task-time-picker-modal.ts`: la rueda de horas y minutos se reemplaza por un reloj de esfera en dos pasos (hora y luego minutos; los números del encabezado se pueden pulsar para cambiar de paso).
+- [ ] 12 h con botones AM y PM; en la línea se sigue guardando en 24 h (`🕐 14:30`); minutos exactos (marcas de 5 y arrastre de 0 a 59); Cancelar y Guardar.
+- [ ] Actualizar el ADR-T3 (Modelo de datos §9), que fijó 24 h; tamaño táctil de la esfera en móvil por confirmar.
+- [ ] Verificable sola: Node (conversión 12 h ↔ 24 h y ángulo → hora y minuto, incluidas 12 AM y 12 PM); prueba manual en escritorio, tableta y teléfono.
+
+### Fase TB1 — Tabla: columnas personalizables (independiente; Especificación §23, Arquitectura §32; reutiliza `src/core/task-table-columns.ts` de la fase U7)
+- [ ] Registro de columnas con las cinco nuevas, ocultas por defecto: Sub-área, Archivo, Hora, Duración y Recurrencia.
+- [ ] Popover del mismo estilo que los chips (sin modal) para mostrar, ocultar y reordenar (arrastre) con «Restablecer»; las columnas de fecha conservan su regla de ocultarse solas si nadie tiene valor, con la opción de forzarlas.
+- [ ] Estado guardado por vista (Modelo de datos §15).
+- [ ] Verificable sola: Node (visibilidad y orden con el estado por defecto, uno personalizado, uno inválido y las fechas sin valor); prueba manual con arrastre y recarga.
+
+### Fase TB2 — Tabla: CSV (depende de TB1 y de L3 de v1.1.14; Especificación §23, Arquitectura §32)
+- [ ] Exporta lo que se ve: tareas filtradas, columnas visibles en su orden y el orden de filas actual; con Lanes añade una columna con el nombre del carril.
+- [ ] «Exportar CSV» (archivo `tareas-AAAA-MM-DD-HHmm.csv` en el vault, carpeta configurable, por defecto `agenda-exports/`, con un aviso que muestra la ruta) y «Copiar CSV» (portapapeles).
+- [ ] Formato fijo: coma, UTF-8 con BOM, fechas `AAAA-MM-DD`, campos escapados; sin ajuste de separador.
+- [ ] Inyección de fórmulas: toda celda de texto que empiece con `=`, `+`, `-` o `@` lleva un apóstrofo delante (decidido el 2026-11-03); fechas y números no se tocan; prueba de Node.
+- [ ] Verificable sola: Node (escape de comas, comillas y saltos de línea, BOM, fechas, columna de carril); prueba manual abriendo el archivo en Excel.
+
+### Fase CV17 — Cierre de v1.1.17: pruebas manuales y documentación (depende de ES1 a TB2)
+- [ ] Pruebas manuales: con solo los 6 estados base todo se comporta como antes; un estado nuevo en menú, Kanban, `Group`, `Lanes` y filtros; un símbolo sin definir que se conserva; importar de Tasks; `🏁 delete` en recurrente y no recurrente; Generar `🆔`; el reloj; columnas de la Tabla y CSV con y sin Lanes.
+- [ ] README (badge, What's New, News, Features, Gestures, Configuration, Changelog y lista de próximas versiones), manual de usuario en/es, `whats_new.v1_1_17` en los 6 idiomas, `'1.1.17'` en `WHATS_NEW_VERSIONS` de `src/core/whats-new.ts`.
+- [ ] Documentación de desarrollo: pasar §17, §23 a §25 y §32 a §35 a «implementado»; cerrar la Fase U5.
+- [ ] `npm version 1.1.17 --no-git-tag-version`, `npm run build` y ESLint sobre los archivos tocados.
+
+### Fuera de alcance
+«Próximo símbolo» (el estado se elige directo); filtro global de Tasks (descartado); diseños de Tabla guardados con nombre y diálogo de opciones de exportación; ajuste de separador del CSV; sincronía con Google Calendar (v1.1.18); cambiar la fecha de referencia de la recurrencia a la de Tasks (se mantiene `scheduled > due > start`, con aviso en el manual).
+
+## Riesgos de v1.1.14 a v1.1.17 (del registro de decisiones)
+
+| Riesgo | Versión | Mitigación |
+|---|---|---|
+| El calendario redibuja la vista entera al navegar y el buscador de la barra perdería el foco | v1.1.14 (CF2) | Redibujar solo la parte del calendario o montar la barra fuera de ella; prueba manual de foco |
+| La cabecera de fechas repetida en cada carril del Gantt puede resultar pesada o confusa («a probar») | v1.1.14 (L4) | Probar con datos reales antes de cerrar L4; la ventana y el zoom son únicos |
+| Tabla con encabezado repetido por carril: anchos y `resizeColumns()` | v1.1.14 (L3) | Columnas y anchos compartidos, calculados una vez |
+| Lanes por etiqueta repite tareas: los conteos de carriles no suman el total | v1.1.14 (L1) | Documentarlo en el tooltip y en la Especificación; «Sin etiqueta» al final |
+| Elegir un campo en uso cambia el otro chip sin que el usuario lo pida | v1.1.14 (L2) | Solo en Lista, Tabla y Gantt (el otro chip pasa a Ninguno); el tooltip lo avisa; en Kanban la opción se bloquea |
+| Traducciones de «Lanes» sin revisión de hablantes nativos | v1.1.14 (L2) | Revisarlas antes de publicar |
+| Cambiar los días no laborables altera rachas y porcentajes de hábitos | v1.1.15 (NL2) | Texto fijo y `Notice` al cambiar el ajuste |
+| Reglas de feriados mal calculadas (Pascua, observado, n-ésimo día, ciclo de 6 años) | v1.1.15 (FE1) | Pruebas de Node por tipo de regla y por año; solo visual, no afecta a tareas |
+| Muchas ocurrencias proyectadas ensucian las vistas y cuestan cálculo | v1.1.15 (PR1, PR2) | N configurable (10 por defecto, 0 la desactiva); fantasmas de solo lectura; `when done` no se proyecta |
+| La API `app.setting.openTabById` no está documentada | v1.1.15 (HV1) | Si falla, un `Notice` indica la ruta de ajustes |
+| Migrar el heatmap de hábitos al componente nuevo puede cambiar su aspecto | v1.1.16 (HM1) | Debe quedar idéntico; comparación visual y pruebas de la métrica |
+| Migrar las casillas del Overview (`localStorage`) a `data.json` puede perder la disposición | v1.1.16 (DP1) | Migración a las 3 pestañas iniciales con pruebas de Node; siempre una pestaña como mínimo |
+| El arrastre táctil compite con el scroll en móvil | v1.1.16 (DP3) | Arrastre solo en modo Editar; prueba en dispositivo real |
+| Reemplazar `CoreTaskStatus` (unas 66 veces en 10 archivos) rompe comportamientos que dependen del símbolo | v1.1.17 (ES2) | Estados base primero como prueba de no regresión; pruebas de Node símbolo → tipo; el filtro de estado ya lee su lista de una función (M2) |
+| Un símbolo sin definir se perdería al reescribir la línea | v1.1.17 (ES1) | Se conserva siempre; los ajustes lo listan para definirlo |
+| `🏁 delete` borra una línea del archivo | v1.1.17 (TK1) | Confirmación al completar y advertencia en el modal; con recurrencia se inserta primero la siguiente; pruebas de Node del cálculo de líneas |
+| Tamaño táctil del reloj de esfera en móvil | v1.1.17 (TM1) | Por confirmar al probar en teléfono |
+| El CSV con acentos se ve mal en Excel | v1.1.17 (TB2) | UTF-8 con BOM y campos escapados; prueba abriendo el archivo en Excel |
+
+## Próxima fase — v1.1.18: sincronía con Google Calendar (diseño)
+
+> Comportamiento y decisiones: [[Especificación de vistas]] §15. Mecanismo: [[Arquitectura técnica]] §24. **Nada de esta fase está implementada.** Sin decisiones de diseño abiertas (Especificación §15.8). Pasó de v1.1.15 a **v1.1.18** el 2026-11-02, al repartir v1.1.14 a v1.1.17 por tema (los bloques de esas versiones están justo arriba); Google Tasks pasa a v1.1.19 y Microsoft a v1.1.20. Como el repo no tiene pruebas automatizadas, cada fase incluye sus scripts de prueba de Node.
 
 ### Fase GC1 — Conexión
 - [ ] Subir `minAppVersion` a 1.11.4 en `manifest.json` y `versions.json`.
@@ -657,30 +944,3 @@ Cambiar el texto de «Sin área» en el agrupado; los títulos «By area» y «B
 
 ### Fuera de alcance
 Google Tasks, Microsoft y el plugin Tasks; varias cuentas de Google; `🔁` ↔ RRULE; el botón directo sin credenciales propias; inicio de sesión por copiar y pegar en móvil.
-
-## Próxima fase — v1.1.14: filtros con varios valores y filtros en el calendario (diseño)
-
-> Comportamiento: [[Especificación de vistas]] §19. Mecanismo: [[Arquitectura técnica]] §28. **Nada de esta fase está implementada.** Decisiones cerradas el 2026-10-31 (Especificación §19.4). En esta versión entran también las funciones que estaban previstas para v1.1.18 (Fase U5 de la Tabla, Fase C de Kanban, agrupado de Kanban por área y combo de agrupado del Gantt).
-
-### Fase M1 — Modelo y filtrado (independiente)
-- [ ] `TaskViewState`: `priority`, `status` y las áreas pasan a listas; `parseTaskViewState()` convierte el estado guardado con un solo valor.
-- [ ] `filterTasksByViewState()`: O dentro de un tipo, Y entre tipos; `matchesTaskArea()` acepta varias rutas y gana la más específica.
-- [ ] Verificable sola: Node (conversión del estado antiguo, O/Y, regla de lo más específico, «Raíz»).
-
-### Fase M2 — Barra y chips (depende de M1)
-- [ ] `src/core/task-filter-popover.ts`: popover con casillas que no se cierra al marcar (clic fuera o Esc), anclado al chip o botón, accesible con teclado y en móvil.
-- [ ] `TaskFilterBar` lo usa para prioridad, estado y área; el del área tiene dos secciones (áreas y sub-áreas de las marcadas); `reconcileArea()` descarta las rutas que ya no existen.
-- [ ] `task-filter-chips.ts`: un chip por tipo con los valores unidos (con más de dos, el número) y tooltip con la lista completa; `clearFilterChip()` y `getActiveFilterChips()` adaptados.
-- [ ] Prueba manual en Lista, Tabla, Kanban y Gantt.
-
-### Fase CF1 — Estado y filtrado del calendario (depende de M1)
-- [ ] `src/core/calendar-state.ts` con la clave `obsidian-agenda-calendar-view-state`, compartida por las 6 subvistas.
-- [ ] `CalendarView` filtra en `getTasksForDate()` y en la lista del calendario, junto a `calendarShowCompletedTasks`.
-
-### Fase CF2 — Barra en el calendario (depende de M2 y CF1)
-- [ ] Opción `filterTypes` en `TaskFilterBar` (prioridad, estado, área; sin fechas, agrupado ni orden).
-- [ ] Barra siempre visible justo bajo las pestañas principales, con el mismo aspecto que en las demás vistas (sin botón para abrirla); no se pierde ni pierde el foco al navegar (redibujado parcial o montaje fuera de la zona que se redibuja).
-- [ ] Prueba manual en las 6 subvistas, con el buscador y con el foco.
-
-### Fuera de alcance
-Varios valores en los filtros de fecha; excluir valores («no es»); agrupado y orden en el calendario.

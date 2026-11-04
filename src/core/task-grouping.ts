@@ -32,6 +32,8 @@ export const TASK_GROUP_OPTIONS: readonly { value: string; labelKey: string }[] 
   { value: 'priority', labelKey: 'task_priority' },
   { value: 'tags', labelKey: 'tags' },
   { value: 'dueDate', labelKey: 'due_date' },
+  { value: 'startDate', labelKey: 'start_date' },
+  { value: 'scheduledDate', labelKey: 'scheduled_date' },
 ];
 
 /**
@@ -66,7 +68,7 @@ export function toGroupViewModels(groups: TaskGroup[], field: string): TaskGroup
 }
 
 /** De mayor a menor; lo que no coincide (`undefined`) va al final. */
-const PRIORITY_ORDER = ["highest", "high", "medium", "normal", "low", "lowest"];
+export const PRIORITY_ORDER = ["highest", "high", "medium", "normal", "low", "lowest"];
 
 const NO_PRIORITY_KEY = "undefined";
 const NO_TAG_KEY = "";
@@ -138,7 +140,7 @@ function groupByKey(
  * Agrupa `tasks` por `field`. El orden de las tareas dentro de cada grupo es el de entrada: ordénalas antes.
  * - `status`: siempre los 6 estados, en orden de flujo, aunque estén vacíos (destinos de arrastre válidos).
  * - `priority`: de mayor a menor, con «sin prioridad» al final; solo los grupos con tareas.
- * - `dueDate`: por día de vencimiento ascendente, «sin fecha» al final.
+ * - `dueDate`, `startDate` y `scheduledDate`: por día de esa fecha ascendente, «sin fecha» al final.
  * - `tags`: por la primera etiqueta de la tarea, alfabético, «sin etiqueta» al final.
  * - `path`: árbol de carpetas (`children`), alfabético.
  * - `area`: el mismo árbol con el color del área; las notas de la raíz van al final como «Sin área».
@@ -176,12 +178,16 @@ export function groupTasksByField(
     }
 
     case "dueDate":
+    case "startDate":
+    case "scheduledDate": {
+      const dateOf = (task: ITask) => field === "dueDate" ? task.date.due : field === "startDate" ? task.date.start : task.date.scheduled;
       return groupByKey(
         tasks,
-        (task) => task.date.due?.toISODate() ?? NO_DATE_KEY,
+        (task) => dateOf(task)?.toISODate() ?? NO_DATE_KEY,
         (key) => (key === NO_DATE_KEY ? translate("none") : key),
         (a, b) => (a === NO_DATE_KEY ? 1 : b === NO_DATE_KEY ? -1 : a.localeCompare(b))
       );
+    }
 
     case "tags":
       return groupByKey(

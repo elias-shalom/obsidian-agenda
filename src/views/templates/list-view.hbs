@@ -51,11 +51,46 @@
   </div>
 {{/inline}}
 
+{{#*inline "laneTemplate"}}
+  <section class="oa-lane" data-lane-key="{{storageKey}}" {{#if color}}data-group-color="{{color}}"{{/if}}>
+    <h2 class="oa-lane-header">
+      <span class="oa-folder-toggle" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right">
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+      </span>
+      <span class="oa-folder-title">{{label}}</span>
+      <span class="oa-task-count">({{count}})</span>
+    </h2>
+    <div class="oa-lane-body">
+      {{#if groups.length}}
+        {{#each groups}}
+          <div class="oa-folder-structure">
+            {{> groupTemplate}}
+          </div>
+        {{/each}}
+      {{else}}
+        <div class="oa-folder-structure">
+          <ul class="oa-folder-tasks">
+            {{#each tasks}}
+              {{> taskItem}}
+            {{/each}}
+          </ul>
+        </div>
+      {{/if}}
+    </div>
+  </section>
+{{/inline}}
+
 <div class="oa-list-toolbar"></div>
 
 <div class="oa-list-body">
   {{#if tasks.length}}
-    {{#if groups.length}}
+    {{#if lanes.length}}
+      {{#each lanes}}
+        {{> laneTemplate}}
+      {{/each}}
+    {{else if groups.length}}
       {{#each groups}}
         <div class="oa-folder-structure">
           {{> groupTemplate}}

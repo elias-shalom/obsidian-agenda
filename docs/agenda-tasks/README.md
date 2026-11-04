@@ -32,7 +32,7 @@ A diferencia de `docs/habit-tracker-agenda/` (que documentó un módulo nuevo **
 - **Extracción**: `TaskExtractor` lee cada archivo (usando primero el cache de metadatos de Obsidian — `MetadataCache.listItems` — y, si no está disponible, un parseo manual línea por línea con expresiones regulares) y construye objetos `Task` con fechas, prioridad, tags, recurrencia, dependencias y demás campos.
 - **Cache**: `TaskCache` mantiene un cache de dos niveles (por archivo + global) con TTL de 5 minutos, invalidado automáticamente por los eventos `create`/`modify`/`delete`/`rename` del vault.
 - **Filtrado y orden**: `TaskFilter`/`TaskSorter` aplican criterios (estado, fecha, prioridad, tags, texto, carpeta) y ordenamientos/agrupaciones multi-campo bajo demanda de cada vista.
-- **Vistas**: Overview (dashboard), Lista (jerárquica por carpeta o plana), Tabla (ordenable/filtrable), Kanban y Gantt (v1.1.13), Calendario (Día, Semana, Semana laboral, Mes, Año, Lista), y una vista registrada pero incompleta (Timeline).
+- **Vistas**: Overview (dashboard), Lista y Tabla (una sola pestaña «Tareas» con conmutador), Kanban y Gantt (v1.1.13), Calendario (Día, Semana, Semana laboral, Mes, Año, Lista), y una vista registrada pero incompleta (Timeline). Desde v1.1.14, filtros con varios valores, barra de filtros en el calendario y Lanes en las 4 vistas de tareas. En diseño, no implementado: el panel de vida del Dashboard (v1.1.16) y la Tabla con columnas y CSV (v1.1.17).
 - **Creación/edición**: `TaskModal` + `TaskWriter` generan/anexan líneas de tarea en formato emoji al archivo elegido; la edición de tareas existentes (`"edit-task"`, reescritura en el lugar) está implementada.
 - **Compatibilidad**: el mismo texto de tarea es reconocido tanto en formato **emoji** (el que usa el plugin [Obsidian Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks)) como en formato **Dataview** (`due:: 2026-10-01`), mapeados a los mismos campos internos.
 
@@ -41,11 +41,11 @@ A diferencia de `docs/habit-tracker-agenda/` (que documentó un módulo nuevo **
 | # | Documento | Contenido |
 |---|---|---|
 | 1 | [[README]] (este) | Índice, contexto, propuesta. |
-| 2 | [[PRD - Módulo Agenda Tasks]] | Alcance actual: qué está completo y qué no (Timeline/Gantt/edición), casos de uso. |
-| 3 | [[Modelo de datos]] | Entidades (`Task`, `TasksFile`, `TaskSection`), campos, emojis/Dataview reconocidos, enums, tipos de filtro/orden. |
-| 4 | [[Arquitectura técnica]] | Módulos de `src/core/`, flujos de carga/cache/parseo, bus de eventos, integración en `main.ts`. |
-| 5 | [[Especificación de vistas]] | Cada vista de tareas: datos que muestra, interacciones, estado (completa/placeholder). |
-| 6 | [[Plan de implementación]] | Historial de fases ya completadas (por versión) + trabajo pendiente (Timeline, Gantt, hora del día). |
+| 2 | [[PRD - Módulo Agenda Tasks]] | Alcance actual: qué está completo y qué no (Timeline, edición), lo diseñado para v1.1.14 a v1.1.17, lo descartado y los casos de uso. |
+| 3 | [[Modelo de datos]] | Entidades (`Task`, `TasksFile`, `TaskSection`), campos, emojis/Dataview reconocidos, enums, tipos de filtro/orden; §12 a §16: estado guardado de Lanes (implementado en v1.1.14), calendario, Dashboard, columnas de la Tabla y estados personalizados (v1.1.15 a v1.1.17, diseño). |
+| 4 | [[Arquitectura técnica]] | Módulos de `src/core/`, flujos de carga/cache/parseo, bus de eventos, integración en `main.ts`; §28 y §29: filtros y Lanes (implementados en v1.1.14); §30 a §35: calendario, Dashboard, Tabla y CSV, reloj, estados y compatibilidad con Tasks (v1.1.15 a v1.1.17, diseño). |
+| 5 | [[Especificación de vistas]] | Cada vista de tareas: datos que muestra, interacciones, estado (completa/placeholder); §19 y §20: filtros y Lanes (implementados en v1.1.14); §21 a §25: calendario, panel de vida, Tabla, reloj y estados (v1.1.15 a v1.1.17, diseño). |
+| 6 | [[Plan de implementación]] | Historial de fases ya completadas (por versión, incluida v1.1.14: M1–M2, CF1–CF2, L1–L4 y CV14) + fases pendientes: v1.1.15 (NL, FE, PR, HC1), v1.1.16 (HM1, DT1, DW1, DP1–DP3, DA1, DR1), v1.1.17 (ES1–ES4, TK1–TK2, TM1, TB1–TB2), Google Calendar en v1.1.18 y la tabla de riesgos. |
 
 ## Estado
 
@@ -56,6 +56,12 @@ A diferencia de `docs/habit-tracker-agenda/` (que documentó un módulo nuevo **
 - [x] Vista Kanban (v1.1.13): columnas por estado, prioridad, etiqueta o carpeta, arrastre de estado y prioridad y columnas plegables; probado a mano
 - [x] Edición de tareas existentes desde el modal (clic simple en el calendario, doble clic abre el archivo)
 - [ ] Programación por hora del día (v1.1.4, ver `docs/todo.md`)
+- [x] **v1.1.14 — Filtros y Lanes** (implementado y probado a mano el 2026-11-03): filtros con varios valores y en el calendario; barra de chips `Lanes`/`Group`/`Sort` junto a «+ Filtro»; Lanes (Filas) en Kanban, Lista, Tabla y Gantt; `Group` por Inicio y Programada en Lista y Tabla; chip `Group` del Gantt
+- [ ] **v1.1.15 — Calendario y hábitos** (diseño, no implementado): días no laborables y sombreado; feriados de México y EE. UU.; recurrentes proyectadas; hábitos en el calendario (con periodo activo, vacaciones y selector circular, en `docs/habit-tracker-agenda/`)
+- [ ] **v1.1.16 — Dashboard** (diseño, no implementado): heatmap reutilizable y de tareas; widgets de hábitos; panel de vida con pestañas, arrastre y modo «Editar»; «Agenda de hoy», «Resumen del día» y «Revisión de la semana»
+- [ ] **v1.1.17 — Tareas y estados** (diseño, no implementado): Tabla con columnas y CSV; reloj de esfera para la hora; compatibilidad con Tasks (`🏁 delete` y Generar `🆔`); estados personalizados
+- [ ] v1.1.18 sincronía con Google Calendar (diseño); Google Tasks en v1.1.19 y Microsoft en v1.1.20 (ideas)
+- Descartado el 2026-11-02: orden manual de Kanban, Agenda view, Secciones extra y Lista semanal con imagen. Fuera por ahora: «Día recomendado», agente de revisión con IA, notificaciones, archivo de feriados del usuario y diseños de Tabla guardados con nombre.
 
 ## Enlaces de interés
 

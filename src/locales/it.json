@@ -27,8 +27,8 @@
   "timeline_view_tab": "Timeline",
   "timeline_view_title": "Timeline", 
   "week_view": "Settimana",
-  "group_none": "Nessun raggruppamento",
-  "group_area": "Area e sottoarea",
+  "group_none": "Nessuno",
+  "group_area": "Area e sotto",
   "no_area": "Nessuna area",
   "no_sub_area": "Nessuna sottoarea",
   "area": "Area",
@@ -98,7 +98,9 @@
   "highest_priority": "Più alto",
   "no_priority": "Nessuna priorità",
   "none": "Nessuno",
-  "all_sub_areas": "Tutte le sottoaree",
+  "filter_sub_areas": "Sottoaree",
+  "lane_sub_area": "Sottoarea",
+  "lane_no_tag": "Senza tag",
   "filter_add": "+ Filtro",
   "filter_clear": "Cancella",
   "filter_remove": "Rimuovi filtro: {filter}",
@@ -368,6 +370,12 @@
   "area_root": "Radice",
   "group_label": "Gruppo:",
   "sort_label": "Ordine:",
+  "lanes_label": "Corsie:",
+  "lanes_tooltip": "Divide la vista in più viste, una per valore",
+  "axis_in_use_by_group": "In uso da Gruppo",
+  "axis_in_use_by_group_swap": "In uso da Gruppo: scegliendolo, Gruppo diventa Nessuno",
+  "axis_in_use_by_lanes": "In uso da Corsie",
+  "axis_in_use_by_lanes_swap": "In uso da Corsie: scegliendolo, Corsie diventa Nessuno",
   "gantt_zoom_days": "{n} giorni",
   "gantt_week_prefix": "S",
   "gantt_undated_title": "Attività senza data",
@@ -379,6 +387,10 @@
   "whats_new": {
     "title": "Novità di Agenda Tasks",
     "close": "Chiudi",
+    "v1_1_14": {
+      "title": "Corsie e filtri con più valori",
+      "items": "Un nuovo pulsante Corsie divide Kanban, Elenco, Tabella e Gantt in un widget indipendente per area, sottoarea, stato, priorità, tag, cartella o file; ripiega ogni corsia con il suo ▼.\nI filtri Priorità, Stato e Area ora accettano più valori insieme; un filtro con più valori mostra solo il loro numero (ad esempio Stato: 2).\nLe viste del calendario hanno una propria barra dei filtri con ricerca, Priorità, Stato e Area.\nGruppo e Ordine ora sono pulsanti compatti accanto a + Filtro, e l'interruttore Elenco | Tabella si trova accanto alla ricerca.\nElenco e Tabella possono raggruppare per data di inizio e data pianificata, e il Gantt ha un nuovo selettore Gruppo (Nessuno, Area, Stato, Priorità).\nCorsie e Gruppo non ripetono mai un campo: in Kanban l'opzione in conflitto è bloccata, e in Elenco, Tabella e Gantt l'altro pulsante passa da solo a Nessuno."
+    },
     "v1_1_13": {
       "title": "Kanban, Gantt e altro",
       "items": "Una nuova scheda Kanban mostra le attività in colonne per stato, priorità, tag o cartella; trascina una scheda in un'altra colonna di stato o priorità per cambiarla e comprimi le colonne che non ti servono.\nUna nuova scheda Gantt disegna le attività su una linea del tempo; trascina una barra per spostarla, trascina i suoi bordi per cambiare una data o allunga una pietra miliare fino a farne una barra.\nUn solo interruttore per la scheda Attività sostituisce quelli di Elenco e Tabella, e un nuovo interruttore nasconde l'intera scheda Abitudini.\nIl filtro Area ha un'opzione Radice per le note fuori da qualsiasi cartella e il filtro Sotto-area una per le note direttamente nella cartella di un'area.\nSe la cartella delle abitudini non esiste, creando la prima abitudine ti viene proposto di crearla, e le impostazioni indicano se esiste.\nI selettori di ordinamento e raggruppamento ora hanno un'etichetta (Ordine: / Gruppo:).\nLe viste calendario Settimana, Settimana lavorativa ed Elenco mostrano i giorni corretti quando la settimana non inizia di domenica (grazie a @AidanAJoyce).\nQuesta finestra: dopo un aggiornamento vedrai le novità una sola volta; puoi disattivarla nelle impostazioni."

@@ -6,14 +6,19 @@ import type { App } from 'obsidian';
 import { DEFAULT_TASK_VIEW_STATE, TaskViewState, parseTaskViewState } from './task-view-state';
 import { TASK_SORT_COLUMNS } from './task-column-sort';
 import { KANBAN_DEFAULT_GROUP, KANBAN_GROUP_OPTIONS } from './kanban-board';
+import { isGroupOptionInUse } from './task-lanes';
 
 const KANBAN_STATE_KEY = 'obsidian-agenda-kanban-view-state';
 
-/** Valida el estado leído: un agrupado u orden que ya no existe vuelve a su valor por defecto. */
+/**
+ * Valida el estado leído: un agrupado u orden que ya no existe vuelve a su valor por defecto, y unos carriles
+ * que repiten el campo de las columnas se quitan (las columnas son obligatorias, así que ceden los carriles).
+ */
 export function parseKanbanState(raw: unknown): TaskViewState {
   const state = parseTaskViewState(raw);
   if (!KANBAN_GROUP_OPTIONS.some(option => option.value === state.group)) state.group = KANBAN_DEFAULT_GROUP;
   if (!TASK_SORT_COLUMNS.some(column => column.value === state.sortColumn)) state.sortColumn = DEFAULT_TASK_VIEW_STATE.sortColumn;
+  if (isGroupOptionInUse(state.group, state.lanes)) state.lanes = '';
   return state;
 }
 

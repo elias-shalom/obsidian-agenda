@@ -62,8 +62,10 @@ La vista **Grid** se basa en la referencia de código abierto **Habit Tracker 21
 | 2 | [[PRD - Módulo Habit Tracker]] | Requerimientos de producto y criterios de aceptación. |
 | 3 | [[Modelo de datos]] | Esquema de las notas de hábito, métricas, write-back y decisiones (ADR). |
 | 4 | [[Arquitectura técnica]] | Integración con obsidian-agenda, módulos, eventos, estilos, i18n. |
-| 5 | [[Especificación de vistas]] | Wireframes y specs de cada vista, incluida la Grid HT21. |
-| 6 | [[Plan de implementación]] | Fases, tareas por archivo, verificación y riesgos. |
+| 5 | [[Especificación de vistas]] | Wireframes y specs de cada vista, incluida la Grid HT21; §11–§14: selector circular, periodo activo y vacaciones, hábitos en el calendario y widgets del Dashboard (v1.1.15–v1.1.16, diseño). |
+| 6 | [[Plan de implementación]] | Fases, tareas por archivo, verificación y riesgos; bloque de ampliaciones con las fases HA1, HV1 y HU1 (v1.1.15). |
+
+> **Ampliaciones v1.1.15–v1.1.16 (diseño, no implementado)**: [[Modelo de datos]] §8 (campos `desde`/`hasta`, vacaciones y frecuencias con días no laborables) y [[Arquitectura técnica]] §10 (mecanismo, archivos, pruebas y riesgos). Las partes de calendario y Dashboard se detallan en `docs/agenda-tasks/` (Especificación §21 y §22, Arquitectura §30 y §31).
 
 ## Estado
 
@@ -75,6 +77,19 @@ La vista **Grid** se basa en la referencia de código abierto **Habit Tracker 21
 - [ ] Fase 3: Vista Rutina diaria
 - [ ] Fase 4: Dashboard
 - [ ] Fase 5: Semanal + Lista/Tabla
+- [ ] **v1.1.15** HA1 — periodo activo (`desde`/`hasta`)
+- [ ] **v1.1.15** HV1 — vacaciones y botón «Vacaciones»
+- [ ] **v1.1.15** HU1 — selector circular de subvistas
+- [ ] **v1.1.15** frecuencias con días no laborables (NL2) y hábitos en el calendario (HC1), fases del Plan de agenda-tasks
+- [ ] **v1.1.16** heatmap compartido (HM1) y widgets de hábitos (DW1), fases del Plan de agenda-tasks
+
+> Las fases de este checklist no coinciden con las fases 0–7 del [[Plan de implementación]] (que ya están implementadas en v1.1.0): es una lista de alto nivel que se conserva tal cual; el estado real de cada fase está en el Plan.
+
+## Alcance y fuera de alcance de las ampliaciones
+
+- **Dentro**: periodo activo, vacaciones, selector circular, frecuencias que siguen los días no laborables, hábitos en el calendario como entradas virtuales y widgets de hábitos con heatmap compartido (v1.1.15–v1.1.16).
+- **Fuera**: «Día recomendado» (movido a «Gestión de Tiempo Avanzada» del roadmap, sin versión y sin definir); escritura en las notas diarias de seguimiento.
+- **Descartado (2026-11-02)**: que los hábitos generen tareas (se ven como entradas virtuales en el calendario).
 
 ## Enlaces de interés en el vault
 

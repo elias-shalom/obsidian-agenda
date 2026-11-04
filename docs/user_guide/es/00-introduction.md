@@ -2,7 +2,7 @@
 
 **Agenda Tasks** es un plugin de gestión de tareas y calendario para [Obsidian](https://obsidian.md). Convierte tu bóveda en un sistema de productividad leyendo las tareas que ya escribes en tus notas y presentándolas a través de varias vistas dedicadas, sin cambiar la forma en que escribes tareas.
 
-> Este manual corresponde a la versión **1.1.13** del plugin. Para ver una lista simple de los cambios entre versiones, consulta la sección Changelog del [README](../../../README.md#changelog) del proyecto.
+> Este manual corresponde a la versión **1.1.14** del plugin. Para ver una lista simple de los cambios entre versiones, consulta la sección Changelog del [README](../../../README.md#changelog) del proyecto.
 
 ## Qué hace
 
@@ -11,10 +11,10 @@
 - Añade sus propias extensiones opcionales sobre ese formato: hora y duración programadas, un estado con 6 valores (incluyendo "En espera") y generación automática de la siguiente ocurrencia para tareas recurrentes.
 - Ofrece siete familias de vistas, cada una pensada para una forma distinta de trabajar:
   - **Vista general** — un panel con métricas clave y acceso rápido a tareas próximas/vencidas.
-  - **Lista** y **Tabla** — dos formas de trabajar tus tareas en una sola pestaña, **Tareas**: una lista compacta agrupada por área o una cuadrícula estilo hoja de cálculo, ambas con búsqueda, filtros, agrupado y orden.
+  - **Lista** y **Tabla** — dos formas de trabajar tus tareas en una sola pestaña, **Tareas**: una lista compacta agrupada por área o una cuadrícula estilo hoja de cálculo, ambas con búsqueda, filtros (varios valores por filtro), agrupado, orden y **Filas** para dividir la vista en un widget por área, estado, etiqueta, etc.
   - **Kanban** — un tablero cuyas columnas agrupan las tareas por estado, prioridad, etiqueta o carpeta; arrastra una tarjeta para cambiar su estado o su prioridad.
   - **Gantt** — una línea de tiempo con una barra por tarea; mueve una barra o arrastra sus bordes para cambiar fechas.
-  - **Calendario** — seis diseños (Día, Semana, Semana laboral, Mes, Año, Lista) para ver las tareas en una línea de tiempo.
+  - **Calendario** — seis diseños (Día, Semana, Semana laboral, Mes, Año, Lista) para ver las tareas en una línea de tiempo, con una barra de filtros (búsqueda, Prioridad, Estado y Área) arriba.
   - **Seguimiento de hábitos** — un módulo independiente (Cuadrícula, Rutina diaria, Dashboard, Semanal, Tabla) para seguir hábitos recurrentes, separado de las tareas.
 
 ## A quién está dirigido este manual

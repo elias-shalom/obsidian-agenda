@@ -31,14 +31,17 @@ A quick reference of every click, double-click, right-click, and drag across the
 | Click | A task row/item (List or Table view) | Opens the **Edit Task** modal, prefilled with that task's data |
 | Double-click | A task row/item | Opens the underlying note, cursor on that line |
 | Right-click | A task row/item | Opens a context menu to change the task's status |
-| Click | The **List \| Table** switch | Switches mode, keeping search, filters, grouping and sort order |
-| Click | **+ Filter** | Opens menus to pick a filter type and a value (Area also asks for a sub-area) |
+| Click | The **List \| Table** switch (on the right, next to the search box) | Switches mode, keeping search, filters, grouping and sort order |
+| Click | **+ Filter** | Opens a menu to pick a filter type; Priority, Status and Area then open a popover with checkboxes (it stays open while you tick values; close it by clicking outside or pressing Esc), and the date types ask for one value |
+| Click | The **Lanes**, **Group** or **Sort** chip | Opens a menu with the current option checked; choosing an option applies it |
+| Click | The arrow inside the **Sort** chip | Inverts the sort direction |
+| Click | The ▼ in a lane's header | Folds or unfolds that lane; the choice is remembered |
 | Click | A filter chip's ×, or **Clear** | Removes that filter, or all of them (the search text is kept) |
 | Click | A group header | Collapses or expands that group; its state is remembered |
 | Click | A column header (Table view) | Sorts by that column; click again to reverse. Also keyboard-accessible with Enter or Space |
 | Hover / keyboard focus | A control or widget with a tooltip | Shows a themed tooltip with its explanatory text |
 
-Search, filters, grouping, and sort order are shared by the List and Table views and remembered when you return from editing a task or switch views; column widths adapt to the rows visible after filtering.
+Search, filters, grouping, and sort order are shared by the List and Table views and remembered when you return from editing a task or switch views; column widths adapt to the rows visible after filtering. The Kanban and Gantt views offer the same filter bar and chips, and the Calendar views have their own filter bar (search, Priority, Status and Area) that works the same way.
 
 ## Kanban
 
@@ -51,6 +54,7 @@ Search, filters, grouping, and sort order are shared by the List and Table views
 | Drag | A card to another column (grouped by priority) | Changes the task's priority; the Normal column removes the priority icon |
 | Click | A column header | Folds the column into a thin bar, or opens it again; your choice is remembered |
 | Drop | A card on a folded column | Moves the task there and opens the column |
+| Drag | A card to a column of another lane (Lanes on) | Not allowed: lanes are read-only |
 
 ## Gantt
 
@@ -64,6 +68,7 @@ Search, filters, grouping, and sort order are shared by the List and Table views
 | Double-click | A row | Opens the underlying note, cursor on that line |
 | Right-click | A row | Opens a context menu to change the task's status |
 | Click | A group header | Collapses or expands the group; its state is remembered |
+| Click | The ▼ in a lane's header (Lanes on) | Folds or unfolds that lane; the choice is remembered |
 | Click | A zoom button (7, 14, 21, month), ◀ / ▶, **Today**, a month tab or the year arrows | Changes the zoom or moves the window |
 | Click | **Tasks without a date** | Shows or hides that list (collapsed by default) |
 

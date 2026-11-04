@@ -5,6 +5,7 @@ import { ITask } from '../types/interfaces';
 import { CoreTaskStatus } from '../types/enums';
 import { STATUS_OPTIONS } from './task-status-options';
 import { groupTasksByField, groupTasksForView } from './task-grouping';
+import { buildLanes } from './task-lanes';
 import { PriorityEmoji, clearPriority, upsertPriority } from './task-line-fields';
 
 /** Agrupados que ofrece el tablero para sus columnas, con la clave de traducción de su nombre. */
@@ -76,6 +77,33 @@ export function buildKanbanColumns(tasks: ITask[], group: string, translate: (ke
     tasks: column.tasks,
     drop: { kind: 'status', status: column.key as CoreTaskStatus },
   }));
+}
+
+/** Un carril del tablero: su propio Kanban, con las columnas del agrupado calculadas sobre las tareas del carril. */
+export interface KanbanLane {
+  label: string;
+  /** Clave del carril, con el campo como prefijo; sirve para recordar su plegado y limitar el arrastre. */
+  storageKey: string;
+  color?: string;
+  count: number;
+  columns: KanbanColumn[];
+}
+
+/**
+ * Los carriles de `lanesField`, cada uno con las columnas de `group`. Sin campo de carril devuelve `[]` y el
+ * tablero se dibuja como siempre. Las tareas deben llegar ya filtradas y ordenadas.
+ */
+export function buildKanbanLanes(tasks: ITask[], lanesField: string, group: string, translate: (key: string) => string): KanbanLane[] {
+  return buildLanes(tasks, lanesField, translate).map(lane => {
+    const model: KanbanLane = {
+      label: lane.label,
+      storageKey: `lane:${lanesField}:${lane.key}`,
+      count: lane.tasks.length,
+      columns: buildKanbanColumns(lane.tasks, group, translate),
+    };
+    if (lane.color !== undefined) model.color = lane.color;
+    return model;
+  });
 }
 
 /** Clave de la columna de estado o prioridad en que cae una tarea; `null` para otros agrupados. */

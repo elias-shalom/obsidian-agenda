@@ -7,9 +7,12 @@ export type CollapseChoice = 'collapsed' | 'expanded';
 
 const KEY_PREFIX = 'obsidian-agenda-kanban-collapsed';
 
-/** Clave de almacenamiento: la elección vale para esa columna dentro de ese agrupado. */
-export function collapseStorageKey(group: string, columnKey: string): string {
-  return `${KEY_PREFIX}:${group}:${columnKey}`;
+/**
+ * Clave de almacenamiento: la elección vale para esa columna dentro de ese agrupado y, con Lanes, dentro de su
+ * carril (cada carril es un tablero independiente).
+ */
+export function collapseStorageKey(group: string, columnKey: string, laneKey = ''): string {
+  return laneKey ? `${KEY_PREFIX}:${laneKey}:${group}:${columnKey}` : `${KEY_PREFIX}:${group}:${columnKey}`;
 }
 
 /** Lee lo guardado; cualquier otro valor cuenta como «sin elección». */

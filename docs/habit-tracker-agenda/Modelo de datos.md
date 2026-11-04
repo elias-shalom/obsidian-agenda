@@ -124,6 +124,8 @@ Qué días de la semana está **programado** el hábito. Formato en YAML (tokens
 - **Día no programado** (`!isScheduled`): es **neutral** — no cuenta como cumplido ni como falta, no rompe racha, y en las vistas se atenúa (grid/semanal) o se oculta (rutina → solo hábitos programados ese día).
 - **Toggle en día no programado**: permitido (queda en `completions` y se refleja en el espejo `entries`) pero **no afecta** stats ni rachas.
 
+> **Cambio v1.1.15 (diseño)**: `workweek` y `weekend` dejan de ser fijos (`{1..5}` y `{6,7}`) y siguen el ajuste de días no laborables; ver §8.6. Con el ajuste por defecto el resultado es el mismo.
+
 ### 2.6 Prioridad (`priority`)
 
 Importancia de realizar el hábito, escala **1–5** (entero):
@@ -409,3 +411,136 @@ Provenientes de `test-vault/broken-habits/` de HT21:
 | Ruta inexistente | Estado "No habits found at '{ruta}'" en la vista. |
 | Nombre con caracteres especiales | OK (por basename). |
 | Zona horaria / DST | Trabajar siempre con fechas **locales** `yyyy-MM-dd` (no UTC) para evitar `ticked` de un día diferente. |
+
+## 8. Periodo activo, vacaciones y frecuencias con días no laborables (v1.1.15 — diseño, no implementado)
+
+Decidido el 2026-11-02. Añade dos campos opcionales al frontmatter (`desde`, `hasta`), una lista global de vacaciones en los ajustes y un cambio en cómo se resuelven los tokens de `frequency`. Comportamiento visible en [[Especificación de vistas]] §12; mecanismo en [[Arquitectura técnica]] §10. **Nada de lo descrito aquí existe aún en `src/habits/`**: los nombres marcados «por crear» son propuestas.
+
+### 8.1 Campos nuevos de la nota (frontmatter)
+
+| Campo | Tipo | Uso | Obligatorio |
+|---|---|---|---|
+| `desde` | string `AAAA-MM-DD` | Primer día en que el hábito está activo | No |
+| `hasta` | string `AAAA-MM-DD` | Último día en que el hábito está activo | No |
+
+```yaml
+status: inactive          # el plugin lo escribe al desactivar…
+hasta: 2026-11-02         # …junto con hasta = hoy; al reactivar se borra `hasta`
+desde: 2026-03-01         # opcional
+```
+
+- Lectura: igual que `entries` (§2.3): solo se aceptan cadenas `AAAA-MM-DD`; cualquier otro valor se ignora y el campo cuenta como ausente.
+- **Sin ninguna de las dos fechas el hábito se comporta como hoy** (activo si `status` no es `inactive`).
+- Un solo periodo por hábito; no hay lista de periodos.
+- La escritura la hace el Habit Creator (`vault.process`, [[Especificación de vistas]] §9) junto con el resto del frontmatter; `habit-writer.ts` (toggle de `completions`/`entries`) **no cambia**.
+
+### 8.2 Interfaz TypeScript (propuesta)
+
+```ts
+// src/habits/habit.ts — campos nuevos (por crear)
+export interface IHabit {
+  // ...existentes (§3)
+  activeFrom: string | null;   // fm.desde válido o null
+  activeUntil: string | null;  // fm.hasta válido o null
+}
+
+// src/habits/habit-calendar.ts — por crear (funciones puras, sin `obsidian`)
+export interface IHabitVacation { from: string; to: string; name?: string }   // fechas ISO inclusivas
+export interface IHabitCalcContext { vacations: IHabitVacation[] }
+
+// settings (data.json): habitVacations: IHabitVacation[]  — defecto []
+
+// campos nuevos de salida para las vistas
+interface IHabitCell    { /* ...§3 */ vacation: boolean; vacationName?: string }
+interface IHabitDayStat { /* ...§3 */ vacation: boolean }   // día de vacaciones del heatmap
+```
+
+### 8.3 Periodo activo: `isActiveOn`
+
+```ts
+// por crear — habit-calendar.ts; las fechas ISO se comparan como cadenas
+export function isActiveOn(h: Pick<IHabit, 'status' | 'activeFrom' | 'activeUntil'>, date: string): boolean {
+  if (h.status === 'inactive' && !h.activeUntil) return false;   // comportamiento actual
+  if (h.activeFrom && date < h.activeFrom) return false;
+  if (h.activeUntil && date > h.activeUntil) return false;
+  return true;
+}
+```
+
+| `status` | `desde` / `hasta` | Activo en la fecha `d` |
+|---|---|---|
+| `active` | ninguna | Siempre (igual que hoy) |
+| `active` | `desde` y/o `hasta` | `desde ≤ d ≤ hasta` (extremos ausentes = sin límite) |
+| `inactive` | sin `hasta` | Nunca (igual que hoy: ni filas ni porcentajes) |
+| `inactive` | con `hasta` | `d ≤ hasta` (y `d ≥ desde` si existe): así desactivar hoy no cambia el historial |
+
+> **ADR-DM1 — `status: inactive` con `hasta` sigue contando en el historial**: hoy `HabitManager.getHabits()` descarta los inactivos y el porcentaje de fechas pasadas cambia retroactivamente. Decisión: el plugin, al desactivar, escribe `status: inactive` **y** `hasta` = hoy; el cálculo histórico usa una lista que incluye los inactivos con `hasta` (por crear: `HabitManager.getHabitsForStats()`), y cada día se filtra con `isActiveOn`. Las filas de Grid, Semanal y Rutina siguen saliendo de `getHabits()` (solo `status` activo). Racional: no rompe ninguna vista existente y las notas antiguas sin fechas no cambian.
+
+### 8.4 Vacaciones
+
+- **Fuente única**: `habitVacations` en `data.json` (ajustes del plugin, sincronizado entre dispositivos), nunca en las notas de hábito ni en `localStorage`.
+- Un periodo es `{ from, to, name? }`, fechas ISO **inclusivas**. Solapados se unen. Al leer `data.json` se descartan los periodos con fechas inválidas o con `to < from`.
+- `findVacation(vacations, date)` (por crear) devuelve el periodo que contiene la fecha o `null`; es lo que alimenta el atenuado, el icono y el tooltip con el nombre.
+
+### 8.5 Regla de cálculo: cuándo cuenta un día
+
+Hoy «cuenta» un día de un hábito si está **programado** (`isScheduled`, §2.5). Pasa a contar si además está **activo** y, en vacaciones, solo si está **marcado**:
+
+```ts
+// por crear — habit-calendar.ts. `done` = la ocurrencia (o el día completo, según el agregado) está marcada
+export function countsOn(h: IHabit, date: DateTime, done: boolean, ctx: IHabitCalcContext): boolean {
+  const iso = date.toISODate()!;
+  if (!isScheduled(h, date) || !isActiveOn(h, iso)) return false;          // neutral, como un día no programado
+  if (findVacation(ctx.vacations, iso)) return done;                       // vacaciones: solo si está marcado
+  return true;
+}
+```
+
+| Día | Hábito sin marcar | Hábito marcado |
+|---|---|---|
+| Normal, programado y activo | Cuenta como **incumplido** | Cuenta como **cumplido** |
+| Vacaciones, programado y activo | **Neutral**: no rompe ni suma a la racha, no entra en el denominador | Cuenta como **cumplido solo para ese hábito**: suma a su racha y entra en su porcentaje |
+| No programado, o fuera del periodo activo | Neutral | Neutral (queda en `completions`, no afecta a stats ni rachas; ADR-005) |
+
+**Dónde se aplica** (las fórmulas de §4 cambian solo el criterio del denominador):
+
+- **§4.1 / §4.2 Racha**: en `computeCells`, `computeStats`, `computeOccurrenceCells` y `computeOccurrenceStats`, los días que no cuentan se tratan como los no programados (no abren, no cierran ni cuentan la racha; no consumen `maxGap`). Un día de vacaciones marcado es un `ticked` normal.
+- **§4.3 % por área y por daytime (crudo y ponderado)** y **§4.4 % de ventana y heatmap**: el denominador son las ocurrencias/hábitos para los que `countsOn` es verdadero. Un día de vacaciones sin ninguna marca queda con denominador 0 y se marca `vacation: true` (el heatmap lo atenúa en lugar de pintarlo como 0 %).
+- **Día parcial** (ADR-008): sigue siendo neutral; en vacaciones también.
+- **Hábito con varias daytimes**: la regla se evalúa por **ocurrencia** en los agregados por daytime/área y en las filas de la Grid, y por **día completo** (`dayCompleted`) en los agregados por hábito.
+
+> **ADR-DM2 — Marcar en vacaciones cuenta solo para ese hábito**: el denominador del día incluye únicamente los hábitos marcados, nunca los demás. Racional: ver ADR-VAC1 en [[Especificación de vistas]] §12.2. Consecuencia: un día de vacaciones con una sola marca puede mostrar 100 % para ese día.
+
+### 8.6 Frecuencias que siguen los días no laborables
+
+`frequencyToSet` (en el código, `normalizeFrequencySet()` de `habit-parser.ts`) recibe ahora el conjunto de días no laborables del ajuste de [[Especificación de vistas]] §12.3 (por crear en NL1; nombre propuesto `nonWorkingDays: number[]`, ISO 1–7, defecto `[6, 7]`):
+
+| Token | Hoy | Desde v1.1.15 |
+|---|---|---|
+| `everyday` | `{1..7}` | Sin cambio |
+| `weekend` | `{6, 7}` fijo | `nonWorkingDays` |
+| `workweek` | `{1..5}` fijo | `{1..7} \ nonWorkingDays` |
+| Lista de nombres (`[monday, wednesday]`) | `{…}` | Sin cambio |
+
+- El Habit Creator sustituye su constante `FREQUENCY_PRESETS` (`weekend: [6, 7]`, `workweek: [1..5]`) por los mismos conjuntos calculados, y `resolveFrequencyMode()` compara contra ellos al editar.
+- **El token se guarda tal cual** en `frequency`; el conjunto se **resuelve al leer** (`parseHabit` ya recibe `settings`). Al cambiar el ajuste hay que re-parsear los hábitos (`HabitManager.refreshHabits()` y evento `obsidian-agenda:habits-refresh`), porque `IHabit.frequencySet` se calcula en el parseo.
+- Con el ajuste por defecto el conjunto es idéntico al actual; con otro, cambia el historial de rachas y porcentajes de los hábitos `weekend`/`workweek` (por eso el aviso).
+- **Resuelto el 2026-11-03**: el ajuste exige al menos un día marcado y uno sin marcar (ver [[Especificación de vistas]] §12.6 y `docs/agenda-tasks/Especificación de vistas.md` §21.1), así que no existen el conjunto vacío de `weekend` ni el de `workweek`; el caso de «conjunto vacío cae a `{1..7}`» deja de poder darse por esta vía.
+
+> **ADR-DM3 — Los tokens se resuelven al leer, no al escribir**: no se reescriben las notas al cambiar el ajuste. Racional: una sola fuente de verdad (el ajuste) y cero migraciones. Alternativa descartada: guardar la lista de días en cada nota (rompería la semántica de «Fin de semana» y exigiría migrar).
+
+### 8.7 Casos límite
+
+| Caso | Comportamiento (propuesto) |
+|---|---|
+| `desde` > `hasta` | El hábito nunca está activo; el Habit Creator lo impide al guardar con validación inline. |
+| `hasta` < hoy con `status: active` (editada a mano) | Activo hasta `hasta`; la fila sigue saliendo (el `status` manda para las filas, ADR-DM1). |
+| Reactivar un hábito | Se borra `hasta`; `desde` se conserva. El hueco entre `hasta` y hoy cuenta como días sin cumplir. |
+| Fecha de vacaciones inexistente (`2026-02-30`) | Se descarta el periodo. |
+| Vacaciones vacías o ausentes en `data.json` | `[]` (comportamiento actual). |
+| Vacaciones sobre un día no programado | Neutral de todos modos (§8.5). |
+| Frecuencia en lista de nombres con ajuste modificado | No cambia. |
+
+### 8.8 Impacto en `IHabitDayStat` y el heatmap
+
+`computeHistory30d`, `computeYearHistory` y `computeDashboard` (`habit-stats.ts`) reciben `IHabitCalcContext` y la lista de `getHabitsForStats()`. `IHabitDayStat` gana `vacation: boolean`. Cuando el heatmap migre al componente reutilizable (HM1, v1.1.16), esa marca debe poder expresarse sin que el componente sepa de hábitos ([[Arquitectura técnica]] §10.8).

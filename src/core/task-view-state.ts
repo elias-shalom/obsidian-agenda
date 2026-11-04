@@ -6,6 +6,8 @@ import { DateTime } from 'luxon';
 import { ITask, TaskFilterCriteria } from '../types/interfaces';
 import { TaskFilter } from './task-filter';
 import { STATUS_OPTIONS, isTaskOpen } from './task-status-options';
+import { areaRoutesFromLegacy } from './area';
+import { isLaneField } from './task-lanes';
 
 const TASK_VIEW_STATE_KEY = 'obsidian-agenda-task-view-state';
 /** Clave que usaba la Tabla antes de v1.1.12; se lee una vez, se convierte y se elimina. */
@@ -23,14 +25,16 @@ export interface TaskViewState {
   /** Último modo usado: la pestaña «Tareas» abre este. */
   mode: TaskViewMode;
   search: string;
-  /** `'all'`, un valor de `PRIORITY_FILTER_VALUES` (`'none'` = sin prioridad). */
-  priority: string;
-  /** `'all'` o el nombre de un estado de `CoreTaskStatus` (`Todo`, `InProgress`, …). */
-  status: string;
-  /** Primera carpeta de la ruta; vacío = todas. */
-  area: string;
-  /** Ruta de carpetas bajo el área; vacío = todas. */
-  subArea: string;
+  /** Valores de `PRIORITY_FILTER_VALUES` (`'none'` = sin prioridad); O entre ellos, `[]` = todas. Antes de v1.1.14 era un `string` (`'all'` o un valor). */
+  priority: string[];
+  /** Nombres de estado de `CoreTaskStatus` (`Todo`, `InProgress`, …); O entre ellos, `[]` = todos. Antes de v1.1.14 era un `string`. */
+  status: string[];
+  /**
+   * Rutas de área (`Área`, `Área/sub/ruta`, `Área/` para las notas directas del área y `ROOT_AREA` para
+   * las de la raíz del vault); O entre ellas, gana la más específica, `[]` = todas. Sustituye a `area` y
+   * `subArea` de antes de v1.1.14 (ver `area.ts`).
+   */
+  areas: string[];
   /** `'all'` o un valor de `DATE_FILTER_VALUES`, sobre la fecha de inicio. */
   start: string;
   /** `'all'` o un valor de `DATE_FILTER_VALUES`, sobre la fecha programada. */
@@ -39,6 +43,8 @@ export interface TaskViewState {
   due: string;
   /** Agrupado elegido entre los que ofrece la vista; vacío = el que cada vista usa por defecto. */
   group: string;
+  /** Campo por el que la vista se divide en carriles (`LaneField`); vacío = sin carriles (v1.1.14, Fase L2). */
+  lanes: string;
   /** Columna o campo de orden, entre los que ofrece la vista. */
   sortColumn: string;
   sortDirection: 'asc' | 'desc';
@@ -47,20 +53,35 @@ export interface TaskViewState {
 export const DEFAULT_TASK_VIEW_STATE: Readonly<TaskViewState> = {
   mode: 'list',
   search: '',
-  priority: 'all',
-  status: 'all',
-  area: '',
-  subArea: '',
+  priority: [],
+  status: [],
+  areas: [],
   start: 'all',
   scheduled: 'all',
   due: 'all',
   group: '',
+  lanes: '',
   sortColumn: 'priority',
   sortDirection: 'desc',
 };
 
 const isOneOf = (values: readonly string[], value: unknown): value is string =>
   typeof value === 'string' && values.includes(value);
+
+/**
+ * Lista de un filtro con varios valores: acepta la lista de v1.1.14 y el valor suelto de antes (`'all'` es
+ * «todos» y un valor válido es una lista de uno). Se descartan los valores no válidos y los repetidos.
+ */
+function parseFilterList(value: unknown, isValid: (candidate: string) => boolean): string[] {
+  const candidates = Array.isArray(value) ? value : (value === 'all' ? [] : [value]);
+  return [...new Set(candidates.filter((candidate): candidate is string => typeof candidate === 'string' && isValid(candidate)))];
+}
+
+/** Lista de rutas de área: la de v1.1.14 o, si falta, la conversión del `area` y `subArea` de antes. */
+function parseAreaList(source: Record<string, unknown>): string[] {
+  if (!Array.isArray(source.areas)) return areaRoutesFromLegacy(source.area, source.subArea);
+  return [...new Set(source.areas.filter((route): route is string => typeof route === 'string' && route !== ''))];
+}
 
 /** Valida un estado leído del almacenamiento: lo que no es válido vuelve a su valor por defecto. */
 export function parseTaskViewState(raw: unknown): TaskViewState {
@@ -71,14 +92,14 @@ export function parseTaskViewState(raw: unknown): TaskViewState {
   return {
     mode: source.mode === 'table' ? 'table' : defaults.mode,
     search: text(source.search, defaults.search),
-    priority: source.priority === 'all' || isOneOf(PRIORITY_FILTER_VALUES, source.priority) ? source.priority : defaults.priority,
-    status: source.status === 'all' || STATUS_OPTIONS.some(option => option.name === source.status) ? source.status as string : defaults.status,
-    area: text(source.area, defaults.area),
-    subArea: text(source.subArea, defaults.subArea),
+    priority: parseFilterList(source.priority, value => PRIORITY_FILTER_VALUES.includes(value as typeof PRIORITY_FILTER_VALUES[number])),
+    status: parseFilterList(source.status, value => STATUS_OPTIONS.some(option => option.name === value)),
+    areas: parseAreaList(source),
     start: source.start === 'all' || isOneOf(DATE_FILTER_VALUES, source.start) ? source.start : defaults.start,
     scheduled: source.scheduled === 'all' || isOneOf(DATE_FILTER_VALUES, source.scheduled) ? source.scheduled : defaults.scheduled,
     due: source.due === 'all' || isOneOf(DATE_FILTER_VALUES, source.due) ? source.due : defaults.due,
     group: text(source.group, defaults.group),
+    lanes: isLaneField(source.lanes) ? source.lanes : defaults.lanes,
     sortColumn: text(source.sortColumn, defaults.sortColumn) || defaults.sortColumn,
     sortDirection: source.sortDirection === 'asc' || source.sortDirection === 'desc' ? source.sortDirection : defaults.sortDirection,
   };
@@ -161,21 +182,22 @@ export function matchesDateFilter(date: DateTime | null | undefined, value: stri
 }
 
 /**
- * Tareas que cumplen el estado de búsqueda y filtros. Prioridad, estado y área pasan por `TaskFilter`;
- * la búsqueda (descripción y etiquetas, sin acentos) y los tres filtros de fecha son propios.
+ * Tareas que cumplen el estado de búsqueda y filtros. Prioridad, estado y área pasan por `TaskFilter`
+ * (O dentro de un tipo y Y entre tipos; una lista vacía es «todos»); la búsqueda (descripción y
+ * etiquetas, sin acentos) y los tres filtros de fecha, que siguen con un solo valor, son propios.
  */
 export function filterTasksByViewState(tasks: ITask[], state: TaskViewState, now: DateTime = DateTime.now()): ITask[] {
   const criteria: TaskFilterCriteria = {};
 
-  if (state.priority !== 'all') {
-    criteria.priority = { is: [state.priority === 'none' ? 'undefined' : state.priority] };
+  if (state.priority.length > 0) {
+    criteria.priority = { is: state.priority.map(value => (value === 'none' ? 'undefined' : value)) };
   }
 
-  const status = STATUS_OPTIONS.find(option => option.name === state.status);
-  if (status) criteria.status = [status.status];
+  const statuses = STATUS_OPTIONS.filter(option => state.status.includes(option.name)).map(option => option.status);
+  if (statuses.length > 0) criteria.status = statuses;
 
-  if (state.area || state.subArea) {
-    criteria.location = { area: state.area, subArea: state.subArea };
+  if (state.areas.length > 0) {
+    criteria.location = { routes: state.areas };
   }
 
   const filtered = new TaskFilter().filterTasks(tasks, criteria);

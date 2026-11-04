@@ -27,8 +27,8 @@
   "timeline_view_tab": "Linha do tempo",
   "timeline_view_title": "Linha do tempo",
   "week_view": "Semana",
-  "group_none": "Sem agrupamento",
-  "group_area": "Área e subárea",
+  "group_none": "Nenhum",
+  "group_area": "Área e sub",
   "no_area": "Sem área",
   "no_sub_area": "Sem subárea",
   "area": "Área",
@@ -98,7 +98,9 @@
   "highest_priority": "Mais alto",
   "no_priority": "Sem prioridade",
   "none": "Nenhum",
-  "all_sub_areas": "Todas as subáreas",
+  "filter_sub_areas": "Subáreas",
+  "lane_sub_area": "Subárea",
+  "lane_no_tag": "Sem etiqueta",
   "filter_add": "+ Filtro",
   "filter_clear": "Limpar",
   "filter_remove": "Remover filtro: {filter}",
@@ -368,6 +370,12 @@
   "area_root": "Raiz",
   "group_label": "Grupo:",
   "sort_label": "Ordem:",
+  "lanes_label": "Raias:",
+  "lanes_tooltip": "Divide a vista em várias, uma por valor",
+  "axis_in_use_by_group": "Em uso por Grupo",
+  "axis_in_use_by_group_swap": "Em uso por Grupo: ao escolhê-lo, Grupo passa para Nenhum",
+  "axis_in_use_by_lanes": "Em uso por Raias",
+  "axis_in_use_by_lanes_swap": "Em uso por Raias: ao escolhê-lo, Raias passa para Nenhum",
   "gantt_zoom_days": "{n} dias",
   "gantt_week_prefix": "S",
   "gantt_undated_title": "Tarefas sem data",
@@ -379,6 +387,10 @@
   "whats_new": {
     "title": "Novidades do Agenda Tasks",
     "close": "Fechar",
+    "v1_1_14": {
+      "title": "Raias e filtros com vários valores",
+      "items": "Um novo botão Raias divide Kanban, Lista, Tabela e Gantt em um widget independente por área, subárea, estado, prioridade, etiqueta, pasta ou arquivo; recolha cada raia com o seu ▼.\nOs filtros de Prioridade, Estado e Área agora aceitam vários valores ao mesmo tempo; um filtro com vários valores mostra apenas a quantidade (por exemplo, Estado: 2).\nAs vistas de calendário têm a sua própria barra de filtros com pesquisa, Prioridade, Estado e Área.\nGrupo e Ordem agora são botões compactos ao lado de + Filtro, e o alternador Lista | Tabela fica ao lado da pesquisa.\nLista e Tabela podem agrupar por data de início e data agendada, e o Gantt tem um novo seletor de Grupo (Nenhum, Área, Estado, Prioridade).\nRaias e Grupo nunca repetem um campo: no Kanban a opção em conflito fica bloqueada, e em Lista, Tabela e Gantt o outro botão passa sozinho para Nenhum."
+    },
     "v1_1_13": {
       "title": "Kanban, Gantt e mais",
       "items": "Uma nova aba Kanban mostra suas tarefas em colunas por status, prioridade, etiqueta ou pasta; arraste um cartão para outra coluna de status ou prioridade para alterá-lo e recolha as colunas de que não precisa.\nUma nova aba Gantt desenha suas tarefas em uma linha do tempo; arraste uma barra para movê-la, arraste suas bordas para alterar uma data ou estique um marco até virar uma barra.\nUm único interruptor para a aba Tarefas substitui os de Lista e Tabela, e um novo interruptor oculta toda a aba Hábitos.\nO filtro de Área tem uma opção Raiz para notas fora de qualquer pasta, e o de Subárea uma para notas diretamente na pasta de uma área.\nSe a pasta de hábitos não existir, ao criar o primeiro hábito é oferecido criá-la, e as configurações indicam se ela existe.\nOs seletores de ordem e agrupamento agora têm um rótulo (Ordem: / Grupo:).\nAs visualizações de calendário Semana, Semana útil e Lista mostram os dias corretos quando a semana não começa no domingo (obrigado a @AidanAJoyce).\nEsta janela: após uma atualização você verá as novidades uma única vez; você pode desativá-la nas configurações."

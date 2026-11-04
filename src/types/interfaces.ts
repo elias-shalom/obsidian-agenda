@@ -3,6 +3,7 @@ import { DateTime } from 'luxon';
 import { CalendarViewType } from './enums';
 import { Plugin, WorkspaceLeaf } from 'obsidian';
 import { AgendaPluginSettings } from '../settings/settings';
+import type { LaneViewModel } from '../core/task-lanes';
 
 export interface AgendaPlugin extends Plugin {
   viewManager: {
@@ -282,6 +283,7 @@ export interface TaskFilterCriteria {
     folder?: string;                   // Carpeta donde se encuentra la tarea
     area?: string;                     // Área: primera carpeta de la ruta de la nota
     subArea?: string;                  // Sub-área: resto de la ruta de carpetas; coincide por prefijo
+    routes?: string[];                 // Varias rutas de área (`Área`, `Área/sub`, `Área/`, `/`): O entre ellas, gana la más específica
     file?: string;                     // Archivo específico
   };
   
@@ -320,7 +322,7 @@ export interface ModalOptions {
 
 export type SortField = 'dueDate' | 'startDate' | 'scheduledDate' | 'doneDate' | 'createdDate' | 'priority' | 'status' | 'text' | 'path';
 
-export type GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags' | 'area';
+export type GroupField = 'status' | 'priority' | 'dueDate' | 'startDate' | 'scheduledDate' | 'path' | 'tags' | 'area';
 
 export type ModalType = "create-task" | "edit-task" | "quick-capture"; // Extensible
 
@@ -422,9 +424,13 @@ export interface TableViewData {
   vaultHasTasks: boolean;
 }
 
-/** Cabecera de grupo plegable de la Tabla; `level` es la profundidad (0 = primer nivel). */
+/** Cabecera plegable de la Tabla: de grupo o, con `isLane`, de carril; `level` es la profundidad (0 = primer nivel). */
 export interface TableGroupRow {
   isGroup: true;
+  /** Carril de Lanes: tras su cabecera se repite el encabezado de columnas. */
+  isLane?: boolean;
+  /** Carril que no es el primero: lleva un espacio por encima para que parezca otra tabla. */
+  gapBefore?: boolean;
   label: string;
   storageKey: string;
   color?: string;
@@ -489,6 +495,8 @@ export interface ListViewData {
   tasks: ITask[];
   /** Grupos a dibujar; vacío si no se agrupa (entonces se usa `flatTasks`). */
   groups: TaskGroupViewModel[];
+  /** Carriles de Lanes, cada uno con sus grupos; vacío si Lanes = Ninguno (entonces se usan `groups` y `flatTasks`). */
+  lanes: LaneViewModel[];
   /** Tareas filtradas y ordenadas, sin agrupar. */
   flatTasks: ITask[];
   /** Mostrar la ruta de la nota en cada tarea: solo cuando el grupo no la implica. */

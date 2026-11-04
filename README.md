@@ -2,11 +2,11 @@
 
 > A comprehensive task management and calendar plugin for Obsidian
 
-[![Release](https://img.shields.io/badge/version-1.1.13-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
+[![Release](https://img.shields.io/badge/version-1.1.14-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Obsidian](https://img.shields.io/badge/Obsidian-1.8.7+-purple.svg)](https://obsidian.md)
 
-> 🆕 **What's New in v1.1.13** — two new tabs: a **Kanban** board (drag cards to change a task's status or priority) and a **Gantt** chart (move bars and drag their edges to change dates), a window that tells you what's new after an update, simpler tab settings (one **Tasks** switch and a **Habits** switch), a **Root** option in the Area and Sub-area filters, a safer habits folder, and the right weekday names in the Week, Work Week and List calendar views. [See details](#news) · [Full changelog](#changelog).
+> 🆕 **What's New in v1.1.14** — **Lanes**: split Kanban, List, Table and Gantt into one independent widget per area, status, priority, tag, folder or file. Filters now accept **several values** (two priorities, three areas…) and the **calendar** gets its own filter bar. **Group** and **Sort** are now compact buttons next to **+ Filter**, List and Table can group by start and scheduled date, and the Gantt gets a **Group** selector. [See details](#news) · [Full changelog](#changelog).
 
 ## Overview
 
@@ -41,7 +41,16 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 
 ## 🆕 News
 
-### v1.1.13 (latest)
+### v1.1.14 (latest)
+- **Lanes**: a new **Lanes** button in the filter bar splits a view into independent widgets, one per value of a field — **Area**, **Sub-area**, **Status**, **Priority**, **Tag**, **Folder** or **File** (the default, *None*, shows the view as before). In **Kanban** each lane is its own board with the same columns, so you finally get one board per area; in **List** each lane is a section; in **Table** each lane is its own block with the column header repeated and the same widths in every lane; in the **Gantt** each lane is its own chart over one shared window and zoom, with the date header repeated. Fold a lane with its ▼ (remembered); empty lanes are hidden, *Root* and *No tag* go last, and area lanes carry the area color. By *Tag* a task appears in each of its tags. Lanes are read-only: you cannot drag a card to another lane
+- **Group and Sort as buttons**: the old dropdowns became compact buttons placed next to **+ Filter** with the same look; clicking one opens the same menu as **+ Filter** with the current choice checked, and the **Sort** button has an arrow to reverse the direction. The **List | Table** switch moved next to the search box. The group labels are shorter (*None*, *Area and sub*)
+- **Lanes and Group never repeat a field**: if you pick for one the field the other uses, Kanban does not allow it (its columns are required) and List, Table and Gantt switch the other button to *None* for you. Area, Sub-area and Folder count as the same field
+- **Filters with several values**: Priority, Status and Area (with its sub-areas) accept several values at once. A small checklist stays open while you tick values; it closes when you click outside or press Esc. Values of one type are combined with *or* (Normal or Medium) and different types with *and*; for areas the most specific choice wins. A filter with several values shows only its count (for example *Status: 2*) and a tooltip lists them, so the chips stay small
+- **Filters in the calendar**: the six calendar views (Day, Week, Work Week, Month, Year and List) show the same filter bar with search, Priority, Status and Area, remembered on its own. Typing in the search box keeps its focus while the calendar updates
+- **Group by start and scheduled date**: List and Table can now group by **Start date** and **Scheduled date** (by day, like Due date; tasks without the date go last)
+- **Gantt Group**: the Gantt gets a **Group** selector with *None* (a flat list without headers), *Area* (default), *Status* and *Priority*. Tasks without a date stay in one list at the end, shared by all lanes
+
+### v1.1.13
 - **Kanban tab**: your tasks as a board. Columns by **Status** (default), **Priority**, **Tags** or **Folder**, with the shared filter bar (search, filters, sort) and its own remembered settings. Drag a card to another status column to change its status (moving it to Done adds ✅ and completing a recurring task creates its next occurrence) or to another priority column to change its priority. Click edits, double-click opens the note and right-click changes the status
 - **Collapsible columns**: click a column header to fold it into a thin bar with its name and task count (empty columns start folded). A folded column still accepts a dropped card and opens by itself; tall columns scroll on their own with a fixed header
 - **Gantt tab**: one row per task on a time axis, grouped by area and sub-area. Zoom to 7, 14 or 21 days or a calendar month, with month tabs, year arrows, week bands, a thin vertical day grid with weekends shaded and a line for today. A task with two or more of 🛫, ⏳ and 📅 is a bar, one with a single date is a milestone, and the rest wait in a collapsible "Tasks without a date" group below. Hover a bar to see all its dates; 🔗 marks tasks with dependencies. Status and priority show next to each name
@@ -144,9 +153,10 @@ See the [full changelog](#changelog) below for older versions.
 
 #### List View
 - Compact task rows with priority cues, plus start, scheduled and due dates when a task has them
-- Shares the **Tasks** tab with the Table view (List | Table switch)
-- Search, filter chips (Priority, Status, Area, Start, Scheduled, Due), grouping and sort order
-- Group by area and sub-area (nested), folder, status, priority, tags or due date; collapsible groups
+- Shares the **Tasks** tab with the Table view (List | Table switch, next to the search box)
+- Search, filter chips (Priority, Status, Area, Start, Scheduled, Due), grouping and sort order; Priority, Status and Area accept several values
+- Group by area and sub-area (nested), folder, status, priority, tags, due date, start date or scheduled date; collapsible groups
+- **Lanes** (new in 1.1.14): one collapsible section per area, sub-area, status, priority, tag, folder or file
 - Click a task to edit it in the task modal; double-click to open its note; right-click to change its status
 
 #### Table View
@@ -154,11 +164,13 @@ See the [full changelog](#changelog) below for older versions.
 - Start, Scheduled, Due and Closed date columns (hidden when no task has that date)
 - Sortable and resizable columns that fit the available width
 - Grouping with collapsible group headers
+- **Lanes** (new in 1.1.14): each lane is its own block with the column header repeated, the same columns and widths in every lane, and a gap between lanes
 - Quick entry and editing of task attributes
 - Conditional formatting
 
 #### Calendar View
 - Multiple calendar layouts (day, week, work week, month, year, and list)
+- **Filter bar** (new in 1.1.14): search, Priority, Status and Area filters in all six layouts
 - Day view supports a 1/3/5-day mode with the reference day centered
 - List view shows a continuous, configurable 7–14 day window, one row per day
 - Task visualization on calendar grid
@@ -172,10 +184,13 @@ See the [full changelog](#changelog) below for older versions.
 - Columns by status (default), priority, tags or folder; the same search, filters and sort order as the Tasks tab, saved separately
 - Drag a card to another status column to change its status, or to another priority column to change its priority (tags and folders are read-only)
 - Collapsible columns that remember your choice, with empty ones folded by default
+- **Lanes** (new in 1.1.14): one board per area, sub-area, status, priority, tag, folder or file, each with its own columns; cards cannot be dragged between lanes
 - Click a card to edit it, double-click to open its note, right-click to change its status
 
 #### Gantt View (new in 1.1.13)
 - One row per task on a time axis, grouped by area and sub-area (collapsible), with a vertical day grid and weekends shaded
+- **Group** (new in 1.1.14): None (flat list), Area (default), Status or Priority
+- **Lanes** (new in 1.1.14): one chart per lane over a shared window and zoom, with the date header repeated in each lane
 - Zoom 7, 14 or 21 days or a calendar month; month tabs, year arrows and a line for today
 - Bars from start to due (with a notch for the scheduled date), milestones for tasks with a single date, and a collapsible list of tasks without a date
 - Move bars, drag their edges to change a single date, or stretch a milestone into a bar; a tooltip shows exactly what will be written
@@ -195,6 +210,8 @@ See the [full changelog](#changelog) below for older versions.
 - ✅ Real-time task updates, with views that refresh by themselves
 - ✅ Areas and sub-areas derived from your folder structure
 - ✅ Kanban board and Gantt chart that edit your tasks in place
+- ✅ Lanes: split Kanban, List, Table and Gantt into independent widgets by area, status, priority, tag, folder or file
+- ✅ Filters with several values, in the task views and in the calendar
 - ✅ A "what's new" window after each update, in your language
 - ✅ Built-in Habit Tracker module (Grid, Routine, Dashboard, Weekly and Table views, plus a habit creator/editor)
 - ✅ Customizable interface with themes support
@@ -281,6 +298,7 @@ A quick reference of clicks, double-clicks and drags across the plugin — handy
 | Click | A view-type icon button (header) | Switches to that calendar view (Day/Week/Work Week/Month/Year/List), keeping the current reference date |
 | Click | A day cell/row (Month/Week/Work Week/Year/List) | Selects and highlights that date as the shared reference date |
 | Click | A day number (Month/Week/Work Week/Year/List) | Jumps to the **Day view** for that date |
+| Click | **+ Filter** (all calendar views) | Opens menus to pick Priority, Status or Area; a checklist lets you tick several values, and the search box filters by text |
 | Double-click | Empty space in a day cell/row | Opens **Create Task** prefilled with that date |
 | Click | The date picker trigger (header, Month/Week/Work Week/Year/Day/List) | Opens a popover to jump to any day, month or year |
 | Click | A date in the date picker (popover or Day view sidebar) | Jumps to that date, updating the shared reference date |
@@ -301,13 +319,15 @@ A quick reference of clicks, double-clicks and drags across the plugin — handy
 | Double-click | A task row/item | Opens the underlying note, cursor on that line |
 | Right-click | A task row/item (List or Table view) | Opens a context menu to change the task's status |
 | Click | **List \| Table** switch (Tasks tab) | Switches mode, keeping search, filters, grouping and sort order |
-| Click | **+ Filter** (List or Table view) | Opens menus to pick a filter type and value (Area asks for a sub-area too) |
+| Click | **+ Filter** (List or Table view) | Opens menus to pick a filter type and value; Priority, Status and Area open a checklist where you can tick several values (it stays open; click outside or press Esc to close) |
 | Click | A filter chip's ×, or **Clear** | Removes that filter, or all of them (search is not cleared) |
+| Click | The **Lanes**, **Group** or **Sort** button | Opens a menu with its options (the current one is checked); the arrow inside **Sort** reverses the direction |
+| Click | A lane header (List or Table view) | Collapses or expands that lane; its state is remembered |
 | Click | A group header (List or Table view) | Collapses or expands that group; its state is remembered |
-| Click | A column header (Table view) | Sorts by that column; click again to reverse. Sorting is also keyboard-accessible with Enter or Space |
+| Click | A column header (Table view, also the one repeated in each lane) | Sorts by that column; click again to reverse. Sorting is also keyboard-accessible with Enter or Space |
 | Hover or keyboard focus | A control or widget with a tooltip | Shows a themed tooltip with its explanatory text |
 
-Search, filters, grouping and sort order are shared by the List and Table views and remembered when you return from editing a task or switch views. Column widths adapt to the rows visible after filtering.
+Search, filters, lanes, grouping and sort order are shared by the List and Table views and remembered when you return from editing a task or switch views. Column widths adapt to the rows visible after filtering.
 
 ### 🗂️ Kanban
 
@@ -318,8 +338,10 @@ Search, filters, grouping and sort order are shared by the List and Table views 
 | Right-click | A card | Opens a context menu to change the task's status |
 | Drag | A card to another column (grouped by status) | Changes the task's status; Done adds ✅ and a recurring task creates its next occurrence |
 | Drag | A card to another column (grouped by priority) | Changes the task's priority; the Normal column removes the priority icon |
-| Click | A column header | Folds the column into a thin bar, or opens it again; your choice is remembered |
+| Click | A column header | Folds the column into a thin bar, or opens it again; your choice is remembered (per lane when Lanes is on) |
+| Click | A lane header | Collapses or expands that lane's board; its state is remembered |
 | Drop | A card on a folded column | Moves the task there and opens the column |
+| Drag | A card to a column of another lane | Not allowed: lanes are read-only |
 
 ### 📊 Gantt
 
@@ -331,6 +353,7 @@ Search, filters, grouping and sort order are shared by the List and Table views 
 | Hover | A bar or milestone | Shows all of the task's dates |
 | Click / double-click / right-click | A row | Opens the **Edit Task** modal, opens the note, or opens the status menu |
 | Click | A group header | Collapses or expands the group; its state is remembered |
+| Click | A lane header | Collapses or expands that lane's chart; its state is remembered |
 | Click | A zoom button, ◀ / ▶, **Today**, a month tab or the year arrows | Changes the zoom or moves the window |
 | Click | "Tasks without a date" | Shows or hides that list (collapsed by default) |
 
@@ -397,10 +420,11 @@ The plugin recognizes and properly handles all standard Obsidian Tasks metadata,
 - **List View: Days to Show** (new in 1.1.10) - Number of days shown in the calendar's List view window (7–14, default 14)
 
 ### Filtering & Sorting
-- **Type filters** (+ Filter; List, Table, Kanban and Gantt) - Priority, Status, Area (with sub-area), Start, Scheduled and Due; Area and Sub-area also offer **Root**
+- **Type filters** (+ Filter; List, Table, Kanban, Gantt and the Calendar views) - Priority, Status and Area (with sub-area) accept several values at once; Start, Scheduled and Due (not in the Calendar) take one; Area and Sub-area also offer **Root**
 - **Date filters** - Each of Start, Scheduled and Due: With date, Overdue/Past, Today, Next 7 days, Future or No date ("Overdue" counts only open tasks)
 - **Search** - Free text over the task description
-- **Grouping** - None, Area and sub-area, Folder, Status, Priority, Tags or Due date
+- **Lanes** (Kanban, List, Table and Gantt) - None, Area, Sub-area, Status, Priority, Tag, Folder or File
+- **Grouping** - List and Table: None, Area and sub, Folder, Status, Priority, Tags, Due date, Start date or Scheduled date; Kanban: Status, Priority, Tags or Folder (the columns); Gantt: None, Area, Status or Priority
 - **Sorting** - Priority, Status, Task, Area, Start, Scheduled, Due, Closed or Tags (ascending or descending)
 
 ### Advanced Options
@@ -423,6 +447,15 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 ---
 
 ## 📋 Changelog
+
+### Version 1.1.14 🛤️
+- **Several values per filter** (`task-view-state.ts`, `area.ts`, `task-filter-chips.ts`): `TaskViewState.priority` and `status` became lists and the area and sub-area became one list of routes (`Work`, `Work/Proj`, `Work/` for notes directly in the folder, `/` for the vault root); an empty list means "all". OR inside a type, AND across types, and the most specific area route wins. A saved state in the old format is converted when read. A checkbox popover (`task-filter-popover.ts`) stays open while you tick values; a chip with several values shows only its count and a tooltip lists them
+- **Calendar filters** (`calendar-state.ts`, `calendar-view.ts`): one saved state shared by the six calendar views, filtered in a single place (`getTasksForDate()`); the bar is the first element of the content container and only the calendar body is redrawn when filtering, so the search box keeps its focus
+- **Chip bar** (`task-filter-bar.ts`, `task-axis-chips.ts`): the Group and Sort selects became chips that open a native menu, placed next to **+ Filter**; the pure model decides what each chip shows, which options are in use and what changes when one is picked. The List | Table switch moved next to the search box
+- **Lanes** (`task-lanes.ts`): `buildLanes()` splits already filtered and sorted tasks by area, sub-area, status, priority, tag, folder or file (natural order for status and priority, alphabetical for the rest, *Root* and *No tag* last, a task repeated in each of its tags). `resolveAxisConflict()` keeps Lanes and Group from sharing a field (by family: status, priority, tag, file and the path family area/sub-area/folder); `repairAxes()` fixes a saved clash when a view opens. List: a section per lane; Table: one `<table>` with a title row per lane, the header repeated and the widths set on a `<colgroup>`; Kanban: `buildKanbanLanes()` gives each lane its own columns and a card can only be dropped inside its lane; Gantt: `buildGanttLanes()` over one shared window, with the date header repeated and tasks without a date listed once at the end. The fold state of a lane is saved per field
+- **Group**: `GroupField` and `TASK_GROUP_OPTIONS` gained `startDate` and `scheduledDate`; the Gantt got `GANTT_GROUP_OPTIONS` (None, Area, Status, Priority) with a flat mode (`buildGanttTaskRows()`) and fold keys prefixed by field (`ganttGroupKey()`, the area keeps its key)
+- **Tests**: new Node tests for the filters, the calendar filters, the lanes, the chip model, the lane views, the group dates, the Kanban lanes and the Gantt lanes (`tests/*.test.cjs`, run with `node --test "tests/*.test.cjs"`)
+- **Documentation**: the user manual (English and Spanish) covers filters with several values, the calendar filter bar, the new chips and Lanes
 
 ### Version 1.1.13 📊
 - **Kanban view** (`kanban-view`, icon `square-kanban`): columns by status, priority, tags or folder built by `kanban-board.ts`, with the shared filter bar and its own saved state (`kanban-state.ts`). Dropping a card on a status column goes through the same status logic as the calendar menu (✅ added or removed, next occurrence of recurring tasks); on a priority column it rewrites the priority emoji. Tags and folders are read-only groupings. Columns fold into a thin bar (`kanban-collapse.ts`): empty ones start folded, only manual choices are remembered, a folded column accepts drops and opens itself, and each column scrolls on its own up to the visible height
@@ -604,12 +637,10 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 
 ## 🗓️ Planned for Future Versions
 
-- ⬜ Custom task statuses and closer compatibility with the Tasks plugin
-- ⬜ Filters that accept several values (for example, several statuses or areas)
-- ⬜ Filters in the calendar views
+- ⬜ Calendar: weekend shading and configurable non-working days, holidays, projected recurring tasks and habits in the calendar
+- ⬜ Dashboard: a task heatmap, habit widgets and a "life dashboard" with tabs
 - ⬜ Table: customizable columns and layout, and CSV export
-- ⬜ Kanban: manual ordering of cards within a column, and grouping by area and sub-area
-- ⬜ Gantt: a grouping selector
+- ⬜ A clock-face time picker, closer compatibility with the Tasks plugin and custom task statuses
 - ⬜ Google Calendar sync, followed by Google Tasks and Microsoft
 
 ---
@@ -637,8 +668,8 @@ npm run dev
 # Build for production
 npm run build
 
-# Run the calendar weekday label tests
-node --test tests/calendar-weekday-labels.test.cjs
+# Run the tests
+node --test "tests/*.test.cjs"
 ```
 
 ### 🙌 Contributors

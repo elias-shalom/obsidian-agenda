@@ -27,3 +27,11 @@ export const STATUS_OPTIONS: readonly TaskStatusOption[] = [
   { status: CoreTaskStatus.Cancelled, name: 'Cancelled', icon: CoreTaskStatusIcon.Cancelled, labelKey: 'status_cancelled' },
   { status: CoreTaskStatus.nonTask, name: 'nonTask', icon: CoreTaskStatusIcon.nonTask, labelKey: 'status_non_task' },
 ];
+
+/**
+ * Estados que ofrecen los filtros, en orden de flujo. Una función y no la constante para que los estados
+ * personalizados de v1.1.17 (Fase ES4) cambien el origen sin rehacer los consumidores.
+ */
+export function getStatusOptions(): readonly TaskStatusOption[] {
+  return STATUS_OPTIONS;
+}

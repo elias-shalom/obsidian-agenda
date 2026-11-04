@@ -649,7 +649,7 @@ Implica mantener, por cada versión publicada, una entrada corta equivalente en 
 
 Fetch en vivo desde GitHub Releases; renderizado de Markdown libre/imágenes/video embebidos; preferencia granular "solo versiones con funcionalidad nueva" (mayor/menor) vs. todas; cualquier mecanismo de feedback tipo formulario (QuickAdd lo incluye, no aplica a este proyecto).
 
-## 20. Kanban View (v1.1.13, con las piezas compartidas en v1.1.12; Fase B implementada y probada a mano; Fase C pendiente)
+## 20. Kanban View (v1.1.13, con las piezas compartidas en v1.1.12; Fase B implementada y probada a mano; Fase C descartada el 2026-11-02)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §11.
 
@@ -700,7 +700,7 @@ Queda fuera, como mejora opcional: que las vistas se refresquen solas al cambiar
 - **Entre columnas (estado)**: reutiliza `upsertTaskStatus()` + `TaskWriter.updateTaskLine()` (v1.1.10, §14) y, al completar, `buildRecurrenceOccurrence()` + `insertLineAbove()` (§16), exactamente como el menú contextual del calendario. El payload de `dragstart` sigue el patrón de `TaskDragPayload` (`filePath`, `lineNumber`); `dragover` solo resalta la columna y llama a `preventDefault()` sin leer el payload (limitación de `dataTransfer.getData()` ya documentada para el calendario), y se valida en `drop`.
 - **Entre columnas (prioridad/etiqueta/carpeta)**: usa `upsertPriority()` para prioridad. Etiqueta y carpeta no tienen una operación de escritura equivalente; mover a otra carpeta implicaría mover la tarea de archivo, algo que el plugin no hace hoy (el campo de archivo es solo lectura al editar). **Decidido (Fase B)**: el arrastre entre columnas se restringe a estado y prioridad; etiqueta y carpeta son agrupados de solo lectura (no admiten soltar).
 - **Implementación (Fase B)**: `src/core/kanban-board.ts` (puro) tiene `buildKanbanColumns()` (por estado y prioridad salen siempre todas las columnas, también las vacías; por etiqueta y carpeta, solo las que tienen tareas), `taskColumnKey()` y `priorityLineTransform()` (`normal` quita el emoji, porque la tarea sin prioridad explícita ya cuenta como normal). `src/core/kanban-state.ts` guarda el estado del tablero con su propia clave de `localStorage`, aparte del de Lista y Tabla, para que agrupar por estado aquí no cambie el agrupado de aquellas. `changeTaskStatus()` se exporta de `task-gestures.ts` y el tablero la reutiliza (incluida la siguiente ocurrencia de una tarea recurrente). Soltar sobre la misma columna no hace nada; la columna «sin prioridad» solo aparece si hay tareas con una prioridad no reconocida y no admite soltar. El arrastre usa el tipo `application/x-agenda-kanban-task` para no aceptar arrastres ajenos, y la tarjeta lleva `.oa-dragging` mientras se arrastra para que el refresco automático espere.
-- **Reordenar dentro de una columna**: requiere un orden manual persistido. La línea de la tarea no tiene un campo de orden y la posición en el archivo no sirve (cada tarea vive en su propia nota). **Pospuesto a v1.1.14** (decisión del 2026-10-31: no es necesario para v1.1.13; Fase C del plan). Propuesta para entonces, sin decidir: una lista global ordenada en `data.json`, con la clave `ruta + título` de cada tarea (o su `🆔` si lo tiene) en lugar de `ruta:línea`, que queda obsoleta al editar las notas; la posición se calcula junto a la tarjeta vecina, así que una sola lista sirve para cualquier agrupado; una opción «Manual» en el combo de orden; las tarjetas que no estén en la lista salen después, con el orden normal; al guardar se descartan las claves de tareas que ya no existen. Preguntas abiertas: si «Manual» es una opción del combo o el tablero pasa a orden manual al reordenar, si al soltar en otra columna la tarjeta cae donde se suelta y dónde van las tareas nuevas. Alternativas descartadas por ahora: escribir un campo de orden en la línea de la tarea (modifica las notas) y la clave `ruta:línea`.
+- **Reordenar dentro de una columna** (**descartado el 2026-11-02**: bastan los combos de orden; se conserva el texto como historia y no se implementa): requería un orden manual persistido. La línea de la tarea no tiene un campo de orden y la posición en el archivo no sirve (cada tarea vive en su propia nota). Había quedado pospuesto a v1.1.14 (decisión del 2026-10-31; Fase C del plan). Propuesta de entonces, sin decidir: una lista global ordenada en `data.json`, con la clave `ruta + título` de cada tarea (o su `🆔` si lo tiene) en lugar de `ruta:línea`, que queda obsoleta al editar las notas; la posición se calcula junto a la tarjeta vecina, así que una sola lista sirve para cualquier agrupado; una opción «Manual» en el combo de orden; las tarjetas que no estén en la lista salen después, con el orden normal; al guardar se descartan las claves de tareas que ya no existen. Preguntas abiertas: si «Manual» es una opción del combo o el tablero pasa a orden manual al reordenar, si al soltar en otra columna la tarjeta cae donde se suelta y dónde van las tareas nuevas. Alternativas descartadas por ahora: escribir un campo de orden en la línea de la tarea (modifica las notas) y la clave `ruta:línea`.
 
 ### 20.5 Archivos afectados (estimado)
 
@@ -721,15 +721,15 @@ Queda fuera, como mejora opcional: que las vistas se refresquen solas al cambiar
 | Aspecto | Tasks Kanban | Agenda Tasks (decidido) |
 |---|---|---|
 | Origen de las tarjetas | Tareas reales, vía el plugin Tasks | Tareas reales, vía `TaskExtractor` propio |
-| Columnas | Por estado, o columnas personalizadas que mapean símbolos de estado | Por los 6 estados fijos; personalizables diferido (§11.1) |
-| Agrupado (swimlanes) | Carriles plegables por estado/prioridad/etiqueta/ruta/carpeta/archivo | Selector de agrupado de las columnas por estado/prioridad/etiqueta/carpeta; sin carriles |
+| Columnas | Por estado, o columnas personalizadas que mapean símbolos de estado | Por los 6 estados fijos; con estados personalizados una columna por estado (v1.1.17, §34) |
+| Agrupado (swimlanes) | Carriles plegables por estado/prioridad/etiqueta/ruta/carpeta/archivo | Selector de agrupado de las columnas por estado/prioridad/etiqueta/carpeta; carriles (Lanes) a partir de v1.1.14 (§29) |
 | Filtros | Subconjunto del lenguaje de query de Tasks (texto libre) | `TaskFilter` existente, misma UI que Lista/Tabla |
 | Tableros guardados | Varios, cada uno en su pestaña | Uno solo por ahora |
-| Arrastre | Entre columnas cambia el estado | Entre columnas cambia el estado/prioridad; además reordena dentro de la columna |
+| Arrastre | Entre columnas cambia el estado | Entre columnas cambia el estado/prioridad; reordenar dentro de la columna **descartado** (2026-11-02) |
 
 ### 20.7 Fuera de alcance (v1.1.13)
 
-Tableros múltiples guardados; mini-lenguaje de query propio; carriles (swimlanes) plegables; estados personalizables; unificar las pestañas Lista y Tabla.
+Tableros múltiples guardados; mini-lenguaje de query propio; carriles (swimlanes) plegables (llegan en v1.1.14, §29); estados personalizables (llegan en v1.1.17, §34); unificar las pestañas Lista y Tabla.
 
 ### 20.8 Refinamientos del tablero (Fase B2, v1.1.13 — implementados y probados a mano)
 
@@ -740,7 +740,7 @@ Comportamiento: [[Especificación de vistas]] §11.3.
 - **Altura**: `.oa-kanban-column` pasa a ser una columna flex con `max-height` igual a la altura visible del contenedor de contenido menos su relleno, la barra de filtros y un margen de 16 px para la barra de desplazamiento horizontal (con un mínimo de 160 px); `__cards` lleva `overflow-y: auto` y `min-height: 0`, y el encabezado queda fuera de esa zona. Como el contenedor de contenido desplaza, un `100%` en CSS no sirve: la vista mide el contenedor y expone `--oa-kanban-max-height` con un `ResizeObserver` (también al cambiar el tamaño del panel). Las columnas siguen con `align-items: flex-start`, así que se ajustan al contenido hasta ese máximo.
 - **Riesgo**: el arrastre nativo de HTML5 desplaza solo al acercarse a los bordes de un contenedor con scroll en Chromium; se comprueba a mano dentro de una columna con muchas tareas.
 - **Pruebas**: Node para `resolveCollapsed()` y para la plantilla con columnas plegadas; prueba manual de plegado, recarga, soltar sobre una columna plegada y scroll por columna.
-- **Pospuesto a v1.1.14**: agrupar por área y sub-área (Especificación §11.3, opciones A, B y C); no afecta al diseño de arriba.
+- **Agrupar por área y sub-área** (Especificación §11.3, opciones A, B y C): pasa a v1.1.14 **vía Lanes** (Área y Sub-área son opciones planas de Lanes, no de las columnas; §29); no afecta al diseño de arriba.
 
 ## 21. Gantt View (v1.1.13; G1 y G2 implementadas y probadas a mano)
 
@@ -810,7 +810,7 @@ Flechas de dependencia y aviso de rotura; desplazamiento en cascada de dependien
 
 - **Lógica pura** en `src/core/task-gantt.ts`: `resolveGanttSpan()`, `splitUndated()`, `ganttWindow()` y `shiftGanttReference()`, `ganttPosition()` y `ganttCenter()` (porcentajes de la ventana con tres decimales, recortados a sus bordes; el desfase se redondea a días enteros para que un cambio de hora no lo mueva), `ganttWeekBands()`, `buildGanttRows()` y `buildDependencyIndex()`.
 - **Estado** en `src/core/gantt-state.ts`, aparte del de Lista, Tabla y Kanban: filtros y orden con su propia clave (por defecto orden por inicio ascendente), zoom (`oa_gantt_zoom`; 14 días si no hay valor válido), grupos plegados (`oa_gantt_collapsed:<clave>`) y «sin fecha» visibles (`oa_gantt_show_undated`). La fecha de referencia es la compartida de `calendar-reference-date.ts`: moverse en el Gantt la actualiza para el calendario.
-- **Vista** `src/views/gantt-view.ts` (reescrita: recibe el `taskManager` inyectado, se registra en `ViewManager` y usa el icono `chart-gantt`), plantilla `gantt-view.hbs` y estilos `_gantt.scss`. La barra de filtros no ofrece agrupado: el diagrama siempre agrupa por área (ofrecer más agrupados pasa a v1.1.14). Cada cambio de zoom, ventana, filtro o plegado redibuja solo `.oa-gantt`, no la barra de filtros, para conservar el foco del buscador.
+- **Vista** `src/views/gantt-view.ts` (reescrita: recibe el `taskManager` inyectado, se registra en `ViewManager` y usa el icono `chart-gantt`), plantilla `gantt-view.hbs` y estilos `_gantt.scss`. La barra de filtros no ofrece agrupado: el diagrama siempre agrupa por área (en v1.1.14 pasa a ser el chip `Group` de la barra de chips, con Ninguno, Área, Estado y Prioridad, además de Lanes; §29). Cada cambio de zoom, ventana, filtro o plegado redibuja solo `.oa-gantt`, no la barra de filtros, para conservar el foco del buscador.
 - **Filas**: una cabecera por grupo (solo la etiqueta y el contador, sin barra en la pista) y, si no está plegado, sus tareas y subgrupos. Solo hay fila para las tareas que tocan la ventana y un grupo sin ninguna se omite. Las tareas sin fecha van aparte, debajo del diagrama, como un grupo plegable con el mismo marcado y estilo que los de la Lista (`oa-folder-group`, `oa-task-item`), con un ancho máximo del 80 %; se pliega por la cabecera sin volver a dibujar el diagrama y empieza plegado.
 - **Barra de controles**: como la del calendario, el periodo a la izquierda y a la derecha el zoom y `◀ Hoy ▶` (`◀` y `▶` son botones redondos con `round-icon-button`; clases propias `oa-gantt-*`, no las `oa-calendar-*`, porque `.oa-calendar-today` también estiliza celdas).
 - **Columna de nombres**: estado (`emoji`), prioridad (`hasPriority`, calculado con `TaskPriority`, más el helper `priorityIcon`) y título; `.oa-gantt-row--task .oa-gantt-label` baja el tamaño a `0.9em`.
@@ -879,7 +879,7 @@ Nuevo módulo `src/core/task-view-state.ts` con `TaskViewState`: búsqueda, filt
 
 > Implementado (v1.1.12): `TaskModeSwitch` en la barra (`buildTaskModeSwitch()`), con `TaskViewState.mode` y `saveTaskViewMode()`; usa directamente las clases `.oa-calendar-view-segmented` y `.oa-calendar-view-btn` y cambia de vista con `viewManager.activateView()`.
 
-Control segmentado dentro de la barra compartida, solo en Lista y Tabla. Reutiliza los estilos y las clases del selector del calendario (`.oa-calendar-view-segmented`, `.oa-calendar-view-btn`); renombrarlas a un nombre neutro es una limpieza opcional. Íconos `list-todo` y `table`, los mismos de las pestañas actuales, con tooltip. Al hacer clic llama a `leaf.setViewState()` con el otro tipo de vista, como `CalendarView.switchToViewType()`; ambas vistas leen `TaskViewState` al abrir.
+Control segmentado dentro de la barra compartida, solo en Lista y Tabla. (v1.1.14: pasa al final de la fila 1, justo a la izquierda del buscador; `TaskFilterBar.mountModeSwitch()` se monta antes de `mountSearch()`, §29.2.) Reutiliza los estilos y las clases del selector del calendario (`.oa-calendar-view-segmented`, `.oa-calendar-view-btn`); renombrarlas a un nombre neutro es una limpieza opcional. Íconos `list-todo` y `table`, los mismos de las pestañas actuales, con tooltip. Al hacer clic llama a `leaf.setViewState()` con el otro tipo de vista, como `CalendarView.switchToViewType()`; ambas vistas leen `TaskViewState` al abrir.
 
 ### 23.3 Pestaña única
 
@@ -891,7 +891,7 @@ En `header.hbs` los botones de Lista y Tabla se reemplazan por uno, `oa-tasks-vi
 
 > La Lista ya usa la barra con agrupado y orden (v1.1.12): el agrupado vacío en `TaskViewState` significa «el de cada vista» (Área en la Lista), `sortTasksByColumn()` (`src/core/task-column-sort.ts`) ordena sobre datos y, al cambiar un control, `ListView.refreshBody()` redibuja solo el cuerpo. La Tabla falta (U3).
 
-La barra incorpora un combo de agrupado y un control de orden. El agrupado usa `groupTasksByField()` (§22.4); sus valores sustituyen el botón `.oa-view-toggle-button` de la Lista (`isHierarchicalView`). La Tabla recibe filas de cabecera de grupo plegables, con el estado plegado en `localStorage` (`oa_tasks_collapsed:<clave>`). Los encabezados `th.oa-sortable` de la Tabla actualizan el orden compartido en vez de uno propio (`currentSortColumn`/`currentSortDirection`). Los dos modos filtran sobre los datos con `TaskFilter`, no sobre filas del DOM.
+La barra incorpora un combo de agrupado y un control de orden (en v1.1.14 pasan a los chips `Group` y `Sort` de una fila propia, §29.2). El agrupado usa `groupTasksByField()` (§22.4); sus valores sustituyen el botón `.oa-view-toggle-button` de la Lista (`isHierarchicalView`). La Tabla recibe filas de cabecera de grupo plegables, con el estado plegado en `localStorage` (`oa_tasks_collapsed:<clave>`). Los encabezados `th.oa-sortable` de la Tabla actualizan el orden compartido en vez de uno propio (`currentSortColumn`/`currentSortDirection`). Los dos modos filtran sobre los datos con `TaskFilter`, no sobre filas del DOM.
 
 ### 23.5 Archivos afectados (estimado)
 
@@ -909,7 +909,7 @@ Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones
 
 ### 23.7 Barra de filtros con chips (v1.1.12, implementado y probado a mano)
 
-> **Cambia en v1.1.14**: modelo con listas, popover con casillas y regla de lo más específico para el área (§28). Lo descrito abajo es el diseño actual.
+> **Cambia en v1.1.14**: modelo con listas, popover con casillas y regla de lo más específico para el área (§28); y los combos `Group`/`Sort` pasan a chips en una fila propia, con el conmutador Lista | Tabla justo a la izquierda del buscador (§29). Lo descrito abajo es el diseño actual (v1.1.12).
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.4. Es un cambio solo de la capa de interfaz de `TaskFilterBar`: `TaskViewState`, `filterTasksByViewState()` y las vistas no cambian.
 
@@ -922,7 +922,7 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.4. Es
 **`TaskFilterBar`** (`src/core/task-filter-bar.ts`):
 - `mount()` construye la fila principal (`.oa-filter-bar__main`: conmutador de modo, botón + Filtro, agrupado, orden y dirección, búsqueda con `margin-left: auto`) y la fila de chips (`.oa-filter-bar__chips`), que solo se muestra con chips activos. Los cinco `<select>` de filtro desaparecen; agrupado y orden conservan los suyos.
 - Menús con `Menu` de Obsidian, colocados con `showAtPosition({ x, y })` bajo el botón o el chip pulsado (`getBoundingClientRect()`), con `setChecked()` en el valor actual. Se encadenan: el primer menú elige el tipo, el segundo el valor y, para Área con sub-áreas, un tercero la sub-área. No se usan submenús: los tipos de Obsidian 1.14.4 instalados no exponen `setSubmenu()`, y `minAppVersion` es 1.8.7.
-- `renderChips()` se llama desde `update()`, que es el único punto por donde pasan los cambios; no hay estado propio de la barra aparte de `TaskViewState`. `reconcileArea()` sigue reajustando un área guardada que ya no tiene tareas, ahora antes de dibujar los chips.
+- `renderChips()` se llama desde `update()`, que es el único punto por donde pasan los cambios; no hay estado propio de la barra aparte de `TaskViewState`. `reconcileArea()` sigue reajustando un área guardada que ya no tiene tareas, ahora antes de dibujar los chips. (Desde v1.1.14 delega en `reconcileAreaRoutes()` de `area.ts`: una sub-área o «Raíz» que ya no existen recaen en su área; ver §28.)
 - Cada chip es un `<button>` (`.oa-filter-chip`) con una × interna enfocable (`.oa-filter-chip__remove`) y `aria-label` con i18n; `Limpiar` es `.oa-filter-bar__clear`.
 
 **Estilos** (`src/styles/components/_task-filter-bar.scss`):
@@ -950,14 +950,14 @@ Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.5. Am
 
 **Estado y filtrado** (`src/core/task-view-state.ts`):
 - `TaskViewState` gana `start` y `scheduled` (`'all'` por defecto), junto al `due` actual; `parseTaskViewState()` los valida con `DUE_FILTER_VALUES`, que se reutiliza para los tres. Los valores guardados de `due` siguen siendo válidos, así que no hay migración.
-- Nueva función pura `matchesDateFilter(date, value, isOpen, today)` que decide un valor de filtro sobre una fecha (`DateTime | null`) comparando por día con `startOf('day')`: `hasdate`, `overdue` (anterior a hoy; para el vencimiento, además con tarea abierta), `today`, `thisweek` (de hoy a hoy + 7 días), `future` (más de 7 días) y `nodate`. `filterTasksByViewState()` la aplica a `due`, `start` y `scheduled`; deja de usar `dueDateRelative` y el apaño de `dueDate.exists` de §22.2. Una tarea está abierta si su estado no es Hecho, Cancelada ni No es tarea.
+- Nueva función pura `matchesDateFilter(date, value, isOpen, today)` que decide un valor de filtro sobre una fecha (`DateTime | null`) comparando por día con `startOf('day')`: `hasdate`, `overdue` (anterior a hoy; para el vencimiento, además con tarea abierta), `today`, `thisweek` (de hoy a hoy + 7 días), `future` (más de 7 días) y `nodate`. `filterTasksByViewState()` la aplica a `due`, `start` y `scheduled`; deja de usar `dueDateRelative` y el apaño de `dueDate.exists` de §22.2. Una tarea está abierta si su estado no es Hecho, Cancelada ni No es tarea (con estados personalizados, si su tipo no es Hecho, Cancelada ni No es tarea; §34).
 - `hasAnyDate()` desaparece: «Con fecha» y «Sin fecha» pasan a ser por tipo.
 
 **Chips** (`src/core/task-filter-chips.ts`): `FilterChipId` pasa a `'priority' | 'status' | 'area' | 'start' | 'scheduled' | 'due'`, con `FILTER_CHIP_IDS` en ese orden y `FILTER_STATE_KEYS` con las dos claves nuevas. `getFilterValueOptions()` recibe el tipo y devuelve los textos de Vencimiento («Vencidas», «Vencen hoy», «Vencen en los próximos 7 días») o los de Inicio y Programada («Pasadas», «Hoy», «Próximos 7 días»); los nombres de tipo reutilizan `start_date`, `scheduled_date` y `due_date`. La barra no cambia: los menús y los chips se derivan de esa lista.
 
 **Orden** (`src/core/task-column-sort.ts`): `TASK_SORT_COLUMNS` gana `start`, `scheduled` y `closed` (y `due` pasa a llamarse con la clave `due_date`); `sortTasksByColumn()` los trata como `due`: por fecha, sin fecha al final en las dos direcciones. La fecha de cierre es la de hecha o, si no, la de cancelada. Se elimina la clave de texto `dates`.
 
-**Modelo de columnas** (nuevo `src/core/task-table-columns.ts`, puro): una lista ordenada con `id`, clave de texto, clave de orden, `{ min, max }` de ancho y, para las cuatro de fechas, una función `hasValue(task)` que dice si la tarea tiene algún valor que esa columna mostraría. `getColumnVisibility(tasks)` devuelve un mapa `id` → visible: las columnas fijas siempre y las de fechas solo si alguna tarea cargada (sin filtrar) cumple `hasValue`. Es la base de la fase U5: allí se le sumará la elección del usuario.
+**Modelo de columnas** (nuevo `src/core/task-table-columns.ts`, puro): una lista ordenada con `id`, clave de texto, clave de orden, `{ min, max }` de ancho y, para las cuatro de fechas, una función `hasValue(task)` que dice si la tarea tiene algún valor que esa columna mostraría. `getColumnVisibility(tasks)` devuelve un mapa `id` → visible: las columnas fijas siempre y las de fechas solo si alguna tarea cargada (sin filtrar) cumple `hasValue`. Es la base de la fase U5, que pasa a v1.1.17 (§32): allí se le sumará la elección del usuario.
 
 **La Tabla** (`src/views/table-view.ts`, `table-view.hbs`, `_table-view.scss`):
 - `TableViewData` incluye `columns` (mapa de visibilidad por `id`) y `columnCount`; la plantilla pinta cada encabezado y cada celda solo si su columna es visible, con `data-column="<id>"`, y las cabeceras de grupo usan `colspan="{{columnCount}}"` en lugar de 7.
@@ -1020,9 +1020,9 @@ Comportamiento y decisiones: [[Especificación de vistas]] §14.6.
 
 **Riesgos**: redibujar una vista con el foco en la búsqueda (por eso `isBusy()`); parpadeo al reconstruir con `onOpen()` (se espera poco, porque no hay pantalla de carga); que la firma no cubra algo que se dibuja y no esté en la línea de la tarea (hoy no hay nada así: área y subárea salen de la ruta, que está en el `id`); rendimiento en vaults muy grandes (la firma recorre todas las tareas una vez por cambio, y solo si hay vistas abiertas); y que `metadataCache` tarde en indexar (por eso se escucha su evento `changed`).
 
-## 24. Sincronía con Google Calendar (v1.1.15, diseño — no implementado)
+## 24. Sincronía con Google Calendar (v1.1.18, diseño — no implementado)
 
-Comportamiento de usuario y decisiones: [[Especificación de vistas]] §15. Diseño basado en `pubcyberry/obsidian-google-cal-sync` (inicio de sesión, almacenamiento del token, sincronización incremental) y `mcuste/obsidian-gcal-sync` (permisos mínimos, barreras de seguridad), adaptado a un modelo bidireccional sobre líneas de tarea.
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §15. Google Tasks pasa a v1.1.19 y Microsoft a v1.1.20 (reparto del 2026-11-02). Diseño basado en `pubcyberry/obsidian-google-cal-sync` (inicio de sesión, almacenamiento del token, sincronización incremental) y `mcuste/obsidian-gcal-sync` (permisos mínimos, barreras de seguridad), adaptado a un modelo bidireccional sobre líneas de tarea.
 
 ### 24.1 Módulos
 
@@ -1108,9 +1108,9 @@ El repo no tiene pruebas automatizadas y un error de sincronización escribe en 
 | i18n | claves nuevas en los 6 locales |
 | Docs | README: declaración del uso de red |
 
-### 24.13 Fuera de alcance (v1.1.15)
+### 24.13 Fuera de alcance (v1.1.18)
 
-Google Tasks, Microsoft y el plugin Tasks; varias cuentas de Google; `🔁` ↔ RRULE; el botón directo sin credenciales propias; inicio de sesión por copiar y pegar en móvil.
+Google Tasks (v1.1.19), Microsoft (v1.1.20) y el plugin Tasks; varias cuentas de Google; `🔁` ↔ RRULE; el botón directo sin credenciales propias; inicio de sesión por copiar y pegar en móvil.
 
 
 ## 25. Ajustes de pestañas y carpeta de hábitos (v1.1.13, diseño — no implementado)
@@ -1180,7 +1180,7 @@ Comportamiento: [[Especificación de vistas]] §13.2, §14.7 y §18.6.
 - `listTaskAreas()` sigue sin incluir la raíz. `TaskFilterBar` añade «Raíz» al final del menú de Área (tras un separador si hay áreas), solo si alguna tarea cargada está en la raíz (`hasRootTasks()`), y al elegirla no abre el menú de sub-áreas (no tiene). `reconcileArea()` conserva el valor mientras haya tareas en la raíz y lo reinicia si ya no las hay. El chip de Área muestra «Raíz».
 - **Raíz en la sub-área**: `TaskViewState.subArea` admite también `ROOT_AREA`. `matchesTaskArea()` lo trata como «solo las notas directas del área» (la sub-área resuelta está vacía), `hasDirectTasks(filePaths, area)` decide si se ofrece, y el menú de sub-áreas de `TaskFilterBar` lo añade tras «Todas las sub-áreas». `reconcileArea()` lo reinicia si el área ya no tiene notas directas. El chip lo muestra como «Área › Raíz». Reutiliza la clave `area_root`.
 - Clave `area_root`: Root, Raíz, Hauptverzeichnis, Racine, Radice, Raiz. En el agrupado esas tareas siguen llamándose «Sin área» (`no_area`).
-- El valor viaja en el estado guardado de Lista, Tabla y Kanban: `parseTaskViewState()` ya acepta cualquier texto en `area`.
+- El valor viaja en el estado guardado de Lista, Tabla y Kanban: `parseTaskViewState()` ya acepta cualquier texto en `area`. (Desde v1.1.14 `area` y `subArea` se sustituyen por la lista `areas` de rutas, y `ROOT_AREA` sigue siendo la ruta de la raíz del vault; §28.1.)
 - Pruebas (Node): `matchesTaskArea()` con la raíz, con un área y con área y sub-área; `filterTasksByViewState()`; la reconciliación.
 
 ### 26.2 Rótulos «Group:» y «Sort:» en las tareas
@@ -1210,30 +1210,608 @@ La corrección la aportó [@AidanAJoyce](https://github.com/AidanAJoyce) desde u
 - **Permisos**: un PR desde un fork no da acceso de escritura al repositorio; cualquier cambio futuro de la misma persona pasa por otro PR que se revisa igual.
 - **Crédito**: README (sección Contributors) y la nota del Changelog de la versión.
 
-## 28. Filtros con varios valores y filtros en el calendario (v1.1.14, diseño — no implementado)
+## 28. Filtros con varios valores y filtros en el calendario (v1.1.14 — implementados y probados a mano el 2026-11-03)
 
 Comportamiento: [[Especificación de vistas]] §19.
 
 ### 28.1 Modelo y filtrado
 
-- `TaskViewState` (`task-view-state.ts`): `priority` y `status` pasan de `string` a `string[]`, y el área y la sub-área a una lista de rutas (`Área`, `Área/sub/ruta`, `ROOT_AREA` para la raíz). `[]` equivale a «todos». Los filtros de fecha no cambian.
+- `TaskViewState` (`task-view-state.ts`): `priority` y `status` pasan de `string` a `string[]`, y el área y la sub-área a una sola lista `areas` de rutas (`Área`, `Área/sub/ruta`, `Área/` para las notas directas del área y `ROOT_AREA` para la raíz). `[]` equivale a «todos». Los filtros de fecha no cambian. **Implementado el 2026-11-03 (Fase M1).**
 - `parseTaskViewState()` convierte lo guardado: `'all'` pasa a `[]` y un valor suelto a una lista de uno; Kanban y Gantt lo usan también, así que no hay estados antiguos aparte.
-- `filterTasksByViewState()`: `TaskFilterCriteria.priority.is` y `.status` ya son listas; `criteria.location` y `matchesTaskArea()` (`area.ts`) pasan a aceptar varias rutas. Una ruta marcada es **efectiva** si ninguna otra ruta marcada cuelga de ella; la tarea cumple si su ruta está bajo alguna ruta efectiva (gana la más específica, Especificación §19.1).
+- `filterTasksByViewState()`: `TaskFilterCriteria.priority.is` y `.status` ya son listas; `criteria.location` gana `routes` y `matchesTaskAreas()` (`area.ts`) acepta varias rutas. Una ruta marcada es **efectiva** si ninguna otra ruta marcada cuelga de ella (`effectiveAreaRoutes()`); la tarea cumple si su ruta está bajo alguna ruta efectiva (gana la más específica, Especificación §19.1). `reconcileAreaRoutes()` descarta las rutas que ya no tienen notas.
 
-### 28.2 Barra y chips
+### 28.2 Barra y chips (**implementado y probado el 2026-11-03, Fase M2**)
 
 - Componente nuevo `src/core/task-filter-popover.ts`: un popover con casillas nativas, anclado bajo el chip o el botón pulsado (el ancla se mide al abrir, porque el chip se redibuja al marcar), que no se cierra al marcar y sí con un clic fuera o con Esc; accesible con teclado y utilizable en móvil. Llama a `onChange` en cada marca.
 - `TaskFilterBar` lo usa para prioridad, estado y área. El popover del área tiene dos secciones: las áreas (con «Raíz») y, debajo, las sub-áreas de las áreas marcadas, que se actualizan al marcar. `reconcileArea()` descarta las rutas que ya no tienen tareas.
-- `task-filter-chips.ts`: un chip por tipo; `getActiveFilterChips()` une los valores (con más de dos, el número) y aporta la lista completa para el tooltip; `clearFilterChip()` vacía la lista del tipo.
+- `task-filter-chips.ts`: un chip por tipo; `getActiveFilterChips()` muestra el nombre con un valor y solo el número con dos o más (el chip no crece) y aporta la lista completa para el tooltip; `clearFilterChip()` vacía la lista del tipo.
 - Opción nueva `filterTypes?: FilterChipId[]`: limita los tipos del menú «Añadir filtro» (el calendario no ofrece fechas).
+- La disposición de la barra (fila 1: conmutador, «+ Filtro», chips `Lanes`/`Group`/`Sort` y buscador; fila 2: chips de filtros activos) se describe en §29.2; los chips de filtro activos siguen en su fila propia.
 
-### 28.3 Calendario
+### 28.3 Calendario (**implementado y probado el 2026-11-03: estado y filtrado, Fase CF1, y barra, Fase CF2**)
 
-- Estado propio en `src/core/calendar-state.ts` (clave `obsidian-agenda-calendar-view-state`), cargado en `CalendarView` y compartido por las seis subvistas.
-- El filtrado va en un solo punto: `getTasksForDate()` de `calendar-view.ts` y la lista del calendario recorren las tareas visibles, no `this.tasks`.
-- **Riesgo**: `refreshCalendar()` llama a `render()` y reconstruye toda la vista en cada navegación, de modo que una barra dentro del calendario perdería el foco del buscador en cada tecla. El Gantt lo evita redibujando solo `.oa-gantt`; el calendario necesita lo mismo (redibujado parcial) o montar la barra fuera de la zona que se redibuja.
-- La barra va siempre visible justo bajo las pestañas principales, con el mismo marcado (`oa-filter-bar`) que en las demás vistas, sin botón de mostrar u ocultar.
+- Estado propio en `src/core/calendar-state.ts` (clave `obsidian-agenda-calendar-view-state`), cargado en `CalendarView.onOpen()` y compartido por las seis subvistas. Tiene el formato de `TaskViewState`, y `parseCalendarState()` descarta lo que el calendario no usa (fechas, agrupado y orden). `CALENDAR_FILTER_TYPES` fija los tipos de la barra.
+- El filtrado va en un solo punto: `getTasksForDate()` de `calendar-view.ts` recorre `visibleTasks` (las tareas que pasan `filterTasksForCalendar()`, calculadas una vez por carga) y la lista del calendario, el selector de fecha y los contadores del Año pasan por él. `this.tasks` conserva la lista completa para localizar una tarea por su línea (arrastre y menú de estado).
+- **Riesgo (resuelto con un redibujado parcial)**: `render()` vacía todo el contenedor, cabecera incluida, y la navegación pasa por `onOpen()`; una barra que se reconstruyera al filtrar perdería el foco del buscador en cada tecla. `CalendarView.redrawCalendarBody()` dibuja el calendario en un contenedor aparte (como la Lista con `refreshBody()`) y sustituye **todo el contenido de `.agenda-content-container` salvo el nodo de la barra** (`filterBarRoot`): quitar y volver a poner el nodo la desenfocaría. `redrawToken` descarta un redibujado atrasado si llega otro cambio, y `setupViewSpecificEventListeners()` se vuelve a asignar al contenido nuevo (todos los listeners se ligan a elementos del calendario; solo el selector de fecha tiene listeners globales y se cierra antes).
+- La barra (`TaskFilterBar` con `filterTypes: CALENDAR_FILTER_TYPES`, sin agrupado, orden ni conmutador) es el **primer elemento de `.agenda-content-container`** (`.oa-calendar-filter-bar`), como en Lista, Tabla, Kanban y Gantt: así tiene el mismo espaciado bajo las pestañas sin estilos propios (un primer intento en la cabecera fija obligó a parches de relleno y márgenes negativos, que cortaban la barra). Usa el mismo marcado (`oa-filter-bar`) que las demás vistas y no tiene botón de mostrar u ocultar. `onOpen()` la crea antes de filtrar, porque reajusta un área guardada que ya no existe (si no, esa ruta vaciaría el calendario sin chip), y `refreshCalendar()` la monta tras cada dibujado completo. `BaseView.isInteracting()` cuenta el popover abierto para que un refresco automático no destruya la barra, y `onClose()` lo cierra. Consecuencia asumida: como en las demás vistas, la barra se desplaza con el contenido (no queda fija al hacer scroll).
+- Las áreas del popover salen de todas las tareas, no de las filtradas, para poder cambiar de área sin vaciar antes el filtro.
 
 ### 28.4 Pruebas
 
 Node: conversión del estado antiguo, O dentro de un tipo y Y entre tipos, la regla de lo más específico, «Raíz», chips y reconciliación del área. Prueba manual en las seis subvistas del calendario.
+
+## 29. Lanes y barra de chips (v1.1.14 — implementado y probado a mano el 2026-11-03, Fases L1 a L4: Lista, Tabla, Kanban y Gantt)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §20 (Lanes y chips) y §19 (filtros de la barra). Fases del Plan: L1 a L4 en [[Plan de implementación]], que se suman a M1, M2, CF1 y CF2. Nombre en la interfaz: «Lanes» (inglés) y «Filas» (español); en el código y la documentación, *swimlane* o `lane`.
+
+### 29.1 Mecanismo: un solo `buildLanes()` para las cuatro vistas
+
+Un carril parte la vista en varios widgets independientes, uno por valor de un campo. La partición es una función pura compartida; cada vista dibuja los carriles a su manera.
+
+- **Módulo nuevo** `src/core/task-lanes.ts` (por crear; puro, sin dependencias de Obsidian, para probarlo con Node):
+  - `LaneField = 'area' | 'subArea' | 'status' | 'priority' | 'tag' | 'folder' | 'file'` y `LANE_OPTIONS` (valor y clave de traducción, como `TASK_GROUP_OPTIONS` de `task-grouping.ts`); «Ninguno» es la cadena vacía.
+  - `Lane { key, label, tasks, color? }` y `buildLanes(tasks, field, translate): Lane[]`.
+- **Reglas de la partición**:
+  - Área y Sub-área son **planas** (`Área › Sub-área`, con «Raíz» para las notas sin carpeta o sin sub-carpeta): salen de `resolveTaskArea()` de `src/core/area.ts`, con la clave `area_root` de §26.1; el carril de Área lleva el color de `getAreaColor()`. Carpeta es la ruta completa y Archivo el nombre de la nota (`task.file.name`).
+  - **Etiqueta**: la tarea se repite en el carril de cada una de sus etiquetas (`task.section.tags`); sin etiquetas va a «Sin etiqueta» (clave de texto por crear), siempre al final. Es el único campo donde una tarea aparece en más de un carril.
+  - **Orden natural**: Estado en el orden de `STATUS_OPTIONS` (desde v1.1.17, el de los ajustes, §34) y Prioridad de mayor a menor; el resto, alfabético con `localeCompare`; «Raíz» y «Sin etiqueta» al final.
+  - **Carriles vacíos ocultos**, también en Estado y Prioridad (a diferencia de las columnas del Kanban, que siguen siendo destinos de arrastre, §20.2).
+  - Las tareas de un carril conservan el orden recibido: la vista las ordena antes con `sortTasksByColumn()` (`task-column-sort.ts`) y `buildLanes()` no reordena.
+- **Cada vista aplica su propio agrupado sobre `lane.tasks`**, como si fuera su lista completa: Lista y Tabla con `groupTasksForView()`, Kanban con `buildKanbanColumns()` y Gantt con `buildGanttRows()`. Lanes y Group conviven en todas las vistas y Lanes vale «Ninguno» por defecto, lo que deja el dibujo actual intacto.
+- **Los carriles son de solo lectura**: no se arrastra una tarea de un carril a otro (Especificación §20).
+
+**ADR-LN1 — Una sola función para las cuatro vistas.** `buildLanes()` es la única fuente de la partición; ninguna vista agrupa por carriles por su cuenta. Razón: el orden, «Raíz», «Sin etiqueta» y la repetición por etiqueta deben ser idénticos en Lista, Tabla, Kanban y Gantt, y una función pura se prueba sin Obsidian.
+
+**Implementado el 2026-11-03 (Fase L1)** en `src/core/task-lanes.ts`, con estos detalles que el diseño no fijaba:
+- **Claves de carril**: Área, por nombre normalizado, con el nombre en minúsculas como respaldo, porque `normalizeAreaName()` descarta lo que no es ASCII y una carpeta con nombre solo en kanji o con emojis fundiría áreas distintas (y sus tareas) en un carril; Sub-área, `área/ruta normalizada`; Estado, el nombre del estado; Prioridad, el valor (o `none`); Etiqueta, en minúsculas (las etiquetas de Obsidian no distinguen mayúsculas) con el primer texto visto como nombre; Carpeta, la ruta; Archivo, la ruta completa, de modo que dos notas homónimas en carpetas distintas son carriles distintos y se distinguen por su carpeta (`Notas (Trabajo)`).
+- **Orden en Sub-área**: las notas directas del área (`Área › Raíz`) van las primeras de su área y solo «Raíz» del vault va al final; así «Raíz» no queda en medio de las sub-áreas de una misma área.
+- **Estado desconocido**: un símbolo que no es ninguno de los 6 cae en Pendiente, igual que en `groupTasksByField()`; hasta v1.1.17 (§34) no hay más estados.
+- **Exclusión por familia** (`isGroupOptionInUse()`, `isLaneOptionInUse()`, `resolveAxisConflict()`): Estado, Prioridad, Etiqueta, Archivo y la familia de ruta (Área, Sub-área y Carpeta de ambos chips); `defaultGroup` (Lista = Área, Tabla = Ninguno, Kanban = Estado) resuelve el `group` vacío, que significa «el de la vista», y el ajuste automático escribe `'none'`. Devuelve `blocked: true` cuando Kanban rechaza la elección.
+- **Estado guardado (L2)**: `TaskViewState.lanes` ya existe (§29.3).
+
+### 29.2 Barra de chips
+
+Cambios en `TaskFilterBar` (`src/core/task-filter-bar.ts`) y en `_task-filter-bar.scss`. Antes de L2, `mount()` construía una fila principal con el conmutador de modo, «+ Filtro», los `<select>` de agrupado y de orden con su flecha y el buscador a la derecha, más la fila de chips de filtros activos (§23.7).
+
+- **Fila 1**: `[+ Filtro] [Lanes] [Group] [Sort] ··· [conmutador] [buscador]`. `mountModeSwitch()` se monta justo antes del buscador, siempre en la misma posición, y solo en Lista y Tabla (Kanban y Gantt no tienen conmutador). El conmutador (`.oa-filter-bar__mode`) toma el `margin-left: auto` y el buscador, que conserva su tamaño de antes, va pegado a él; sin conmutador el buscador toma el margen. En una barra estrecha el buscador baja a su línea y el conmutador queda al final de la primera.
+- **Chips `Lanes`, `Group` y `Sort` (en la fila 1, entre «+ Filtro» y el buscador)**: tres chips con el aspecto de «+ Filtro»; cada uno abre el mismo `Menu` de Obsidian que «+ Filtro», con la opción actual marcada (✓) y sin modal. Sustituyen a los `<select>` (`addSelect()`) y al botón de dirección (`.oa-filter-bar__sort-direction`); la flecha ↑/↓ va dentro del chip `Sort`. Las opciones salen de `groupOptions` y `sortOptions` de `TaskFilterBarOptions`, que se conservan, más una opción nueva `laneOptions?`. En Calendario la barra sigue sin chips de agrupado ni de orden (§28.3).
+- **Atenuado y tooltips**: con `Lanes = Ninguno` el chip se ve atenuado; el tooltip «Divide la vista en varias, una por valor» sale del atributo `title`, que `installTooltips()` ya convierte en tooltip del plugin (§8). Las claves nuevas (`lanes_label`, el tooltip, «En uso por Lanes», «En uso por Group», «Sin etiqueta») van en los 6 idiomas.
+- **Móvil**: la fila 1 usa `flex-wrap` (ver «Implementado» abajo).
+- **Exclusión entre Lanes y Group** (función pura en `task-lanes.ts`, decisión del 2026-11-03): `isGroupOptionInUse(group, lanes)` e `isLaneOptionInUse(lanes, group)` atenúan la opción con tooltip («En uso por Lanes» o «por Group»). `resolveAxisConflict(state, pickedAxis, { requiresGroup })` aplica la regla por vista: con `requiresGroup` (**Kanban**, columnas obligatorias) la opción atenuada no se puede elegir y devuelve el estado sin cambios; sin él (**Lista, Tabla y Gantt**) acepta la elección y pasa el **otro** chip a Ninguno, en los dos sentidos. Hoy Lista guarda `''` y lo lee como Área (`LIST_DEFAULT_GROUP`) y Tabla como Ninguno (`TABLE_DEFAULT_GROUP`): el ajuste escribe `'none'` de forma explícita, que `TASK_GROUP_OPTIONS` ya admite y se distingue de `''`; el valor por defecto de la Lista no cambia (sigue siendo Área).
+
+**ADR-LN2 — Chips junto a «+ Filtro».** `Lanes`, `Group` y `Sort` ocupan la fila 1, entre «+ Filtro» y el buscador (primero se probó una fila propia y se descartó el 2026-11-03 por ocupar altura); el conmutador Lista | Tabla se mueve al final de la fila 1, justo a la izquierda del buscador (el 2026-11-03, a petición del usuario; antes estaba al inicio). Razón: los chips son compactos y su menú es el de «+ Filtro»; un conmutador fijo no cambia de sitio entre Lista y Tabla.
+
+**Implementado el 2026-11-03 (Fase L2)**:
+- **Modelo puro** en `src/core/task-axis-chips.ts`: `buildAxisChips(input)` devuelve los chips en el orden Lanes, Group y Sort (solo los que la vista ofrece) con su texto («Rótulo: valor»), `muted`, tooltip, dirección (Sort) y opciones con `checked`, `muted`, `disabled` y `title`; `pickAxisOption(input, axis, value)` devuelve los cambios del estado (con `resolveAxisConflict()`, de modo que elegir un campo en uso en Lista, Tabla o Gantt incluye también `group: 'none'` o `lanes: ''`) o `null` si no cambia nada o está bloqueado; `toggleSortDirection()`. `TaskFilterBar` solo dibuja.
+- **Sin popover propio**: la lista de cada chip es un `Menu` nativo y el popover de casillas (`openFilterPopover()`) queda solo para Prioridad, Estado y Área. Las opciones bloqueadas (Kanban) no se pueden elegir; las atenuadas no existen en el `Menu` nativo.
+- **Barra** (`mount()`): fila 1 `[+ Filtro] [Lanes] [Group] [Sort] ··· [conmutador] [buscador]` (el conmutador queda justo a la izquierda del buscador, que conserva su sitio y su tamaño de antes), fila 2 los chips de filtros activos. Los chips de ejes (`.oa-axis-chip`, dentro de `.oa-filter-bar__axes` con `display: contents`) tienen el mismo aspecto que «+ Filtro»: borde, fondo, esquinas de 4px, alto de 32px y el mismo hover; su lista es un `Menu` nativo (`openAxisMenu()`), con `setChecked` y `setDisabled` (Kanban bloquea las opciones en uso). Un `Menu` nativo no admite atenuar una opción ni tooltip: la opción en uso que sí se puede elegir se ve normal y, al elegirla, el otro chip pasa a Ninguno. `update()` redibuja los chips si cambia `lanes`, `group`, `sortColumn` o `sortDirection`, y también un cambio doble (`lanes` y `group`) llega a la vista con ambas claves en `changed`, que `persistTaskViewState()` necesita para guardar `group`. `setSort()` (clic en un encabezado de la Tabla) redibuja el chip `Sort`. Opciones nuevas `laneOptions?` y `axisRules?` (`AxisConflictOptions`); Kanban pasa `requiresGroup: true`.
+- **El chip `Lanes` solo aparece en las vistas que pasan `laneOptions`**: Lista y Tabla desde L3; Kanban y Gantt, cuando L4 dibuje carriles.
+- **Móvil**: las filas usan `flex-wrap` y, en una barra estrecha, el buscador baja a su propia línea con la regla `@container (max-width: 560px)` de siempre.
+- **Etiquetas de `Group`**: las vistas pasan el nombre sin prefijo (el rótulo «Grupo:» lo pone el chip), por lo que el texto de cada opción es el mismo en el popover que en el chip.
+
+### 29.3 Estado guardado
+
+| Qué | Dónde | Clave |
+|---|---|---|
+| Carril elegido (`lanes`) y `Group` de cada vista | `localStorage` (`app.saveLocalStorage()`), dentro de `TaskViewState` | `obsidian-agenda-task-view-state` (Lista y Tabla), `obsidian-agenda-kanban-view-state` y `obsidian-agenda-gantt-view-state` |
+| Carril plegado | `localStorage`, por campo y carril | `folder_lane:<campo>:<clave>_collapsed` (implementado en L3 con la misma convención que los grupos de Lista y Tabla; el prefijo `lane:<campo>:` separa los campos) |
+
+`TaskViewState` gana `lanes: string` (`''` = Ninguno). Kanban y Gantt ya usan `TaskViewState` (`parseKanbanState()` y `parseGanttState()` devuelven ese tipo), así que el campo llega a las cuatro vistas por `parseTaskViewState()`, que lo valida contra `LANE_OPTIONS` y lo deja en `''` si no es válido. No hay migración: los estados guardados sin el campo valen «Ninguno». No se guarda nada en `data.json`: es estado por dispositivo, como el resto de filtros y plegados de las vistas de tareas.
+
+### 29.4 Flujo de datos
+
+`TaskManager.getAllTasks()` → `filterTasksByViewState()` → `sortTasksByColumn()` → `buildLanes(tasks, state.lanes)` → por carril: el agrupado propio de la vista → dibujo. Un cambio de chip pasa por `TaskFilterBar.update()` y la vista redibuja solo su cuerpo (`refreshBody()` en Lista, solo `.oa-gantt` en el Gantt) para no perder el foco del buscador.
+
+### 29.5 Integración por vista
+
+- **Lista** (`list-view.ts`, `list-view.hbs`): un bloque por carril con la cabecera plegable (▼) y, dentro, la lista de siempre.
+- **Tabla** (`table-view.ts`, `table-view.hbs`, `_table-view.scss`): encabezado repetido por carril, con columnas y anchos compartidos. Propuesta: una sola `<table>` con `table-layout: fixed` y, por carril, una fila-título y una fila de encabezado repetida; así los anchos salen de `resizeColumns()` una sola vez y las cabeceras de grupo siguen usando `colspan="{{columnCount}}"` (§23.8). Las columnas compartidas son las de `task-table-columns.ts` (§32).
+
+**Implementado el 2026-11-03 (Fase L3: Lista y Tabla)**:
+- **Núcleo** (`task-lanes.ts`): `toLaneViewModels(tasks, field, group, translate)` devuelve por carril `{label, storageKey, color?, count, groups, tasks}`, con el agrupado de `Group` ya aplicado dentro; `storageKey` es `lane:<campo>:<clave>`. `repairAxes(axes, defaultGroup)` resuelve un estado guardado que repite campo (la Lista y la Tabla comparten el estado pero no el agrupado por defecto, así que `Lanes: Área` guardado en la Tabla chocaría con el Área por defecto de la Lista): gana Lanes y el agrupado efectivo pasa a `'none'` sin escribirlo en el almacenamiento.
+- **Lista**: `ListViewData.lanes` (vacío si Lanes = Ninguno, entonces `groups` y `flatTasks` como siempre). `list-view.hbs` dibuja `<section class="oa-lane">` con `h2.oa-lane-header` y `.oa-lane-body`; `wireLanes()` pliega con la clase `oa-collapsed` y recuerda el estado en `localStorage` con la clave `folder_<storageKey>_collapsed`, la misma convención que los grupos.
+- **Tabla**: una sola `<table>`. `buildViewData()` añade por carril una `TableGroupRow` con `isLane: true` y nivel 0, y sus grupos cuelgan con nivel +1, de modo que `applyCollapse()` no cambia. La plantilla repite el encabezado (partial `headerCells`, compartido con el `<thead>`) en una `<tr class="oa-lane-columns">` tras cada cabecera de carril; con carriles el `<thead>` se oculta (`oa-tasks-table--lanes`). Como la primera fila ya no tiene una celda por columna, los anchos se fijan también en un `<colgroup>` (`resizeColumns()` escribe el ancho en cada `<col>`, en el `<thead>`, en los encabezados repetidos y en las filas de tarea), y así todos los carriles alinean. Los encabezados repetidos ordenan (`wireSortHeader()`) y su `th` no es `sticky`. Para que cada carril parezca su propia tabla, entre carriles va una fila de espacio (`tr.oa-lane-gap`, que `applyCollapse()` nunca oculta, ni con el carril de arriba plegado) y cada carril lleva su recuadro; el borde y el fondo del contenedor se quitan con `:has(.oa-tasks-table--lanes)`.
+- **Barra**: ambas vistas pasan `laneOptions` desde `LANE_OPTIONS`, de modo que el chip `Lanes` aparece en Lista y Tabla.
+
+**Implementado el 2026-11-03 (Fase L4: Kanban)**:
+- `buildKanbanLanes(tasks, lanesField, group, translate)` (`kanban-board.ts`) devuelve por carril `{label, storageKey, color?, count, columns}`, con `buildKanbanColumns()` aplicado a las tareas del carril; `storageKey` es `lane:<campo>:<clave>`.
+- `KanbanView` guarda las columnas de cada tablero por clave de carril (`laneColumns`, `''` sin Lanes) para validar el arrastre. `kanban-view.hbs` usa un partial `columnTemplate` para las columnas y, con carriles, dibuja `.oa-kanban-board--lanes` con un `<section class="oa-lane">` por carril y su fila `.oa-kanban-lane-columns`. Cada columna lleva `data-lane-key`.
+- **Arrastre**: la tarjeta guarda la clave de su carril en el payload de `application/x-agenda-kanban-task` y en `dragLane`; `dragover` solo se acepta (y resalta) en las columnas de ese carril, y `handleDrop()` descarta un soltado cuyo carril no coincide. Sin Lanes el carril es `''` y todo funciona como antes.
+- **Plegado**: la clave de columna incluye el carril (`obsidian-agenda-kanban-collapsed:<carril>:<grupo>:<columna>`); sin carril la clave no cambia. El plegado del propio carril usa `addLaneToggleListeners()` de `BaseView`, compartido con la Lista, y la clave `folder_<storageKey>_collapsed`.
+- **Estado guardado**: `parseKanbanState()` quita los carriles que repiten el campo de las columnas (en el Kanban la opción en uso no se puede elegir, pero un estado antiguo o editado a mano podría traerlos).
+- **Pendiente en Kanban**: la opción de columna **Archivo** (§20.3) no se ha añadido; `KANBAN_GROUP_OPTIONS` sigue con Estado, Prioridad, Etiquetas y Carpeta.
+- **Kanban** (`kanban-view.ts`, `kanban-view.hbs`, `kanban-board.ts`): un tablero por carril, con las columnas del `Group` de la vista (`buildKanbanColumns(lane.tasks, group)`). Arrastrar a una columna de otro carril se rechaza en `drop`: el payload de `application/x-agenda-kanban-task` gana la clave del carril de origen. Agrupar por área y sub-área, pospuesto desde v1.1.13 (§20.8), queda cubierto aquí: son opciones de Lanes, no de las columnas.
+- **Gantt** (`gantt-view.ts`, `gantt-view.hbs`, `task-gantt.ts`): una sola ventana y un solo zoom, con la cabecera de fechas (año, meses, bandas de semana y días) repetida en cada carril.
+- **Chip `Group` del Gantt** (sustituye al «combo de agrupado» de la decisión del 2026-10-31): Ninguno (modo plano, sin cabeceras), Área (por defecto), Estado y Prioridad; Carpeta, Etiquetas y Vencimiento quedan fuera.
+
+**Implementado el 2026-11-03 (Fase L4: Gantt)**:
+- **Núcleo** (`task-gantt.ts`): `buildGanttTaskRows(tasks, win, depth, color?)` saca las filas de tarea (lo que toca la ventana); `buildGanttRows()` lo usa para las tareas de cada grupo, sin cambiar su resultado. `buildGanttGroupedRows(tasks, group, win, isCollapsed, translate, color?)` es el modo plano (`none`) o el agrupado con `groupTasksByField()` (`area`, `status`, `priority`; otro valor cae en el área). `ganttGroupKey(field, key)` prefija la clave de plegado con el campo, salvo el área, que conserva la suya. `buildGanttLanes(tasks, lanesField, group, win, isCollapsed, translate)` devuelve por carril `{label, storageKey, color?, count, rows}`, todos sobre la misma ventana y sin los carriles que no tienen ninguna tarea dentro de ella. `GANTT_GROUP_OPTIONS` y `GANTT_DEFAULT_GROUP = 'area'`.
+- **Plantilla**: dos partials, `ganttHead` (cabecera de fechas, con los datos de `@root`) y `ganttBody` (cuadrícula y filas del contexto: las de la vista o las de un carril). Sin carriles se dibuja una cabecera y un cuerpo como siempre; con carriles, `.oa-gantt--lanes` y un `<section class="oa-lane">` por carril con su cabecera (▼, nombre y conteo), la cabecera de fechas y su cuerpo. Los controles y «Tareas sin fecha» (una sola vez, al final) quedan fuera de los carriles. La cabecera de cada carril es `sticky` dentro de su carril.
+- **Vista**: `GanttView` pasa `laneOptions` y `groupOptions`; el plegado del carril usa `addLaneToggleListeners()` de `BaseView`. El arrastre y el redimensionado no cambian: miden la pista de la fila y `data-days` de `.oa-gantt`, que sigue siendo único.
+- **Estado guardado** (`gantt-state.ts`): `parseGanttState()` valida el agrupado contra `GANTT_GROUP_OPTIONS` (Área si no) y aplica `repairAxes()`: si repite el campo de los carriles gana Lanes y el agrupado pasa a Ninguno.
+
+### 29.6 Archivos afectados (estimado)
+
+| Área | Archivos |
+|---|---|
+| Lógica | nuevo `src/core/task-lanes.ts` |
+| Barra | `src/core/task-filter-bar.ts` (`mount()`, `mountModeSwitch()`, chips de ejes), `src/styles/components/_task-filter-bar.scss` |
+| Estado | `src/core/task-view-state.ts` (`lanes`), `kanban-state.ts` y `gantt-state.ts` (sin cambios de clave) |
+| Lista y Tabla | `src/views/list-view.ts`, `table-view.ts`, `templates/list-view.hbs`, `table-view.hbs`, `_list-view.scss`, `_table-view.scss` |
+| Kanban | `src/views/kanban-view.ts`, `templates/kanban-view.hbs`, `src/core/kanban-board.ts`, `src/core/kanban-collapse.ts` (claves de plegado), `_kanban.scss` |
+| Gantt | `src/views/gantt-view.ts`, `templates/gantt-view.hbs`, `src/core/task-gantt.ts` (modo plano), `src/core/gantt-state.ts`, `_gantt.scss` |
+| i18n | claves nuevas en los 6 locales de `src/locales/` |
+
+### 29.7 Riesgos
+
+- **Gantt con la cabecera repetida** (a probar, Especificación §20): la cabecera es fija al desplazar y la conversión píxel → día del arrastre (G2) mide el ancho de la pista; con varios carriles cada pista debe medir lo mismo y cada cabecera repetida debe quedar fija solo dentro de su carril. Si no resulta legible, la cabecera se repite sin quedar fija.
+- **Etiquetas duplicadas**: la tarea aparece en varios carriles, de modo que la suma de contadores supera el total de tareas; la prueba debe fijar qué cuenta cada cabecera.
+- **Kanban**: la altura de las columnas (`--oa-kanban-max-height`, §20.8) se calcula para un solo tablero; con carriles hay que repartirla o dejar el scroll del contenedor.
+- **Cobertura**: 8 campos × 4 vistas × `Group`; por eso la lógica va en una función pura y la prueba manual se limita a una vista por campo más los casos de conflicto.
+- **Traducciones sin revisar**: «Filas» (es), «Bahnen» (de), «Couloirs» (fr), «Corsie» (it) y «Raias» (pt) son propuestas sin revisión de hablantes nativos; hay que revisarlas antes de publicar. Solo el español usa *fila* y los demás *lane*, para que el nombre no choque con las filas de la Tabla.
+- **Valores por defecto de `Group`**: Lista guarda `''` y lo lee como Área; el reinicio por conflicto debe escribir `'none'`, no `''`, o el conflicto reaparece.
+
+### 29.8 Pruebas
+
+Node con `node --test` (mismo método de `tests/calendar-weekday-labels.test.cjs`: transpilar los módulos con `typescript` y ejecutarlos sin Obsidian), en `tests/task-lanes.test.cjs`:
+- **Partición**: cada tarea cae en un carril, salvo por etiqueta, donde cae en todos los suyos; los carriles vacíos no salen.
+- **Orden**: Estado y Prioridad en su orden lógico, el resto alfabético, «Raíz» y «Sin etiqueta» al final, y el orden de las tareas dentro del carril intacto.
+- **Etiquetas múltiples** y «Sin etiqueta»; **Área y Sub-área planas** (`Área › Sub-área`, «Raíz», nombres homónimos en áreas distintas).
+- **Exclusión**: opciones en uso en ambos sentidos; en Kanban la elección se bloquea y en Lista, Tabla y Gantt el otro chip pasa a `'none'`; `parseTaskViewState()` con `lanes` válido, inválido y ausente.
+- **Gantt plano**: `buildGanttRows()` con `none` no genera cabeceras; claves de plegado con prefijo.
+
+Manual: las cuatro vistas con cada campo; que Lanes = Ninguno deje cada vista como en v1.1.13; plegar y recargar; Kanban con soltar entre carriles; Gantt con la cabecera repetida y el arrastre de barras; móvil a dos líneas; tooltips y opciones atenuadas.
+
+### 29.9 Por resolver al diseñar
+
+- **Equivalencias entre `Group` y Lanes** (resuelto el 2026-11-03): `isGroupOptionInUse()` e `isLaneOptionInUse()` comparan por **familia**, no por valor literal: `status`↔`status`, `priority`↔`priority`, `tags`↔`tag`, y la familia de ruta {`area`, `folder` de `Group`; `area`, `subArea`, `folder` de Lanes} choca entre sí (`Group: folder` agrupa por la primera carpeta, igual que `Lanes: area`, y `Group: area` es un árbol que ya anida las sub-áreas). `file` y `dueDate` no pertenecen a ninguna familia compartida.
+- **Atenuada frente a bloqueada** (resuelto el 2026-11-03): en Kanban la opción en uso queda bloqueada (las columnas son obligatorias); en Lista, Tabla y Gantt se puede elegir y el otro chip pasa a Ninguno. Por resolver: si ese ajuste automático muestra además un `Notice`.
+- Opciones de las columnas del Kanban (resuelto, decisión D4 del 2026-11-01): Estado, Prioridad, Etiqueta, Carpeta y **Archivo**; hoy `KANBAN_GROUP_OPTIONS` solo trae las cuatro primeras, así que Archivo se añade con Lanes.
+- Menú del chip (resuelto el 2026-11-03): `Menu` nativo, igual que «+ Filtro»; no admite tooltip por opción ni atenuarla, solo `setDisabled()`.
+- Dónde van las «Tareas sin fecha» del Gantt con carriles: resuelto el 2026-11-03, una sola vez al final.
+- Qué cuenta el contador de un carril de etiquetas (tareas únicas o apariciones).
+- **Resuelto al implementar L1**: la partición no ordena las tareas de cada carril; el módulo expone `LANE_OPTIONS` con las claves de texto de cada opción (las de la barra, `lanes_label` y los tooltips, llegan con L2).
+
+Enlaces: [[Especificación de vistas]] §20; fases L1 (núcleo; independiente), L2 (barra; depende de L1 y M2), L3 (Lista y Tabla; depende de L2) y L4 (Kanban y Gantt; depende de L2) del [[Plan de implementación]].
+
+## 30. Calendario: días no laborables, feriados, proyección y hábitos (v1.1.15, diseño — no implementado)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §21. Fases del Plan: NL1, NL2, FE1, FE2, PR1, PR2 y HC1 en [[Plan de implementación]]. Los hábitos tienen su propia documentación en `docs/habit-tracker-agenda/`, que HC1 reutiliza (periodo activo y vacaciones, fases HA1 y HV1 del Plan de hábitos).
+
+### 30.1 Punto único de decoración de días
+
+Hoy cada subvista arma sus días en `generateViewData()` y consulta `getTasksForDate()` de `calendar-view.ts`, el único punto donde también se filtrará (§28.3). Los cuatro temas de esta versión (sombreado, feriados, fantasmas y hábitos) se enganchan igual: `CalendarView` gana un método protegido `getDayDecorations(date)` (por crear) que devuelve `{ nonWorking: boolean, holidays: HolidayEntry[], ghosts: ProjectedOccurrence[], habits: HabitDaySummary | null }`, que Mes, Semana, Semana laboral, Día, Lista y Año añaden a los datos de cada día y las plantillas dibujan. Cada tema se calcula una vez por renderizado para el rango visible, no por celda.
+
+### 30.2 Días no laborables (NL1, NL2)
+
+- **Ajuste** `nonWorkingDays: number[]` en `AgendaPluginSettings` (`settings.ts`, `data.json`; nombre propuesto): días ISO 1 a 7, por defecto `[6, 7]`. Siete casillas en `setting-tab.ts`, en las dos rutas (declarativa y `display()`), con el aviso fijo bajo ellas y un `Notice` al cambiar (afecta a rachas y porcentajes de hábitos).
+- **Módulo puro** `src/core/non-working-days.ts` (por crear): `isNonWorkingDay(date, days)`, `getWorkweekDays(days)` (los días no marcados, nunca vacío) y `sanitizeNonWorkingDays(days)`, que impone la regla de extremos (al menos un día marcado y uno sin marcar; si llega un valor guardado inválido, vuelve a `[6, 7]`); el ajuste rechaza el cambio de la casilla que dejaría un extremo y muestra un `Notice` (decidido el 2026-11-03).
+- **Consumidores**:
+  - Sombreado en Mes, Semana y Lista del calendario (`calendar-month-view.ts`, `calendar-week-view.ts`, `calendar-list-view.ts` y sus `.hbs`); no en Día, Año ni Semana laboral.
+  - **Semana laboral** (`calendar-workweek-view.ts`): hoy fija `daysToGenerate = 5` desde el lunes; pasa a generar los días de `getWorkweekDays()`, y el número de columnas de `calendar-workweek-view.hbs` y de su CSS deja de ser fijo.
+  - **Gantt** (`gantt-view.ts`): `weekend: date.weekday >= 6` pasa a `isNonWorkingDay()`; la clase `oa-gantt-day--weekend` y `oa-gantt-grid-day--weekend` se conservan.
+  - **Hábitos**: `normalizeFrequencySet()` de `habit-parser.ts` fija `weekend` en `{6, 7}` y `workweek` en `1..5`; `FREQUENCY_PRESETS` y `resolveFrequencyMode()` de `habit-editor.ts` y `habit-table-view.ts` (línea de la etiqueta «Fin de semana») comparan con `[6, 7]`. `parseHabit()` ya recibe `settings`, de modo que `weekend` pasa a ser `nonWorkingDays` y `workweek` su complemento; los selectores del editor y la etiqueta de la tabla leen la misma función.
+  - **Recurrentes** (decidido el 2026-11-03): `TaskSection.convertToRRuleFormat()` (`src/entities/task-section.ts`) traduce hoy `weekday` a `MO,TU,WE,TH,FR` y `weekend` a `SA,SU`, y es pura y estática (`task-recurrence.ts` la reutiliza sin instancia). Para seguir el ajuste necesita recibir `nonWorkingDays` como parámetro (la lista de nombres RRULE `MO…SU` sale de los días ISO) y `getNextOccurrenceDate()` debe pasarlo; los llamadores (`buildRecurrenceOccurrence()`, `projectOccurrences()`, el Task Modal) leen el ajuste de `settings`. Con `[6, 7]` el resultado es idéntico al de hoy (prueba de regresión). El Task Modal muestra una nota bajo el campo de recurrencia cuando es `every weekday`/`every weekend` y el ajuste no es sábado y domingo.
+- **Flujo**: casilla → `saveSettings()` → refresco de las vistas de calendario abiertas (`SettingTab.refreshCalendarViews()`, como `weekStartDay`), del Gantt y de los hábitos (`HabitManager.refreshHabits()`, porque las frecuencias se resuelven al parsear y quedan en la caché de `habit-manager.ts`).
+
+**ADR-CL1 — Un solo ajuste de días no laborables.** Lo comparten el calendario, el Gantt, la Semana laboral y las frecuencias de hábitos. Razón: evita tres definiciones de «fin de semana». Consecuencia aceptada: cambiarlo altera rachas y porcentajes de hábitos, por eso el aviso.
+
+### 30.3 Feriados (FE1, FE2)
+
+- **Motor de reglas embebido y sin red**, en `src/core/holidays/` (por crear), con el cálculo puro separado de los datos:
+
+| Archivo | Responsabilidad |
+|---|---|
+| `holiday-rules.ts` | Tipos de regla y evaluador: `evaluateRule(rule, year)` devuelve una fecha ISO o `null` |
+| `holiday-data-mx.ts`, `holiday-data-us.ts` | Reglas de México y EE. UU., con sus regiones (estados) |
+| `holiday-calendar.ts` | `getHolidaysForRange(calendars, start, end)` → `Map<fechaISO, HolidayEntry[]>`, con caché por año |
+
+- **Tipos de regla**: fecha fija; n-ésimo día de la semana del mes (con «último» para `n = -1`); relativa a la Pascua (algoritmo gregoriano, desplazamiento en días); observada (si cae en fin de semana se recorre; la regla indica a qué día); ciclo de años (cada 6 años desde un año base: transmisión del Poder Ejecutivo de México); y lista explícita por año. Ejemplos de México: 5 de febrero → primer lunes de febrero, 21 de marzo → tercer lunes de marzo, 20 de noviembre → tercer lunes de noviembre. Ejemplos de EE. UU.: Martin Luther King (tercer lunes de enero), Memorial Day (último lunes de mayo) y Acción de Gracias (cuarto jueves de noviembre).
+- **Cada regla** lleva `id`, nombre (clave de traducción), `category: 'official' | 'unofficial'` (Día de las Madres, Día de Muertos y Halloween son no oficiales) y, opcionalmente, una región. El formato queda documentado en el propio módulo y abierto para añadir países; el archivo de reglas del usuario queda fuera por ahora.
+- **Ajuste** `holidayCalendars: { country, region?, official, unofficial, color }[]` (`data.json`; nombre propuesto), vacío por defecto («ninguno activo»), con lista en `setting-tab.ts` (añadir, quitar, casillas Oficiales y No oficiales, color).
+- **Marcado** (solo visual): tinte tenue y etiqueta con el nombre en Mes, Semana, Semana laboral y Lista; encabezado en Día; punto con tooltip en Año; columna tintada en el Gantt (`gantt-view.ts`: el arreglo `days` gana `holiday`, y `gantt-view.hbs` una clase en la cabecera y en `.oa-gantt-grid-day`). No afectan a la Semana laboral, las rachas ni las tareas (la regla de §30.2 no los lee).
+
+**ADR-CL2 — Reglas, no listas de fechas.** Los feriados se calculan por regla para cualquier año, con la lista explícita solo para lo que no sigue una regla. Razón: el vault no necesita actualizarse cada año y el motor se prueba con fechas conocidas.
+
+### 30.4 Proyección de recurrentes (PR1, PR2)
+
+- **Módulo puro** `src/core/task-projection.ts` (por crear): `projectOccurrences(task, count)` devuelve hasta `count` ocurrencias posteriores a la real. Encadena `getNextOccurrenceDate()` de `src/core/task-recurrence.ts`: la fecha de referencia sigue siendo `scheduled > due > start` (ADR-R2), la primera llamada usa la fecha real y cada una de las siguientes la fecha anterior. Cada fantasma desplaza todas las fechas de la tarea los mismos días, como `buildNextOccurrenceLine()` (que usa `shiftTaskDates()`), y conserva hora y duración.
+- **No se proyectan** las reglas `when done` (`getNextOccurrenceDate()` las calcula desde hoy y dependen de cuándo se complete), las tareas sin fecha de referencia ni las de recurrencia inválida (la función devuelve `null`).
+- **Ajuste** `projectedOccurrences: number` (`data.json`; nombre propuesto), por defecto 10; con 0 se desactiva. N cuenta ocurrencias, no tiempo: un tope en meses costaría 365 cálculos en una tarea diaria.
+- **Vistas**: Mes, Semana, Semana laboral, Día y Lista del calendario; no en Año, Gantt, Lista, Tabla, Kanban ni Overview.
+- **Flujo**: `getDayDecorations()` pide a `projectOccurrences()` las ocurrencias de las tareas visibles que pasaron el filtro del calendario (§28.3); así un fantasma sigue al filtro de su tarea real. Cada fantasma se dibuja atenuado con la insignia `🔁` y es de solo lectura: no se escribe en la nota, no se arrastra, no se completa y no entra en el menú de estado; clic y doble clic llevan a la tarea real (`attachTaskGestures()` recibe la tarea real). Al completar la real se escribe la siguiente como hoy (ADR-R1), y esa línea nueva reemplaza al primer fantasma en el siguiente refresco.
+- **Consecuencia asumida**: una diaria desaparece pasados N días (en el mes se ve «cortada») y una mensual se ve hasta N meses.
+
+**ADR-CL3 — Fantasmas virtuales.** Las ocurrencias proyectadas existen solo en memoria. Razón: escribirlas en las notas duplicaría tareas y chocaría con la regla de que la siguiente ocurrencia se crea al completar (ADR-R1).
+
+### 30.5 Hábitos en el calendario (HC1)
+
+- **Entradas virtuales**: nada se escribe en ningún archivo (se descartó escribir líneas `[x]` en la nota del hábito: duplicados, líneas editadas a mano y notas que crecen). Los hábitos no son tareas: no entran en Lista, Tabla, Kanban ni Gantt ni en los conteos de tareas.
+- **Módulo puro** `src/habits/habit-calendar.ts` (por crear): `buildHabitDaySummary(habits, date, context)` devuelve `{ done, total, items: [{ habit, daytime, ticked }] }`. Reutiliza `isScheduled()` de `habit.ts` (la misma regla de las frecuencias de las rachas, incluido §30.2) y, de la versión de hábitos, el periodo activo (`desde`/`hasta`) y los días de vacaciones (HA1 y HV1 del Plan de hábitos); por eso HC1 depende de ambas fases.
+- **Lectura y escritura**: los hábitos salen de `plugin.habitManager.getHabits()`; marcar o desmarcar llama a `HabitManager.toggleOccurrence(file, date, daytime)`, que escribe `completions` con `habit-writer.ts`. El refresco llega por `EVENTS.HABITS_UPDATED`, que la vista de calendario debe escuchar (hoy solo lo hacen las de hábitos; se comprueba al implementar).
+- **Dibujo**: en Mes, Semana, Semana laboral y Lista, un solo chip resumen por día (`🔁 3/5`) que abre un popover con los hábitos del día y su casilla (componente nuevo, `src/core/habit-day-popover.ts`, por crear, basado en el patrón de `task-filter-popover.ts`); ocupa una línea sin importar cuántos hábitos haya. En Día, una sección «Hábitos» completa agrupada por franja (despertar, mañana, tarde, noche), con el color del área. No aparecen en Año. Doble clic abre la nota del hábito.
+- **Ajuste** `showHabitsInCalendar: boolean` (`data.json`; nombre propuesto), desactivado por defecto; sin efecto si `showHabitTab` está en `false`.
+- **Filtros** (§28.3): el área filtra por el área del hábito y la búsqueda por su nombre; prioridad y estado no aplican y no los ocultan. Necesita que `filterTypes` y el estado del calendario distingan «aplica a hábitos».
+
+### 30.6 Estado guardado
+
+| Qué | Dónde | Clave |
+|---|---|---|
+| Días no laborables | `data.json` | `nonWorkingDays` (propuesta) |
+| Calendarios de feriados | `data.json` | `holidayCalendars` (propuesta) |
+| N de proyectadas | `data.json` | `projectedOccurrences` (propuesta) |
+| Hábitos en el calendario | `data.json` | `showHabitsInCalendar` (propuesta) |
+
+Las claves faltantes toman los valores por defecto con el `{ ...DEFAULT_SETTINGS, ...data }` de `loadSettings()`; no hace falta migración. Las reglas de feriados viven en el código, no en `data.json`.
+
+### 30.7 Archivos afectados (estimado)
+
+| Área | Archivos |
+|---|---|
+| Lógica nueva | `src/core/non-working-days.ts`, `src/core/holidays/*`, `src/core/task-projection.ts`, `src/habits/habit-calendar.ts`, `src/core/habit-day-popover.ts` |
+| Calendario | `src/views/calendar-view.ts` (`getDayDecorations()`), `calendar-month-view.ts`, `-week-`, `-workweek-`, `-day-`, `-year-view.ts`, `calendar-list-view.ts` y sus plantillas `.hbs`, `src/styles/views/` del calendario |
+| Gantt | `src/views/gantt-view.ts`, `templates/gantt-view.hbs`, `_gantt.scss` |
+| Hábitos | `src/habits/habit-parser.ts`, `habit-editor.ts`, `src/views/habit-table-view.ts` |
+| Ajustes | `src/settings/settings.ts`, `src/settings/setting-tab.ts` (ambas rutas) |
+| i18n | claves nuevas en los 6 locales: ajustes, nombres de feriados de México y EE. UU., chip, sección de hábitos |
+
+### 30.8 Riesgos
+
+- **El ajuste de fin de semana altera las rachas**: `normalizeFrequencySet()` se resuelve al parsear, así que cambiar `nonWorkingDays` cambia retroactivamente qué días «tocaban» y, con ello, rachas y porcentajes pasados. Se mitiga con el aviso y con que el cambio aplica a todas las frecuencias `weekend`/`workweek` por igual; no se guarda historial de la configuración anterior.
+- **Reglas de feriados y traducciones sin revisar**: las reglas son de derecho local y cambian por decreto; los nombres en los 6 idiomas son propuestas sin revisión de hablantes nativos. Hay que revisar ambos antes de publicar y dejar a la vista el año de las reglas.
+- **Rendimiento**: `projectOccurrences()` hace N cálculos de `rrule` por tarea recurrente y por refresco; con muchas tareas recurrentes y navegación frecuente conviene cachear por firma de tarea (`task-signature.ts`) y limitar el cálculo al rango visible.
+- **Fantasmas y refresco**: tras completar la real, el fantasma y la línea nueva no deben verse duplicados en el mismo día.
+- **Semana laboral con otro número de columnas**: CSS y plantilla hoy asumen cinco.
+- **Hábitos fuera del modelo de tarea**: `getTasksForDate()` devuelve `ITask`; mezclar hábitos allí rompería los conteos, por eso van en una estructura aparte.
+
+### 30.9 Pruebas
+
+Node con `node --test`:
+- `tests/holidays.test.cjs`: fecha fija, n-ésimo y último día de la semana (2026: Martin Luther King el 19 de enero, Memorial Day el 25 de mayo, Acción de Gracias el 26 de noviembre, primer lunes de febrero el 2, tercer lunes de marzo el 16 y tercer lunes de noviembre el 16), Pascua (2024-03-31, 2025-04-20, 2026-04-05), observado (el 4 de julio de 2026 cae en sábado), ciclo de años, lista explícita, año bisiesto y `getHolidaysForRange()` con calendarios desactivados.
+- `tests/task-projection.test.cjs`: N ocurrencias para diaria, semanal y mensual; fin de mes; `when done` no se proyecta; N = 0; desplazamiento de `📅`, `🛫` y `⏳` con hora y duración; recurrencia inválida.
+- `tests/non-working-days.test.cjs`: `isNonWorkingDay()`, `getWorkweekDays()` con 0, 1 y 7 días marcados; `normalizeFrequencySet()` con distintos ajustes.
+- `tests/habit-calendar.test.cjs`: resumen `3/5`, hábito fuera de su periodo activo, día de vacaciones, filtro por área y búsqueda.
+
+Manual: sombreado en Mes, Semana y Lista y ausencia en Día, Año y Semana laboral; Semana laboral con 4, 5 y 6 días; marcado de feriados en las seis vistas y el Gantt; fantasmas atenuados sin arrastre ni menú; clic y doble clic llevan a la tarea real; marcar un hábito desde el popover y ver el chip actualizado; en móvil, que el chip y el popover quepan.
+
+### 30.10 Por resolver al diseñar
+
+- Frecuencias de hábitos con `nonWorkingDays` vacío: resuelto el 2026-11-03, el ajuste nunca queda vacío ni con los siete marcados (`sanitizeNonWorkingDays()`).
+- Si las tareas cerradas con recurrencia proyectan (propuesta: solo las abiertas, porque la cerrada ya generó su siguiente línea).
+- Cómo se resuelve la regla de «observado» en México (qué reglas se recorren y a qué día).
+- Año base del ciclo de seis años y en qué fecha cae la transmisión del Poder Ejecutivo; revisar los datos de cada país contra una fuente oficial.
+- Si el calendario también marca los días de vacaciones de hábitos (por ahora no, Especificación de hábitos §12).
+- Cómo llegan los hábitos a `CalendarView` (a través de `plugin.habitManager`) sin acoplar el calendario a la pestaña de hábitos.
+
+Enlaces: [[Especificación de vistas]] §21; fases NL1 (ajuste y sombreado, Semana laboral y Gantt), NL2 (frecuencias de hábitos; depende de NL1), FE1 (motor de feriados; independiente), FE2 (ajustes y marcado; depende de FE1), PR1 (cálculo y fantasmas), PR2 (ajuste N y vistas; depende de PR1) y HC1 (hábitos en el calendario; depende de HA1 y HV1) del [[Plan de implementación]].
+
+## 31. Panel de vida del Dashboard (v1.1.16, diseño — no implementado)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §22. Fases del Plan: HM1, DT1, DW1, DP1, DP2, DP3, DA1 y DR1 en [[Plan de implementación]].
+
+### 31.1 Punto de partida
+
+`overview-view.ts` y `templates/overview-view.hbs` dibujan unos 19 widgets sueltos (`data-widget-type="hero"`, `total-tasks`, `completed-tasks`, `today-tasks`, `overdue-tasks`, `project-tasks`, etc.), con un panel de casillas (⚙️ Filtrar widgets) cuyo estado es un `Record<string, boolean>` en `localStorage` bajo `obsidian-agenda-widget-filters` (`saveWidgetFiltersState()` y `loadWidgetFiltersState()`). Es estado por dispositivo, no se sincroniza. El heatmap de hábitos vive en `habit-overview-view.ts` (`buildYearHeatmap()`, `heatmapLevel()`), su plantilla `habit-overview-view.hbs` y `_habit-overview.scss` (clases `oa-habit-heatmap-*`).
+
+### 31.2 Heatmap reutilizable (HM1) y de tareas (DT1)
+
+- **Componente agnóstico** en `src/core/heatmap.ts` (por crear): recibe una métrica `(fechaISO) => número`, su escala de color (`value → nivel`) y el texto del tooltip; no sabe de tareas ni de hábitos. Una parte pura, `buildHeatmapGrid(year, weekStartDay, metric, scale)`, devuelve celdas, etiquetas de mes y de día de la semana (la lógica que hoy está en `buildYearHeatmap()`), y una clase `Heatmap` monta el DOM con el año navegable ◀ ▶. Estilos neutros `oa-heatmap-*` en `src/styles/components/_heatmap.scss`.
+- **Migración del heatmap de hábitos** (HM1): `habit-overview-view.ts` pasa a usar el componente con la métrica «% cumplido» (`computeYearHistory()` de `habit-stats.ts`) y debe quedar **idéntico al actual**; se elimina el código duplicado `oa-habit-heatmap-*` de la plantilla y del SCSS. Los widgets de hábitos del Overview reutilizan el mismo componente.
+- **Métricas de tareas** (DT1), en una función pura `buildTaskHeatmapMetric(tasks, kind)` (por crear, en `src/core/task-heatmap-metrics.ts`): Completadas (✅, `date.done`), Vencimientos (📅, `date.due`), Creadas (➕, `date.created`), Programadas (⏳, `date.scheduled`) e Inicio (🛫, `date.start`). Un chip `Métrica` sobre el widget las alterna.
+- **Filtros por widget**: la barra compartida (`TaskFilterBar` con `filterTypes` de prioridad, estado y área, y búsqueda) filtra con `filterTasksByViewState()` antes de contar. El estado se guarda con una clave por widget, `dashboard.heatmap`, para que otros widgets ganen su barra o exista una barra global; con filtros activos el widget lo indica de forma visible.
+
+**ADR-DB1 — El heatmap no sabe de tareas ni de hábitos.** Recibe la métrica como función. Razón: sirve a los dos Dashboards y a futuros widgets sin duplicar el dibujo, y permite probar la migración comparando la salida antigua y la nueva.
+
+### 31.3 Widgets de hábitos (DW1)
+
+«Hábitos de hoy» (cumplidos de los que tocan hoy, con barra), «Racha actual» (la mejor racha entre los activos, con la máxima de subtítulo; `habit-streak.ts`), «Esta semana» (siete anillos por día y el porcentaje semanal; `habit-stats.ts`) y el heatmap anual de hábitos. Cada uno es un panel del registro (§31.4). Con la pestaña Hábitos oculta (`showHabitTab`), salen del catálogo de «Añadir panel» y los ya añadidos se ocultan sin perder su lugar en la disposición.
+
+### 31.4 Registro de paneles y disposición (DP1, DP2, DP3)
+
+- **Registro** `src/core/dashboard-panels.ts` (por crear): `DashboardPanelDef { id, module: 'today' | 'tasks' | 'habits' | 'progress', titleKey, size, requires?: 'habits', render }`. Los `id` de los widgets actuales (`data-widget`) se conservan como `id` de panel, lo que hace trivial la migración. El tamaño es fijo por tipo (sin redimensionar ni posición libre).
+- **Disposición** en `AgendaPluginSettings` (`data.json`; propuesta de clave `dashboardLayout`): `{ tabs: [{ id, name, panels: string[] }] }`. Un panel puede estar en más de una pestaña, siempre queda al menos una pestaña y vienen tres iniciales (p. ej. Hoy, Tareas y Hábitos). No hay disposición aparte para móvil: en móvil es una columna única.
+- **Migración (DP1)**: función pura `migrateWidgetFilters(saved, catalog)`, llamada desde el arranque del Overview: lee una vez `obsidian-agenda-widget-filters`, construye las tres pestañas iniciales con los paneles cuyo valor no era `false` y borra la clave antigua (`saveLocalStorage(key, null)`, como `LEGACY_TABLE_STATE_KEY` en §23.1). Sin clave antigua, se usa la disposición por defecto.
+- **Pestañas y modo Editar (DP2)**: el modo «✎ Editar» sustituye al panel de casillas (`#oa-widgets-filter-button` y `setupWidgetFilterListeners()` desaparecen): asa ⠿, `×` para quitar, «＋ Añadir panel» (lista directa sin modal, agrupada por módulo, con los ya presentes atenuados) y gestión de pestañas (renombrar, reordenar, borrar, `＋`). Fuera del modo Editar no hay arrastre.
+- **Arrastre en cuadrícula fluida (DP3)**: CSS grid con `auto-fill` y tamaño fijo por tipo; reordenar es mover un `id` dentro del arreglo de la pestaña. El arrastre usa eventos de puntero (`pointerdown`, `pointermove`, `pointerup`) sobre el asa con `touch-action: none` y no el HTML5 drag-and-drop de Kanban (que no funciona con el dedo); el destino se calcula con los rectángulos de las tarjetas. Se guarda al soltar o al salir de «✓ Listo», no en cada movimiento (`data.json` se sincroniza, §24.3).
+- **Estado de filtros por panel**: clave `dashboard.<widget>`; **dónde** se guarda (`data.json`, con la disposición, o `localStorage`, como el resto de filtros) queda por resolver.
+
+**ADR-DB2 — La disposición en `data.json`.** Pestañas, paneles y orden se sincronizan entre dispositivos. Razón: el panel de vida es una preferencia del usuario, no un estado de sesión; el costo es que `data.json` se escribe más (de ahí guardar al salir de Editar).
+
+### 31.5 Paneles nuevos (DA1, DR1)
+
+- **«Agenda de hoy»** (DA1): función pura `buildDayAgenda(tasks, habitSummary, date)` en `src/core/day-agenda.ts` (por crear): tareas con `🕐` (`date.scheduledTime`) ordenadas por hora, con su duración (`scheduledDuration`) y el color de su área, y debajo las de todo el día; los hábitos del día como el chip `🔁 3/5` (reutiliza `buildHabitDaySummary()` de §30.5). Es sobre todo presentación: reutiliza los datos y las entradas del calendario (§30.1), sin proyectadas.
+- **«Resumen del día»** (DR1): pocas líneas con número (tareas para hoy y cuántas con hora, vencidas, hábitos de hoy y cumplidos, la próxima tarea con hora y, si aplica, el aviso de unas vacaciones que empiezan); las líneas sin datos se ocultan y pulsar una abre la vista correspondiente (p. ej. «2 vencidas» abre la Lista con el filtro de vencidas: se escribe el `TaskViewState` y se activa la vista con `viewManager.activateView()`).
+- **«Revisión de la semana»** (DR1): siete anillos por día, porcentaje semanal con ▲/▼ contra la anterior, mejor día, día a mejorar, racha y tareas completadas frente a la semana pasada.
+- Todo se calcula en local, sin IA ni red y sin notificaciones del sistema; son paneles seleccionables del catálogo y su presencia en las pestañas iniciales se define más adelante.
+
+### 31.6 Archivos afectados (estimado)
+
+| Área | Archivos |
+|---|---|
+| Lógica nueva | `src/core/heatmap.ts`, `task-heatmap-metrics.ts`, `dashboard-panels.ts`, `day-agenda.ts` |
+| Overview | `src/views/overview-view.ts`, `templates/overview-view.hbs`, estilos del Overview |
+| Hábitos | `src/views/habit-overview-view.ts`, `templates/habit-overview-view.hbs`, `src/styles/views/_habit-overview.scss` |
+| Ajustes | `src/settings/settings.ts` (`dashboardLayout`) |
+| Estilos | nuevo `src/styles/components/_heatmap.scss` |
+| i18n | claves nuevas en los 6 locales (módulos, paneles, modo Editar, métricas) |
+
+### 31.7 Riesgos
+
+- **Arrastre táctil frente al scroll**: en móvil un arrastre que empieza en el contenido compite con el desplazamiento y con los gestos laterales de Obsidian (barras laterales). Se limita al asa en modo Editar, con `touch-action: none` solo en el asa; hay que probar en tableta y teléfono, incluido el autodesplazamiento al llegar a los bordes.
+- **Heatmap de hábitos idéntico tras migrar**: cualquier cambio de nivel, de orden de semana o de etiquetas es una regresión visible; se prueba comparando la salida del código antiguo y del componente nuevo con los mismos datos antes de borrar el código viejo.
+- **Escrituras de `data.json`**: reordenar guardando en cada movimiento generaría copias en conflicto al sincronizar.
+- **Estado perdido en la migración**: la clave antigua se borra tras migrar; si la migración falla a medias, el usuario pierde su configuración de casillas (se conserva la clave hasta confirmar el guardado).
+- **Pestaña de hábitos oculta**: el panel debe ocultarse sin borrarse de la disposición.
+
+### 31.8 Pruebas
+
+Node con `node --test`: `buildHeatmapGrid()` (año bisiesto, semana que empieza en lunes y en domingo, celdas fuera del año, niveles) y la **equivalencia con el heatmap de hábitos actual** (mismos niveles, etiquetas y columnas); métricas de tareas (Completadas, Vencimientos, Creadas, Programadas, Inicio) con y sin filtros; `migrateWidgetFilters()` (clave ausente, todo `true`, algunos `false`, JSON inválido); operaciones de disposición (añadir, quitar, mover, borrar pestañas con mínimo una, panel en varias pestañas, panel de hábitos con la pestaña oculta); `buildDayAgenda()` (orden por hora, todo el día al final, hábitos) y las líneas de «Resumen del día». Manual: modo Editar en escritorio y móvil, arrastre con ratón y con dedo, scroll sin Editar, sincronía entre dispositivos y la migración de las casillas con un `localStorage` real.
+
+### 31.9 Por resolver al diseñar
+
+- Catálogo exacto del resto de paneles por módulo (Hoy, Tareas, Hábitos y Progreso) y la disposición por defecto de las tres pestañas, incluidos «Resumen del día» y «Revisión de la semana».
+- Arrastre táctil frente al scroll en móvil (ver §31.7); si basta el modo Editar o hacen falta botones de subir y bajar como alternativa.
+- Resuelto el 2026-11-03: el estado de filtros por widget (`dashboard.<widget>`) va en `localStorage`, junto al estado del resto de las vistas.
+- Los filtros globales del Dashboard (siguen para más adelante) y si la pestaña activa se recuerda por dispositivo.
+
+Enlaces: [[Especificación de vistas]] §22; fases HM1 (heatmap y migración de hábitos), DT1 (heatmap de tareas; depende de HM1), DW1 (widgets de hábitos; depende de HM1), DP1 (registro y disposición con migración), DP2 (pestañas y modo Editar; depende de DP1), DP3 (arrastre; depende de DP2), DA1 («Agenda de hoy») y DR1 («Resumen del día» y «Revisión de la semana») del [[Plan de implementación]].
+
+## 32. Tabla: columnas y CSV (v1.1.17, diseño — no implementado)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §23 (y §14.3, cuyo «pasa a v1.1.14» queda corregido a v1.1.17). Fases del Plan: TB1 (columnas) y TB2 (CSV; depende de TB1 y de L3) en [[Plan de implementación]], que absorben la fase U5 anterior. Reutiliza el modelo de columnas de §23.8 (`src/core/task-table-columns.ts`).
+
+### 32.1 Modelo de columnas (TB1)
+
+- **Registro ampliado** en `task-table-columns.ts`: `TableColumnId` suma `subArea`, `file`, `time`, `duration` y `recurrence` a los diez actuales (`count`, `priority`, `status`, `task`, `area`, `start`, `scheduled`, `due`, `closed`, `tags`). `TableColumn` gana `labelKey`, `defaultVisible` (las cinco nuevas, `false`) y dos funciones puras compartidas por la plantilla y el CSV: `valueOf(task)` (texto plano) y, donde la celda muestra algo más que el texto, el dato para la plantilla.
+  - Sub-área: `resolveTaskArea(task.file.path).subArea`; Archivo: `task.file.name`; Hora: `task.date.scheduledTime`; Duración: `task.date.scheduledDuration` (minutos); Recurrencia: `task.flow.repeat`.
+- **Elección del usuario** (`TableColumnLayout`, por crear en el mismo módulo): `{ order: TableColumnId[], hidden: TableColumnId[], forced: TableColumnId[] }`. `getVisibleColumns(tasks, layout)` y `getColumnVisibility(tasks, layout)` combinan: el orden del usuario, lo oculto, y la regla de §23.8 para las columnas de fecha (se ocultan solas si ninguna tarea cargada tiene valor) con la opción de **forzarlas** (`forced`). `reconcileColumnLayout(saved)` descarta ids desconocidos y añade al final las columnas nuevas, para que una versión futura no rompa un guardado antiguo. «Restablecer» devuelve el layout por defecto.
+- **Popover** (sin modal, con el estilo de los chips): lista con casilla de visible, asa de arrastre para reordenar y botón «Restablecer»; se apoya en el patrón de `task-filter-popover.ts` (anclado bajo su botón, no se cierra al marcar). El arrastre usa eventos de puntero para que funcione también en tableta (como el de §31.4).
+- **Plantilla** (`table-view.hbs`, `table-view.ts`): hoy escribe cada encabezado y cada celda en un orden fijo con `{{#if columns.x}}`; para reordenar pasa a recorrer la lista ordenada de columnas, con un parcial por tipo de celda y `data-column="<id>"` en cada una (ya existe, §23.8). Las cabeceras de grupo y de carril siguen con `colspan="{{columnCount}}"`. `resizeColumns()` busca los límites por `data-column` en `getColumnLimits()`, de modo que las cinco columnas nuevas solo necesitan sus `{ min, max }`.
+- **Estado guardado**: el layout es **por vista** (solo la Tabla; Lista no tiene columnas). Propuesta: `data.json` (`AgendaPluginSettings.tableColumns`), porque es una preferencia de presentación que conviene sincronizar; la alternativa es `localStorage` bajo `obsidian-agenda-table-columns`, como el resto del estado de la Tabla (§23.1). Queda por resolver (§32.6).
+
+**ADR-TB1 — Una sola definición de columna para la pantalla y el CSV.** Cada columna define `valueOf()` una vez. Razón: lo que se exporta es lo que se ve; dos definiciones divergirían.
+
+### 32.2 Exportación a CSV (TB2)
+
+- **Módulo puro** `src/core/task-csv.ts` (por crear): `buildCsv(tasks, columns, options)` devuelve el texto. `options.laneOf?` (función `tarea → nombre del carril`) añade al final una columna con el nombre del carril cuando hay Lanes (§29): con `Lanes: Etiqueta`, una tarea sale una vez por carril, como en pantalla.
+- **Formato fijo**: coma como separador; codificación UTF-8 con **BOM** (`U+FEFF` al inicio, para que Excel muestre bien los acentos); fechas `AAAA-MM-DD`; campos escapados (se entrecomillan si contienen coma, comillas o salto de línea y las comillas se duplican); sin ajuste de separador. La cabecera usa los nombres de columna en el idioma de la interfaz.
+- **Qué exporta**: lo que se ve. Las tareas ya filtradas (`filterTasksByViewState()`), las columnas visibles en su orden (las de fecha que se ocultaron solas no salen; `count` no se exporta) y el orden de filas actual (`sortTasksByColumn()`). El flujo es el mismo que dibuja la Tabla: `TaskManager` → filtro → orden → `buildLanes()` → filas; `TableView` pasa esos mismos arreglos a `buildCsv()`.
+- **Dos acciones** (en la barra de la Tabla; ubicación en Especificación §23):
+  - **Exportar CSV**: escribe `tareas-AAAA-MM-DD-HHmm.csv` en una carpeta del vault, configurable (ajuste `csvExportFolder` en `data.json`, nombre propuesto; por defecto `agenda-exports/`), creándola con `ensureFolderPath()` de `src/habits/habit-folder.ts` (hoy específico de hábitos; se reutiliza o se mueve a un módulo neutro). Un `Notice` muestra la ruta. Se escribe con `vault.createBinary()` y los bytes UTF-8 con el BOM, para no depender de cómo codifica el adaptador una cadena.
+  - **Copiar CSV**: `navigator.clipboard.writeText()` con el mismo texto (sin el BOM, que no tiene sentido en el portapapeles; por confirmar) y un `Notice`.
+- Fuera por ahora: diseños guardados con nombre y diálogo de opciones de exportación.
+
+### 32.3 Archivos afectados (estimado)
+
+| Área | Archivos |
+|---|---|
+| Columnas | `src/core/task-table-columns.ts` (registro ampliado, `TableColumnLayout`, `reconcileColumnLayout()`) |
+| CSV | nuevo `src/core/task-csv.ts` |
+| Tabla | `src/views/table-view.ts`, `templates/table-view.hbs`, `src/types/interfaces.ts` (`TableViewData`, `TableTaskRow`), `src/styles/views/_table-view.scss` |
+| Barra | `src/core/task-filter-bar.ts` (botones «Columnas», «Exportar CSV» y «Copiar CSV» solo en la Tabla) y un popover de columnas nuevo (`src/core/table-columns-popover.ts`, por crear) |
+| Ajustes | `src/settings/settings.ts`, `setting-tab.ts` (`csvExportFolder`, y `tableColumns` si va en `data.json`) |
+| i18n | claves nuevas en los 6 locales (cinco columnas, popover, acciones, avisos) |
+
+### 32.4 Riesgos
+
+- **`table-view.hbs` deja de tener un orden fijo**: es la plantilla de más lógica condicional (§23.8); el paso a un bucle toca encabezado, celdas, cabeceras de grupo, `colspan` y `resizeColumns()`.
+- **`table-layout: fixed`** con columnas que aparecen, desaparecen y se reordenan: los anchos deben salir de las columnas visibles y del orden actual.
+- **Carriles**: con `Lanes` el CSV añade una columna y, en el carril por etiqueta, repite filas; la prueba debe fijar el comportamiento (dependencia de L3).
+- **Excel y el BOM**: el BOM depende de que `createBinary()` conserve los bytes; se comprueba abriendo el archivo con acentos en Excel y en un editor.
+- **Inyección de fórmulas** (decidido el 2026-11-03): un título que empieza con `=`, `+`, `-` o `@` se interpreta como fórmula en Excel, Sheets y Numbers; `csvEscape()` antepone un apóstrofo a toda celda de texto que empiece con esos caracteres (título, etiquetas, archivo, área…), sin tocar fechas ni números, y sin ajuste; la prueba de Node lo cubre con `=HYPERLINK(...)`, `+1`, `-2` y `@SUM`.
+- **Cinco columnas nuevas ocultas por defecto**: un layout guardado sin ellas debe tratarse como «ocultas», no como «nuevas visibles».
+
+### 32.5 Pruebas
+
+Node con `node --test`:
+- `tests/task-csv.test.cjs`: escapado de comas, comillas y saltos de línea; BOM al inicio; acentos y emoji; fechas `AAAA-MM-DD`; columnas y orden; columna de carril con y sin Lanes (y etiquetas repetidas); cero tareas (solo cabecera); nombre de archivo con `AAAA-MM-DD-HHmm`.
+- `tests/task-table-columns.test.cjs`: `getVisibleColumns()` con orden, ocultas y forzadas; columnas de fecha que se ocultan solas y se fuerzan; `reconcileColumnLayout()` con ids desconocidos y columnas nuevas; «Restablecer».
+
+Manual: mostrar, ocultar y reordenar columnas y recargar; «Restablecer»; las cinco columnas nuevas con datos reales; exportar y abrir el archivo en Excel (acentos) y en el editor; copiar y pegar; con Lanes; en tableta con el popover.
+
+### 32.6 Por resolver al diseñar
+
+- Resuelto el 2026-11-03: el layout de columnas va en `localStorage`, dentro del estado de la Tabla (`TABLE_VIEW_STATE_KEY`), por dispositivo; hay que migrar `TaskViewState`/`parseTaskViewState()` para que lo conserve y trate un layout sin las cinco columnas nuevas como «ocultas».
+- Si `count` es una columna configurable o fija.
+- Cómo se escriben las etiquetas dentro de una celda (separador).
+- Si «Copiar CSV» lleva BOM.
+- Cómo reordenar con el dedo en tableta y teléfono (arrastre o botones).
+- Qué pasa si la carpeta de exportación no se puede crear o el archivo ya existe en el mismo minuto.
+
+Enlaces: [[Especificación de vistas]] §23; fases TB1 (registro, popover y guardado) y TB2 (CSV; depende de TB1 y L3) del [[Plan de implementación]].
+
+## 33. Modal de hora con reloj (v1.1.17, diseño — no implementado)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §24. Fase TM1 del [[Plan de implementación]]. Sustituye a la rueda de la v1.1.4 (§6 y la decisión del formato de hora de [[Modelo de datos]]).
+
+### 33.1 Mecanismo
+
+- **Se reescribe `src/modals/task-time-picker-modal.ts`** (`TaskTimePickerModal`). Su interfaz no cambia: el constructor `(app, i18n, initialTime: string | null, onSubmit: (time: string) => void)` y la hora de entrada y salida en `HH:mm` de 24 h, de modo que los dos sitios que lo abren, `task-modal.ts` y `task-field-menu.ts`, y `upsertScheduledTime()` de `task-line-fields.ts` no cambian. En la línea de la tarea se sigue guardando `🕐 14:30`, así que el plugin Tasks y el resto del código no ven diferencia.
+- **Lógica pura** `src/core/time-clock.ts` (por crear, para probarla con Node): conversión 24 h ↔ 12 h con AM/PM (`to12Hour()`, `to24Hour(hour12, meridiem)`; las 12 AM son las 00 h y las 12 PM las 12 h), y geometría de la esfera: `pointToAngle(x, y, cx, cy)`, `angleToHour(angle)` (12 posiciones) y `angleToMinute(angle)` (0 a 59), con el ajuste a la marca de 5 cuando el toque cae sobre una.
+- **Componente de esfera** `src/core/clock-dial.ts` (por crear), con SVG y eventos de puntero, en el estilo de `TimeDial` (`src/core/time-dial.ts`, el anillo de minutos usado por el editor de hábitos y el modal de duración), que **no se modifica**: aquel dial devuelve un valor entre 0 y un máximo continuo y no sabe de horas de 12 posiciones.
+- **Dos pasos**: primero la hora y, al elegirla (`pointerup`), pasa solo a los minutos; los números del encabezado (`3:30`) son botones para cambiar de paso sin esperar. Botones AM y PM; Cancelar y Guardar con las claves ya traducidas (`cancel`, `save`).
+- **Minutos exactos**: tocar una marca de 5 la elige directo y arrastrar por la esfera permite cualquier minuto de 0 a 59.
+- **Estilos**: los de la rueda (`oa-time-picker__wheels`, `__highlight`, y los de las columnas) se sustituyen por los de la esfera, en el SCSS del modal.
+
+**ADR-RL1 — Se muestra en 12 h y se guarda en 24 h.** El modal presenta AM/PM; la línea de la tarea no cambia (`🕐 14:30`). Razón: ningún lector del formato (plugin Tasks, Dataview `time::`, `task-section.ts`) tiene que cambiar. Consecuencia: la decisión de la hora de 24 h del [[Modelo de datos]] se revisa solo en lo que toca a la interfaz del modal, y el comentario de cabecera de `task-time-picker-modal.ts` («Formato 24h…») se actualiza.
+
+### 33.2 Estado guardado y flujo de datos
+
+Sin estado propio: ni `data.json` ni `localStorage`. Flujo: `initialTime` (`HH:mm` o `null`, que arranca en 12:00) → hora y minuto → esfera → `onSubmit('HH:mm')` → el llamador escribe la línea con `upsertScheduledTime()`.
+
+### 33.3 Archivos afectados (estimado)
+
+| Área | Archivos |
+|---|---|
+| Modal | `src/modals/task-time-picker-modal.ts` (reescrito) |
+| Lógica | nuevos `src/core/time-clock.ts` y `src/core/clock-dial.ts` |
+| Estilos | el SCSS del modal de hora (clases `oa-time-picker__*`) |
+| i18n | claves nuevas en los 6 locales (AM, PM, etiquetas de la esfera para lectores de pantalla) |
+| Docs | la decisión de la hora de 24 h del [[Modelo de datos]] |
+
+### 33.4 Riesgos
+
+- **Tamaño táctil de la esfera en móvil**: por confirmar; los números de 5 en 5 deben ser tocables sin tapar el pulgar.
+- **Precisión del arrastre**: un arrastre debe dar cualquier minuto sin saltar al tocar una marca; conviene un pequeño margen para el ajuste a la marca de 5.
+- **Medianoche y mediodía**: 12 AM = 00:00 y 12 PM = 12:00 son el error clásico de la conversión.
+- **Accesibilidad por teclado**: la rueda actual se podía usar con la rueda del ratón y las flechas; la esfera necesita flechas, `Enter` y `Esc` (como `TimeDial`).
+- **Cambio de paso accidental**: pasar solo a minutos al soltar puede sorprender si el usuario quería corregir la hora; los números del encabezado lo permiten.
+
+### 33.5 Pruebas
+
+Node con `node --test`, en `tests/time-clock.test.cjs`: conversión 12 h ↔ 24 h en todo el día (00:00, 00:30, 11:59, 12:00, 12:30, 13:00, 23:59), ida y vuelta, ángulo → hora y → minuto en los 12 y 60 puntos, ajuste a la marca de 5 y minutos exactos, y el formato `HH:mm` con ceros a la izquierda. Manual: abrir desde el modal de tarea y desde el menú de campos; hora y minutos con ratón y con dedo; cambio de paso desde el encabezado; AM/PM; Cancelar; que la línea quede `🕐 HH:mm` y se lea en el plugin Tasks.
+
+### 33.6 Por resolver al diseñar
+
+- Tamaño táctil de la esfera en móvil.
+- Si la esfera admite el teclado numérico además de las flechas.
+- Qué hora inicial se muestra con `initialTime = null` (hoy 12:00).
+
+Enlaces: [[Especificación de vistas]] §24; fase TM1 del [[Plan de implementación]].
+
+## 34. Estados personalizados (v1.1.17, diseño — no implementado)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §25. Fases del Plan: ES1 a ES4 en [[Plan de implementación]]. Es el cambio de más riesgo de la versión y por eso va al final: toca el modelo de estados de todo el plugin. El filtro de estado de v1.1.14 ya debe leer su lista de una función (no de una constante) para no rehacerlo.
+
+### 34.1 Modelo
+
+- **Registro** `src/core/task-status-registry.ts` (por crear; puro): `StatusType = 'TODO' | 'IN_PROGRESS' | 'ON_HOLD' | 'DONE' | 'CANCELLED' | 'NON_TASK'` y `StatusDef { symbol, name?, nameKey?, icon, type }`. Es el modelo de Tasks simplificado (símbolo, nombre, icono y tipo, sin «próximo símbolo»; referencia: Custom Statuses de Tasks).
+- **El tipo gobierna el comportamiento**: Hecho añade `✅`, dispara la recurrencia y cuenta como cerrado; Cancelada y No es tarea cuentan como cerrado; el resto cuenta como abierto.
+- **Los 6 estados actuales son el punto de partida** (`CoreTaskStatus` de `enums.ts`: ` ` TODO, `/` IN_PROGRESS, `?` ON_HOLD, `x` DONE, `-` CANCELLED, `~` NON_TASK): se editan (nombre e icono), no se borran, y su nombre se muestra traducido (`nameKey`, p. ej. `status_todo`) hasta que el usuario lo edita; «Restablecer» borra el nombre escrito. Los estados nuevos usan el texto del usuario.
+- **API** (todas puras, reciben el registro): `getStatusDef(symbol)`, `getStatusType(symbol)` (un símbolo sin definir resuelve a `TODO`), `isClosedType(type)`, `getStatusOptions(registry)` (sustituye a la constante) y `findUndefinedSymbols(tasks, registry)` (símbolos usados sin definir, con su número de tareas).
+- **Acceso**: muchos puntos que preguntan por el estado no tienen el plugin a mano (`Task.extractStatusFromHeader()` es estática; `isTaskOpen()`, `buildRecurrenceOccurrence()` y `upsertTaskStatus()` son funciones de módulo). Propuesta: el módulo guarda el registro activo con `setStatusRegistry()` y `getStatusRegistry()`, que `loadSettings()` y el guardado de los ajustes actualizan; las pruebas inyectan el suyo.
+- **Símbolo sin definir**: se trata como Pendiente pero **conserva su símbolo y nunca se reescribe**. Hoy `Task.extractStatusFromHeader()` (`src/entities/task.ts`) devuelve `CoreTaskStatus.Todo` si el símbolo no es uno de los seis y lo pierde; pasa a devolver el símbolo tal cual (`ITaskState.status` ya es `string`). Los escritores solo tocan el símbolo cuando el usuario cambia el estado. Los ajustes muestran «Símbolos encontrados sin definir» (p. ej. `R (3 tareas)`) con un botón para definirlos.
+- **Importar de Tasks**: un botón, una sola vez, lee símbolo, nombre y tipo de los ajustes del plugin Tasks e ignora el «próximo símbolo». Cómo se leen esos ajustes (el `data.json` del plugin con `app.vault.adapter` o su objeto en `app.plugins`) y qué tipo de este plugin corresponde a cada tipo de Tasks (Tasks no tiene `ON_HOLD`; por verificar) se comprueban contra una instalación real.
+
+**ADR-ES1 — Registro con tipos fijos.** El comportamiento (cerrar, `✅`, recurrencia) depende del tipo, no del símbolo. Razón: un estado nuevo hereda un comportamiento ya probado, y se evita un lenguaje de reglas.
+
+**ADR-ES2 — Símbolo desconocido conservado.** Se muestra y se cuenta como Pendiente, pero el texto de la línea no se modifica. Razón: evita perder datos de otras convenciones (p. ej. temas de Obsidian) al editar otras cosas de la tarea.
+
+### 34.2 De `CoreTaskStatus` al registro (ES1, ES2)
+
+`CoreTaskStatus` aparece 66 veces en 10 archivos de `src/` (`task-extractor.ts` 25, `task-status-options.ts` 12, `task-modal.ts` 8, `task.ts` 5, `kanban-board.ts` 4, `task-recurrence.ts` 4, `task-line-fields.ts` 3, `task-gestures.ts` 2, `enums.ts` 2 y `task-view-state.ts` 1), y hay otras comparaciones por símbolo literal (`task.state.status === 'x'` en `getTasksForDate()`) y por nombre (`state.text`). Reglas del cambio:
+- **ES1**: se añade el registro con los 6 estados y se conserva `CoreTaskStatus` como los símbolos por defecto, sin cambiar el comportamiento; `extractStatusFromHeader()` conserva el símbolo desconocido.
+- **ES2**: las comparaciones pasan a tipo: `isTaskOpen()` (hoy `CLOSED_STATUSES`), `buildRecurrenceOccurrence()` (`newStatus !== Done`), `upsertTaskStatus()` (`status === Done` añade `✅`), el modal (`selectedStatus !== CoreTaskStatus.Done` y la fecha de hecha), `changeTaskStatus()`, `getTasksForDate()` y los estilos. La firma de `upsertTaskStatus()` y de `changeTaskStatus()` pasa de `CoreTaskStatus` a `string` (símbolo).
+- **Otros consumidores del conjunto fijo**: `getCoreTaskStatusName()` y `getCoreTaskStatusEmoji()` (`task-extractor.ts`, que alimentan `state.text` y `state.emoji`) pasan a consultar el registro; los seis botones escritos a mano de `create-task-modal.hbs` (`data-status`) se generan; `_table-view.scss` (`data-status="Todo"`…) y `_gantt.scss` (`data-status='x'`, `'-'`, `'~'`) pasan a un atributo por **tipo** (`data-status-type`); `STATUS_RANK` de `task-column-sort.ts`.
+- **Guarda contra regresiones**: una prueba de Node recorre `src/` y falla si queda una comparación `=== CoreTaskStatus.` fuera del registro.
+
+### 34.3 Fuente única para menú, agrupado, filtro y tablero (ES4)
+
+- `STATUS_OPTIONS` (`src/core/task-status-options.ts`) pasa a generarse desde la configuración: la constante se sustituye por `getStatusOptions()`. La consumen `task-gestures.ts` (menú de estado), `task-grouping.ts` (`Group: Estado`), `task-filter-chips.ts` (lista del filtro), `kanban-board.ts` (`taskColumnKey()` y `buildKanbanColumns()`), `task-column-sort.ts` y `task-view-state.ts`.
+- **Orden**: el de la lista de los ajustes. Kanban, `Group: Estado` y `Lanes: Estado` (§29) generan un valor por estado en ese orden; arrastrar a una columna asigna ese símbolo (`KanbanDrop` de `kanban-board.ts` pasa de `CoreTaskStatus` a símbolo).
+- **El filtro de estado guarda hoy el nombre del enum** (`'Todo'`, `'InProgress'`…, `option.name` en `task-view-state.ts`): un estado nuevo no tiene nombre de enum. El valor pasa a ser el **símbolo**, y `parseTaskViewState()` convierte los nombres antiguos (guardados en `localStorage`, y con las listas de §28.1 también dentro de arreglos) y descarta los símbolos que ya no existen.
+
+### 34.4 Ajustes y estado guardado
+
+- **Ajuste** `taskStatuses: StatusDef[]` en `AgendaPluginSettings` (`data.json`; clave propuesta), con la lista en el orden elegido. Si falta, se toman los 6 por defecto, sin migración. Se sincroniza entre dispositivos junto con el resto de ajustes.
+- **Interfaz** (`setting-tab.ts`, ambas rutas): lista editable (símbolo, nombre, icono, tipo), botones para añadir, «Restablecer» por estado base, «Importar de Tasks» y la sección «Símbolos encontrados sin definir». Validación: un símbolo de un solo carácter, único en la lista, y el ` ` (espacio) siempre definido. Con la API declarativa de Obsidian 1.13 hace falta un control propio (`render`, como el de la carpeta de hábitos en §25.2) y `display()` de respaldo.
+- Al guardar, se refrescan las vistas abiertas (como `refreshCalendarViews()`): cambiar el tipo de un símbolo cambia qué tareas cuentan como cerradas.
+
+### 34.5 Archivos afectados (estimado)
+
+| Área | Archivos |
+|---|---|
+| Registro | nuevo `src/core/task-status-registry.ts`; `src/core/task-status-options.ts` (`getStatusOptions()`, `isTaskOpen()`); `src/types/enums.ts` (símbolos por defecto) |
+| Extracción | `src/entities/task.ts` (`extractStatusFromHeader()`), `src/core/task-extractor.ts` |
+| Escritura | `src/core/task-line-fields.ts` (`upsertTaskStatus()`), `src/core/task-recurrence.ts`, `src/core/task-gestures.ts`, `src/modals/task-modal.ts` y `templates/create-task-modal.hbs` |
+| Vistas | `src/core/kanban-board.ts`, `task-grouping.ts`, `task-column-sort.ts`, `task-filter-chips.ts`, `task-view-state.ts`, `src/views/calendar-view.ts`, `_table-view.scss`, `_gantt.scss` |
+| Ajustes | `src/settings/settings.ts`, `setting-tab.ts` |
+| i18n | claves nuevas en los 6 locales (tipos, «sin definir», importar, restablecer) |
+
+### 34.6 Riesgos
+
+- **~66 usos de `CoreTaskStatus` en 10 archivos**: el cambio atraviesa extracción, escritura, filtros, agrupado, Kanban y modal. Se reparte en ES1 (sin cambiar comportamiento) y ES2 (por archivo, con pruebas) y se protege con la prueba de `src/`.
+- **Reescritura accidental de un símbolo desconocido**: el modal reconstruye la línea con el estado elegido; si el usuario no cambia el estado, hay que conservar el símbolo original (`ADR-ES2`).
+- **Estado guardado del filtro**: nombres de enum en `localStorage` y en las listas de §28; la conversión debe ser tolerante.
+- **Tipo cambiado a posteriori**: pasar un símbolo de Pendiente a Hecho en los ajustes cambia el conteo de tareas abiertas, pero no escribe `✅` en las líneas existentes.
+- **Importar de Tasks**: el formato de los ajustes de Tasks puede cambiar entre versiones; falla con un aviso y no escribe a medias.
+- **Símbolos conflictivos**: dos estados con el mismo símbolo o un símbolo que Markdown interpreta (`[`, `]`) rompen el parser.
+
+### 34.7 Pruebas
+
+Node con `node --test`, en `tests/task-status-registry.test.cjs`:
+- **Símbolo → tipo** para los 6 por defecto, un estado nuevo de cada tipo y un símbolo sin definir (resuelve a `TODO`).
+- **Cerrado/abierto** por tipo; `buildRecurrenceOccurrence()` solo con tipo Hecho; `upsertTaskStatus()` añade `✅` solo con tipo Hecho y la quita al salir.
+- **Símbolo conservado**: `extractStatusFromHeader()` con `[R]`, y que reescribir otros campos de la línea no cambie el símbolo.
+- **Orden**: `getStatusOptions()` sigue el orden de la lista; el filtro convierte `'Todo'` a `' '`.
+- **`findUndefinedSymbols()`** con conteos.
+- **Nombres**: los 6 base traducidos hasta editarlos y tras «Restablecer».
+- Guarda contra `=== CoreTaskStatus.` en `src/` (§34.2).
+
+Manual: definir un estado, usarlo desde el menú del calendario, el modal y Kanban (arrastre a su columna); abrir una nota con `[R]` y comprobar que se muestra Pendiente y no se toca; importar desde Tasks con una instalación real; `Group: Estado` y `Lanes: Estado` con estados nuevos; filtro de estado en la barra y en el calendario.
+
+### 34.8 Por resolver al diseñar
+
+- La lógica que hoy compara por símbolo (`=== CoreTaskStatus.Done`) pasa a preguntar por el tipo; falta fijar el diseño exacto de `StatusRegistry` y de cómo llega a las funciones sin el plugin (módulo global o parámetro).
+- Cómo se edita la lista en los ajustes con la API declarativa de Obsidian 1.13.
+- Si el icono es un emoji (como hoy, `CoreTaskStatusIcon`) o un icono Lucide, y qué icono recibe un estado nuevo.
+- Si el filtro «Pendiente» y la columna «Pendiente» de Kanban incluyen las tareas con un símbolo sin definir.
+- Cómo se lee la configuración de Tasks para importarla y cómo se asignan sus tipos a los seis de este plugin.
+
+Enlaces: [[Especificación de vistas]] §25; fases ES1 (registro y símbolo preservado), ES2 (comparaciones por tipo; depende de ES1), ES3 (ajustes, importar y símbolos sin definir; depende de ES1) y ES4 (barra, Kanban, `Group` y `Lanes`; depende de ES2) del [[Plan de implementación]].
+
+## 35. Compatibilidad con Tasks: `🏁 delete` y Generar `🆔` (v1.1.17, diseño — no implementado)
+
+Comportamiento de usuario y decisiones: [[Especificación de vistas]] §17 (Compatibilidad con Tasks, que pasa de v1.1.14 a v1.1.17). No es una sincronía: mismo archivo y mismo formato de línea. Fases del Plan: TK1 (`🏁 delete`) y TK2 (Generar `🆔`) en [[Plan de implementación]]. Lo ya compatible (emojis, Dataview, nueva ocurrencia una línea arriba, eliminación de `🆔` y `⛔` al repetir, `when done`) no cambia, y la fecha de referencia de la recurrencia se mantiene (`scheduled > due > start`) aunque Tasks use `due > scheduled > start` (se advierte en el manual).
+
+### 35.1 `🏁 delete` al completar (TK1)
+
+- **Punto de partida**: la línea ya se lee y se escribe: `flow.onCompletion` (`ITaskFlow`) viene del extractor y `task-modal.ts` escribe ` 🏁 <valor>` desde el select `#oa-task-oncompletion` de `create-task-modal.hbs`; pero ningún código actúa al completar. `keep` es el comportamiento por defecto.
+- **Rutas de completar** que deben respetar `delete`: el menú de estado del calendario, Lista y Tabla y el arrastre de Kanban (todas por `changeTaskStatus()` de `src/core/task-gestures.ts`) y el modal de edición (`task-modal.ts`, que repite su propia lógica de recurrencia). Para no repetir la rama, el nuevo comportamiento se extrae a una función compartida (`src/core/task-completion.ts`, por crear) que ambas llaman.
+- **Flujo** cuando el tipo del nuevo estado es Hecho (§34; hoy, `CoreTaskStatus.Done`) y `flow.onCompletion === 'delete'`:
+  1. **Confirmación breve**: «Esta tarea se borrará del archivo» (un `Modal` pequeño, `src/modals/confirm-delete-modal.ts`, por crear). Es la única acción destructiva de la versión y el único diálogo. Si el usuario cancela, no se escribe nada.
+  2. Si la tarea es **recurrente**, se calcula la siguiente ocurrencia con `buildRecurrenceOccurrence()` antes de tocar nada y se **inserta primero** con `insertLineAbove()`.
+  3. Se **borra la línea completada**: método nuevo `TaskWriter.deleteTaskLine(filePath, lineNumber, expectedText)`, que localiza la línea con `locateTaskLine()` (como `updateTaskLine()` e `insertLineAbove()`, §20.3.2) y no borra si no la encuentra o hay coincidencias ambiguas, avisando con `task_line_changed`. Como en el paso 2 se insertó una línea por encima, el número de línea de la original ya cambió: el método busca por texto esperado y no por número.
+  4. Con `keep`, o sin `🏁`, todo sigue como hoy (`✅` en la línea y siguiente ocurrencia por encima).
+- **Cálculo de líneas puro** (`src/core/task-line-delete.ts`, por crear): `removeLine(lines, index)` y la combinación inserción + borrado, para probar sin Obsidian; conserva los saltos de línea del archivo (LF o CRLF) y el caso de la última línea sin salto final.
+- **Advertencia en el modal**, al crear y al editar: cuando el select vale `delete`, un texto bajo el campo («al completar, la línea se borrará del archivo»), con claves nuevas en los 6 idiomas.
+- **`TaskWriter`** (`src/core/task-writer.ts`) gana un cuarto método de escritura segura, el único que borra; hoy tiene `appendTaskLine()`, `updateTaskLine()` e `insertLineAbove()`.
+
+**ADR-TK1 — Confirmar al completar, avisar al configurar.** El borrado pide confirmación en el momento de completar y se advierte en el modal. Razón: es la única acción que destruye datos y la persona puede haber olvidado el `🏁` de una tarea antigua.
+
+### 35.2 Botón Generar `🆔` (TK2)
+
+- **Módulo puro** `src/core/task-id.ts` (por crear): `generateTaskId(existingIds, random = Math.random)` devuelve un identificador en el formato de Tasks (base 36 de 6 caracteres) que no está en `existingIds`, repitiendo hasta que sea único.
+- **Conjunto de ids**: los `flow.id` de todas las tareas del vault (`TaskManager.getAllTasks()`; el modal ya tiene `cachedTasks`, `task-modal.ts`). Se comprueba también contra los ids a los que apuntan otras tareas con `⛔`.
+- **Botón** junto al campo `#oa-task-id` de `create-task-modal.hbs` (`task_id`): rellena el campo con el id nuevo; el modal **no asigna `🆔` por defecto**. La línea la escribe el mismo código que hoy escribe el `🆔` (`task-modal.ts`).
+- **Reutilización**: la sincronía con Google Calendar (§24.5, v1.1.18) asigna un `🆔` en el mismo formato a las tareas locales que no lo tienen; usará `generateTaskId()`.
+- Con un `🆔` ya escrito en el campo, reemplazarlo rompería los `⛔` que apuntan a él; la propuesta es desactivar el botón en ese caso (por resolver).
+
+### 35.3 Estado guardado
+
+Ninguno nuevo: `🏁` y `🆔` viven en la línea de la tarea, no en `data.json` ni en `localStorage`.
+
+### 35.4 Archivos afectados (estimado)
+
+| Área | Archivos |
+|---|---|
+| Escritura | `src/core/task-writer.ts` (`deleteTaskLine()`), nuevos `src/core/task-completion.ts`, `src/core/task-line-delete.ts` |
+| Completar | `src/core/task-gestures.ts` (`changeTaskStatus()`), `src/modals/task-modal.ts` (ruta del modal y advertencia), `src/core/task-line-locator.ts` (sin cambios) |
+| Confirmación | nuevo `src/modals/confirm-delete-modal.ts` |
+| Identificador | nuevo `src/core/task-id.ts`, `src/modals/task-modal.ts`, `templates/create-task-modal.hbs` |
+| i18n | claves nuevas en los 6 locales (confirmación, advertencia, botón Generar) |
+
+### 35.5 Riesgos
+
+- **Borrar la línea equivocada**: si la nota cambió entre el render y el clic. Se mitiga con la escritura segura (texto esperado) y con no borrar si hay cero o varias coincidencias.
+- **Orden recurrente**: si falla la inserción de la siguiente ocurrencia, no se debe borrar la original; si falla el borrado tras insertar, queda la siguiente ocurrencia y la original abierta (aviso al usuario). Son dos escrituras separadas, como el resto del plugin.
+- **Subtareas y notas bajo la línea** (decidido el 2026-11-03): `deleteTaskLine()` borra solo la línea de la tarea, como Tasks; el contenido indentado queda en el archivo, con su sangría y sin pérdida de información. La confirmación no menciona las líneas indentadas.
+- **Completar sin pasar por el menú**: marcar `[x]` a mano en la nota o desde otro plugin no dispara el borrado; solo las rutas del plugin.
+- **Colisión de ids**: un id generado que ya existe en una nota no indexada (carpetas excluidas) puede repetirse; la comprobación es sobre las tareas cargadas.
+
+### 35.6 Pruebas
+
+Node con `node --test`:
+- `tests/task-line-delete.test.cjs`: `removeLine()` en medio, primera y última línea, con LF y CRLF y con o sin salto final; la combinación inserción + borrado desplaza el número de línea una posición; ocurrencia siguiente insertada antes del borrado; sin coincidencias o con varias, no borra.
+- `tests/task-id.test.cjs`: 6 caracteres en base 36, unicidad frente a `existingIds` (con un `random` simulado que primero choca), ids de `⛔`.
+- Rama de `onCompletion`: `keep`, `delete`, sin `🏁` y recurrente.
+
+Manual: completar una tarea con `🏁 delete` desde el menú del calendario, el modal y el arrastre de Kanban, aceptando y cancelando; con recurrencia (la siguiente queda y la completada desaparece); advertencia al crear y al editar; el botón Generar con y sin ids existentes y su uso por otra tarea con `⛔`.
+
+### 35.7 Por resolver al diseñar
+
+- Líneas indentadas bajo la tarea borrada: resuelto el 2026-11-03, solo se borra la línea de la tarea (como Tasks) y el resto queda.
+- Si el botón Generar se desactiva con un `🆔` presente.
+- Si el borrado y la inserción de la siguiente ocurrencia pueden hacerse en una sola escritura (`vault.process`) para evitar el estado intermedio.
+
+Enlaces: [[Especificación de vistas]] §17; fases TK1 (`🏁 delete` con confirmación y borrado de línea en `TaskWriter`) y TK2 (botón Generar `🆔`) del [[Plan de implementación]].

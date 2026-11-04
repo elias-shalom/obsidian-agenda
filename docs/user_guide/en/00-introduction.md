@@ -2,7 +2,7 @@
 
 **Agenda Tasks** is a task management and calendar plugin for [Obsidian](https://obsidian.md). It turns your vault into a productivity system by reading the tasks you already write in your notes and presenting them through several dedicated views, without changing how you write tasks.
 
-> This manual covers plugin version **1.1.13**. For a plain list of what changed between versions, see the Changelog section of the project [README](../../../README.md#changelog).
+> This manual covers plugin version **1.1.14**. For a plain list of what changed between versions, see the Changelog section of the project [README](../../../README.md#changelog).
 
 ## What it does
 
@@ -11,10 +11,10 @@
 - Adds its own optional extensions on top of that format: a scheduled time and duration, a 6-state status (including "On Hold"), and automatic next-occurrence generation for recurring tasks.
 - Offers seven view families, each suited to a different way of working:
   - **Overview** — a dashboard with key metrics and quick access to upcoming/overdue tasks.
-  - **List** and **Table** — two ways to work through your tasks in one **Tasks** tab: a compact list grouped by area, or a spreadsheet-style grid, both with search, filters, grouping and sorting.
+  - **List** and **Table** — two ways to work through your tasks in one **Tasks** tab: a compact list grouped by area, or a spreadsheet-style grid, both with search, filters (several values per filter), grouping, sorting and **Lanes** to split the view into one widget per area, status, tag, etc.
   - **Kanban** — a board whose columns group tasks by status, priority, tag or folder; drag a card to change its status or priority.
   - **Gantt** — a timeline with one bar per task; move a bar or drag its edges to change dates.
-  - **Calendar** — six layouts (Day, Week, Work Week, Month, Year, List) to see tasks against a timeline.
+  - **Calendar** — six layouts (Day, Week, Work Week, Month, Year, List) to see tasks against a timeline, with a filter bar (search, Priority, Status and Area) at the top.
   - **Habit Tracker** — a separate module (Grid, Daily Routine, Dashboard, Weekly, Table) to track recurring habits, independent from tasks.
 
 ## Who this manual is for

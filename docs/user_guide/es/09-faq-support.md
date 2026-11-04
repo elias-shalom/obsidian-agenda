@@ -29,6 +29,21 @@ Las columnas de etiqueta y de carpeta son de solo lectura: mover una tarea a otr
 **¿Por qué una tarea no aparece en el diagrama de Gantt?**
 Una tarea necesita al menos una de 🛫, ⏳ o 📅. Las tareas sin ninguna fecha se listan en el grupo **Tareas sin fecha** bajo el diagrama (plegado por defecto), y una tarea fuera de la ventana visible aparece al mover la ventana o cambiar el zoom.
 
+**¿Cómo filtro por dos prioridades (o dos estados o áreas)?**
+Elige **+ Filtro ▸ Prioridad** y marca ambos valores en el popover; sigue abierto mientras marcas y se cierra al hacer clic fuera o pulsar Esc. Los valores de un mismo filtro son «o» (Normal **o** Media), mientras que los filtros distintos son «y». El chip muestra entonces solo el número (por ejemplo **Prioridad: 2**); pasa el cursor sobre él para ver los valores.
+
+**¿Cómo veo mis tareas divididas por área?**
+Usa el chip **Filas** junto a **+ Filtro** y elige **Área** (o Sub-área, Estado, Prioridad, Etiqueta, Carpeta o Archivo). Cada valor se convierte en su propio widget: un tablero en Kanban, una sección en Lista, un bloque en Tabla y un diagrama en Gantt. Elige **Ninguno** para volver a la vista normal.
+
+**¿Por qué no puedo elegir Grupo = Área cuando Filas = Área?**
+Filas y Grupo no pueden usar el mismo campo, porque los grupos repetirían las filas. En Kanban la opción que choca está desactivada; en Lista, Tabla y Gantt puedes elegirla y el otro chip pasa solo a Ninguno. Área, Sub-área y Carpeta cuentan como el mismo campo.
+
+**¿Por qué una tarea aparece en varias filas?**
+Al dividir por **Etiqueta**, una tarea con varias etiquetas aparece en cada una de sus filas, así que los totales pueden sumar más que el número de tareas.
+
+**El calendario no muestra los filtros de fecha, el agrupado ni el orden — ¿es lo esperado?**
+Sí. La barra de filtros del calendario ofrece solo búsqueda, Prioridad, Estado y Área. Su configuración la comparten los seis diseños de calendario y es independiente de la pestaña Tareas.
+
 ## Obtener ayuda
 
 - 📖 Consulta la [Wiki](https://github.com/elias-shalom/obsidian-agenda/wiki) del proyecto.

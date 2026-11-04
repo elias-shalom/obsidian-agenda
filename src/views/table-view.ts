@@ -11,6 +11,7 @@ import { TaskFilterBar, buildTaskModeSwitch } from '../core/task-filter-bar';
 import { TaskViewState, DEFAULT_TASK_VIEW_STATE, TASK_MODE_VIEWS, loadTaskViewState, persistTaskViewState, saveTaskViewMode, filterTasksByViewState } from '../core/task-view-state';
 import { TASK_SORT_COLUMNS, sortTasksByColumn } from '../core/task-column-sort';
 import { TASK_GROUP_OPTIONS, groupTasksForView, toGroupViewModels } from '../core/task-grouping';
+import { LANE_OPTIONS, repairAxes, toLaneViewModels } from '../core/task-lanes';
 import { getColumnLimits, getColumnVisibility } from '../core/task-table-columns';
 import { isTaskOpen } from '../core/task-status-options';
 import { DateTime } from 'luxon';
@@ -59,14 +60,16 @@ export class TableView extends BaseView {
     saved.mode = 'table';
 
     // La barra se crea antes de dibujar porque reajusta el área guardada si ya no tiene tareas.
+    // Un agrupado que repite el campo de los carriles se reajusta: gana Lanes.
     this.filterBar = new TaskFilterBar({
       i18n: this.i18n,
       tasks: this.tasks,
-      state: { ...saved, group: saved.group || TABLE_DEFAULT_GROUP },
+      state: { ...saved, ...repairAxes(saved, TABLE_DEFAULT_GROUP) },
       modeSwitch: buildTaskModeSwitch(this.i18n, 'table', (mode) => {
         saveTaskViewMode(this.app, mode);
         (this.plugin as AgendaPlugin).viewManager.activateView(TASK_MODE_VIEWS[mode], this.leaf);
       }),
+      laneOptions: LANE_OPTIONS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
       groupOptions: TASK_GROUP_OPTIONS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
       sortOptions: TASK_SORT_COLUMNS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
       onChange: (state, changed) => {
@@ -88,7 +91,8 @@ export class TableView extends BaseView {
       this.viewState.sortDirection
     );
     const group = this.viewState.group || TABLE_DEFAULT_GROUP;
-    const groups = toGroupViewModels(groupTasksForView(sorted, group, key => this.i18n.t(key)), group);
+    const translate = (key: string): string => this.i18n.t(key);
+    const lanes = toLaneViewModels(sorted, this.viewState.lanes, group, translate);
     const today = DateTime.now().startOf('day');
 
     const rows: TableRow[] = [];
@@ -104,8 +108,18 @@ export class TableView extends BaseView {
       group.children.forEach(child => addGroup(child, level + 1));
     };
 
-    if (groups.length === 0) sorted.forEach(addTask);
-    else groups.forEach(topGroup => addGroup(topGroup, 0));
+    if (lanes.length > 0) {
+      // Cada carril abre con su cabecera (nivel 0) y sus grupos cuelgan de ella, un nivel más adentro
+      for (const [index, lane] of lanes.entries()) {
+        rows.push({ isGroup: true, isLane: true, gapBefore: index > 0, label: lane.label, storageKey: lane.storageKey, color: lane.color, count: lane.count, level: 0 });
+        if (lane.groups.length === 0) lane.tasks.forEach(addTask);
+        else lane.groups.forEach(laneGroup => addGroup(laneGroup, 1));
+      }
+    } else {
+      const groups = toGroupViewModels(groupTasksForView(sorted, group, translate), group);
+      if (groups.length === 0) sorted.forEach(addTask);
+      else groups.forEach(topGroup => addGroup(topGroup, 0));
+    }
 
     // Las columnas se deciden sobre todas las tareas cargadas, no sobre las filtradas
     const columns = getColumnVisibility(this.tasks);
@@ -148,20 +162,19 @@ export class TableView extends BaseView {
     if (toolbar) this.filterBar?.mount(toolbar);
 
     // Listener para ordenar columnas
-    const sortableHeaders = container.querySelectorAll('th.oa-sortable');
-    sortableHeaders.forEach(header => {
-      header.setAttribute('tabindex', '0');
-      header.addEventListener('click', () => {
-        this.handleColumnSort(header as HTMLElement);
-      });
-      header.addEventListener('keydown', (event) => {
-        if (!(event instanceof KeyboardEvent) || (event.key !== 'Enter' && event.key !== ' ')) return;
-        event.preventDefault();
-        this.handleColumnSort(header as HTMLElement);
-      });
-    });
+    container.querySelectorAll<HTMLElement>('thead th.oa-sortable').forEach(header => this.wireSortHeader(header));
 
     this.wireRows(container);
+  }
+
+  private wireSortHeader(header: HTMLElement): void {
+    header.setAttribute('tabindex', '0');
+    header.addEventListener('click', () => this.handleColumnSort(header));
+    header.addEventListener('keydown', (event) => {
+      if (!(event instanceof KeyboardEvent) || (event.key !== 'Enter' && event.key !== ' ')) return;
+      event.preventDefault();
+      this.handleColumnSort(header);
+    });
   }
 
   /** Vuelve a dibujar solo las filas (no la barra ni el encabezado) tras un cambio de filtro, orden o agrupado. */
@@ -181,6 +194,10 @@ export class TableView extends BaseView {
   }
 
   private wireRows(container: HTMLElement): void {
+    // Con carriles el encabezado de arriba se oculta: cada carril trae el suyo, que también ordena
+    container.querySelector('.oa-tasks-table')?.toggleClass('oa-tasks-table--lanes', container.querySelector('tr.oa-lane-row') !== null);
+    container.querySelectorAll<HTMLElement>('tbody th.oa-sortable').forEach(header => this.wireSortHeader(header));
+
     this.updateSortIndicators(container);
 
     container.querySelectorAll<HTMLElement>('tr.oa-group-row').forEach(row => {
@@ -231,6 +248,8 @@ export class TableView extends BaseView {
     let hiddenFromLevel: number | null = null;
 
     container.querySelectorAll<HTMLElement>('tbody tr').forEach(row => {
+      // El espacio entre carriles no es de ningún grupo: se ve siempre, aunque el carril de arriba esté plegado
+      if (row.hasClass('oa-lane-gap')) return;
       if (row.hasClass('oa-group-row')) {
         const level = Number(row.dataset.level);
         if (hiddenFromLevel !== null && level <= hiddenFromLevel) hiddenFromLevel = null;
@@ -294,9 +313,18 @@ export class TableView extends BaseView {
       });
     }
 
+    // El encabezado repetido de cada carril y las `<col>` comparten los mismos anchos: así todos los carriles alinean
+    const laneHeaders = Array.from(table.querySelectorAll<HTMLTableRowElement>('tbody tr.oa-lane-columns'));
+    const cols = Array.from(table.querySelectorAll<HTMLElement>('colgroup col'));
+
     headers.forEach((header, columnIndex) => {
-      const columnCells = [header, ...allRows.map(row => row.cells.item(columnIndex)).filter((cell): cell is HTMLTableCellElement => cell !== null)];
+      const columnCells = [
+        header,
+        ...laneHeaders.map(row => row.cells.item(columnIndex)),
+        ...allRows.map(row => row.cells.item(columnIndex)),
+      ].filter((cell): cell is HTMLTableCellElement => cell !== null);
       columnCells.forEach(cell => cell.setCssStyles({ width: `${widths[columnIndex]}px`, minWidth: `${widths[columnIndex]}px` }));
+      cols[columnIndex]?.setCssStyles({ width: `${widths[columnIndex]}px` });
     });
   }
 
@@ -323,15 +351,14 @@ export class TableView extends BaseView {
       header.setAttribute('aria-sort', 'none');
     });
     
-    // Añadir indicador a la columna activa
-    const activeHeader = container.querySelector(`[data-sort="${this.viewState.sortColumn}"]`);
-    if (activeHeader) {
+    // Añadir indicador a las columnas activas (el encabezado se repite en cada carril)
+    container.querySelectorAll(`[data-sort="${this.viewState.sortColumn}"]`).forEach(activeHeader => {
       activeHeader.setAttribute('aria-sort', this.viewState.sortDirection === 'asc' ? 'ascending' : 'descending');
       const indicator = activeHeader.querySelector('.oa-sort-indicator');
       if (indicator) {
         indicator.classList.add(this.viewState.sortDirection === 'asc' ? 'oa-sort-asc' : 'oa-sort-desc');
       }
-    }
+    });
   }
 
   async onClose(): Promise<void> {

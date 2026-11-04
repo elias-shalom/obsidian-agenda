@@ -388,3 +388,66 @@
   white-space: nowrap;
 }
 
+// Carriles de Lanes: cada uno es una Lista completa bajo un encabezado plegable
+.oa-lane {
+  margin-bottom: 18px;
+
+  > h2.oa-lane-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    margin: 0 0 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    cursor: pointer;
+    font-size: 1.05em;
+    font-weight: 600;
+
+    .oa-folder-toggle {
+      flex: 0 0 14px;
+      margin: 0;
+    }
+
+    .oa-folder-title {
+      min-width: 0;
+      margin: 0;
+      flex: 1 1 auto;
+      overflow-wrap: anywhere;
+    }
+
+    .oa-task-count {
+      flex: 0 0 auto;
+      color: var(--text-faint);
+      font-size: 0.8em;
+      font-weight: normal;
+      font-variant-numeric: tabular-nums;
+    }
+
+    &:hover {
+      background: var(--background-modifier-hover);
+    }
+  }
+
+  &[data-group-color] > h2.oa-lane-header {
+    border-left: 3px solid var(--oa-group-color);
+  }
+
+  &.oa-collapsed {
+    > h2.oa-lane-header {
+      margin-bottom: 0;
+
+      .oa-folder-toggle {
+        transform: rotate(-90deg);
+      }
+    }
+
+    > .oa-lane-body {
+      display: none;
+    }
+  }
+}
+

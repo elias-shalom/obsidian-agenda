@@ -9,6 +9,7 @@ import { TaskFilterBar, buildTaskModeSwitch } from '../core/task-filter-bar';
 import { TaskViewState, TASK_MODE_VIEWS, loadTaskViewState, persistTaskViewState, saveTaskViewMode, filterTasksByViewState } from '../core/task-view-state';
 import { TASK_SORT_COLUMNS, sortTasksByColumn } from '../core/task-column-sort';
 import { TASK_GROUP_OPTIONS, groupTasksForView, toGroupViewModels } from '../core/task-grouping';
+import { LANE_OPTIONS, repairAxes, toLaneViewModels } from '../core/task-lanes';
 
 export const LIST_VIEW_TYPE = 'list-view';
 
@@ -54,14 +55,16 @@ export class ListView extends BaseView {
     saved.mode = 'list';
 
     // La barra se crea antes de dibujar porque reajusta el área guardada si ya no tiene tareas.
+    // Un agrupado que repite el campo de los carriles se reajusta: gana Lanes.
     this.filterBar = new TaskFilterBar({
       i18n: this.i18n,
       tasks: this.tasks,
-      state: { ...saved, group: saved.group || LIST_DEFAULT_GROUP },
+      state: { ...saved, ...repairAxes(saved, LIST_DEFAULT_GROUP) },
       modeSwitch: buildTaskModeSwitch(this.i18n, 'list', (mode) => {
         saveTaskViewMode(this.app, mode);
         this.plugin.viewManager.activateView(TASK_MODE_VIEWS[mode], this.leaf);
       }),
+      laneOptions: LANE_OPTIONS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
       groupOptions: TASK_GROUP_OPTIONS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
       sortOptions: TASK_SORT_COLUMNS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
       onChange: (state, changed) => {
@@ -83,11 +86,14 @@ export class ListView extends BaseView {
       this.viewState.sortDirection
     );
     const group = this.viewState.group || LIST_DEFAULT_GROUP;
-    const groups = groupTasksForView(sorted, group, key => this.i18n.t(key));
+    const translate = (key: string): string => this.i18n.t(key);
+    // Con carriles, el agrupado actúa dentro de cada uno y no se arma otro árbol sobre todas las tareas
+    const lanes = toLaneViewModels(sorted, this.viewState.lanes, group, translate);
 
     return {
       tasks: sorted,
-      groups: toGroupViewModels(groups, group),
+      groups: lanes.length > 0 ? [] : toGroupViewModels(groupTasksForView(sorted, group, translate), group),
+      lanes,
       flatTasks: sorted,
       // El árbol de áreas ya indica dónde está cada nota; los demás agrupados no.
       showPath: group !== 'area',
@@ -124,12 +130,13 @@ export class ListView extends BaseView {
   }
 
   private wireBody(container: HTMLElement): void {
-    container.querySelectorAll<HTMLElement>('.oa-folder-group[data-group-color]').forEach(group => {
+    container.querySelectorAll<HTMLElement>('.oa-folder-group[data-group-color], .oa-lane[data-group-color]').forEach(group => {
       group.setCssProps({ '--oa-group-color': group.dataset.groupColor ?? '' });
     });
 
     // Plegar y desplegar grupos (el estado se recuerda por clave)
     this.addFolderToggleListeners(container);
+    this.wireLanes(container);
 
     container.querySelectorAll<HTMLElement>('.oa-task-item').forEach(item => {
       // Añadir indicador visual
@@ -160,6 +167,19 @@ export class ListView extends BaseView {
 
         // Marcar como seleccionada
         item.addClass('selected');
+      });
+    });
+  }
+
+  /** Plegar y desplegar carriles; se recuerda con la misma clave de `localStorage` que usan los grupos. */
+  private wireLanes(container: HTMLElement): void {
+    container.querySelectorAll<HTMLElement>('.oa-lane').forEach(lane => {
+      const storageKey = `folder_${lane.dataset.laneKey ?? ''}_collapsed`;
+      lane.toggleClass('oa-collapsed', this.app.loadLocalStorage(storageKey) === 'true');
+
+      lane.querySelector(':scope > .oa-lane-header')?.addEventListener('click', () => {
+        lane.toggleClass('oa-collapsed', !lane.hasClass('oa-collapsed'));
+        this.app.saveLocalStorage(storageKey, String(lane.hasClass('oa-collapsed')));
       });
     });
   }

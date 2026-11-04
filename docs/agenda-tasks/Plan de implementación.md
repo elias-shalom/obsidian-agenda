@@ -670,10 +670,12 @@ Cambiar el texto de «Sin área» en el agrupado; los títulos «By area» y «B
 - [x] Verificable con Node (`tests/task-axis-chips.test.cjs`, 28 pruebas): chips ofrecidos y su orden, texto, atenuado y tooltip, opción marcada, choques por familia (incluida la de ruta), bloqueo en Kanban, elegir con y sin choque, `defaultGroup`, estado guardado y claves de los 6 idiomas.
 - [x] Prueba manual en Lista y Tabla con el conmutador, y en escritorio, `is-tablet` e `is-phone`: la barra con los chips en la fila 1, los menús de `Group` y `Sort`, la flecha del orden, el orden por clic en un encabezado de la Tabla (`setSort()`) y el ajuste a varias líneas en móvil.
 
-### Fase L3 — Lanes en Lista y Tabla (depende de L2; Especificación §20, §14 y Arquitectura §29)
-- [ ] Lista: un widget por carril con su ▼ para plegar; el plegado se recuerda por campo y los carriles son de solo lectura.
-- [ ] Tabla: encabezado de columnas repetido en cada carril, con columnas y anchos compartidos (`resizeColumns()` calcula una sola vez para todos los carriles).
-- [ ] Verificable sola: con Lanes = Estado, Prioridad, Etiqueta y Área en cada vista; las tareas del carril respetan filtros, `Group` y `Sort`; la Tabla mantiene las mismas columnas en todos los carriles.
+### Fase L3 — Lanes en Lista y Tabla (depende de L2; Especificación §20, §14 y Arquitectura §29) — **implementada el 2026-11-03**
+- [x] Lista: un widget por carril con su ▼ para plegar; el plegado se recuerda por campo y los carriles son de solo lectura.
+- [x] Tabla: encabezado de columnas repetido en cada carril, con columnas y anchos compartidos (una sola `<table>`; los anchos se fijan en `<colgroup>`, en el `<thead>` y en cada encabezado repetido; los encabezados repetidos también ordenan).
+- [x] El chip `Lanes` aparece en Lista y Tabla (`laneOptions`); un estado guardado que repite campo entre Lanes y Group se repara al abrir (`repairAxes()`: gana Lanes y el agrupado pasa a Ninguno sin guardarse).
+- [x] Verificable con Node (`tests/task-lane-views.test.cjs`, 14 pruebas): modelos por carril con su conteo y orden, `Group` dentro de cada carril, claves de plegado con prefijo por campo, color solo en área, etiqueta repetida en cada carril y `repairAxes()`. Las plantillas se comprobaron renderizándolas con Handlebars (carriles, encabezados repetidos y `<col>`).
+- [ ] Prueba manual en Lista y Tabla con Lanes = Estado, Prioridad, Etiqueta, Área, Sub-área, Carpeta y Archivo, combinado con `Group`, filtros y `Sort`: plegar y recordar el plegado, que la Tabla alinee las columnas en todos los carriles, ordenar desde el encabezado de un carril, tareas con etiquetas repetidas, escritorio, `is-tablet` e `is-phone`.
 
 ### Fase L4 — Lanes en Kanban y Gantt (depende de L2; Especificación §20, §11.3 y §12)
 - [ ] Kanban: Lanes parte el tablero en un tablero por carril con las mismas columnas; así Área y Sub-área quedan cubiertas (cierra «Agrupar el tablero por área y sub-área»). Arrastrar no cruza carriles.

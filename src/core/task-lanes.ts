@@ -2,9 +2,9 @@
 // Núcleo de los carriles (Lanes / Filas; v1.1.14, Fase L1; ver docs/agenda-tasks/Especificación de vistas.md
 // §20 y Arquitectura técnica.md §29). Un carril parte la vista en varios widgets independientes, uno por
 // valor de un campo. Módulo puro, sin dependencias de Obsidian: lo comparten Lista, Tabla, Kanban y Gantt.
-import { ITask } from '../types/interfaces';
+import { ITask, TaskGroupViewModel } from '../types/interfaces';
 import { getStatusOptions } from './task-status-options';
-import { PRIORITY_ORDER } from './task-grouping';
+import { PRIORITY_ORDER, groupTasksForView, toGroupViewModels } from './task-grouping';
 import { ROOT_AREA, getAreaColor, normalizeAreaName, normalizeSubAreaPath, resolveTaskArea } from './area';
 
 export type LaneField = 'area' | 'subArea' | 'status' | 'priority' | 'tag' | 'folder' | 'file';
@@ -200,6 +200,39 @@ export function buildLanes(tasks: ITask[], field: string, translate: Translate =
     .map(({ key, label, tasks: laneTasks, color }) => (color === undefined ? { key, label, tasks: laneTasks } : { key, label, tasks: laneTasks, color }));
 }
 
+// --- Carriles listos para dibujar (Lista y Tabla) ------------------------------------------------
+
+/** Un carril de Lista o Tabla: su encabezado plegable y, dentro, las tareas ya agrupadas por `Group`. */
+export interface LaneViewModel {
+  label: string;
+  /** Clave del plegado en `localStorage`; lleva el campo como prefijo para no perder lo plegado al cambiar de campo. */
+  storageKey: string;
+  color?: string;
+  /** Tareas del carril; con etiquetas, la suma de los carriles puede superar el total de tareas. */
+  count: number;
+  /** Vacío si `Group` es Ninguno: entonces se dibuja `tasks` sin cabeceras. */
+  groups: TaskGroupViewModel[];
+  tasks: ITask[];
+}
+
+/**
+ * Los carriles de `field` con el agrupado `group` aplicado dentro de cada uno. Las tareas deben llegar ya
+ * filtradas y ordenadas: ni los carriles ni su contenido se reordenan aquí. Sin campo de carril devuelve `[]`.
+ */
+export function toLaneViewModels(tasks: ITask[], field: string, group: string, translate: Translate = key => key): LaneViewModel[] {
+  return buildLanes(tasks, field, translate).map(lane => {
+    const model: LaneViewModel = {
+      label: lane.label,
+      storageKey: `lane:${field}:${lane.key}`,
+      count: lane.tasks.length,
+      groups: toGroupViewModels(groupTasksForView(lane.tasks, group, translate), group),
+      tasks: lane.tasks,
+    };
+    if (lane.color !== undefined) model.color = lane.color;
+    return model;
+  });
+}
+
 // --- Exclusión entre Lanes y Group ---------------------------------------------------------------
 
 /**
@@ -245,6 +278,16 @@ export interface AxisConflictOptions {
   requiresGroup?: boolean;
   /** Agrupado que la vista usa con `group` vacío (Lista: `'area'`; Tabla: `'none'`), para comparar con el valor real. */
   defaultGroup?: string;
+}
+
+/**
+ * Ajusta un estado guardado que repite campo entre Lanes y Group (Lista y Tabla comparten el estado, pero cada
+ * una tiene su agrupado por defecto: Lanes: Área en la Tabla choca con el Área por defecto de la Lista). Gana
+ * Lanes, que es la elección explícita, y el agrupado pasa a Ninguno. Devuelve el agrupado efectivo.
+ */
+export function repairAxes(axes: LaneAxes, defaultGroup: string): LaneAxes {
+  const group = axes.group || defaultGroup;
+  return { lanes: axes.lanes, group: isGroupOptionInUse(group, axes.lanes) ? 'none' : group };
 }
 
 /**

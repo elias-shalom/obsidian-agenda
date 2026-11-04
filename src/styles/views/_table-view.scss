@@ -15,6 +15,12 @@
   border: 1px solid var(--background-modifier-border);
   border-radius: 4px;
   background-color: $primary-bg-color;
+
+  // Con Lanes cada carril lleva su propio recuadro: el del contenedor sobra
+  &:has(.oa-tasks-table--lanes) {
+    border-color: transparent;
+    background-color: transparent;
+  }
   
   .oa-tasks-table {
     width: 100%;
@@ -155,6 +161,53 @@
 
     .oa-group-hidden {
       display: none;
+    }
+
+    // Con Lanes cada carril trae su encabezado de columnas; el de arriba sobra y los anchos salen de `<colgroup>`
+    &.oa-tasks-table--lanes thead {
+      display: none;
+    }
+
+    .oa-lane-row {
+      td {
+        padding: 9px 10px;
+      }
+
+      .oa-group-row-title {
+        font-size: 1em;
+        font-weight: 700;
+      }
+    }
+
+    .oa-lane-columns th {
+      position: static; // el encabezado de los carriles no se queda fijo: se apilarían todos arriba
+    }
+
+    // Cada carril se ve como su propia tabla: recuadro propio y un espacio entre carriles
+    &.oa-tasks-table--lanes {
+      tbody tr:not(.oa-lane-gap) td:first-child {
+        border-left: 1px solid var(--background-modifier-border);
+      }
+
+      tbody tr:not(.oa-lane-gap) td:last-child,
+      .oa-lane-columns th:last-child {
+        border-right: 1px solid var(--background-modifier-border);
+      }
+
+      .oa-lane-columns th:first-child {
+        border-left: 1px solid var(--background-modifier-border);
+      }
+
+      .oa-lane-row td {
+        border-top: 1px solid var(--background-modifier-border);
+      }
+
+      .oa-lane-gap td {
+        height: 16px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+      }
     }
   }
 }

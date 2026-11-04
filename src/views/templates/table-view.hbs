@@ -1,54 +1,75 @@
+{{!-- Celdas del encabezado de columnas: las usan el <thead> y, con Lanes, la fila que se repite en cada carril. --}}
+{{#*inline "headerCells"}}
+  <th class="oa-table-col-count" data-column="count">
+    {{#if showTotal}}<span id="oa-total-row-count"></span>{{/if}}
+  </th>
+  <th class="oa-table-col-priority oa-sortable" data-column="priority" data-sort="priority">
+    <span class="oa-sort-indicator">{{t 'priority'}}</span>
+  </th>
+  <th class="oa-table-col-status oa-sortable" data-column="status" data-sort="status">
+    <span class="oa-sort-indicator">{{t 'status'}}</span>
+  </th>
+  <th class="oa-table-col-task oa-sortable" data-column="task" data-sort="description">
+    <span class="oa-sort-indicator">{{t 'task'}}</span>
+  </th>
+  <th class="oa-table-col-folder oa-sortable" data-column="area" data-sort="folder">
+    <span class="oa-sort-indicator">{{t 'area'}}</span>
+  </th>
+  {{#if @root.columns.start}}
+  <th class="oa-table-col-start oa-sortable" data-column="start" data-sort="start">
+    <span class="oa-sort-indicator">{{t 'column_start'}}</span>
+  </th>
+  {{/if}}
+  {{#if @root.columns.scheduled}}
+  <th class="oa-table-col-scheduled oa-sortable" data-column="scheduled" data-sort="scheduled">
+    <span class="oa-sort-indicator">{{t 'column_scheduled'}}</span>
+  </th>
+  {{/if}}
+  {{#if @root.columns.due}}
+  <th class="oa-table-col-due oa-sortable" data-column="due" data-sort="due">
+    <span class="oa-sort-indicator">{{t 'column_due'}}</span>
+  </th>
+  {{/if}}
+  {{#if @root.columns.closed}}
+  <th class="oa-table-col-closed oa-sortable" data-column="closed" data-sort="closed">
+    <span class="oa-sort-indicator">{{t 'column_closed'}}</span>
+  </th>
+  {{/if}}
+  <th class="oa-table-col-tags oa-sortable" data-column="tags" data-sort="tags">
+    <span class="oa-sort-indicator">{{t 'tags'}}</span>
+  </th>
+{{/inline}}
+
 <div class="oa-table-view-container">
   <div class="oa-table-toolbar"></div>
   
   <div class="oa-table-container">
     <table class="oa-tasks-table">
+      {{!-- Los anchos van en las columnas: con carriles el <thead> se oculta y la primera fila (una cabecera con colspan) no los fijaría. --}}
+      <colgroup>
+        <col data-column="count">
+        <col data-column="priority">
+        <col data-column="status">
+        <col data-column="task">
+        <col data-column="area">
+        {{#if columns.start}}<col data-column="start">{{/if}}
+        {{#if columns.scheduled}}<col data-column="scheduled">{{/if}}
+        {{#if columns.due}}<col data-column="due">{{/if}}
+        {{#if columns.closed}}<col data-column="closed">{{/if}}
+        <col data-column="tags">
+      </colgroup>
       <thead>
         <tr>
-          <th class="oa-table-col-count" data-column="count">
-            <span id="oa-total-row-count"></span>
-          </th>
-          <th class="oa-table-col-priority oa-sortable" data-column="priority" data-sort="priority">
-            <span class="oa-sort-indicator">{{t 'priority'}}</span>
-          </th>
-          <th class="oa-table-col-status oa-sortable" data-column="status" data-sort="status">
-            <span class="oa-sort-indicator">{{t 'status'}}</span>
-          </th>
-          <th class="oa-table-col-task oa-sortable" data-column="task" data-sort="description">
-            <span class="oa-sort-indicator">{{t 'task'}}</span>
-          </th>
-          <th class="oa-table-col-folder oa-sortable" data-column="area" data-sort="folder">
-            <span class="oa-sort-indicator">{{t 'area'}}</span>
-          </th>
-          {{#if columns.start}}
-          <th class="oa-table-col-start oa-sortable" data-column="start" data-sort="start">
-            <span class="oa-sort-indicator">{{t 'column_start'}}</span>
-          </th>
-          {{/if}}
-          {{#if columns.scheduled}}
-          <th class="oa-table-col-scheduled oa-sortable" data-column="scheduled" data-sort="scheduled">
-            <span class="oa-sort-indicator">{{t 'column_scheduled'}}</span>
-          </th>
-          {{/if}}
-          {{#if columns.due}}
-          <th class="oa-table-col-due oa-sortable" data-column="due" data-sort="due">
-            <span class="oa-sort-indicator">{{t 'column_due'}}</span>
-          </th>
-          {{/if}}
-          {{#if columns.closed}}
-          <th class="oa-table-col-closed oa-sortable" data-column="closed" data-sort="closed">
-            <span class="oa-sort-indicator">{{t 'column_closed'}}</span>
-          </th>
-          {{/if}}
-          <th class="oa-table-col-tags oa-sortable" data-column="tags" data-sort="tags">
-            <span class="oa-sort-indicator">{{t 'tags'}}</span>
-          </th>
+          {{> headerCells showTotal=true}}
         </tr>
       </thead>
       <tbody>
         {{#each rows}}
         {{#if isGroup}}
-        <tr class="oa-group-row" data-level="{{level}}" data-folder-path="{{storageKey}}" {{#if color}}data-group-color="{{color}}"{{/if}}>
+        {{#if gapBefore}}
+        <tr class="oa-lane-gap" aria-hidden="true"><td colspan="{{@root.columnCount}}"></td></tr>
+        {{/if}}
+        <tr class="oa-group-row{{#if isLane}} oa-lane-row{{/if}}" data-level="{{level}}" data-folder-path="{{storageKey}}" {{#if color}}data-group-color="{{color}}"{{/if}}>
           <td colspan="{{@root.columnCount}}">
             <div class="oa-group-row-title">
               <span class="oa-folder-toggle" aria-hidden="true">
@@ -61,6 +82,11 @@
             </div>
           </td>
         </tr>
+        {{#if isLane}}
+        <tr class="oa-lane-columns">
+          {{> headerCells}}
+        </tr>
+        {{/if}}
         {{else}}
         <tr class="oa-task-row {{#if completed}}oa-task-completed{{/if}} {{priorityClass}}" data-task-id="{{id}}" data-file-path="{{this.file.path}}" data-line-number="{{line.number}}">
           <td class="oa-table-col-count" data-column="count"></td>

@@ -1240,7 +1240,7 @@ Comportamiento: [[Especificación de vistas]] §19.
 
 Node: conversión del estado antiguo, O dentro de un tipo y Y entre tipos, la regla de lo más específico, «Raíz», chips y reconciliación del área. Prueba manual en las seis subvistas del calendario.
 
-## 29. Lanes y barra de chips (v1.1.14, diseño — no implementado)
+## 29. Lanes y barra de chips (v1.1.14 — §29.1 implementado el 2026-11-03, Fase L1; la barra y las vistas, diseño no implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §20 (Lanes y chips) y §19 (filtros de la barra). Fases del Plan: L1 a L4 en [[Plan de implementación]], que se suman a M1, M2, CF1 y CF2. Nombre en la interfaz: «Lanes» (inglés) y «Filas» (español); en el código y la documentación, *swimlane* o `lane`.
 
@@ -1261,6 +1261,13 @@ Un carril parte la vista en varios widgets independientes, uno por valor de un c
 - **Los carriles son de solo lectura**: no se arrastra una tarea de un carril a otro (Especificación §20).
 
 **ADR-LN1 — Una sola función para las cuatro vistas.** `buildLanes()` es la única fuente de la partición; ninguna vista agrupa por carriles por su cuenta. Razón: el orden, «Raíz», «Sin etiqueta» y la repetición por etiqueta deben ser idénticos en Lista, Tabla, Kanban y Gantt, y una función pura se prueba sin Obsidian.
+
+**Implementado el 2026-11-03 (Fase L1)** en `src/core/task-lanes.ts`, con estos detalles que el diseño no fijaba:
+- **Claves de carril**: Área, por nombre normalizado, con el nombre en minúsculas como respaldo, porque `normalizeAreaName()` descarta lo que no es ASCII y una carpeta con nombre solo en kanji o con emojis fundiría áreas distintas (y sus tareas) en un carril; Sub-área, `área/ruta normalizada`; Estado, el nombre del estado; Prioridad, el valor (o `none`); Etiqueta, en minúsculas (las etiquetas de Obsidian no distinguen mayúsculas) con el primer texto visto como nombre; Carpeta, la ruta; Archivo, la ruta completa, de modo que dos notas homónimas en carpetas distintas son carriles distintos y se distinguen por su carpeta (`Notas (Trabajo)`).
+- **Orden en Sub-área**: las notas directas del área (`Área › Raíz`) van las primeras de su área y solo «Raíz» del vault va al final; así «Raíz» no queda en medio de las sub-áreas de una misma área.
+- **Estado desconocido**: un símbolo que no es ninguno de los 6 cae en Pendiente, igual que en `groupTasksByField()`; hasta v1.1.17 (§34) no hay más estados.
+- **Exclusión por familia** (`isGroupOptionInUse()`, `isLaneOptionInUse()`, `resolveAxisConflict()`): Estado, Prioridad, Etiqueta, Archivo y la familia de ruta (Área, Sub-área y Carpeta de ambos chips); `defaultGroup` (Lista = Área, Tabla = Ninguno, Kanban = Estado) resuelve el `group` vacío, que significa «el de la vista», y el ajuste automático escribe `'none'`. Devuelve `blocked: true` cuando Kanban rechaza la elección.
+- **Sin estado todavía**: `TaskViewState.lanes` y el estado guardado llegan con la Fase L2.
 
 ### 29.2 Barra de chips
 
@@ -1336,6 +1343,7 @@ Manual: las cuatro vistas con cada campo; que Lanes = Ninguno deje cada vista co
 - Orden vertical de la fila 2 frente a la fila de chips de filtros activos.
 - Dónde van las «Tareas sin fecha» del Gantt con carriles (por carril o al final).
 - Qué cuenta el contador de un carril de etiquetas (tareas únicas o apariciones).
+- **Resuelto al implementar L1**: la partición no ordena las tareas de cada carril; el módulo expone `LANE_OPTIONS` con las claves de texto de cada opción (las de la barra, `lanes_label` y los tooltips, llegan con L2).
 
 Enlaces: [[Especificación de vistas]] §20; fases L1 (núcleo; independiente), L2 (barra; depende de L1 y M2), L3 (Lista y Tabla; depende de L2) y L4 (Kanban y Gantt; depende de L2) del [[Plan de implementación]].
 

@@ -66,7 +66,7 @@ export function toGroupViewModels(groups: TaskGroup[], field: string): TaskGroup
 }
 
 /** De mayor a menor; lo que no coincide (`undefined`) va al final. */
-const PRIORITY_ORDER = ["highest", "high", "medium", "normal", "low", "lowest"];
+export const PRIORITY_ORDER = ["highest", "high", "medium", "normal", "low", "lowest"];
 
 const NO_PRIORITY_KEY = "undefined";
 const NO_TAG_KEY = "";

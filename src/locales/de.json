@@ -99,6 +99,8 @@
   "no_priority": "Keine priorität",
   "none": "Keine",
   "filter_sub_areas": "Unterbereiche",
+  "lane_sub_area": "Unterbereich",
+  "lane_no_tag": "Kein Tag",
   "filter_add": "+ Filter",
   "filter_clear": "Zurücksetzen",
   "filter_remove": "Filter entfernen: {filter}",

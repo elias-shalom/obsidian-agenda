@@ -1204,7 +1204,7 @@ Arrastrar tareas entre carriles; carriles en el calendario, el Dashboard o los h
 
 - Dónde queda el botón `+ Filtro` en la fila 1 (resuelto el 2026-11-03: tras el conmutador, seguido de los chips; el buscador al final) y si la fila de chips de filtros activos va debajo, como se supone arriba.
 - Si Group de Lista y Tabla gana las opciones Sub-área y Archivo que Lanes sí ofrece.
-- Gantt: el grupo «Tareas sin fecha» (§12.1), ¿se repite en cada carril o va una sola vez al final?
+- Gantt: la lista «Tareas sin fecha» (§12.1) va **una sola vez, al final**, con todas las tareas sin fecha (resuelto el 2026-11-03).
 - Kanban: las columnas plegables (§11.3) dentro de un carril, ¿se recuerdan por carril o compartidas?; y si arrastrar entre columnas dentro del mismo carril conserva su efecto de §11 (se supone que sí).
 - Cómo se muestra el total de tareas de la vista con Lanes por Etiqueta (tareas únicas, no apariciones).
 - Si un campo con un solo valor (un solo carril) dibuja igualmente su encabezado.

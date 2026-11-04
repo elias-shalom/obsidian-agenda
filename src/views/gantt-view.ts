@@ -10,11 +10,11 @@ import { attachTaskGestures, TASK_GESTURE_IGNORE_SELECTOR } from '../core/task-g
 import { TaskFilterBar } from '../core/task-filter-bar';
 import { TaskViewState, filterTasksByViewState } from '../core/task-view-state';
 import { TASK_SORT_COLUMNS, sortTasksByColumn } from '../core/task-column-sort';
-import { groupTasksByField } from '../core/task-grouping';
 import { getReferenceDate, setReferenceDate } from '../core/calendar-reference-date';
+import { LANE_OPTIONS } from '../core/task-lanes';
 import {
-  GANTT_ZOOMS, GanttDependencies, GanttDragMode, GanttField, GanttRow, GanttSpan, GanttZoom,
-  applyGanttEdit, buildDependencyIndex, buildGanttRows, clampGanttDelta, ganttCenter, ganttWeekBands, ganttWindow,
+  GANTT_GROUP_OPTIONS, GANTT_ZOOMS, GanttDependencies, GanttDragMode, GanttField, GanttRow, GanttSpan, GanttZoom,
+  applyGanttEdit, buildDependencyIndex, buildGanttGroupedRows, buildGanttLanes, clampGanttDelta, ganttCenter, ganttWeekBands, ganttWindow,
   planGanttEdit, resolveGanttSpan, shiftGanttReference, splitUndated,
 } from '../core/task-gantt';
 import {
@@ -38,6 +38,8 @@ type GanttViewData = {
   days: { day: number; weekday: string; today: boolean; weekend: boolean; weekStart: boolean }[];
   todayLeft: number | null;
   rows: Record<string, unknown>[];
+  /** Un diagrama por carril, cada uno con su cabecera de fechas; vacío si Lanes = Ninguno (entonces se usa `rows`). */
+  lanes: { label: string; storageKey: string; color?: string; count: number; rows: Record<string, unknown>[] }[];
   emptyMessage: string;
   undatedCount: number;
   undatedTitle: string;
@@ -90,6 +92,8 @@ export class GanttView extends BaseView {
       i18n: this.i18n,
       tasks: this.tasks,
       state: loadGanttState(this.app),
+      laneOptions: LANE_OPTIONS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
+      groupOptions: GANTT_GROUP_OPTIONS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
       sortOptions: TASK_SORT_COLUMNS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
       onChange: (state) => {
         this.viewState = state;
@@ -125,8 +129,12 @@ export class GanttView extends BaseView {
     const win = ganttWindow(this.reference, this.zoom, weekStart);
     this.windowYear = win.start.year;
 
-    const groups = groupTasksByField(dated, 'area', key => t(key));
-    const rows = buildGanttRows(groups, win, key => isGanttGroupCollapsed(this.app, key));
+    const translate = (key: string): string => t(key);
+    const isCollapsed = (key: string): boolean => isGanttGroupCollapsed(this.app, key);
+    const group = this.viewState.group;
+    // Con Lanes cada carril es un diagrama propio sobre la misma ventana; sin él, el diagrama único de siempre
+    const lanes = buildGanttLanes(dated, this.viewState.lanes, group, win, isCollapsed, translate);
+    const rows = lanes.length > 0 ? [] : buildGanttGroupedRows(dated, group, win, isCollapsed, translate);
     const dependencies = buildDependencyIndex(this.tasks);
 
     const windowEnd = win.start.plus({ days: win.days - 1 });
@@ -167,6 +175,13 @@ export class GanttView extends BaseView {
       }),
       todayLeft: ganttCenter(now, win),
       rows: rows.map(row => this.toRowView(row, dependencies)),
+      lanes: lanes.map(lane => ({
+        label: lane.label,
+        storageKey: lane.storageKey,
+        color: lane.color,
+        count: lane.count,
+        rows: lane.rows.map(row => this.toRowView(row, dependencies)),
+      })),
       emptyMessage,
       undatedCount: undated.length,
       undatedTitle: t('gantt_undated_title'),
@@ -261,6 +276,7 @@ export class GanttView extends BaseView {
     container.querySelectorAll<HTMLElement>('[data-group-color]').forEach(el => {
       el.setCssProps({ '--oa-gantt-color': el.dataset.groupColor ?? '' });
     });
+    this.addLaneToggleListeners(container);
 
     container.querySelectorAll<HTMLElement>('[data-zoom]').forEach(button => {
       if (button.dataset.zoom === 'month') setIcon(button, 'calendar-days');

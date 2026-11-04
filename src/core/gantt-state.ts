@@ -4,14 +4,19 @@
 import type { App } from 'obsidian';
 import { TaskViewState, parseTaskViewState } from './task-view-state';
 import { TASK_SORT_COLUMNS } from './task-column-sort';
-import { GANTT_ZOOMS, GanttZoom } from './task-gantt';
+import { GANTT_DEFAULT_GROUP, GANTT_GROUP_OPTIONS, GANTT_ZOOMS, GanttZoom } from './task-gantt';
+import { repairAxes } from './task-lanes';
 
 const STATE_KEY = 'obsidian-agenda-gantt-view-state';
 const ZOOM_KEY = 'oa_gantt_zoom';
 const UNDATED_KEY = 'oa_gantt_show_undated';
 const COLLAPSED_PREFIX = 'oa_gantt_collapsed:';
 
-/** Por defecto ordena por fecha de inicio, de la más próxima a la más lejana. */
+/**
+ * Por defecto ordena por fecha de inicio, de la más próxima a la más lejana, y agrupa por área. Un agrupado
+ * que ya no existe vuelve al de por defecto y, si repite el campo de los carriles, gana Lanes y el agrupado
+ * pasa a Ninguno (en el Gantt el agrupado no es obligatorio).
+ */
 export function parseGanttState(raw: unknown): TaskViewState {
   const state = parseTaskViewState(raw);
   const saved = (typeof raw === 'object' && raw !== null ? raw : {}) as Record<string, unknown>;
@@ -19,6 +24,8 @@ export function parseGanttState(raw: unknown): TaskViewState {
     state.sortColumn = 'start';
     state.sortDirection = 'asc';
   }
+  if (!GANTT_GROUP_OPTIONS.some(option => option.value === state.group)) state.group = GANTT_DEFAULT_GROUP;
+  state.group = repairAxes({ group: state.group, lanes: state.lanes }, GANTT_DEFAULT_GROUP).group;
   return state;
 }
 

@@ -1321,8 +1321,14 @@ Cambios en `TaskFilterBar` (`src/core/task-filter-bar.ts`) y en `_task-filter-ba
 - **Estado guardado**: `parseKanbanState()` quita los carriles que repiten el campo de las columnas (en el Kanban la opción en uso no se puede elegir, pero un estado antiguo o editado a mano podría traerlos).
 - **Pendiente en Kanban**: la opción de columna **Archivo** (§20.3) no se ha añadido; `KANBAN_GROUP_OPTIONS` sigue con Estado, Prioridad, Etiquetas y Carpeta.
 - **Kanban** (`kanban-view.ts`, `kanban-view.hbs`, `kanban-board.ts`): un tablero por carril, con las columnas del `Group` de la vista (`buildKanbanColumns(lane.tasks, group)`). Arrastrar a una columna de otro carril se rechaza en `drop`: el payload de `application/x-agenda-kanban-task` gana la clave del carril de origen. Agrupar por área y sub-área, pospuesto desde v1.1.13 (§20.8), queda cubierto aquí: son opciones de Lanes, no de las columnas.
-- **Gantt** (`gantt-view.ts`, `gantt-view.hbs`, `task-gantt.ts`): una sola ventana y un solo zoom, con la cabecera de fechas (año, meses, bandas de semana y días) repetida en cada carril. `buildGanttRows()` se llama por carril con la misma ventana.
-- **Chip `Group` del Gantt** (sustituye al «combo de agrupado» de la decisión del 2026-10-31): Ninguno (modo plano, sin cabeceras), Área (por defecto), Estado y Prioridad; Carpeta, Etiquetas y Vencimiento quedan fuera. Hace falta un modo plano en `buildGanttRows()`, claves de plegado con prefijo por campo (`oa_gantt_collapsed:<campo>:<clave>`, como `toGroupViewModels()`) y el color de grupo solo para el área.
+- **Gantt** (`gantt-view.ts`, `gantt-view.hbs`, `task-gantt.ts`): una sola ventana y un solo zoom, con la cabecera de fechas (año, meses, bandas de semana y días) repetida en cada carril.
+- **Chip `Group` del Gantt** (sustituye al «combo de agrupado» de la decisión del 2026-10-31): Ninguno (modo plano, sin cabeceras), Área (por defecto), Estado y Prioridad; Carpeta, Etiquetas y Vencimiento quedan fuera.
+
+**Implementado el 2026-11-03 (Fase L4: Gantt)**:
+- **Núcleo** (`task-gantt.ts`): `buildGanttTaskRows(tasks, win, depth, color?)` saca las filas de tarea (lo que toca la ventana); `buildGanttRows()` lo usa para las tareas de cada grupo, sin cambiar su resultado. `buildGanttGroupedRows(tasks, group, win, isCollapsed, translate, color?)` es el modo plano (`none`) o el agrupado con `groupTasksByField()` (`area`, `status`, `priority`; otro valor cae en el área). `ganttGroupKey(field, key)` prefija la clave de plegado con el campo, salvo el área, que conserva la suya. `buildGanttLanes(tasks, lanesField, group, win, isCollapsed, translate)` devuelve por carril `{label, storageKey, color?, count, rows}`, todos sobre la misma ventana y sin los carriles que no tienen ninguna tarea dentro de ella. `GANTT_GROUP_OPTIONS` y `GANTT_DEFAULT_GROUP = 'area'`.
+- **Plantilla**: dos partials, `ganttHead` (cabecera de fechas, con los datos de `@root`) y `ganttBody` (cuadrícula y filas del contexto: las de la vista o las de un carril). Sin carriles se dibuja una cabecera y un cuerpo como siempre; con carriles, `.oa-gantt--lanes` y un `<section class="oa-lane">` por carril con su cabecera (▼, nombre y conteo), la cabecera de fechas y su cuerpo. Los controles y «Tareas sin fecha» (una sola vez, al final) quedan fuera de los carriles. La cabecera de cada carril es `sticky` dentro de su carril.
+- **Vista**: `GanttView` pasa `laneOptions` y `groupOptions`; el plegado del carril usa `addLaneToggleListeners()` de `BaseView`. El arrastre y el redimensionado no cambian: miden la pista de la fila y `data-days` de `.oa-gantt`, que sigue siendo único.
+- **Estado guardado** (`gantt-state.ts`): `parseGanttState()` valida el agrupado contra `GANTT_GROUP_OPTIONS` (Área si no) y aplica `repairAxes()`: si repite el campo de los carriles gana Lanes y el agrupado pasa a Ninguno.
 
 ### 29.6 Archivos afectados (estimado)
 
@@ -1362,7 +1368,7 @@ Manual: las cuatro vistas con cada campo; que Lanes = Ninguno deje cada vista co
 - **Atenuada frente a bloqueada** (resuelto el 2026-11-03): en Kanban la opción en uso queda bloqueada (las columnas son obligatorias); en Lista, Tabla y Gantt se puede elegir y el otro chip pasa a Ninguno. Por resolver: si ese ajuste automático muestra además un `Notice`.
 - Opciones de las columnas del Kanban (resuelto, decisión D4 del 2026-11-01): Estado, Prioridad, Etiqueta, Carpeta y **Archivo**; hoy `KANBAN_GROUP_OPTIONS` solo trae las cuatro primeras, así que Archivo se añade con Lanes.
 - Menú del chip (resuelto el 2026-11-03): `Menu` nativo, igual que «+ Filtro»; no admite tooltip por opción ni atenuarla, solo `setDisabled()`.
-- Dónde van las «Tareas sin fecha» del Gantt con carriles (por carril o al final).
+- Dónde van las «Tareas sin fecha» del Gantt con carriles: resuelto el 2026-11-03, una sola vez al final.
 - Qué cuenta el contador de un carril de etiquetas (tareas únicas o apariciones).
 - **Resuelto al implementar L1**: la partición no ordena las tareas de cada carril; el módulo expone `LANE_OPTIONS` con las claves de texto de cada opción (las de la barra, `lanes_label` y los tooltips, llegan con L2).
 

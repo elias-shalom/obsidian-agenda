@@ -4,7 +4,8 @@
 // en porcentaje y las filas agrupadas por área. Sin dependencias de Obsidian.
 import { DateTime } from 'luxon';
 import { ITask } from '../types/interfaces';
-import { TaskGroup } from './task-grouping';
+import { TaskGroup, groupTasksByField } from './task-grouping';
+import { buildLanes } from './task-lanes';
 import { upsertScheduledDate, upsertSimpleDate } from './task-line-fields';
 import { shiftTaskDates } from './task-recurrence';
 
@@ -244,8 +245,26 @@ export interface GanttTaskRow {
 
 export type GanttRow = GanttGroupRow | GanttTaskRow;
 
+/** Filas de tarea de `tasks`, sin cabeceras de grupo; las que no tocan la ventana no tienen fila. */
+export function buildGanttTaskRows(tasks: ITask[], win: GanttWindow, depth: number, color?: string): GanttTaskRow[] {
+  const rows: GanttTaskRow[] = [];
+  for (const task of tasks) {
+    const span = resolveGanttSpan(task);
+    if (span.kind === 'none' || !span.start || !span.end) continue;
+    const position = ganttPosition(span.start, span.end, win);
+    if (!position) continue;
+    rows.push({
+      isGroup: false, task, depth, span, position,
+      markLeft: span.scheduledMark ? ganttCenter(span.scheduledMark, win) : null,
+      centerLeft: ganttCenter(span.start, win),
+      color,
+    });
+  }
+  return rows;
+}
+
 /**
- * Filas del diagrama a partir de los grupos por área (árbol): una cabecera por grupo y, si no está
+ * Filas del diagrama a partir de los grupos (árbol): una cabecera por grupo y, si no está
  * plegado, sus tareas y subgrupos. Solo hay fila para las tareas que tocan la ventana, y un grupo sin
  * ninguna se omite.
  */
@@ -258,20 +277,10 @@ export function buildGanttRows(
   const rows: GanttRow[] = [];
 
   for (const group of groups) {
-    const inner: GanttRow[] = [];
-    for (const task of group.tasks) {
-      const span = resolveGanttSpan(task);
-      if (span.kind === 'none' || !span.start || !span.end) continue;
-      const position = ganttPosition(span.start, span.end, win);
-      if (!position) continue;
-      inner.push({
-        isGroup: false, task, depth: depth + 1, span, position,
-        markLeft: span.scheduledMark ? ganttCenter(span.scheduledMark, win) : null,
-        centerLeft: ganttCenter(span.start, win),
-        color: group.color,
-      });
-    }
-    inner.push(...buildGanttRows(group.children ?? [], win, isCollapsed, depth + 1));
+    const inner: GanttRow[] = [
+      ...buildGanttTaskRows(group.tasks, win, depth + 1, group.color),
+      ...buildGanttRows(group.children ?? [], win, isCollapsed, depth + 1),
+    ];
     if (inner.length === 0) continue;
 
     rows.push({
@@ -282,6 +291,85 @@ export function buildGanttRows(
     if (!isCollapsed(group.key)) rows.push(...inner);
   }
   return rows;
+}
+
+/** Agrupados que ofrece el chip `Group` del Gantt, con la clave de traducción de su nombre. */
+export const GANTT_GROUP_OPTIONS: readonly { value: string; labelKey: string }[] = [
+  { value: 'none', labelKey: 'group_none' },
+  { value: 'area', labelKey: 'group_area' },
+  { value: 'status', labelKey: 'task_status' },
+  { value: 'priority', labelKey: 'task_priority' },
+];
+
+export const GANTT_DEFAULT_GROUP = 'area';
+
+/**
+ * Clave con que se recuerda el plegado de un grupo. Lleva el campo como prefijo para no mezclar lo plegado
+ * en un agrupado con lo de otro; el área conserva su clave de siempre, para no perder lo ya plegado.
+ */
+export function ganttGroupKey(field: string, key: string): string {
+  return field === 'area' ? key : `${field}:${key}`;
+}
+
+/** Copia de los grupos con la clave de plegado de `ganttGroupKey()`. */
+function withGanttKeys(groups: TaskGroup[], field: string): TaskGroup[] {
+  return groups.map(group => ({
+    ...group,
+    key: ganttGroupKey(field, group.key),
+    children: group.children ? withGanttKeys(group.children, field) : undefined,
+  }));
+}
+
+/**
+ * Filas de `tasks` con el agrupado `group` de la vista. `none` es el modo plano, sin cabeceras; los demás
+ * valores agrupan con `groupTasksByField()`. `color` solo se usa en el modo plano (los grupos de área traen
+ * el suyo).
+ */
+export function buildGanttGroupedRows(
+  tasks: ITask[],
+  group: string,
+  win: GanttWindow,
+  isCollapsed: (key: string) => boolean,
+  translate: (key: string) => string,
+  color?: string
+): GanttRow[] {
+  if (group === 'none') return buildGanttTaskRows(tasks, win, 0, color);
+
+  const field = group === 'area' || group === 'status' || group === 'priority' ? group : GANTT_DEFAULT_GROUP;
+  return buildGanttRows(withGanttKeys(groupTasksByField(tasks, field, translate), field), win, isCollapsed);
+}
+
+/** Un carril del Gantt: su cabecera de fechas y sus filas, sobre la misma ventana que los demás. */
+export interface GanttLane {
+  label: string;
+  /** Clave con el campo como prefijo; recuerda el plegado del carril. */
+  storageKey: string;
+  color?: string;
+  /** Tareas con fila en la ventana. */
+  count: number;
+  rows: GanttRow[];
+}
+
+/**
+ * Los carriles de `lanesField` con sus filas. Todos comparten `win` (una sola ventana y un solo zoom). Un carril
+ * sin ninguna tarea dentro de la ventana no sale. Sin campo de carril devuelve `[]`.
+ */
+export function buildGanttLanes(
+  tasks: ITask[],
+  lanesField: string,
+  group: string,
+  win: GanttWindow,
+  isCollapsed: (key: string) => boolean,
+  translate: (key: string) => string
+): GanttLane[] {
+  return buildLanes(tasks, lanesField, translate).flatMap(lane => {
+    const rows = buildGanttGroupedRows(lane.tasks, group, win, isCollapsed, translate, lane.color);
+    const count = buildGanttTaskRows(lane.tasks, win, 0).length;
+    if (count === 0) return [];
+    const model: GanttLane = { label: lane.label, storageKey: `lane:${lanesField}:${lane.key}`, count, rows };
+    if (lane.color !== undefined) model.color = lane.color;
+    return [model];
+  });
 }
 
 export interface GanttDependencies {

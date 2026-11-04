@@ -1,32 +1,16 @@
-{{!-- Gantt View (v1.1.13): una fila por tarea sobre un eje de tiempo, agrupadas por área y sub-área --}}
-<div class="oa-gantt-toolbar"></div>
+{{!-- Gantt View (v1.1.13): una fila por tarea sobre un eje de tiempo, agrupadas por área y sub-área; con Lanes (v1.1.14), un diagrama por carril con la cabecera de fechas repetida --}}
 
-<div class="oa-gantt" data-days="{{days.length}}">
-  <div class="oa-gantt-controls">
-    <span class="oa-gantt-period">{{periodLabel}}</span>
-    <div class="oa-gantt-actions">
-      <div class="oa-calendar-view-segmented oa-gantt-zoom" role="group">
-        {{#each zoomOptions}}
-        <button type="button" class="oa-calendar-view-btn{{#if this.active}} oa-active{{/if}}" data-zoom="{{this.value}}" title="{{this.title}}" aria-label="{{this.title}}">{{this.label}}</button>
-        {{/each}}
-      </div>
-      <div class="oa-gantt-nav">
-        <button type="button" class="oa-gantt-btn oa-gantt-btn--round" data-action="prev" aria-label="{{previousLabel}}" title="{{previousLabel}}">◀</button>
-        <button type="button" class="oa-gantt-btn" data-action="today">{{todayLabel}}</button>
-        <button type="button" class="oa-gantt-btn oa-gantt-btn--round" data-action="next" aria-label="{{nextLabel}}" title="{{nextLabel}}">▶</button>
-      </div>
-    </div>
-  </div>
-
+{{!-- Cabecera de fechas: año, meses, bandas de semana y días. Se repite en cada carril y siempre usa los datos de la vista. --}}
+{{#*inline "ganttHead"}}
   <div class="oa-gantt-head">
     <div class="oa-gantt-head-row">
       <div class="oa-gantt-label oa-gantt-year">
-        <button type="button" class="oa-gantt-btn" data-action="prev-year" aria-label="{{previousLabel}}" title="{{previousLabel}}">◀</button>
-        <span>{{year}}</span>
-        <button type="button" class="oa-gantt-btn" data-action="next-year" aria-label="{{nextLabel}}" title="{{nextLabel}}">▶</button>
+        <button type="button" class="oa-gantt-btn" data-action="prev-year" aria-label="{{@root.previousLabel}}" title="{{@root.previousLabel}}">◀</button>
+        <span>{{@root.year}}</span>
+        <button type="button" class="oa-gantt-btn" data-action="next-year" aria-label="{{@root.nextLabel}}" title="{{@root.nextLabel}}">▶</button>
       </div>
       <div class="oa-gantt-months">
-        {{#each months}}
+        {{#each @root.months}}
         <button type="button" class="oa-gantt-month{{#if this.active}} oa-active{{/if}}" data-month="{{this.index}}">{{this.label}}</button>
         {{/each}}
       </div>
@@ -34,7 +18,7 @@
     <div class="oa-gantt-head-row">
       <div class="oa-gantt-label"></div>
       <div class="oa-gantt-track oa-gantt-weeks">
-        {{#each weekBands}}
+        {{#each @root.weekBands}}
         <span class="oa-gantt-week" style="left: {{this.left}}%; width: {{this.width}}%">{{this.label}}</span>
         {{/each}}
       </div>
@@ -42,17 +26,20 @@
     <div class="oa-gantt-head-row">
       <div class="oa-gantt-label"></div>
       <div class="oa-gantt-days">
-        {{#each days}}
+        {{#each @root.days}}
         <span class="oa-gantt-day{{#if this.today}} oa-gantt-day--today{{/if}}{{#if this.weekend}} oa-gantt-day--weekend{{/if}}"><small>{{this.weekday}}</small><b>{{this.day}}</b></span>
         {{/each}}
       </div>
     </div>
   </div>
+{{/inline}}
 
+{{!-- Cuerpo: la cuadrícula y las filas del contexto actual (`rows` de la vista o de un carril). --}}
+{{#*inline "ganttBody"}}
   <div class="oa-gantt-body">
     {{#if rows.length}}
       <div class="oa-gantt-grid" aria-hidden="true">
-        {{#each days}}<span class="oa-gantt-grid-day{{#if this.weekend}} oa-gantt-grid-day--weekend{{/if}}{{#if this.weekStart}} oa-gantt-grid-day--week-start{{/if}}"></span>{{/each}}
+        {{#each @root.days}}<span class="oa-gantt-grid-day{{#if this.weekend}} oa-gantt-grid-day--weekend{{/if}}{{#if this.weekStart}} oa-gantt-grid-day--week-start{{/if}}"></span>{{/each}}
       </div>
       {{#each rows}}
         {{#if this.isGroup}}
@@ -94,9 +81,52 @@
         {{/if}}
       {{/each}}
     {{else}}
-      <p class="oa-gantt-empty">{{emptyMessage}}</p>
+      <p class="oa-gantt-empty">{{@root.emptyMessage}}</p>
     {{/if}}
   </div>
+{{/inline}}
+
+<div class="oa-gantt-toolbar"></div>
+
+<div class="oa-gantt{{#if lanes.length}} oa-gantt--lanes{{/if}}" data-days="{{days.length}}">
+  <div class="oa-gantt-controls">
+    <span class="oa-gantt-period">{{periodLabel}}</span>
+    <div class="oa-gantt-actions">
+      <div class="oa-calendar-view-segmented oa-gantt-zoom" role="group">
+        {{#each zoomOptions}}
+        <button type="button" class="oa-calendar-view-btn{{#if this.active}} oa-active{{/if}}" data-zoom="{{this.value}}" title="{{this.title}}" aria-label="{{this.title}}">{{this.label}}</button>
+        {{/each}}
+      </div>
+      <div class="oa-gantt-nav">
+        <button type="button" class="oa-gantt-btn oa-gantt-btn--round" data-action="prev" aria-label="{{previousLabel}}" title="{{previousLabel}}">◀</button>
+        <button type="button" class="oa-gantt-btn" data-action="today">{{todayLabel}}</button>
+        <button type="button" class="oa-gantt-btn oa-gantt-btn--round" data-action="next" aria-label="{{nextLabel}}" title="{{nextLabel}}">▶</button>
+      </div>
+    </div>
+  </div>
+
+  {{#if lanes.length}}
+    {{#each lanes}}
+    <section class="oa-lane" data-lane-key="{{this.storageKey}}" {{#if this.color}}data-group-color="{{this.color}}"{{/if}}>
+      <h2 class="oa-lane-header">
+        <span class="oa-folder-toggle" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right">
+            <path d="m9 18 6-6-6-6"/>
+          </svg>
+        </span>
+        <span class="oa-folder-title">{{this.label}}</span>
+        <span class="oa-task-count">({{this.count}})</span>
+      </h2>
+      <div class="oa-lane-body">
+        {{> ganttHead}}
+        {{> ganttBody}}
+      </div>
+    </section>
+    {{/each}}
+  {{else}}
+    {{> ganttHead}}
+    {{> ganttBody}}
+  {{/if}}
 
   {{#if undatedCount}}
   <div class="oa-gantt-undated">

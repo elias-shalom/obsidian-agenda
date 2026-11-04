@@ -321,7 +321,7 @@ export interface ModalOptions {
 
 export type SortField = 'dueDate' | 'startDate' | 'scheduledDate' | 'doneDate' | 'createdDate' | 'priority' | 'status' | 'text' | 'path';
 
-export type GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags' | 'area';
+export type GroupField = 'status' | 'priority' | 'dueDate' | 'startDate' | 'scheduledDate' | 'path' | 'tags' | 'area';
 
 export type ModalType = "create-task" | "edit-task" | "quick-capture"; // Extensible
 

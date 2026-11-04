@@ -1119,7 +1119,7 @@ Fila 2   [Prioridad: Alta ×] [Área: Trabajo ×]  [Limpiar]         (solo con f
 | Chip | Opciones |
 |---|---|
 | **Lanes** (todas las vistas) | Ninguno, Área, Sub-área, Estado, Prioridad, Etiqueta, Carpeta, Archivo |
-| **Group** en Lista y Tabla (hoy, `TASK_GROUP_OPTIONS`) | Ninguno, Área, Carpeta, Estado, Prioridad, Etiquetas, Vencimiento |
+| **Group** en Lista y Tabla (`TASK_GROUP_OPTIONS`) | Ninguno, Área y sub, Carpeta, Estado, Prioridad, Etiquetas, Vencimiento, Inicio, Programada (las tres fechas agrupan por día, con «sin fecha» al final; desde el 2026-11-03) |
 | **Group** en Kanban (las columnas; hoy `KANBAN_GROUP_OPTIONS`) | Estado (por defecto), Prioridad, Etiqueta, Carpeta, Archivo |
 | **Group** en Gantt (nuevo) | Ninguno (modo plano, sin cabeceras), Área (por defecto), Estado, Prioridad; Carpeta, Etiquetas y Vencimiento quedan fuera |
 

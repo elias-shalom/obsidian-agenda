@@ -7,6 +7,7 @@ import { ITask, TaskFilterCriteria } from '../types/interfaces';
 import { TaskFilter } from './task-filter';
 import { STATUS_OPTIONS, isTaskOpen } from './task-status-options';
 import { areaRoutesFromLegacy } from './area';
+import { isLaneField } from './task-lanes';
 
 const TASK_VIEW_STATE_KEY = 'obsidian-agenda-task-view-state';
 /** Clave que usaba la Tabla antes de v1.1.12; se lee una vez, se convierte y se elimina. */
@@ -42,6 +43,8 @@ export interface TaskViewState {
   due: string;
   /** Agrupado elegido entre los que ofrece la vista; vacío = el que cada vista usa por defecto. */
   group: string;
+  /** Campo por el que la vista se divide en carriles (`LaneField`); vacío = sin carriles (v1.1.14, Fase L2). */
+  lanes: string;
   /** Columna o campo de orden, entre los que ofrece la vista. */
   sortColumn: string;
   sortDirection: 'asc' | 'desc';
@@ -57,6 +60,7 @@ export const DEFAULT_TASK_VIEW_STATE: Readonly<TaskViewState> = {
   scheduled: 'all',
   due: 'all',
   group: '',
+  lanes: '',
   sortColumn: 'priority',
   sortDirection: 'desc',
 };
@@ -95,6 +99,7 @@ export function parseTaskViewState(raw: unknown): TaskViewState {
     scheduled: source.scheduled === 'all' || isOneOf(DATE_FILTER_VALUES, source.scheduled) ? source.scheduled : defaults.scheduled,
     due: source.due === 'all' || isOneOf(DATE_FILTER_VALUES, source.due) ? source.due : defaults.due,
     group: text(source.group, defaults.group),
+    lanes: isLaneField(source.lanes) ? source.lanes : defaults.lanes,
     sortColumn: text(source.sortColumn, defaults.sortColumn) || defaults.sortColumn,
     sortDirection: source.sortDirection === 'asc' || source.sortDirection === 'desc' ? source.sortDirection : defaults.sortDirection,
   };

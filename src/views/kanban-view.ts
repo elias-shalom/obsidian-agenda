@@ -75,10 +75,8 @@ export class KanbanView extends BaseView {
       i18n: this.i18n,
       tasks: this.tasks,
       state: loadKanbanState(this.app),
-      groupOptions: KANBAN_GROUP_OPTIONS.map(({ value, labelKey }) => ({
-        value,
-        label: `${this.i18n.t('group_label')} ${this.i18n.t(labelKey)}`,
-      })),
+      groupOptions: KANBAN_GROUP_OPTIONS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
+      axisRules: { requiresGroup: true },
       sortOptions: TASK_SORT_COLUMNS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
       onChange: (state) => {
         this.viewState = state;

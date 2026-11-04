@@ -658,14 +658,16 @@ Cambiar el texto de «Sin área» en el agrupado; los títulos «By area» y «B
 - [x] Verificable sola: `node --test` sobre `buildLanes()` (`tests/task-lanes.test.cjs`, 38 pruebas): partición, orden, etiquetas múltiples, «Raíz», «Sin etiqueta», carriles vacíos, nombres no ASCII y notas homónimas, la regla de campos en uso y las claves de texto en los 6 idiomas. Aún no la usa ninguna vista (L2 a L4).
 - [x] Claves de texto nuevas en los 6 idiomas: `lane_sub_area` y `lane_no_tag`; `PRIORITY_ORDER` de `task-grouping.ts` se exporta para compartir el orden de prioridades.
 
-### Fase L2 — Barra de chips (depende de L1 y M2; Especificación §20, Arquitectura §29)
-- [ ] Fila propia bajo el buscador con tres chips, `Lanes`, `Group` y `Sort`, cada uno con una lista directa (popover, sin modal) y la flecha ↑/↓ dentro del chip de `Sort`; reemplaza los combos `Group` y `Sort` de la barra (ver Especificación §14.4 y §19).
-- [ ] El conmutador Lista | Tabla pasa a la izquierda del buscador, en la fila 1 de la barra, siempre en la misma posición (`mountModeSwitch()` en `src/core/task-filter-bar.ts`); solo en Lista y Tabla.
-- [ ] Opciones en uso: la opción atenuada en el otro chip con tooltip («En uso por Lanes», y en Lista, Tabla y Gantt «al elegirla, Lanes pasa a Ninguno»); tooltip del chip `Lanes`: «Divide la vista en varias, una por valor».
-- [ ] En móvil la fila se ajusta a 2 líneas.
-- [ ] Estado guardado de Lanes, Group y Sort por vista (Modelo de datos §12).
-- [ ] Claves i18n nuevas en los 6 locales; «Lanes» se traduce como Lanes (en), Filas (es), Bahnen (de), Couloirs (fr), Corsie (it) y Raias (pt), **pendientes de revisión por hablantes nativos antes de publicar**.
-- [ ] Verificable sola: Node (estado, exclusión de campos, claves de los 6 locales). Prueba manual en Lista y Tabla con el conmutador, y en escritorio, `is-tablet` e `is-phone`.
+### Fase L2 — Barra de chips (depende de L1 y M2; Especificación §20, Arquitectura §29) — **implementada el 2026-11-03**
+- [x] Chips `Lanes`, `Group` y `Sort` en la fila 1, junto a «+ Filtro» y con su mismo aspecto; cada uno abre el mismo menú nativo de Obsidian que «+ Filtro», con la opción actual marcada, y elegir una la aplica; la flecha ↑/↓ va dentro del chip de `Sort`; reemplaza los combos `Group` y `Sort` de la barra (ver Especificación §14.4 y §19). Un chip solo existe si la vista le pasa sus opciones (`laneOptions`, `groupOptions`, `sortOptions`).
+- [x] El conmutador Lista | Tabla queda en la fila 1, a la izquierda de «+ Filtro» (`[conmutador] [+ Filtro] ··· [buscador]`), siempre en la misma posición (`mountModeSwitch()` en `src/core/task-filter-bar.ts`); solo en Lista y Tabla. El buscador conserva su sitio (derecha) y su tamaño de siempre (`clamp(180px, 25%, 300px)`), a petición del 2026-11-03. Los chips `Group` y `Sort` tienen el mismo aspecto que «+ Filtro».
+- [x] Opciones en uso: en Kanban la opción en uso por el otro chip se bloquea (`setDisabled`); en Lista, Tabla y Gantt se puede elegir y el otro chip pasa a Ninguno. El `Menu` nativo no permite atenuar ni tooltip por opción, así que los textos «En uso por Grupo» quedan en i18n sin mostrarse hasta que haga falta. Tooltip del chip `Lanes`: «Divide la vista en varias, una por valor».
+- [x] En móvil la fila se ajusta a 2 líneas (`flex-wrap`; en una barra estrecha el buscador baja a su propia línea con la regla `@container` de siempre).
+- [x] Estado guardado: `TaskViewState.lanes` (`''` por defecto, validado con `isLaneField()`); `group`, `sortColumn` y `sortDirection` siguen donde estaban.
+- [x] Claves i18n nuevas en los 6 locales (`lanes_label`, `lanes_tooltip`, `axis_in_use_by_group`, `axis_in_use_by_group_swap`, `axis_in_use_by_lanes`, `axis_in_use_by_lanes_swap`); «Lanes» se traduce como Lanes (en), Filas (es), Bahnen (de), Couloirs (fr), Corsie (it) y Raias (pt), **pendientes de revisión por hablantes nativos antes de publicar**.
+- [x] Modelo puro en `src/core/task-axis-chips.ts` (`buildAxisChips()`, `pickAxisOption()`, `toggleSortDirection()`); la barra dibuja la lista con `Menu` (`openAxisMenu()`). **Las vistas todavía no activan `laneOptions`**: el chip `Lanes` no aparece hasta que L3 (Lista y Tabla) y L4 (Kanban y Gantt) dibujen los carriles; Kanban ya pasa `axisRules: { requiresGroup: true }`.
+- [x] Verificable con Node (`tests/task-axis-chips.test.cjs`, 28 pruebas): chips ofrecidos y su orden, texto, atenuado y tooltip, opción marcada, choques por familia (incluida la de ruta), bloqueo en Kanban, elegir con y sin choque, `defaultGroup`, estado guardado y claves de los 6 idiomas.
+- [x] Prueba manual en Lista y Tabla con el conmutador, y en escritorio, `is-tablet` e `is-phone`: la barra con los chips en la fila 1, los menús de `Group` y `Sort`, la flecha del orden, el orden por clic en un encabezado de la Tabla (`setSort()`) y el ajuste a varias líneas en móvil.
 
 ### Fase L3 — Lanes en Lista y Tabla (depende de L2; Especificación §20, §14 y Arquitectura §29)
 - [ ] Lista: un widget por carril con su ▼ para plegar; el plegado se recuerda por campo y los carriles son de solo lectura.
@@ -679,7 +681,7 @@ Cambiar el texto de «Sin área» en el agrupado; los títulos «By area» y «B
 - [ ] Verificable sola: Node (`buildGanttRows()` plano y por campo, claves de plegado); prueba manual con Lanes en Kanban y Gantt, y con `Group` del Gantt en cada valor.
 
 ### Fase CV14 — Cierre de v1.1.14: pruebas manuales y documentación (depende de M1 a L4)
-- [ ] Pruebas manuales de lo implementado: filtros con varios valores en Lista, Tabla, Kanban y Gantt; barra del calendario en las 6 subvistas (foco del buscador); Lanes en las 4 vistas con cada campo; el conmutador junto al buscador; escritorio, `is-tablet` e `is-phone`; tema claro y oscuro.
+- [ ] Pruebas manuales de lo implementado: filtros con varios valores en Lista, Tabla, Kanban y Gantt; barra del calendario en las 6 subvistas (foco del buscador); Lanes en las 4 vistas con cada campo; el conmutador junto a «+ Filtro»; escritorio, `is-tablet` e `is-phone`; tema claro y oscuro.
 - [ ] README: badge, What's New, News, Features, Gestures, Configuration, Changelog y la lista de próximas versiones.
 - [ ] Manual de usuario en inglés y español (`docs/user_guide/`).
 - [ ] Entrada `whats_new.v1_1_14` en los 6 idiomas y `'1.1.14'` en `WHATS_NEW_VERSIONS` de `src/core/whats-new.ts`.

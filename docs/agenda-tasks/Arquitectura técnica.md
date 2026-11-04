@@ -879,7 +879,7 @@ Nuevo módulo `src/core/task-view-state.ts` con `TaskViewState`: búsqueda, filt
 
 > Implementado (v1.1.12): `TaskModeSwitch` en la barra (`buildTaskModeSwitch()`), con `TaskViewState.mode` y `saveTaskViewMode()`; usa directamente las clases `.oa-calendar-view-segmented` y `.oa-calendar-view-btn` y cambia de vista con `viewManager.activateView()`.
 
-Control segmentado dentro de la barra compartida, solo en Lista y Tabla. (v1.1.14: pasa a la izquierda del buscador, en la fila 1 de la barra nueva; `TaskFilterBar.mountModeSwitch()` cambia de posición, §29.2.) Reutiliza los estilos y las clases del selector del calendario (`.oa-calendar-view-segmented`, `.oa-calendar-view-btn`); renombrarlas a un nombre neutro es una limpieza opcional. Íconos `list-todo` y `table`, los mismos de las pestañas actuales, con tooltip. Al hacer clic llama a `leaf.setViewState()` con el otro tipo de vista, como `CalendarView.switchToViewType()`; ambas vistas leen `TaskViewState` al abrir.
+Control segmentado dentro de la barra compartida, solo en Lista y Tabla. (v1.1.14: pasa al inicio de la fila 1, a la izquierda de «+ Filtro»; `TaskFilterBar.mountModeSwitch()` cambia de posición, §29.2.) Reutiliza los estilos y las clases del selector del calendario (`.oa-calendar-view-segmented`, `.oa-calendar-view-btn`); renombrarlas a un nombre neutro es una limpieza opcional. Íconos `list-todo` y `table`, los mismos de las pestañas actuales, con tooltip. Al hacer clic llama a `leaf.setViewState()` con el otro tipo de vista, como `CalendarView.switchToViewType()`; ambas vistas leen `TaskViewState` al abrir.
 
 ### 23.3 Pestaña única
 
@@ -909,7 +909,7 @@ Una clase única `TasksView`; Kanban y Gantt como modos del conmutador; acciones
 
 ### 23.7 Barra de filtros con chips (v1.1.12, implementado y probado a mano)
 
-> **Cambia en v1.1.14**: modelo con listas, popover con casillas y regla de lo más específico para el área (§28); y los combos `Group`/`Sort` pasan a chips en una fila propia, con el conmutador Lista | Tabla a la izquierda del buscador (§29). Lo descrito abajo es el diseño actual (v1.1.12).
+> **Cambia en v1.1.14**: modelo con listas, popover con casillas y regla de lo más específico para el área (§28); y los combos `Group`/`Sort` pasan a chips en una fila propia, con el conmutador Lista | Tabla a la izquierda de «+ Filtro» (§29). Lo descrito abajo es el diseño actual (v1.1.12).
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §14.4. Es un cambio solo de la capa de interfaz de `TaskFilterBar`: `TaskViewState`, `filterTasksByViewState()` y las vistas no cambian.
 
@@ -1226,7 +1226,7 @@ Comportamiento: [[Especificación de vistas]] §19.
 - `TaskFilterBar` lo usa para prioridad, estado y área. El popover del área tiene dos secciones: las áreas (con «Raíz») y, debajo, las sub-áreas de las áreas marcadas, que se actualizan al marcar. `reconcileArea()` descarta las rutas que ya no tienen tareas.
 - `task-filter-chips.ts`: un chip por tipo; `getActiveFilterChips()` muestra el nombre con un valor y solo el número con dos o más (el chip no crece) y aporta la lista completa para el tooltip; `clearFilterChip()` vacía la lista del tipo.
 - Opción nueva `filterTypes?: FilterChipId[]`: limita los tipos del menú «Añadir filtro» (el calendario no ofrece fechas).
-- La disposición de la barra (fila 1: conmutador, buscador y «+ Filtro»; fila 2: chips `Lanes`/`Group`/`Sort`) se describe en §29.2; los chips de filtro activos siguen en su fila propia.
+- La disposición de la barra (fila 1: conmutador, «+ Filtro», chips `Lanes`/`Group`/`Sort` y buscador; fila 2: chips de filtros activos) se describe en §29.2; los chips de filtro activos siguen en su fila propia.
 
 ### 28.3 Calendario (**implementado el 2026-11-03: estado y filtrado, Fase CF1, y barra, Fase CF2; falta la prueba manual**)
 
@@ -1267,19 +1267,27 @@ Un carril parte la vista en varios widgets independientes, uno por valor de un c
 - **Orden en Sub-área**: las notas directas del área (`Área › Raíz`) van las primeras de su área y solo «Raíz» del vault va al final; así «Raíz» no queda en medio de las sub-áreas de una misma área.
 - **Estado desconocido**: un símbolo que no es ninguno de los 6 cae en Pendiente, igual que en `groupTasksByField()`; hasta v1.1.17 (§34) no hay más estados.
 - **Exclusión por familia** (`isGroupOptionInUse()`, `isLaneOptionInUse()`, `resolveAxisConflict()`): Estado, Prioridad, Etiqueta, Archivo y la familia de ruta (Área, Sub-área y Carpeta de ambos chips); `defaultGroup` (Lista = Área, Tabla = Ninguno, Kanban = Estado) resuelve el `group` vacío, que significa «el de la vista», y el ajuste automático escribe `'none'`. Devuelve `blocked: true` cuando Kanban rechaza la elección.
-- **Sin estado todavía**: `TaskViewState.lanes` y el estado guardado llegan con la Fase L2.
+- **Estado guardado (L2)**: `TaskViewState.lanes` ya existe (§29.3).
 
 ### 29.2 Barra de chips
 
-Cambios en `TaskFilterBar` (`src/core/task-filter-bar.ts`) y en `_task-filter-bar.scss`; hoy `mount()` construye una fila principal con el conmutador de modo, «+ Filtro», los `<select>` de agrupado y de orden con su flecha y el buscador a la derecha, más la fila de chips de filtros activos (§23.7).
+Cambios en `TaskFilterBar` (`src/core/task-filter-bar.ts`) y en `_task-filter-bar.scss`. Antes de L2, `mount()` construía una fila principal con el conmutador de modo, «+ Filtro», los `<select>` de agrupado y de orden con su flecha y el buscador a la derecha, más la fila de chips de filtros activos (§23.7).
 
-- **Fila 1**: `[conmutador] [buscador] [+ Filtro]`. `mountModeSwitch()` se monta justo a la izquierda del buscador, siempre en la misma posición, y solo en Lista y Tabla (Kanban y Gantt no tienen conmutador).
-- **Fila 2 (nueva)**: tres chips, `Lanes`, `Group` y `Sort`, cada uno con una lista directa y sin modal. Sustituyen a los `<select>` (`addSelect()`) y al botón de dirección (`.oa-filter-bar__sort-direction`); la flecha ↑/↓ va dentro del chip `Sort`. Las opciones salen de `groupOptions` y `sortOptions` de `TaskFilterBarOptions`, que se conservan, más una opción nueva `laneOptions?`. En Calendario la barra sigue sin chips de agrupado ni de orden (§28.3).
+- **Fila 1**: `[conmutador] [+ Filtro] ··· [buscador]`. `mountModeSwitch()` se monta al inicio, a la izquierda de «+ Filtro», siempre en la misma posición, y solo en Lista y Tabla (Kanban y Gantt no tienen conmutador). El buscador conserva su sitio y su tamaño de antes.
+- **Chips `Lanes`, `Group` y `Sort` (en la fila 1, entre «+ Filtro» y el buscador)**: tres chips con el aspecto de «+ Filtro»; cada uno abre el mismo `Menu` de Obsidian que «+ Filtro», con la opción actual marcada (✓) y sin modal. Sustituyen a los `<select>` (`addSelect()`) y al botón de dirección (`.oa-filter-bar__sort-direction`); la flecha ↑/↓ va dentro del chip `Sort`. Las opciones salen de `groupOptions` y `sortOptions` de `TaskFilterBarOptions`, que se conservan, más una opción nueva `laneOptions?`. En Calendario la barra sigue sin chips de agrupado ni de orden (§28.3).
 - **Atenuado y tooltips**: con `Lanes = Ninguno` el chip se ve atenuado; el tooltip «Divide la vista en varias, una por valor» sale del atributo `title`, que `installTooltips()` ya convierte en tooltip del plugin (§8). Las claves nuevas (`lanes_label`, el tooltip, «En uso por Lanes», «En uso por Group», «Sin etiqueta») van en los 6 idiomas.
-- **Móvil**: los chips de la fila 2 se ajustan a dos líneas con el `@container` de la barra (~560 px), como el buscador de §23.7.
+- **Móvil**: la fila 1 usa `flex-wrap` (ver «Implementado» abajo).
 - **Exclusión entre Lanes y Group** (función pura en `task-lanes.ts`, decisión del 2026-11-03): `isGroupOptionInUse(group, lanes)` e `isLaneOptionInUse(lanes, group)` atenúan la opción con tooltip («En uso por Lanes» o «por Group»). `resolveAxisConflict(state, pickedAxis, { requiresGroup })` aplica la regla por vista: con `requiresGroup` (**Kanban**, columnas obligatorias) la opción atenuada no se puede elegir y devuelve el estado sin cambios; sin él (**Lista, Tabla y Gantt**) acepta la elección y pasa el **otro** chip a Ninguno, en los dos sentidos. Hoy Lista guarda `''` y lo lee como Área (`LIST_DEFAULT_GROUP`) y Tabla como Ninguno (`TABLE_DEFAULT_GROUP`): el ajuste escribe `'none'` de forma explícita, que `TASK_GROUP_OPTIONS` ya admite y se distingue de `''`; el valor por defecto de la Lista no cambia (sigue siendo Área).
 
-**ADR-LN2 — Chips en una fila propia.** `Lanes`, `Group` y `Sort` salen de la fila del buscador a una fila 2; el conmutador Lista | Tabla se mueve junto al buscador. Razón: la fila única ya no cabe con tres controles, y un conmutador fijo junto al buscador no cambia de sitio entre Lista y Tabla.
+**ADR-LN2 — Chips junto a «+ Filtro».** `Lanes`, `Group` y `Sort` ocupan la fila 1, entre «+ Filtro» y el buscador (primero se probó una fila propia y se descartó el 2026-11-03 por ocupar altura); el conmutador Lista | Tabla se mueve al inicio de la fila 1. Razón: los chips son compactos y su menú es el de «+ Filtro»; un conmutador fijo no cambia de sitio entre Lista y Tabla.
+
+**Implementado el 2026-11-03 (Fase L2)**:
+- **Modelo puro** en `src/core/task-axis-chips.ts`: `buildAxisChips(input)` devuelve los chips en el orden Lanes, Group y Sort (solo los que la vista ofrece) con su texto («Rótulo: valor»), `muted`, tooltip, dirección (Sort) y opciones con `checked`, `muted`, `disabled` y `title`; `pickAxisOption(input, axis, value)` devuelve los cambios del estado (con `resolveAxisConflict()`, de modo que elegir un campo en uso en Lista, Tabla o Gantt incluye también `group: 'none'` o `lanes: ''`) o `null` si no cambia nada o está bloqueado; `toggleSortDirection()`. `TaskFilterBar` solo dibuja.
+- **Popover de elección única**: `openFilterPopover()` gana `mode: 'single'` (botones `menuitemradio` con ✓ en la opción activa; elegir una la aplica y cierra) y las opciones aceptan `muted`, `disabled` y `title`. Las atenuadas se pueden elegir (avisan del choque); las bloqueadas (Kanban) no.
+- **Barra** (`mount()`): fila 1 `[conmutador] [+ Filtro] [Lanes] [Group] [Sort] ··· [buscador]` (el buscador conserva su sitio y su tamaño de antes), fila 2 los chips de filtros activos. Los chips de ejes (`.oa-axis-chip`, dentro de `.oa-filter-bar__axes` con `display: contents`) tienen el mismo aspecto que «+ Filtro»: borde, fondo, esquinas de 4px, alto de 32px y el mismo hover; su lista es un `Menu` nativo (`openAxisMenu()`), con `setChecked` y `setDisabled` (Kanban bloquea las opciones en uso). Un `Menu` nativo no admite atenuar una opción ni tooltip: la opción en uso que sí se puede elegir se ve normal y, al elegirla, el otro chip pasa a Ninguno. `update()` redibuja los chips si cambia `lanes`, `group`, `sortColumn` o `sortDirection`, y también un cambio doble (`lanes` y `group`) llega a la vista con ambas claves en `changed`, que `persistTaskViewState()` necesita para guardar `group`. `setSort()` (clic en un encabezado de la Tabla) redibuja el chip `Sort`. Opciones nuevas `laneOptions?` y `axisRules?` (`AxisConflictOptions`); Kanban pasa `requiresGroup: true`.
+- **El chip `Lanes` está latente**: ninguna vista pasa todavía `laneOptions`, porque nada dibuja carriles hasta L3 (Lista y Tabla) y L4 (Kanban y Gantt).
+- **Móvil**: las filas usan `flex-wrap` y, en una barra estrecha, el buscador baja a su propia línea con la regla `@container (max-width: 560px)` de siempre.
+- **Etiquetas de `Group`**: las vistas pasan el nombre sin prefijo (el rótulo «Grupo:» lo pone el chip), por lo que el texto de cada opción es el mismo en el popover que en el chip.
 
 ### 29.3 Estado guardado
 
@@ -1307,7 +1315,7 @@ Cambios en `TaskFilterBar` (`src/core/task-filter-bar.ts`) y en `_task-filter-ba
 | Área | Archivos |
 |---|---|
 | Lógica | nuevo `src/core/task-lanes.ts` |
-| Barra | `src/core/task-filter-bar.ts` (`mount()`, `mountModeSwitch()`, chips de la fila 2), `src/styles/components/_task-filter-bar.scss` |
+| Barra | `src/core/task-filter-bar.ts` (`mount()`, `mountModeSwitch()`, chips de ejes), `src/styles/components/_task-filter-bar.scss` |
 | Estado | `src/core/task-view-state.ts` (`lanes`), `kanban-state.ts` y `gantt-state.ts` (sin cambios de clave) |
 | Lista y Tabla | `src/views/list-view.ts`, `table-view.ts`, `templates/list-view.hbs`, `table-view.hbs`, `_list-view.scss`, `_table-view.scss` |
 | Kanban | `src/views/kanban-view.ts`, `templates/kanban-view.hbs`, `src/core/kanban-board.ts`, `src/core/kanban-collapse.ts` (claves de plegado), `_kanban.scss` |
@@ -1339,8 +1347,7 @@ Manual: las cuatro vistas con cada campo; que Lanes = Ninguno deje cada vista co
 - **Equivalencias entre `Group` y Lanes** (resuelto el 2026-11-03): `isGroupOptionInUse()` e `isLaneOptionInUse()` comparan por **familia**, no por valor literal: `status`↔`status`, `priority`↔`priority`, `tags`↔`tag`, y la familia de ruta {`area`, `folder` de `Group`; `area`, `subArea`, `folder` de Lanes} choca entre sí (`Group: folder` agrupa por la primera carpeta, igual que `Lanes: area`, y `Group: area` es un árbol que ya anida las sub-áreas). `file` y `dueDate` no pertenecen a ninguna familia compartida.
 - **Atenuada frente a bloqueada** (resuelto el 2026-11-03): en Kanban la opción en uso queda bloqueada (las columnas son obligatorias); en Lista, Tabla y Gantt se puede elegir y el otro chip pasa a Ninguno. Por resolver: si ese ajuste automático muestra además un `Notice`.
 - Opciones de las columnas del Kanban (resuelto, decisión D4 del 2026-11-01): Estado, Prioridad, Etiqueta, Carpeta y **Archivo**; hoy `KANBAN_GROUP_OPTIONS` solo trae las cuatro primeras, así que Archivo se añade con Lanes.
-- Si el menú del chip es el `Menu` nativo (sin tooltip por opción, `setDisabled()`) o un popover propio basado en `task-filter-popover.ts` (admite el tooltip «En uso por Lanes»).
-- Orden vertical de la fila 2 frente a la fila de chips de filtros activos.
+- Menú del chip (resuelto el 2026-11-03): `Menu` nativo, igual que «+ Filtro»; no admite tooltip por opción ni atenuarla, solo `setDisabled()`.
 - Dónde van las «Tareas sin fecha» del Gantt con carriles (por carril o al final).
 - Qué cuenta el contador de un carril de etiquetas (tareas únicas o apariciones).
 - **Resuelto al implementar L1**: la partición no ordena las tareas de cada carril; el módulo expone `LANE_OPTIONS` con las claves de texto de cada opción (las de la barra, `lanes_label` y los tooltips, llegan con L2).

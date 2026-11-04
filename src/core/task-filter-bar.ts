@@ -1,9 +1,9 @@
 // src/core/task-filter-bar.ts
-// Barra de filtros compartida por las vistas de tareas (v1.1.12, Fase A/U1/U6; ver
-// docs/agenda-tasks/Arquitectura técnica.md §20.3 y §23.7). Fila principal: conmutador de modo,
-// botón + Filtro, agrupado y orden (si la vista los ofrece) y búsqueda a la derecha. Los filtros
-// activos se muestran como chips en una segunda fila. Mismo patrón que `CalendarDatePicker`:
-// `mount(root)` y un callback `onChange`.
+// Barra de filtros compartida por las vistas de tareas (v1.1.12, Fase A/U1/U6; v1.1.14, Fase L2; ver
+// docs/agenda-tasks/Arquitectura técnica.md §20.3, §23.7 y §29.2). Fila principal: conmutador de modo,
+// búsqueda y botón + Filtro. Segunda fila: los chips `Lanes`, `Group` y `Sort` que la vista ofrece.
+// Tercera fila: un chip por filtro activo. Mismo patrón que `CalendarDatePicker`: `mount(root)` y un
+// callback `onChange`.
 import { Menu, setIcon } from 'obsidian';
 import { ITask } from '../types/interfaces';
 import { I18n } from './i18n';
@@ -15,6 +15,8 @@ import {
   toggleFilterValue,
 } from './task-filter-chips';
 import { openFilterPopover } from './task-filter-popover';
+import { AxisId, buildAxisChips, pickAxisOption, toggleSortDirection } from './task-axis-chips';
+import type { AxisConflictOptions } from './task-lanes';
 
 export interface FilterBarOption {
   value: string;
@@ -52,10 +54,14 @@ export interface TaskFilterBarOptions {
   onChange: (state: TaskViewState, changed: readonly (keyof TaskViewState)[]) => void;
   /** Si se pasa, la barra muestra al inicio el conmutador de modo Lista | Tabla. */
   modeSwitch?: TaskModeSwitch;
-  /** Si se pasa, la barra muestra el combo de agrupado con estos valores (incluye el de «sin agrupar»). */
+  /** Si se pasa, la barra muestra el chip `Group` con estos valores (incluye el de «sin agrupar»). */
   groupOptions?: FilterBarOption[];
-  /** Si se pasa, la barra muestra el combo de orden con estos campos y el botón de dirección. */
+  /** Si se pasa, la barra muestra el chip `Sort` con estos campos y la flecha de dirección. */
   sortOptions?: FilterBarOption[];
+  /** Si se pasa, la barra muestra el chip `Lanes` con estos campos (incluye el de «Ninguno», valor vacío). */
+  laneOptions?: FilterBarOption[];
+  /** Cómo resuelve la vista un campo que ya usa el otro chip (Kanban lo bloquea; las demás lo cambian a Ninguno). */
+  axisRules?: AxisConflictOptions;
   /** Si se pasa, el menú «+ Filtro» ofrece solo estos tipos (el calendario no ofrece fechas). */
   filterTypes?: readonly FilterChipId[];
 }
@@ -72,14 +78,16 @@ function sameFilterValue(a: unknown, b: unknown): boolean {
   return a === b;
 }
 
+/** Claves del estado que dibujan los chips `Lanes`, `Group` y `Sort`. */
+const AXIS_STATE_KEYS: readonly (keyof TaskViewState)[] = ['lanes', 'group', 'sortColumn', 'sortDirection'];
+
 export class TaskFilterBar {
   private state: TaskViewState;
   private areas: string[];
   private hasRootTasks: boolean;
   private filePaths: string[];
   private chipsEl: HTMLElement | null = null;
-  private sortSelect: HTMLSelectElement | null = null;
-  private sortDirectionButton: HTMLButtonElement | null = null;
+  private axesEl: HTMLElement | null = null;
 
   constructor(private options: TaskFilterBarOptions) {
     this.state = { ...options.state };
@@ -94,12 +102,11 @@ export class TaskFilterBar {
     return { ...this.state };
   }
 
-  /** Refleja en los controles de orden un cambio hecho fuera de la barra (p. ej. clic en el encabezado de una columna). */
+  /** Refleja en el chip `Sort` un cambio hecho fuera de la barra (p. ej. clic en el encabezado de una columna). */
   setSort(column: string, direction: 'asc' | 'desc'): void {
     this.state.sortColumn = column;
     this.state.sortDirection = direction;
-    if (this.sortSelect) this.sortSelect.value = column;
-    this.updateSortDirectionButton();
+    this.renderAxes();
   }
 
   mount(root: HTMLElement): void {
@@ -113,22 +120,11 @@ export class TaskFilterBar {
     const addButton = main.createEl('button', { cls: 'oa-filter-bar__add', text: i18n.t('filter_add'), attr: { type: 'button' } });
     addButton.addEventListener('click', () => this.openTypeMenu(this.anchorOf(addButton)));
 
-    const { groupOptions, sortOptions } = this.options;
-    if (groupOptions) {
-      this.addSelect(main, 'group_by', groupOptions, this.state.group, value => this.update({ group: value }));
-    }
-    if (sortOptions) {
-      this.sortSelect = this.addSelect(main, 'sort_by',
-        sortOptions.map(option => ({ value: option.value, label: `${i18n.t('sort_label')} ${option.label}` })),
-        this.state.sortColumn, value => this.update({ sortColumn: value }));
-      this.sortDirectionButton = main.createEl('button', { cls: 'oa-filter-bar__sort-direction', attr: { type: 'button' } });
-      this.sortDirectionButton.addEventListener('click', () => {
-        this.update({ sortDirection: this.state.sortDirection === 'asc' ? 'desc' : 'asc' });
-        this.updateSortDirectionButton();
-      });
-      this.updateSortDirectionButton();
-    }
+    // Los chips Lanes, Group y Sort van junto a «+ Filtro»; sus hijos son elementos de la fila (`display: contents`)
+    this.axesEl = main.createDiv({ cls: 'oa-filter-bar__axes' });
+    this.renderAxes();
 
+    // El buscador va al final de la fila, a la derecha, con su tamaño de siempre
     this.mountSearch(main);
 
     this.chipsEl = root.createDiv({ cls: 'oa-filter-bar__chips' });
@@ -177,20 +173,6 @@ export class TaskFilterBar {
     });
   }
 
-  private addSelect(
-    parent: HTMLElement,
-    ariaKey: string,
-    options: FilterBarOption[],
-    value: string,
-    onChange: (value: string) => void
-  ): HTMLSelectElement {
-    const select = parent.createEl('select', { cls: 'oa-filter-bar__select', attr: { 'aria-label': this.options.i18n.t(ariaKey) } });
-    for (const option of options) select.createEl('option', { value: option.value, text: option.label });
-    select.value = options.some(option => option.value === value) ? value : (options[0]?.value ?? '');
-    select.addEventListener('change', () => onChange(select.value));
-    return select;
-  }
-
   /** Fila de chips: uno por filtro activo, con su × y el botón Limpiar; vacía (y oculta por CSS) sin filtros. */
   private renderChips(): void {
     const container = this.chipsEl;
@@ -219,6 +201,56 @@ export class TaskFilterBar {
       const clear = container.createEl('button', { cls: 'oa-filter-bar__clear', text: i18n.t('filter_clear'), attr: { type: 'button' } });
       clear.addEventListener('click', () => this.replaceFilters(clearAllFilters(this.state)));
     }
+  }
+
+  private axisInput() {
+    const { groupOptions, sortOptions, laneOptions, axisRules, i18n } = this.options;
+    return { state: this.state, laneOptions, groupOptions, sortOptions, rules: axisRules, translate: (key: string) => i18n.t(key) };
+  }
+
+  /** Fila de los chips `Lanes`, `Group` y `Sort`; sin ninguno que la vista ofrezca queda vacía y no se muestra. */
+  private renderAxes(): void {
+    const container = this.axesEl;
+    if (!container) return;
+    container.empty();
+
+    for (const chip of buildAxisChips(this.axisInput())) {
+      const chipEl = container.createDiv({ cls: `oa-axis-chip oa-axis-chip--${chip.id}${chip.muted ? ' oa-axis-chip--muted' : ''}` });
+      const label = chipEl.createEl('button', {
+        cls: 'oa-axis-chip__label',
+        text: chip.text,
+        attr: { type: 'button', 'aria-label': chip.ariaLabel, 'aria-haspopup': 'menu', ...(chip.tooltip ? { title: chip.tooltip } : {}) },
+      });
+      label.addEventListener('click', () => this.openAxisMenu(chip.id, this.anchorOf(label)));
+
+      if (chip.direction) {
+        const ascending = chip.direction === 'asc';
+        const text = this.options.i18n.t(ascending ? 'sort_ascending' : 'sort_descending');
+        const direction = chipEl.createEl('button', {
+          cls: 'oa-axis-chip__direction',
+          text: ascending ? '↑' : '↓',
+          attr: { type: 'button', 'aria-label': text, title: text },
+        });
+        direction.addEventListener('click', () => this.update({ sortDirection: toggleSortDirection(this.state) }));
+      }
+    }
+  }
+
+  /** Lista directa de un chip, con el mismo menú que «+ Filtro»: elegir una opción la aplica y cierra el menú. */
+  private openAxisMenu(id: AxisId, anchor: MenuAnchor): void {
+    const options = buildAxisChips(this.axisInput()).find(chip => chip.id === id)?.options ?? [];
+    const menu = new Menu();
+    for (const option of options) {
+      menu.addItem(item => item
+        .setTitle(option.label)
+        .setChecked(option.checked)
+        .setDisabled(option.disabled)
+        .onClick(() => {
+          const changes = pickAxisOption({ state: this.state, rules: this.options.axisRules }, id, option.value);
+          if (changes) this.update(changes);
+        }));
+    }
+    menu.showAtPosition(anchor);
   }
 
   private anchorOf(element: HTMLElement): MenuAnchor {
@@ -307,16 +339,6 @@ export class TaskFilterBar {
     this.state.areas = reconcileAreaRoutes(this.state.areas, this.filePaths);
   }
 
-  private updateSortDirectionButton(): void {
-    const button = this.sortDirectionButton;
-    if (!button) return;
-    const ascending = this.state.sortDirection === 'asc';
-    const label = this.options.i18n.t(ascending ? 'sort_ascending' : 'sort_descending');
-    button.setText(ascending ? '↑' : '↓');
-    button.setAttribute('aria-label', label);
-    button.setAttribute('title', label);
-  }
-
   /** Aplica un estado con otros filtros (quitar un chip o todos) como los cambios que lo diferencian del actual. */
   private replaceFilters(next: TaskViewState): void {
     const changes: Partial<TaskViewState> = {};
@@ -330,5 +352,6 @@ export class TaskFilterBar {
     this.state = { ...this.state, ...changes };
     this.options.onChange({ ...this.state }, Object.keys(changes) as (keyof TaskViewState)[]);
     if (FILTER_STATE_KEYS.some(key => key in changes)) this.renderChips();
+    if (AXIS_STATE_KEYS.some(key => key in changes)) this.renderAxes();
   }
 }

@@ -350,12 +350,12 @@ type GroupField = 'status' | 'priority' | 'dueDate' | 'path' | 'tags';
 
 Reglas (decididas 2026-11-03): Lanes y Group no repiten campo, entendido por familia: Estado con Estado, Prioridad con Prioridad, Etiqueta con Etiquetas y la familia de ruta (Área, Sub-área y Carpeta) entre sí; Archivo y Vencimiento quedan libres. En **Kanban** la opción en uso queda atenuada y no se puede elegir (las columnas son obligatorias); en **Lista, Tabla y Gantt** se puede elegir y el otro chip pasa solo a Ninguno (`'none'`), en los dos sentidos. Opciones de Lanes: Ninguno, Área, Sub-área, Estado, Prioridad, Etiqueta, Carpeta y Archivo; las columnas y el `Group` de Kanban siguen siendo Estado, Prioridad, Etiqueta, Carpeta y Archivo.
 
-**ADR-LA1 — Dónde se guarda (propuesta).** El estado de Lanes, Group y Sort por vista sigue el patrón de las claves de `localStorage` que ya existen (por dispositivo, sin sincronizar), porque son preferencias de visualización, como el agrupado y el orden de hoy. El registro de decisiones no fija la ubicación: se confirma al implementar la fase L2.
+**ADR-LA1 — Dónde se guarda.** El estado de Lanes, Group y Sort por vista sigue el patrón de las claves de `localStorage` que ya existen (por dispositivo, sin sincronizar), porque son preferencias de visualización, como el agrupado y el orden de hoy. **Confirmado al implementar L2 (2026-11-03)**: `lanes` es un campo más de `TaskViewState`, sin clave nueva.
 
 **Por resolver al diseñar**
 - Nombre exacto de la clave de pliegue de carriles y de los campos nuevos.
 - Resuelto el 2026-11-03: el valor por defecto de `Group` en Lista sigue siendo Área (`LIST_DEFAULT_GROUP`); al ajustarse solo por un conflicto con Lanes (Lista, Tabla y Gantt), se escribe `'none'` de forma explícita y no el valor por defecto.
-- Si el estado guardado de una vista con un `lanes` que ya no existe (o que choca con `group`) se repara al leer, como hace `parseKanbanState()` con un agrupado desconocido.
+- Si el estado guardado de una vista con un `lanes` que ya no existe (o que choca con `group`) se repara al leer, como hace `parseKanbanState()` con un agrupado desconocido. Parcialmente resuelto en L2: `parseTaskViewState()` deja `lanes` en `''` si el valor no es un campo válido; un choque con `group` no se repara al leer (se evita al elegir) y se decide en L3 y L4, cuando las vistas lean `lanes`.
 
 ## 13. Calendario: días no laborables, feriados, proyección y hábitos (v1.1.15 — diseño, no implementado)
 

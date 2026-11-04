@@ -2,7 +2,7 @@
 // de Obsidian; ver docs/agenda-tasks/Arquitectura técnica.md §19.
 
 /** Versiones con novedades redactadas en los locales (`whats_new.v<x_y_z>`), de la más antigua a la más reciente. */
-export const WHATS_NEW_VERSIONS: readonly string[] = ['1.1.13'];
+export const WHATS_NEW_VERSIONS: readonly string[] = ['1.1.13', '1.1.14'];
 
 /** Última versión publicada antes de que existiera `lastSeenVersion`: de ahí parten quienes actualizan desde ella. */
 export const PRE_WHATS_NEW_VERSION = '1.1.12';

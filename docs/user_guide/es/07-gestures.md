@@ -31,14 +31,17 @@ Una referencia rápida de cada clic, doble clic, clic derecho y arrastre en el p
 | Clic | Una fila/elemento de tarea (vista Lista o Tabla) | Abre el modal **Editar tarea**, prellenado con los datos de esa tarea |
 | Doble clic | Una fila/elemento de tarea | Abre la nota subyacente, con el cursor en esa línea |
 | Clic derecho | Una fila/elemento de tarea | Abre un menú contextual para cambiar el estado de la tarea |
-| Clic | El conmutador **Lista \| Tabla** | Cambia de modo, conservando búsqueda, filtros, agrupado y orden |
-| Clic | **+ Filtro** | Abre menús para elegir un tipo de filtro y un valor (Área pide también una sub-área) |
+| Clic | El conmutador **Lista \| Tabla** (a la derecha, junto al cuadro de búsqueda) | Cambia de modo, conservando búsqueda, filtros, agrupado y orden |
+| Clic | **+ Filtro** | Abre un menú para elegir un tipo de filtro; Prioridad, Estado y Área abren después un popover con casillas (sigue abierto mientras marcas valores; ciérralo haciendo clic fuera o pulsando Esc), y los tipos de fecha piden un valor |
+| Clic | El chip **Filas**, **Grupo** u **Orden** | Abre un menú con la opción actual marcada; al elegir una opción se aplica |
+| Clic | La flecha dentro del chip **Orden** | Invierte el sentido del orden |
+| Clic | El ▼ de la cabecera de una fila | Pliega o despliega esa fila; la elección se recuerda |
 | Clic | La × de un chip de filtro, o **Limpiar** | Quita ese filtro, o todos (el texto de búsqueda se conserva) |
 | Clic | La cabecera de un grupo | Contrae o expande ese grupo; su estado se recuerda |
 | Clic | Un encabezado de columna (vista Tabla) | Ordena por esa columna; clic de nuevo para invertir. También accesible por teclado con Enter o Espacio |
 | Pasar el mouse / foco de teclado | Un control o widget con tooltip | Muestra un tooltip temático con su texto explicativo |
 
-La búsqueda, los filtros, el agrupado y el orden son comunes a las vistas Lista y Tabla y se recuerdan al volver de editar una tarea o cambiar de vista; el ancho de las columnas se adapta a las filas visibles tras filtrar.
+La búsqueda, los filtros, el agrupado y el orden son comunes a las vistas Lista y Tabla y se recuerdan al volver de editar una tarea o cambiar de vista; el ancho de las columnas se adapta a las filas visibles tras filtrar. Las vistas Kanban y Gantt ofrecen la misma barra de filtros y los mismos chips, y las vistas de Calendario tienen su propia barra de filtros (búsqueda, Prioridad, Estado y Área) que funciona igual.
 
 ## Kanban
 
@@ -51,6 +54,7 @@ La búsqueda, los filtros, el agrupado y el orden son comunes a las vistas Lista
 | Arrastrar | Una tarjeta a otra columna (agrupado por prioridad) | Cambia la prioridad de la tarea; la columna Normal quita el ícono de prioridad |
 | Clic | El encabezado de una columna | Pliega la columna en una barra delgada, o la abre otra vez; tu elección se recuerda |
 | Soltar | Una tarjeta sobre una columna plegada | Mueve la tarea ahí y abre la columna |
+| Arrastrar | Una tarjeta a una columna de otra fila (Filas activadas) | No permitido: las filas son de solo lectura |
 
 ## Gantt
 
@@ -64,6 +68,7 @@ La búsqueda, los filtros, el agrupado y el orden son comunes a las vistas Lista
 | Doble clic | Una fila | Abre la nota subyacente, con el cursor en esa línea |
 | Clic derecho | Una fila | Abre un menú contextual para cambiar el estado de la tarea |
 | Clic | La cabecera de un grupo | Contrae o expande el grupo; su estado se recuerda |
+| Clic | El ▼ de la cabecera de una fila (Filas activadas) | Pliega o despliega esa fila; la elección se recuerda |
 | Clic | Un botón de zoom (7, 14, 21, mes), ◀ / ▶, **Hoy**, una pestaña de mes o las flechas del año | Cambia el zoom o mueve la ventana |
 | Clic | **Tareas sin fecha** | Muestra u oculta esa lista (plegada por defecto) |
 

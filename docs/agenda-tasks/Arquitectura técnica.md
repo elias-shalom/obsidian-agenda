@@ -1210,7 +1210,7 @@ La corrección la aportó [@AidanAJoyce](https://github.com/AidanAJoyce) desde u
 - **Permisos**: un PR desde un fork no da acceso de escritura al repositorio; cualquier cambio futuro de la misma persona pasa por otro PR que se revisa igual.
 - **Crédito**: README (sección Contributors) y la nota del Changelog de la versión.
 
-## 28. Filtros con varios valores y filtros en el calendario (v1.1.14 — implementados el 2026-11-03; falta la prueba manual)
+## 28. Filtros con varios valores y filtros en el calendario (v1.1.14 — implementados y probados a mano el 2026-11-03)
 
 Comportamiento: [[Especificación de vistas]] §19.
 
@@ -1220,7 +1220,7 @@ Comportamiento: [[Especificación de vistas]] §19.
 - `parseTaskViewState()` convierte lo guardado: `'all'` pasa a `[]` y un valor suelto a una lista de uno; Kanban y Gantt lo usan también, así que no hay estados antiguos aparte.
 - `filterTasksByViewState()`: `TaskFilterCriteria.priority.is` y `.status` ya son listas; `criteria.location` gana `routes` y `matchesTaskAreas()` (`area.ts`) acepta varias rutas. Una ruta marcada es **efectiva** si ninguna otra ruta marcada cuelga de ella (`effectiveAreaRoutes()`); la tarea cumple si su ruta está bajo alguna ruta efectiva (gana la más específica, Especificación §19.1). `reconcileAreaRoutes()` descarta las rutas que ya no tienen notas.
 
-### 28.2 Barra y chips (**implementado el 2026-11-03, Fase M2; falta la prueba manual**)
+### 28.2 Barra y chips (**implementado y probado el 2026-11-03, Fase M2**)
 
 - Componente nuevo `src/core/task-filter-popover.ts`: un popover con casillas nativas, anclado bajo el chip o el botón pulsado (el ancla se mide al abrir, porque el chip se redibuja al marcar), que no se cierra al marcar y sí con un clic fuera o con Esc; accesible con teclado y utilizable en móvil. Llama a `onChange` en cada marca.
 - `TaskFilterBar` lo usa para prioridad, estado y área. El popover del área tiene dos secciones: las áreas (con «Raíz») y, debajo, las sub-áreas de las áreas marcadas, que se actualizan al marcar. `reconcileArea()` descarta las rutas que ya no tienen tareas.
@@ -1228,7 +1228,7 @@ Comportamiento: [[Especificación de vistas]] §19.
 - Opción nueva `filterTypes?: FilterChipId[]`: limita los tipos del menú «Añadir filtro» (el calendario no ofrece fechas).
 - La disposición de la barra (fila 1: conmutador, «+ Filtro», chips `Lanes`/`Group`/`Sort` y buscador; fila 2: chips de filtros activos) se describe en §29.2; los chips de filtro activos siguen en su fila propia.
 
-### 28.3 Calendario (**implementado el 2026-11-03: estado y filtrado, Fase CF1, y barra, Fase CF2; falta la prueba manual**)
+### 28.3 Calendario (**implementado y probado el 2026-11-03: estado y filtrado, Fase CF1, y barra, Fase CF2**)
 
 - Estado propio en `src/core/calendar-state.ts` (clave `obsidian-agenda-calendar-view-state`), cargado en `CalendarView.onOpen()` y compartido por las seis subvistas. Tiene el formato de `TaskViewState`, y `parseCalendarState()` descarta lo que el calendario no usa (fechas, agrupado y orden). `CALENDAR_FILTER_TYPES` fija los tipos de la barra.
 - El filtrado va en un solo punto: `getTasksForDate()` de `calendar-view.ts` recorre `visibleTasks` (las tareas que pasan `filterTasksForCalendar()`, calculadas una vez por carga) y la lista del calendario, el selector de fecha y los contadores del Año pasan por él. `this.tasks` conserva la lista completa para localizar una tarea por su línea (arrastre y menú de estado).
@@ -1240,7 +1240,7 @@ Comportamiento: [[Especificación de vistas]] §19.
 
 Node: conversión del estado antiguo, O dentro de un tipo y Y entre tipos, la regla de lo más específico, «Raíz», chips y reconciliación del área. Prueba manual en las seis subvistas del calendario.
 
-## 29. Lanes y barra de chips (v1.1.14 — §29.1 a §29.3 implementados el 2026-11-03, Fases L1 y L2, y Lista y Tabla de §29.5, Fase L3; Kanban y Gantt, diseño no implementado)
+## 29. Lanes y barra de chips (v1.1.14 — implementado y probado a mano el 2026-11-03, Fases L1 a L4: Lista, Tabla, Kanban y Gantt)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §20 (Lanes y chips) y §19 (filtros de la barra). Fases del Plan: L1 a L4 en [[Plan de implementación]], que se suman a M1, M2, CF1 y CF2. Nombre en la interfaz: «Lanes» (inglés) y «Filas» (español); en el código y la documentación, *swimlane* o `lane`.
 

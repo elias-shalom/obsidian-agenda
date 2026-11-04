@@ -629,25 +629,25 @@ Cambiar el texto de «Sin área» en el agrupado; los títulos «By area» y «B
 - [x] Verificable sola: Node (`tests/task-filters.test.cjs`, con el cargador `tests/helpers/load-source.cjs`): conversión del estado antiguo, O/Y, regla de lo más específico, «Raíz» y chips.
 - [x] La barra y los chips se adaptaron sin cambiar su comportamiento (selección única); `reconcileAreaRoutes()` descarta las rutas sin notas. El popover con casillas es la Fase M2.
 
-### Fase M2 — Barra y chips (depende de M1) — **implementada el 2026-11-03; falta la prueba manual**
+### Fase M2 — Barra y chips (depende de M1) — **implementada y probada el 2026-11-03**
 - [x] `src/core/task-filter-popover.ts`: popover con casillas que no se cierra al marcar (clic fuera o Esc), anclado al chip o botón, accesible con teclado y con objetivo táctil mayor en móvil; solo hay uno abierto.
 - [x] `TaskFilterBar` lo usa para prioridad, estado y área; el del área tiene dos secciones (áreas y sub-áreas de las marcadas, con «Área › Raíz» para las notas directas); `reconcileAreaRoutes()` (M1) descarta las rutas que ya no existen. Los filtros de fecha siguen con el menú de elección única.
 - [x] `task-filter-chips.ts`: un chip por tipo (el nombre con un valor y solo el número con dos o más, decidido el 2026-11-03) y tooltip con la lista completa (`FilterChip.title`); `toggleFilterValue()`, `buildAreaFilterSections()` y `toggleAreaRoute()` (`area.ts`) son puras y se prueban con Node.
 - [x] La lista del filtro de estado sale de `getStatusOptions()` y no de la constante `STATUS_OPTIONS` directamente, para que los estados personalizados de v1.1.17 (fase ES4) no obliguen a rehacer esta fase.
 - [x] Clave `filter_sub_areas` en los 6 idiomas (sustituye a `all_sub_areas`, que ya no se usa).
-- [ ] Prueba manual en Lista, Tabla, Kanban y Gantt: marcar Normal y Medium a la vez, varios estados y áreas con sub-áreas, el chip con dos o más valores («Estado: 2») y su tooltip, Esc y clic fuera, teclado, y en `is-tablet` e `is-phone`.
+- [x] Prueba manual en Lista, Tabla, Kanban y Gantt: marcar Normal y Medium a la vez, varios estados y áreas con sub-áreas, el chip con dos o más valores («Estado: 2») y su tooltip, Esc y clic fuera, teclado, y en `is-tablet` e `is-phone`.
 
 ### Fase CF1 — Estado y filtrado del calendario (depende de M1) — **implementada el 2026-11-03**
 - [x] `src/core/calendar-state.ts` con la clave `obsidian-agenda-calendar-view-state`, compartida por las 6 subvistas: mismo formato que `TaskViewState`, pero `parseCalendarState()` solo conserva búsqueda, prioridad, estado y área (los filtros de fecha, el agrupado y el orden vuelven a su valor por defecto).
 - [x] `CalendarView` filtra en `getTasksForDate()` (que recorre `visibleTasks`, calculado una vez en `onOpen()`), junto a `calendarShowCompletedTasks`; las seis subvistas, el selector de fecha y los contadores de la vista Año pasan por ese punto. `this.tasks` queda completa para buscar una tarea por su línea.
 - [x] Verificable sola: Node (`tests/calendar-filters.test.cjs`, 12 pruebas): estado y su conversión, filtrado por prioridad, estado, área y búsqueda, y la integración real con `CalendarView` (cargado con dobles de Obsidian). Sin barra todavía: el estado se escribe desde la Fase CF2.
 
-### Fase CF2 — Barra en el calendario (depende de M2 y CF1) — **implementada el 2026-11-03; falta la prueba manual**
+### Fase CF2 — Barra en el calendario (depende de M2 y CF1) — **implementada y probada el 2026-11-03**
 - [x] Opción `filterTypes` en `TaskFilterBar` (prioridad, estado, área; sin fechas, agrupado ni orden): `CALENDAR_FILTER_TYPES` en `calendar-state.ts`.
 - [x] Barra siempre visible justo bajo las pestañas principales, con el mismo aspecto que en las demás vistas y sin botón para abrirla: es el **primer elemento de `.agenda-content-container`**, igual que en Lista, Tabla, Kanban y Gantt (mismo espaciado bajo las pestañas, sin estilos propios). `CalendarView.onOpen()` la crea antes de filtrar (reajusta un área guardada que ya no existe) y `refreshCalendar()` la monta tras cada dibujado completo.
 - [x] No pierde el foco: un cambio de filtro llama a `redrawCalendarBody()`, que dibuja el calendario en un contenedor aparte y sustituye **todo el contenido salvo el nodo de la barra** (quitar y volver a poner el nodo desenfocaría el buscador). Un redibujado lento no pisa a otro más reciente (`redrawToken`). `BaseView.isInteracting()` cuenta el popover abierto para que un refresco automático no destruya la barra.
 - [x] Verificable con Node (`tests/calendar-filters.test.cjs`, 18 pruebas, con un DOM mínimo y un doble de la barra): tipos ofrecidos, barra como primer elemento del contenido, redibujado parcial que conserva el mismo nodo de la barra, redibujados que se pisan, y área guardada que ya no existe.
-- [ ] Prueba manual en las 6 subvistas, con el buscador y con el foco: teclear varias letras seguidas sin perderlo, cambiar de subvista y navegar con filtros activos, el popover abierto durante un refresco, y en escritorio, `is-tablet` e `is-phone`.
+- [x] Prueba manual en las 6 subvistas, con el buscador y con el foco: teclear varias letras seguidas sin perderlo, cambiar de subvista y navegar con filtros activos, el popover abierto durante un refresco, y en escritorio, `is-tablet` e `is-phone`.
 
 ### Fase L1 — Núcleo de carriles (independiente; Especificación §20, Arquitectura §29) — **implementada el 2026-11-03**
 - [x] Función única `buildLanes()`, compartida por las 4 vistas, en `src/core/task-lanes.ts` (módulo puro): parte las tareas por el campo de Lanes y devuelve un carril (`Lane`: `key`, `label`, `tasks` y `color`) por valor; «Ninguno» o un campo desconocido devuelven `[]`.
@@ -675,7 +675,7 @@ Cambiar el texto de «Sin área» en el agrupado; los títulos «By area» y «B
 - [x] Tabla: encabezado de columnas repetido en cada carril, con columnas y anchos compartidos (una sola `<table>`; los anchos se fijan en `<colgroup>`, en el `<thead>` y en cada encabezado repetido; los encabezados repetidos también ordenan).
 - [x] El chip `Lanes` aparece en Lista y Tabla (`laneOptions`); un estado guardado que repite campo entre Lanes y Group se repara al abrir (`repairAxes()`: gana Lanes y el agrupado pasa a Ninguno sin guardarse).
 - [x] Verificable con Node (`tests/task-lane-views.test.cjs`, 14 pruebas): modelos por carril con su conteo y orden, `Group` dentro de cada carril, claves de plegado con prefijo por campo, color solo en área, etiqueta repetida en cada carril y `repairAxes()`. Las plantillas se comprobaron renderizándolas con Handlebars (carriles, encabezados repetidos y `<col>`).
-- [ ] Prueba manual en Lista y Tabla con Lanes = Estado, Prioridad, Etiqueta, Área, Sub-área, Carpeta y Archivo, combinado con `Group`, filtros y `Sort`: plegar y recordar el plegado, que la Tabla alinee las columnas en todos los carriles, ordenar desde el encabezado de un carril, tareas con etiquetas repetidas, escritorio, `is-tablet` e `is-phone`.
+- [x] Prueba manual en Lista y Tabla con Lanes = Estado, Prioridad, Etiqueta, Área, Sub-área, Carpeta y Archivo, combinado con `Group`, filtros y `Sort`: plegar y recordar el plegado, que la Tabla alinee las columnas en todos los carriles, ordenar desde el encabezado de un carril, tareas con etiquetas repetidas, escritorio, `is-tablet` e `is-phone`.
 
 ### Fase L4 — Lanes en Kanban y Gantt (depende de L2; Especificación §20, §11.3 y §12) — **implementada el 2026-11-03**
 - [x] Kanban: Lanes parte el tablero en un tablero por carril con las mismas columnas; así Área y Sub-área quedan cubiertas (cierra «Agrupar el tablero por área y sub-área»). Arrastrar no cruza carriles.
@@ -685,20 +685,20 @@ Cambiar el texto de «Sin área» en el agrupado; los títulos «By area» y «B
   - [x] Un estado guardado cuyos carriles repiten el campo de las columnas se arregla al leer (`parseKanbanState()` quita los carriles: las columnas son obligatorias).
   - [x] El plegado del carril (▼) se comparte con Lista y Tabla (`addLaneToggleListeners()` en `BaseView`).
   - [x] Verificable con Node (`tests/kanban-lanes.test.cjs`, 14 pruebas): carriles y columnas, destino de arrastre, etiquetas repetidas, claves de plegado, estado guardado y la plantilla renderizada con y sin carriles.
-  - [ ] Prueba manual: Lanes en Kanban con Área, Sub-área, Estado, Prioridad, Etiqueta, Carpeta y Archivo; arrastrar dentro de un carril (estado y prioridad) y comprobar que no se puede soltar en otro; plegar columnas y carriles; escritorio, `is-tablet` e `is-phone`.
+  - [x] Prueba manual: Lanes en Kanban con Área, Sub-área, Estado, Prioridad, Etiqueta, Carpeta y Archivo; arrastrar dentro de un carril (estado y prioridad) y comprobar que no se puede soltar en otro; plegar columnas y carriles; escritorio, `is-tablet` e `is-phone`.
 - [x] Gantt: una sola ventana y un solo zoom, con la cabecera de fechas (año, meses, bandas de semana y días) repetida en cada carril (**a probar con uso real**). Los controles (periodo, zoom y navegación) salen una sola vez arriba; cada carril es un diagrama con su cabecera y sus filas, sobre la misma ventana. Un carril sin tareas dentro de la ventana no se dibuja. **Decidido el 2026-11-03**: la lista «Tareas sin fecha» va **una sola vez, al final**, con todas las tareas sin fecha (no por carril).
 - [x] Gantt: chip `Group` con Ninguno (modo plano), Área (por defecto), Estado y Prioridad. `buildGanttTaskRows()` y `buildGanttGroupedRows()` (`task-gantt.ts`) dan el modo plano y el agrupado; las claves de plegado llevan el campo como prefijo (`ganttGroupKey()`: `status:<clave>`, `priority:<clave>`; el área conserva la suya, así que no se pierde lo ya plegado); el color de grupo es solo del área (con Ninguno y Lanes: Área, las filas llevan el color del carril).
 - [x] Estado guardado del Gantt: `parseGanttState()` da el agrupado Área por defecto, devuelve a él un valor desconocido y, si repite el campo de los carriles, gana Lanes y el agrupado pasa a Ninguno.
 - [x] Verificable con Node (`tests/gantt-lanes.test.cjs`, 24 pruebas): modo plano, agrupado por área, estado y prioridad, claves de plegado, carriles sobre una ventana compartida y sin carriles vacíos, estado guardado y la plantilla renderizada con y sin carriles.
-- [ ] Prueba manual del Gantt: Lanes con cada campo, `Group` en cada valor, arrastrar y redimensionar barras dentro de un carril, plegar carriles y grupos, cambiar el zoom y la ventana con varios carriles, y la cabecera repetida en escritorio, `is-tablet` e `is-phone`.
+- [x] Prueba manual del Gantt: Lanes con cada campo, `Group` en cada valor, arrastrar y redimensionar barras dentro de un carril, plegar carriles y grupos, cambiar el zoom y la ventana con varios carriles, y la cabecera repetida en escritorio, `is-tablet` e `is-phone`.
 
-### Fase CV14 — Cierre de v1.1.14: pruebas manuales y documentación (depende de M1 a L4)
-- [ ] Pruebas manuales de lo implementado: filtros con varios valores en Lista, Tabla, Kanban y Gantt; barra del calendario en las 6 subvistas (foco del buscador); Lanes en las 4 vistas con cada campo; el conmutador junto al buscador; escritorio, `is-tablet` e `is-phone`; tema claro y oscuro.
-- [ ] README: badge, What's New, News, Features, Gestures, Configuration, Changelog y la lista de próximas versiones.
-- [ ] Manual de usuario en inglés y español (`docs/user_guide/`).
-- [ ] Entrada `whats_new.v1_1_14` en los 6 idiomas y `'1.1.14'` en `WHATS_NEW_VERSIONS` de `src/core/whats-new.ts`.
-- [ ] Documentación de desarrollo: pasar §19, §20 y §29 a «implementado»; actualizar este plan.
-- [ ] `npm version 1.1.14 --no-git-tag-version`, `npm run build` y ESLint sobre los archivos tocados.
+### Fase CV14 — Cierre de v1.1.14: pruebas manuales y documentación (depende de M1 a L4) — **hecha el 2026-11-03**
+- [x] Pruebas manuales de lo implementado: filtros con varios valores en Lista, Tabla, Kanban y Gantt; barra del calendario en las 6 subvistas (foco del buscador); Lanes en las 4 vistas con cada campo; el conmutador junto al buscador; escritorio, `is-tablet` e `is-phone`; tema claro y oscuro.
+- [x] README: badge, What's New, News, Features, Gestures, Configuration, Changelog y la lista de próximas versiones.
+- [x] Manual de usuario en inglés y español (`docs/user_guide/`): introducción, primeros pasos, vistas generales (barra de filtros, filtros con varios valores y Lanes), vistas de calendario (barra de filtros), gestos y preguntas frecuentes; no hay ajustes nuevos, así que `08-configuration.md` no cambia.
+- [x] Entrada `whats_new.v1_1_14` en los 6 idiomas y `'1.1.14'` en `WHATS_NEW_VERSIONS` de `src/core/whats-new.ts`.
+- [x] Documentación de desarrollo: §19, §20 y §29 pasan a «implementado»; se actualizan este plan, `todo.md` y el README de `docs/agenda-tasks/`.
+- [x] `npm version 1.1.14 --no-git-tag-version`, `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
 Varios valores en los filtros de fecha; excluir valores («no es»); agrupado y orden en el calendario; arrastrar tareas entre carriles; orden manual de Kanban (descartado).

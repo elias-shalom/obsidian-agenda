@@ -11,6 +11,7 @@ These apply across every calendar layout:
 - **Completed tasks** — dimmed by default; you can hide them entirely from the same settings group.
 - **Task pills** — the small blocks representing a task. Click to edit, double-click to open the note, right-click to change its status, drag to reschedule (see [8. Gestures and Interactions](07-gestures.md) for the full list of gestures).
 - **Date picker** — click the calendar icon button in the header to open a popover and jump to any day, month, or year; days that already have tasks are marked with a dot.
+- **Filter bar** — all six layouts show a filter bar at the top of the content, with **search** and the **Priority**, **Status** and **Area** filters (**+ Filter**) and their chips. It works like the filter bar of the Tasks tab (several values per filter; see [4. Views Overview](03-views-overview.md#filters-with-several-values)), but has no date filters, grouping or sort. Its settings are remembered separately from the Tasks tab and shared by the six calendar views, so switching layouts keeps your filters. Typing in the search box does not lose focus while the calendar redraws.
 
 ## Day view
 

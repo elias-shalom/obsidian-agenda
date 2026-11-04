@@ -11,7 +11,7 @@ By default, all view families are visible. You can hide the ones you don't use f
 | Tab | What it's for |
 |---|---|
 | **Overview** | A dashboard with key metrics, upcoming/overdue tasks and progress widgets |
-| **Tasks** | One tab with a **List \| Table** switch: a compact list grouped by area, or a spreadsheet-style grid, both with search, filters, grouping and sorting |
+| **Tasks** | One tab with a **List \| Table** switch: a compact list grouped by area, or a spreadsheet-style grid, both with search, filters, grouping, sorting and lanes |
 | **Kanban** | A board with columns by status, priority, tag or folder; drag a card to change its status or priority |
 | **Gantt** | A timeline with a bar per task; move bars or drag their edges to change dates |
 | **Calendar** | Six calendar layouts to see tasks against a timeline |
@@ -37,14 +37,15 @@ Click a task (in any view) to open the same modal, prefilled with its current da
 
 | Action | How |
 |---|---|
-| Filter tasks | **+ Filter** in the Tasks tab (List and Table) |
+| Filter tasks | **+ Filter** in the Tasks tab (List and Table), and in the Kanban, Gantt and Calendar views |
+| Split a view by area, status, tag, etc. | The **Lanes** chip (Tasks, Kanban and Gantt) |
 | Create a task | `Ctrl+P`, the create button, or double-click in a calendar view |
 | Edit a task | Click the task |
 | Open the note behind a task | Double-click the task |
-| Sort tasks | The **Sort by** selector, or a column header (Table) |
+| Sort tasks | The **Sort** chip (click its arrow to invert), or a column header (Table) |
 
 ## Next steps
 
-- [4. Views Overview](03-views-overview.md) — a closer look at Overview, List and Table.
+- [4. Views Overview](03-views-overview.md) — a closer look at Overview, List, Table, Kanban and Gantt.
 - [5. Calendar Views](04-calendar-views.md) — the six calendar layouts.
 - [8. Gestures and Interactions](07-gestures.md) — the full click/double-click/drag reference.

@@ -29,6 +29,21 @@ Tag and folder columns are read-only: moving a task to another folder would mean
 **Why does a task not appear in the Gantt chart?**
 A task needs at least one of 🛫, ⏳ or 📅. Tasks without any date are listed in the **Tasks without a date** group below the chart (collapsed by default), and a task outside the visible window shows up when you move the window or change the zoom.
 
+**How do I filter by two priorities (or two statuses or areas)?**
+Choose **+ Filter ▸ Priority** and tick both values in the popover; it stays open while you tick and closes when you click outside or press Esc. Values of the same filter are "or" (Normal **or** Medium), while different filters are "and". The chip then shows only the count (for example **Priority: 2**); hover it to see the values.
+
+**How do I see my tasks split by area?**
+Use the **Lanes** chip next to **+ Filter** and choose **Area** (or Sub-area, Status, Priority, Tag, Folder or File). Each value becomes its own widget: a board in Kanban, a section in List, a block in Table and a chart in Gantt. Choose **None** to go back to the normal view.
+
+**Why can't I choose Group = Area when Lanes = Area?**
+Lanes and Group cannot use the same field, since the groups would repeat the lanes. In Kanban the clashing option is disabled; in List, Table and Gantt you can choose it and the other chip switches to None by itself. Area, Sub-area and Folder count as the same field.
+
+**Why is a task shown in several lanes?**
+When splitting by **Tag**, a task with several tags appears in each of its lanes, so the counts can add up to more than the number of tasks.
+
+**The calendar does not show the date filters, grouping or sort — is that expected?**
+Yes. The calendar's filter bar offers search, Priority, Status and Area only. Its settings are shared by the six calendar layouts and are separate from the Tasks tab.
+
 ## Getting help
 
 - 📖 Check the project [Wiki](https://github.com/elias-shalom/obsidian-agenda/wiki).

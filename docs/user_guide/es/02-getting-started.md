@@ -11,7 +11,7 @@ Por defecto, todas las familias de vistas están visibles. Puedes ocultar las qu
 | Pestaña | Para qué sirve |
 |---|---|
 | **Vista general** | Un panel con métricas clave, tareas próximas/vencidas y widgets de progreso |
-| **Tareas** | Una pestaña con un conmutador **Lista \| Tabla**: una lista compacta agrupada por área o una cuadrícula estilo hoja de cálculo, ambas con búsqueda, filtros, agrupado y orden |
+| **Tareas** | Una pestaña con un conmutador **Lista \| Tabla**: una lista compacta agrupada por área o una cuadrícula estilo hoja de cálculo, ambas con búsqueda, filtros, agrupado, orden y filas |
 | **Kanban** | Un tablero con columnas por estado, prioridad, etiqueta o carpeta; arrastra una tarjeta para cambiar su estado o su prioridad |
 | **Gantt** | Una línea de tiempo con una barra por tarea; mueve barras o arrastra sus bordes para cambiar fechas |
 | **Calendario** | Seis diseños de calendario para ver las tareas en una línea de tiempo |
@@ -37,14 +37,15 @@ Haz clic en una tarea (en cualquier vista) para abrir el mismo modal, prellenado
 
 | Acción | Cómo |
 |---|---|
-| Filtrar tareas | **+ Filtro** en la pestaña Tareas (Lista y Tabla) |
+| Filtrar tareas | **+ Filtro** en la pestaña Tareas (Lista y Tabla), y en las vistas Kanban, Gantt y Calendario |
+| Dividir una vista por área, estado, etiqueta, etc. | El chip **Filas** (Tareas, Kanban y Gantt) |
 | Crear una tarea | `Ctrl+P`, el botón de crear, o doble clic en una vista de calendario |
 | Editar una tarea | Haz clic en la tarea |
 | Abrir la nota detrás de una tarea | Doble clic en la tarea |
-| Ordenar tareas | El selector **Ordenar por**, o un encabezado de columna (Tabla) |
+| Ordenar tareas | El chip **Orden** (haz clic en su flecha para invertir), o un encabezado de columna (Tabla) |
 
 ## Siguientes pasos
 
-- [4. Vistas generales](03-views-overview.md) — un vistazo más de cerca a Vista general, Lista y Tabla.
+- [4. Vistas generales](03-views-overview.md) — un vistazo más de cerca a Vista general, Lista, Tabla, Kanban y Gantt.
 - [5. Vistas de calendario](04-calendar-views.md) — los seis diseños de calendario.
 - [8. Gestos e interacciones](07-gestures.md) — la referencia completa de clics, dobles clics y arrastres.

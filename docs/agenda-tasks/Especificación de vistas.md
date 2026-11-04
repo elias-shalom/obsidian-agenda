@@ -1027,9 +1027,9 @@ Límites: un evento fuera de la ventana descargada (de −3 a +6 meses) no se re
 - Solo cambia el texto: los valores guardados (orden y agrupación elegidos) no cambian y no hay migración.
 - **Fuera de alcance**: criterios nuevos de orden o agrupación y combos en la Tabla o el Dashboard.
 
-## 19. Filtros con varios valores y filtros en el calendario (v1.1.14 — implementados el 2026-11-03; falta la prueba manual de la barra del calendario y de los filtros múltiples)
+## 19. Filtros con varios valores y filtros en el calendario (v1.1.14 — implementados y probados a mano el 2026-11-03)
 
-> **Estado**: propuesta de la discusión del 2026-10-31, con las decisiones cerradas el 2026-10-31 (§19.4). **§19.1 (varios valores, fases M1 y M2) y §19.2 (calendario, fases CF1 y CF2) están implementados; falta la prueba manual.** Mecanismo: [[Arquitectura técnica]] §28. Plan: fases M1–M2, CF1 y CF2.
+> **Estado**: propuesta de la discusión del 2026-10-31, con las decisiones cerradas el 2026-10-31 (§19.4). **§19.1 (varios valores, fases M1 y M2) y §19.2 (calendario, fases CF1 y CF2) están implementados y probados a mano.** Mecanismo: [[Arquitectura técnica]] §28. Plan: fases M1–M2, CF1 y CF2.
 
 ### 19.1 Varios valores por filtro
 
@@ -1075,9 +1075,9 @@ La barra de chips de §20 se construye sobre la de este apartado: los chips de f
 | Calendario: estado | Uno compartido por las 6 subvistas |
 | Orden de trabajo | Primero los filtros múltiples (M1–M2) y después el calendario (CF1–CF2) |
 
-## 20. Lanes (Filas) y barra de chips `Lanes`/`Group`/`Sort` (v1.1.14 — diseño, no implementado)
+## 20. Lanes (Filas) y barra de chips `Lanes`/`Group`/`Sort` (v1.1.14 — implementado y probado a mano el 2026-11-03)
 
-> **Estado**: decisiones del 2026-11-01, más el reparto del 2026-11-02 y las reglas de exclusión y traducción del 2026-11-03; nada implementado. Mecanismo: [[Arquitectura técnica]] §29. Plan: fases L1 a L4 de v1.1.14 en [[Plan de implementación]] (se conservan M1, M2, CF1 y CF2 de §19). Cubre dos ítems antes sueltos: «Kanban: agrupar por área y sub-área» (§11.3) y «Gantt: combo de agrupado» (§12.3).
+> **Estado**: decisiones del 2026-11-01, más el reparto del 2026-11-02 y las reglas de exclusión y traducción del 2026-11-03; **implementado y probado a mano en Lista, Tabla, Kanban y Gantt**. Mecanismo: [[Arquitectura técnica]] §29. Plan: fases L1 a L4 de v1.1.14 en [[Plan de implementación]] (se conservan M1, M2, CF1 y CF2 de §19). Cubre dos ítems antes sueltos: «Kanban: agrupar por área y sub-área» (§11.3) y «Gantt: combo de agrupado» (§12.3). Pendientes: la columna por **Archivo** del Kanban (§20.3) y la revisión de las traducciones de «Lanes» por hablantes nativos.
 
 ### 20.1 Qué es Lanes
 

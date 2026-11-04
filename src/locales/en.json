@@ -389,6 +389,10 @@
   "whats_new": {
     "title": "What's new in Agenda Tasks",
     "close": "Close",
+    "v1_1_14": {
+      "title": "Lanes and filters with several values",
+      "items": "A new Lanes button splits Kanban, List, Table and Gantt into one independent widget per area, sub-area, status, priority, tag, folder or file; fold each lane with its ▼.\nThe Priority, Status and Area filters now accept several values at once; a filter with several values shows only its count (for example Status: 2).\nThe calendar views have their own filter bar with search, Priority, Status and Area.\nGroup and Sort are now compact buttons next to + Filter, and the List | Table switch sits next to the search box.\nList and Table can group by start date and scheduled date, and the Gantt has a new Group selector (None, Area, Status, Priority).\nLanes and Group never repeat a field: in Kanban the clashing option is blocked, and in List, Table and Gantt the other button switches to None by itself."
+    },
     "v1_1_13": {
       "title": "Kanban, Gantt and more",
       "items": "A new Kanban tab shows your tasks as columns by status, priority, tag or folder; drag a card to another status or priority column to change it, and collapse the columns you do not need.\nA new Gantt tab draws your tasks on a timeline; drag a bar to move it, drag its edges to change a date, or stretch a milestone into a bar.\nA single Show Tasks tab switch replaces the List and Table switches, and a new Show Habits tab switch hides the whole Habits tab.\nThe Area filter has a Root option for notes outside any folder, and the Sub-area filter has one for notes directly in an area's folder.\nIf the habits folder does not exist, creating your first habit offers to create it, and Settings tells you whether it exists.\nThe sort and group selectors now have a label (Sort: / Group:).\nThe Week, Work Week and List calendar views show the right weekday names when the week does not start on Sunday (thanks to @AidanAJoyce).\nThis window: after an update you will see what's new once; you can turn it off in Settings."

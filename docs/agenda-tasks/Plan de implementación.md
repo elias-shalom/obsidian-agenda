@@ -677,8 +677,15 @@ Cambiar el texto de «Sin área» en el agrupado; los títulos «By area» y «B
 - [x] Verificable con Node (`tests/task-lane-views.test.cjs`, 14 pruebas): modelos por carril con su conteo y orden, `Group` dentro de cada carril, claves de plegado con prefijo por campo, color solo en área, etiqueta repetida en cada carril y `repairAxes()`. Las plantillas se comprobaron renderizándolas con Handlebars (carriles, encabezados repetidos y `<col>`).
 - [ ] Prueba manual en Lista y Tabla con Lanes = Estado, Prioridad, Etiqueta, Área, Sub-área, Carpeta y Archivo, combinado con `Group`, filtros y `Sort`: plegar y recordar el plegado, que la Tabla alinee las columnas en todos los carriles, ordenar desde el encabezado de un carril, tareas con etiquetas repetidas, escritorio, `is-tablet` e `is-phone`.
 
-### Fase L4 — Lanes en Kanban y Gantt (depende de L2; Especificación §20, §11.3 y §12)
-- [ ] Kanban: Lanes parte el tablero en un tablero por carril con las mismas columnas; así Área y Sub-área quedan cubiertas (cierra «Agrupar el tablero por área y sub-área»). Arrastrar no cruza carriles.
+### Fase L4 — Lanes en Kanban y Gantt (depende de L2; Especificación §20, §11.3 y §12) — **Kanban implementado el 2026-11-03; falta el Gantt**
+- [x] Kanban: Lanes parte el tablero en un tablero por carril con las mismas columnas; así Área y Sub-área quedan cubiertas (cierra «Agrupar el tablero por área y sub-área»). Arrastrar no cruza carriles.
+  - [x] `buildKanbanLanes()` (`kanban-board.ts`) reparte las tareas con `buildLanes()` y arma las columnas de `Group` dentro de cada carril; `KanbanView` pasa `laneOptions` y dibuja un `<section class="oa-lane">` por carril (la plantilla usa un partial `columnTemplate` para las columnas).
+  - [x] Cada carril es un tablero independiente: el plegado de una columna se recuerda por carril (`collapseStorageKey(group, columna, carril)`) y, por defecto, una columna vacía arranca plegada en cada carril.
+  - [x] El arrastre queda dentro del carril: la tarjeta lleva la clave de su carril en el payload; `dragover` solo acepta las columnas del mismo carril y `drop` lo vuelve a validar.
+  - [x] Un estado guardado cuyos carriles repiten el campo de las columnas se arregla al leer (`parseKanbanState()` quita los carriles: las columnas son obligatorias).
+  - [x] El plegado del carril (▼) se comparte con Lista y Tabla (`addLaneToggleListeners()` en `BaseView`).
+  - [x] Verificable con Node (`tests/kanban-lanes.test.cjs`, 14 pruebas): carriles y columnas, destino de arrastre, etiquetas repetidas, claves de plegado, estado guardado y la plantilla renderizada con y sin carriles.
+  - [ ] Prueba manual: Lanes en Kanban con Área, Sub-área, Estado, Prioridad, Etiqueta, Carpeta y Archivo; arrastrar dentro de un carril (estado y prioridad) y comprobar que no se puede soltar en otro; plegar columnas y carriles; escritorio, `is-tablet` e `is-phone`.
 - [ ] Gantt: una sola ventana y un solo zoom, con la cabecera de fechas repetida en cada carril (**a probar**, ver «Por resolver» en Especificación §20).
 - [ ] Gantt: chip `Group` con Ninguno (modo plano), Área (por defecto), Estado y Prioridad; `buildGanttRows()` gana el modo plano y las claves de plegado con prefijo por campo (como `toGroupViewModels()`); color de grupo solo para el área.
 - [ ] Verificable sola: Node (`buildGanttRows()` plano y por campo, claves de plegado); prueba manual con Lanes en Kanban y Gantt, y con `Group` del Gantt en cada valor.

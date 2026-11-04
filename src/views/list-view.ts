@@ -136,7 +136,7 @@ export class ListView extends BaseView {
 
     // Plegar y desplegar grupos (el estado se recuerda por clave)
     this.addFolderToggleListeners(container);
-    this.wireLanes(container);
+    this.addLaneToggleListeners(container);
 
     container.querySelectorAll<HTMLElement>('.oa-task-item').forEach(item => {
       // Añadir indicador visual
@@ -167,19 +167,6 @@ export class ListView extends BaseView {
 
         // Marcar como seleccionada
         item.addClass('selected');
-      });
-    });
-  }
-
-  /** Plegar y desplegar carriles; se recuerda con la misma clave de `localStorage` que usan los grupos. */
-  private wireLanes(container: HTMLElement): void {
-    container.querySelectorAll<HTMLElement>('.oa-lane').forEach(lane => {
-      const storageKey = `folder_${lane.dataset.laneKey ?? ''}_collapsed`;
-      lane.toggleClass('oa-collapsed', this.app.loadLocalStorage(storageKey) === 'true');
-
-      lane.querySelector(':scope > .oa-lane-header')?.addEventListener('click', () => {
-        lane.toggleClass('oa-collapsed', !lane.hasClass('oa-collapsed'));
-        this.app.saveLocalStorage(storageKey, String(lane.hasClass('oa-collapsed')));
       });
     });
   }

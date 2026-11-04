@@ -1,10 +1,6 @@
-{{!-- Kanban View (v1.1.13): una columna por estado, prioridad, etiqueta o carpeta --}}
-<div class="oa-kanban-toolbar"></div>
-
-<div class="oa-kanban-board">
-  {{#if columns.length}}
-    {{#each columns}}
-    <section class="oa-kanban-column{{#if this.collapsed}} oa-kanban-column--collapsed{{/if}}" data-column-key="{{this.key}}" data-droppable="{{#if this.droppable}}true{{else}}false{{/if}}" {{#if this.color}}data-column-color="{{this.color}}"{{/if}}>
+{{!-- Kanban View (v1.1.13): una columna por estado, prioridad, etiqueta o carpeta; con Lanes (v1.1.14), un tablero por carril --}}
+{{#*inline "columnTemplate"}}
+    <section class="oa-kanban-column{{#if this.collapsed}} oa-kanban-column--collapsed{{/if}}" data-column-key="{{this.key}}" data-lane-key="{{this.laneKey}}" data-droppable="{{#if this.droppable}}true{{else}}false{{/if}}" {{#if this.color}}data-column-color="{{this.color}}"{{/if}}>
       <button type="button" class="oa-kanban-column__header" aria-expanded="{{#if this.collapsed}}false{{else}}true{{/if}}" title="{{#if this.collapsed}}{{t 'kanban_expand_column'}}{{else}}{{t 'kanban_collapse_column'}}{{/if}}">
         <span class="oa-kanban-column__title">{{this.label}}</span>
         <span class="oa-kanban-column__count">{{this.count}}</span>
@@ -28,6 +24,35 @@
         {{/unless}}
       </div>
     </section>
+{{/inline}}
+
+<div class="oa-kanban-toolbar"></div>
+
+<div class="oa-kanban-board{{#if lanes.length}} oa-kanban-board--lanes{{/if}}">
+  {{#if lanes.length}}
+    {{#each lanes}}
+    <section class="oa-lane" data-lane-key="{{this.storageKey}}" {{#if this.color}}data-group-color="{{this.color}}"{{/if}}>
+      <h2 class="oa-lane-header">
+        <span class="oa-folder-toggle" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right">
+            <path d="m9 18 6-6-6-6"/>
+          </svg>
+        </span>
+        <span class="oa-folder-title">{{this.label}}</span>
+        <span class="oa-task-count">({{this.count}})</span>
+      </h2>
+      <div class="oa-lane-body">
+        <div class="oa-kanban-lane-columns">
+          {{#each this.columns}}
+            {{> columnTemplate}}
+          {{/each}}
+        </div>
+      </div>
+    </section>
+    {{/each}}
+  {{else if columns.length}}
+    {{#each columns}}
+      {{> columnTemplate}}
     {{/each}}
   {{else}}
     <p class="oa-kanban-empty">{{#if vaultHasTasks}}{{t "no_tasks_match_filters"}}{{else}}{{t "no_tasks"}}{{/if}}</p>

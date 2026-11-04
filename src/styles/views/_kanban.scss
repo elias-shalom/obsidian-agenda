@@ -1,14 +1,29 @@
 @use '../variables' as *;
 
-// Tablero Kanban (v1.1.13): columnas de ancho fijo con desplazamiento horizontal
-.oa-kanban-board {
+// Tablero Kanban (v1.1.13): columnas de ancho fijo con desplazamiento horizontal. Con Lanes (v1.1.14) el tablero
+// apila un carril (`.oa-lane`) por valor y cada carril lleva su propia fila de columnas.
+.oa-kanban-board,
+.oa-kanban-lane-columns {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 12px;
   overflow-x: auto;
   scroll-snap-type: x proximity;
+}
+
+.oa-kanban-board {
+  padding: 12px;
   flex-shrink: 0;
+
+  &--lanes {
+    display: block;
+    overflow-x: visible;
+    scroll-snap-type: none;
+  }
+}
+
+.oa-kanban-lane-columns {
+  padding-bottom: 4px;
 }
 
 .oa-kanban-column {

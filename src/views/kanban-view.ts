@@ -8,7 +8,8 @@ import { attachTaskGestures, changeTaskStatus, TASK_GESTURE_IGNORE_SELECTOR } fr
 import { TaskFilterBar } from '../core/task-filter-bar';
 import { TaskViewState, filterTasksByViewState } from '../core/task-view-state';
 import { TASK_SORT_COLUMNS, sortTasksByColumn } from '../core/task-column-sort';
-import { KANBAN_GROUP_OPTIONS, KanbanColumn, KanbanPriority, buildKanbanColumns, priorityLineTransform, taskColumnKey } from '../core/kanban-board';
+import { KANBAN_GROUP_OPTIONS, KanbanColumn, KanbanPriority, buildKanbanColumns, buildKanbanLanes, priorityLineTransform, taskColumnKey } from '../core/kanban-board';
+import { LANE_OPTIONS } from '../core/task-lanes';
 import { loadKanbanState, saveKanbanState } from '../core/kanban-state';
 import { collapseStorageKey, parseCollapseChoice, resolveCollapsed } from '../core/kanban-collapse';
 
@@ -22,16 +23,22 @@ const SCROLLBAR_ALLOWANCE_PX = 16;
 /** Altura mínima que se deja a las columnas aunque el panel sea muy bajo. */
 const MIN_COLUMN_MAX_HEIGHT_PX = 160;
 
+type KanbanColumnView = {
+  key: string;
+  label: string;
+  count: number;
+  droppable: boolean;
+  collapsed: boolean;
+  /** Carril al que pertenece; vacío sin Lanes. Una tarjeta solo se suelta en columnas de su propio carril. */
+  laneKey: string;
+  color?: string;
+  tasks: ITask[];
+};
+
 type KanbanViewData = {
-  columns: {
-    key: string;
-    label: string;
-    count: number;
-    droppable: boolean;
-    collapsed: boolean;
-    color?: string;
-    tasks: ITask[];
-  }[];
+  columns: KanbanColumnView[];
+  /** Un tablero por carril; vacío si Lanes = Ninguno (entonces se usa `columns`). */
+  lanes: { label: string; storageKey: string; color?: string; count: number; columns: KanbanColumnView[] }[];
   /** La tarjeta repite estado o prioridad solo cuando las columnas no lo dicen ya. */
   showStatusIcon: boolean;
   showPriorityIcon: boolean;
@@ -41,7 +48,10 @@ type KanbanViewData = {
 
 export class KanbanView extends BaseView {
   private tasks: ITask[] = [];
-  private columns: KanbanColumn[] = [];
+  /** Columnas de cada tablero con su destino de arrastre, por clave de carril (`''` sin Lanes). */
+  private laneColumns = new Map<string, KanbanColumn[]>();
+  /** Carril de la tarjeta que se arrastra; `null` si no se arrastra ninguna. */
+  private dragLane: string | null = null;
   private viewState!: TaskViewState;
   private filterBar: TaskFilterBar | null = null;
   private content: HTMLElement | null = null;
@@ -75,6 +85,7 @@ export class KanbanView extends BaseView {
       i18n: this.i18n,
       tasks: this.tasks,
       state: loadKanbanState(this.app),
+      laneOptions: LANE_OPTIONS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
       groupOptions: KANBAN_GROUP_OPTIONS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
       axisRules: { requiresGroup: true },
       sortOptions: TASK_SORT_COLUMNS.map(({ value, labelKey }) => ({ value, label: this.i18n.t(labelKey) })),
@@ -97,18 +108,35 @@ export class KanbanView extends BaseView {
       this.viewState.sortDirection
     );
     const group = this.viewState.group;
-    this.columns = buildKanbanColumns(sorted, group, key => this.i18n.t(key));
+    const translate = (key: string): string => this.i18n.t(key);
+    this.laneColumns.clear();
 
-    return {
-      columns: this.columns.map(column => ({
+    const toColumnViews = (columns: KanbanColumn[], laneKey: string): KanbanColumnView[] => {
+      this.laneColumns.set(laneKey, columns);
+      return columns.map(column => ({
         key: column.key,
         label: column.label,
         count: column.tasks.length,
         droppable: column.drop !== null,
-        collapsed: resolveCollapsed(column.tasks.length, parseCollapseChoice(this.app.loadLocalStorage(collapseStorageKey(group, column.key)))),
+        collapsed: resolveCollapsed(column.tasks.length, parseCollapseChoice(this.app.loadLocalStorage(collapseStorageKey(group, column.key, laneKey)))),
+        laneKey,
         color: column.color,
         tasks: column.tasks,
-      })),
+      }));
+    };
+
+    // Con Lanes cada carril es un tablero propio; sin él, el tablero único de siempre
+    const lanes = buildKanbanLanes(sorted, this.viewState.lanes, group, translate).map(lane => ({
+      label: lane.label,
+      storageKey: lane.storageKey,
+      color: lane.color,
+      count: lane.count,
+      columns: toColumnViews(lane.columns, lane.storageKey),
+    }));
+
+    return {
+      columns: lanes.length > 0 ? [] : toColumnViews(buildKanbanColumns(sorted, group, translate), ''),
+      lanes,
       showStatusIcon: group !== 'status',
       showPriorityIcon: group !== 'priority',
       vaultHasTasks: this.tasks.length > 0,
@@ -158,7 +186,7 @@ export class KanbanView extends BaseView {
     header.setAttribute('aria-expanded', String(!collapsed));
     header.setAttribute('title', this.i18n.t(collapsed ? 'kanban_expand_column' : 'kanban_collapse_column'));
     this.app.saveLocalStorage(
-      collapseStorageKey(this.viewState.group, column.dataset.columnKey ?? ''),
+      collapseStorageKey(this.viewState.group, column.dataset.columnKey ?? '', column.dataset.laneKey ?? ''),
       collapsed ? 'collapsed' : 'expanded'
     );
   }
@@ -182,9 +210,11 @@ export class KanbanView extends BaseView {
   }
 
   private wireBoard(container: HTMLElement): void {
-    container.querySelectorAll<HTMLElement>('.oa-kanban-column[data-column-color]').forEach(column => {
-      column.setCssProps({ '--oa-column-color': column.dataset.columnColor ?? '' });
+    container.querySelectorAll<HTMLElement>('.oa-kanban-column[data-column-color], .oa-lane[data-group-color]').forEach(element => {
+      if (element.dataset.columnColor) element.setCssProps({ '--oa-column-color': element.dataset.columnColor });
+      else element.setCssProps({ '--oa-group-color': element.dataset.groupColor ?? '' });
     });
+    this.addLaneToggleListeners(container);
 
     const clearHighlights = (): void => {
       container.querySelectorAll('.oa-kanban-column--over').forEach(el => el.removeClass('oa-kanban-column--over'));
@@ -213,20 +243,25 @@ export class KanbanView extends BaseView {
       card.addEventListener('dragstart', (event) => {
         const task = getTask();
         if (!task || !event.dataTransfer) return;
-        event.dataTransfer.setData(DRAG_MIME, JSON.stringify({ filePath: task.file.path, lineNumber: task.line.number }));
+        const laneKey = card.closest<HTMLElement>('.oa-kanban-column')?.dataset.laneKey ?? '';
+        event.dataTransfer.setData(DRAG_MIME, JSON.stringify({ filePath: task.file.path, lineNumber: task.line.number, laneKey }));
         event.dataTransfer.effectAllowed = 'move';
+        this.dragLane = laneKey;
         card.addClass('oa-dragging');
       });
       card.addEventListener('dragend', () => {
+        this.dragLane = null;
         card.removeClass('oa-dragging');
         clearHighlights();
       });
     });
 
-    // `dragover` no puede leer lo que se arrastra: solo las columnas que admiten soltar lo aceptan y
-    // la tarjeta se valida en `drop`.
+    // `dragover` no puede leer lo que se arrastra, pero la vista sabe de qué carril sale la tarjeta: solo las
+    // columnas de ese carril que admiten soltar lo aceptan, y la tarjeta se valida en `drop`.
     container.querySelectorAll<HTMLElement>('.oa-kanban-column[data-droppable="true"]').forEach(column => {
+      const laneKey = column.dataset.laneKey ?? '';
       column.addEventListener('dragover', (event) => {
+        if (this.dragLane !== laneKey) return;
         event.preventDefault();
         column.addClass('oa-kanban-column--over');
       });
@@ -239,23 +274,25 @@ export class KanbanView extends BaseView {
         event.preventDefault();
         column.removeClass('oa-kanban-column--over');
         const raw = event.dataTransfer?.getData(DRAG_MIME);
-        if (raw) this.handleDrop(raw, column.dataset.columnKey ?? '').catch(console.error);
+        if (raw) this.handleDrop(raw, column.dataset.columnKey ?? '', laneKey).catch(console.error);
       });
     });
   }
 
-  private async handleDrop(raw: string, columnKey: string): Promise<void> {
+  private async handleDrop(raw: string, columnKey: string, laneKey: string): Promise<void> {
     let payload: unknown;
     try {
       payload = JSON.parse(raw);
     } catch {
       return;
     }
-    const { filePath, lineNumber } = (payload ?? {}) as { filePath?: unknown; lineNumber?: unknown };
+    const { filePath, lineNumber, laneKey: fromLane } = (payload ?? {}) as { filePath?: unknown; lineNumber?: unknown; laneKey?: unknown };
     if (typeof filePath !== 'string' || typeof lineNumber !== 'number') return;
+    // Un carril es una partición de lo que ya hay, no un destino: no se suelta en otro carril
+    if ((typeof fromLane === 'string' ? fromLane : '') !== laneKey) return;
 
     const task = this.findTask(filePath, lineNumber);
-    const drop = this.columns.find(column => column.key === columnKey)?.drop;
+    const drop = this.laneColumns.get(laneKey)?.find(column => column.key === columnKey)?.drop;
     if (!task || !drop || taskColumnKey(task, this.viewState.group) === columnKey) return;
 
     const changed = drop.kind === 'status'
@@ -263,7 +300,7 @@ export class KanbanView extends BaseView {
       : await this.changeTaskPriority(task, drop.priority);
     if (changed) {
       // La columna destino se despliega sola: ya no está vacía y se descarta lo que el usuario hubiera elegido.
-      this.app.saveLocalStorage(collapseStorageKey(this.viewState.group, columnKey), null);
+      this.app.saveLocalStorage(collapseStorageKey(this.viewState.group, columnKey, laneKey), null);
       await this.refreshView();
     }
   }

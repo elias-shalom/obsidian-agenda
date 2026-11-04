@@ -511,6 +511,19 @@ protected attachEventTabs(container: HTMLElement, plugin: AgendaPlugin, leaf: Wo
     });
   }
 
+  /** Plegar y desplegar carriles (Lanes); se recuerda con la misma clave de `localStorage` que usan los grupos. */
+  protected addLaneToggleListeners(container: HTMLElement): void {
+    container.querySelectorAll<HTMLElement>('.oa-lane').forEach(lane => {
+      const storageKey = `folder_${lane.dataset.laneKey ?? ''}_collapsed`;
+      lane.toggleClass('oa-collapsed', this.app.loadLocalStorage(storageKey) === 'true');
+
+      lane.querySelector(':scope > .oa-lane-header')?.addEventListener('click', () => {
+        lane.toggleClass('oa-collapsed', !lane.hasClass('oa-collapsed'));
+        this.app.saveLocalStorage(storageKey, String(lane.hasClass('oa-collapsed')));
+      });
+    });
+  }
+
   // Añadir método para manejar eventos de doble clic en los elementos de tarea
   protected addTaskItemClickListeners(container: HTMLElement): void {
     const taskItems = container.querySelectorAll('.oa-task-item');

@@ -92,7 +92,7 @@ export abstract class BaseView extends ItemView {
 
   /** Hay algo en curso que un redibujado interrumpiría: modal, menú, selector de fecha, arrastre o un campo con foco. */
   private isInteracting(): boolean {
-    if (document.body.querySelector('.modal-container, .menu, .flatpickr-calendar.open')) return true;
+    if (document.body.querySelector('.modal-container, .menu, .flatpickr-calendar.open, .oa-filter-popover')) return true;
     if (this.containerEl.querySelector('.oa-dragging, .oa-resizing')) return true;
 
     const active = document.activeElement;

@@ -637,15 +637,17 @@ Cambiar el texto de «Sin área» en el agrupado; los títulos «By area» y «B
 - [x] Clave `filter_sub_areas` en los 6 idiomas (sustituye a `all_sub_areas`, que ya no se usa).
 - [ ] Prueba manual en Lista, Tabla, Kanban y Gantt: marcar Normal y Medium a la vez, varios estados y áreas con sub-áreas, el chip con dos o más valores («Estado: 2») y su tooltip, Esc y clic fuera, teclado, y en `is-tablet` e `is-phone`.
 
-### Fase CF1 — Estado y filtrado del calendario (depende de M1)
-- [ ] `src/core/calendar-state.ts` con la clave `obsidian-agenda-calendar-view-state`, compartida por las 6 subvistas.
-- [ ] `CalendarView` filtra en `getTasksForDate()` y en la lista del calendario, junto a `calendarShowCompletedTasks`.
-- [ ] Verificable sola: Node (estado del calendario y filtrado por prioridad, estado, área y búsqueda).
+### Fase CF1 — Estado y filtrado del calendario (depende de M1) — **implementada el 2026-11-03**
+- [x] `src/core/calendar-state.ts` con la clave `obsidian-agenda-calendar-view-state`, compartida por las 6 subvistas: mismo formato que `TaskViewState`, pero `parseCalendarState()` solo conserva búsqueda, prioridad, estado y área (los filtros de fecha, el agrupado y el orden vuelven a su valor por defecto).
+- [x] `CalendarView` filtra en `getTasksForDate()` (que recorre `visibleTasks`, calculado una vez en `onOpen()`), junto a `calendarShowCompletedTasks`; las seis subvistas, el selector de fecha y los contadores de la vista Año pasan por ese punto. `this.tasks` queda completa para buscar una tarea por su línea.
+- [x] Verificable sola: Node (`tests/calendar-filters.test.cjs`, 12 pruebas): estado y su conversión, filtrado por prioridad, estado, área y búsqueda, y la integración real con `CalendarView` (cargado con dobles de Obsidian). Sin barra todavía: el estado se escribe desde la Fase CF2.
 
-### Fase CF2 — Barra en el calendario (depende de M2 y CF1)
-- [ ] Opción `filterTypes` en `TaskFilterBar` (prioridad, estado, área; sin fechas, agrupado ni orden).
-- [ ] Barra siempre visible justo bajo las pestañas principales, con el mismo aspecto que en las demás vistas (sin botón para abrirla); no se pierde ni pierde el foco al navegar (redibujado parcial o montaje fuera de la zona que se redibuja).
-- [ ] Prueba manual en las 6 subvistas, con el buscador y con el foco.
+### Fase CF2 — Barra en el calendario (depende de M2 y CF1) — **implementada el 2026-11-03; falta la prueba manual**
+- [x] Opción `filterTypes` en `TaskFilterBar` (prioridad, estado, área; sin fechas, agrupado ni orden): `CALENDAR_FILTER_TYPES` en `calendar-state.ts`.
+- [x] Barra siempre visible justo bajo las pestañas principales, con el mismo aspecto que en las demás vistas y sin botón para abrirla: es el **primer elemento de `.agenda-content-container`**, igual que en Lista, Tabla, Kanban y Gantt (mismo espaciado bajo las pestañas, sin estilos propios). `CalendarView.onOpen()` la crea antes de filtrar (reajusta un área guardada que ya no existe) y `refreshCalendar()` la monta tras cada dibujado completo.
+- [x] No pierde el foco: un cambio de filtro llama a `redrawCalendarBody()`, que dibuja el calendario en un contenedor aparte y sustituye **todo el contenido salvo el nodo de la barra** (quitar y volver a poner el nodo desenfocaría el buscador). Un redibujado lento no pisa a otro más reciente (`redrawToken`). `BaseView.isInteracting()` cuenta el popover abierto para que un refresco automático no destruya la barra.
+- [x] Verificable con Node (`tests/calendar-filters.test.cjs`, 18 pruebas, con un DOM mínimo y un doble de la barra): tipos ofrecidos, barra como primer elemento del contenido, redibujado parcial que conserva el mismo nodo de la barra, redibujados que se pisan, y área guardada que ya no existe.
+- [ ] Prueba manual en las 6 subvistas, con el buscador y con el foco: teclear varias letras seguidas sin perderlo, cambiar de subvista y navegar con filtros activos, el popover abierto durante un refresco, y en escritorio, `is-tablet` e `is-phone`.
 
 ### Fase L1 — Núcleo de carriles (independiente; Especificación §20, Arquitectura §29)
 - [ ] Función única `buildLanes()`, compartida por las 4 vistas (módulo puro por crear; nombre propuesto `src/core/task-lanes.ts`, a confirmar en Arquitectura §29): parte las tareas por el campo de Lanes y devuelve un carril por valor.

@@ -1210,7 +1210,7 @@ La corrección la aportó [@AidanAJoyce](https://github.com/AidanAJoyce) desde u
 - **Permisos**: un PR desde un fork no da acceso de escritura al repositorio; cualquier cambio futuro de la misma persona pasa por otro PR que se revisa igual.
 - **Crédito**: README (sección Contributors) y la nota del Changelog de la versión.
 
-## 28. Filtros con varios valores y filtros en el calendario (v1.1.14 — §28.1 y §28.2 implementados el 2026-11-03; calendario, diseño no implementado)
+## 28. Filtros con varios valores y filtros en el calendario (v1.1.14 — implementados el 2026-11-03; falta la prueba manual)
 
 Comportamiento: [[Especificación de vistas]] §19.
 
@@ -1228,12 +1228,13 @@ Comportamiento: [[Especificación de vistas]] §19.
 - Opción nueva `filterTypes?: FilterChipId[]`: limita los tipos del menú «Añadir filtro» (el calendario no ofrece fechas).
 - La disposición de la barra (fila 1: conmutador, buscador y «+ Filtro»; fila 2: chips `Lanes`/`Group`/`Sort`) se describe en §29.2; los chips de filtro activos siguen en su fila propia.
 
-### 28.3 Calendario
+### 28.3 Calendario (**implementado el 2026-11-03: estado y filtrado, Fase CF1, y barra, Fase CF2; falta la prueba manual**)
 
-- Estado propio en `src/core/calendar-state.ts` (clave `obsidian-agenda-calendar-view-state`), cargado en `CalendarView` y compartido por las seis subvistas.
-- El filtrado va en un solo punto: `getTasksForDate()` de `calendar-view.ts` y la lista del calendario recorren las tareas visibles, no `this.tasks`.
-- **Riesgo**: `refreshCalendar()` llama a `render()` y reconstruye toda la vista en cada navegación, de modo que una barra dentro del calendario perdería el foco del buscador en cada tecla. El Gantt lo evita redibujando solo `.oa-gantt`; el calendario necesita lo mismo (redibujado parcial) o montar la barra fuera de la zona que se redibuja.
-- La barra va siempre visible justo bajo las pestañas principales, con el mismo marcado (`oa-filter-bar`) que en las demás vistas, sin botón de mostrar u ocultar.
+- Estado propio en `src/core/calendar-state.ts` (clave `obsidian-agenda-calendar-view-state`), cargado en `CalendarView.onOpen()` y compartido por las seis subvistas. Tiene el formato de `TaskViewState`, y `parseCalendarState()` descarta lo que el calendario no usa (fechas, agrupado y orden). `CALENDAR_FILTER_TYPES` fija los tipos de la barra.
+- El filtrado va en un solo punto: `getTasksForDate()` de `calendar-view.ts` recorre `visibleTasks` (las tareas que pasan `filterTasksForCalendar()`, calculadas una vez por carga) y la lista del calendario, el selector de fecha y los contadores del Año pasan por él. `this.tasks` conserva la lista completa para localizar una tarea por su línea (arrastre y menú de estado).
+- **Riesgo (resuelto con un redibujado parcial)**: `render()` vacía todo el contenedor, cabecera incluida, y la navegación pasa por `onOpen()`; una barra que se reconstruyera al filtrar perdería el foco del buscador en cada tecla. `CalendarView.redrawCalendarBody()` dibuja el calendario en un contenedor aparte (como la Lista con `refreshBody()`) y sustituye **todo el contenido de `.agenda-content-container` salvo el nodo de la barra** (`filterBarRoot`): quitar y volver a poner el nodo la desenfocaría. `redrawToken` descarta un redibujado atrasado si llega otro cambio, y `setupViewSpecificEventListeners()` se vuelve a asignar al contenido nuevo (todos los listeners se ligan a elementos del calendario; solo el selector de fecha tiene listeners globales y se cierra antes).
+- La barra (`TaskFilterBar` con `filterTypes: CALENDAR_FILTER_TYPES`, sin agrupado, orden ni conmutador) es el **primer elemento de `.agenda-content-container`** (`.oa-calendar-filter-bar`), como en Lista, Tabla, Kanban y Gantt: así tiene el mismo espaciado bajo las pestañas sin estilos propios (un primer intento en la cabecera fija obligó a parches de relleno y márgenes negativos, que cortaban la barra). Usa el mismo marcado (`oa-filter-bar`) que las demás vistas y no tiene botón de mostrar u ocultar. `onOpen()` la crea antes de filtrar, porque reajusta un área guardada que ya no existe (si no, esa ruta vaciaría el calendario sin chip), y `refreshCalendar()` la monta tras cada dibujado completo. `BaseView.isInteracting()` cuenta el popover abierto para que un refresco automático no destruya la barra, y `onClose()` lo cierra. Consecuencia asumida: como en las demás vistas, la barra se desplaza con el contenido (no queda fija al hacer scroll).
+- Las áreas del popover salen de todas las tareas, no de las filtradas, para poder cambiar de área sin vaciar antes el filtro.
 
 ### 28.4 Pruebas
 

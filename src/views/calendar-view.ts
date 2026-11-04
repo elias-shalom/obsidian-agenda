@@ -1,7 +1,7 @@
 import { WorkspaceLeaf, Plugin, Notice, setIcon } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask, CalendarViewData, AgendaPlugin } from '../types/interfaces';
+import { ITask, CalendarViewData, ViewData, AgendaPlugin } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import Handlebars from 'handlebars';
@@ -11,7 +11,11 @@ import { upsertSimpleDate, upsertScheduledDate } from '../core/task-line-fields'
 import { attachTaskGestures, TASK_CLICK_DELAY_MS } from '../core/task-gestures';
 import { getReferenceDate, setReferenceDate } from '../core/calendar-reference-date';
 import { CalendarDatePicker } from '../core/calendar-date-picker';
-import { clearTooltips } from '../core/tooltips';
+import { clearTooltips, installTooltips } from '../core/tooltips';
+import { TaskViewState } from '../core/task-view-state';
+import { CALENDAR_FILTER_TYPES, filterTasksForCalendar, loadCalendarState, parseCalendarState, saveCalendarState } from '../core/calendar-state';
+import { TaskFilterBar } from '../core/task-filter-bar';
+import { closeFilterPopover } from '../core/task-filter-popover';
 
 export const CALENDAR_VIEW_TYPE = 'calendar-view';
 
@@ -38,6 +42,16 @@ export type CalendarDateType = 'due' | 'start' | 'scheduled';
 
 export abstract class CalendarView extends BaseView {
   protected tasks: ITask[] = []; 
+  /** Filtros del calendario (v1.1.14, CF1): uno solo, compartido por las seis subvistas. */
+  protected calendarState: TaskViewState = parseCalendarState({});
+  /** Tareas que pasan los filtros del calendario; de aquí salen todas las que se dibujan. `this.tasks` queda completa para buscar una tarea por su línea. */
+  protected visibleTasks: ITask[] = [];
+  /** Barra de filtros del calendario (v1.1.14, CF2): se crea en `onOpen()` y se monta tras cada dibujado completo. */
+  protected filterBar: TaskFilterBar | null = null;
+  /** Contenedor de la barra montada: un redibujado parcial lo conserva para que el buscador no pierda el foco. */
+  private filterBarRoot: HTMLElement | null = null;
+  /** Numera los redibujados parciales: si llega otro mientras uno espera la plantilla, el anterior se descarta. */
+  private redrawToken = 0;
   protected currentDate: DateTime = DateTime.now();
   protected taskWriter: TaskWriter;
   /** Cierra el popover del selector de fecha abierto (si lo hay) y retira sus listeners globales. */
@@ -67,7 +81,27 @@ export abstract class CalendarView extends BaseView {
     if (reference) this.currentDate = reference;
     this.showLoadingOverlay(8, true);
     this.tasks = await this.getAllTasks(this.taskManager);
+
+    // La barra se crea antes de filtrar porque reajusta un área guardada que ya no tiene tareas; si no,
+    // esa ruta vaciaría el calendario sin mostrar ningún chip.
+    this.filterBar = new TaskFilterBar({
+      i18n: this.i18n,
+      tasks: this.tasks,
+      state: loadCalendarState(this.app),
+      filterTypes: CALENDAR_FILTER_TYPES,
+      onChange: (state) => this.onCalendarFiltersChanged(state),
+    });
+    this.calendarState = this.filterBar.getState();
+    this.visibleTasks = filterTasksForCalendar(this.tasks, this.calendarState);
     await this.refreshCalendar();
+  }
+
+  /** Un cambio en la barra: se guarda y se vuelve a dibujar solo el calendario, sin tocar la barra (que conserva el foco del buscador). */
+  private onCalendarFiltersChanged(state: TaskViewState): void {
+    this.calendarState = parseCalendarState(state);
+    saveCalendarState(this.app, this.calendarState);
+    this.visibleTasks = filterTasksForCalendar(this.tasks, this.calendarState);
+    this.redrawCalendarBody().catch(console.error);
   }
 
   /** Único punto de escritura de `currentDate`: también actualiza la fecha de referencia compartida (v1.1.9, §9 Arquitectura técnica). */
@@ -77,14 +111,60 @@ export abstract class CalendarView extends BaseView {
   }
 
   protected async refreshCalendar(): Promise<void> {
+    const viewData = this.buildCalendarViewData();
 
-    const viewData = {
+    await this.render(this.getViewType(), viewData, this.i18n, this.plugin as AgendaPlugin, this.leaf);
+    this.mountFilterBar();
+  }
+
+  /** Lo que reciben la plantilla y los listeners: los datos de la subvista (`calendar`) junto a las tareas y la fecha actual. */
+  private buildCalendarViewData(): ViewData {
+    return {
       tasks: this.tasks,
       currentDate: this.currentDate,
       calendar: this.generateViewData()
     };
+  }
 
-    await this.render(this.getViewType(), viewData, this.i18n, this.plugin as AgendaPlugin, this.leaf);
+  /**
+   * La barra de filtros es el primer elemento de `.agenda-content-container`, como en Lista, Tabla, Kanban y
+   * Gantt (mismo espaciado bajo las pestañas), y se vuelve a montar tras cada dibujado completo.
+   */
+  private mountFilterBar(): void {
+    const content = this.containerEl.children[1]?.querySelector<HTMLElement>('.agenda-content-container');
+    if (!content || !this.filterBar) return;
+
+    const barRoot = createDiv({ cls: 'oa-calendar-filter-bar' });
+    content.prepend(barRoot);
+    this.filterBarRoot = barRoot;
+    this.filterBar.mount(barRoot);
+    installTooltips(barRoot);
+  }
+
+  /**
+   * Vuelve a dibujar solo el calendario tras un cambio de filtro (Fase CF2). La barra vive en el mismo
+   * contenedor, así que no se vacía: se sustituye todo salvo su nodo, y el buscador no pierde el foco con cada
+   * tecla (quitar y volver a poner un nodo lo desenfocaría). Se dibuja en un contenedor aparte y se sustituye al
+   * final: si llega otro cambio mientras espera la plantilla, el anterior se descarta.
+   */
+  private async redrawCalendarBody(): Promise<void> {
+    const container = this.containerEl.children[1] as HTMLElement | undefined;
+    const content = container?.querySelector<HTMLElement>('.agenda-content-container');
+    if (!container || !content) return;
+
+    const token = ++this.redrawToken;
+    const viewData = this.buildCalendarViewData();
+    const staging = createDiv();
+    await this.renderTemplate(staging, this.getViewType(), viewData);
+    if (token !== this.redrawToken) return;
+
+    clearTooltips(content);
+    for (const child of Array.from(content.children)) {
+      if (child !== this.filterBarRoot) child.remove();
+    }
+    content.append(...Array.from(staging.childNodes));
+    installTooltips(container);
+    this.setupViewSpecificEventListeners(content, viewData as CalendarViewData);
   }
 
   /**
@@ -120,14 +200,16 @@ export abstract class CalendarView extends BaseView {
   }
 
   /**
-   * Gets tasks for a specific date
+   * Gets tasks for a specific date. Recorre las tareas que pasan los filtros del calendario (CF1) y respeta
+   * `calendarShowCompletedTasks`; es el único punto por donde las seis subvistas, el selector de fecha y los
+   * contadores de la vista Año obtienen las tareas.
    */
   protected getTasksForDate(date: DateTime): (ITask & { calendarDateType: CalendarDateType })[] {
     const enabled = this.getCalendarDateSettings();
     const showCompleted = this.getCalendarShowCompletedTasks();
     const result: (ITask & { calendarDateType: CalendarDateType })[] = [];
 
-    for (const task of this.tasks) {
+    for (const task of this.visibleTasks) {
       if (!showCompleted && task.state.status === 'x') continue;
       const type = this.resolveCalendarAnchor(task, date, enabled);
       if (type) result.push({ ...task, calendarDateType: type });
@@ -629,6 +711,8 @@ export abstract class CalendarView extends BaseView {
 
   async onClose(): Promise<void> {
     this.closeActiveDatePicker?.();
+    // El popover de la barra vive en document.body: si queda abierto, sus casillas apuntarían a una barra destruida.
+    closeFilterPopover();
     // Al cambiar de tipo de vista, Obsidian destruye esta instancia sin pasar por render(),
     // así que un tooltip visible (su DOM vive en document.body, fuera del contenedor) quedaría
     // huérfano si no se limpia aquí explícitamente.

@@ -475,10 +475,11 @@ Los filtros tienen diseño en `docs/agenda-tasks/Especificación de vistas.md` �
   - [x] Un chip por tipo: el nombre con un valor y solo el número con dos o más («Estado: 2», decidido el 2026-11-03, para que no crezca), con un tooltip que lista todos; el estado guardado con un solo valor se convierte al leerlo
   - [x] Decidido (2026-10-31): casillas en un popover propio que no se cierra al marcar; el área en dos pasos dentro del mismo popover y gana lo más específico; un tooltip lista los valores del chip
   - [ ] Prueba manual en Lista, Tabla, Kanban y Gantt (también en móvil y tableta)
-- [ ] **[v1.1.14] Filtros en el calendario** (decidido el 2026-10-31; retoma «filtrar el calendario por estado» de v1.1.10; diseño en Especificación §19.2 y Arquitectura §28.3; fases CF1 y CF2 en el Plan; depende de los filtros con varios valores)
-  - [ ] Solo prioridad, estado, área y búsqueda; sin filtros de fecha, agrupado ni orden
-  - [ ] Barra siempre visible bajo las pestañas principales, con el mismo aspecto que en las otras vistas (sin botón para abrirla); estado propio compartido por las 6 subvistas
-  - [ ] Riesgo técnico: el calendario redibuja la vista entera en cada navegación y el buscador perdería el foco; hay que redibujar solo la parte del calendario o montar la barra fuera de ella
+- [x] **[v1.1.14] Filtros en el calendario** (decidido el 2026-10-31; **implementado el 2026-11-03, fases CF1 y CF2; falta la prueba manual**; retoma «filtrar el calendario por estado» de v1.1.10; diseño en Especificación §19.2 y Arquitectura §28.3; depende de los filtros con varios valores)
+  - [x] Estado propio compartido por las 6 subvistas y filtrado en un solo punto (`getTasksForDate()`), con prioridad, estado, área y búsqueda; sin filtros de fecha, agrupado ni orden
+  - [x] Barra siempre visible, como primer elemento del contenido y por tanto con el mismo espaciado que en las otras vistas (sin botón para abrirla)
+  - [x] Riesgo técnico resuelto: el calendario redibuja solo su contenido al filtrar (`redrawCalendarBody()`), así que la barra y el foco del buscador no se pierden
+  - [ ] Prueba manual en las 6 subvistas, con el buscador y con el foco (también en móvil y tableta)
 - [ ] **[v1.1.14] Gantt: combo de agrupado en la barra de filtros** (decidido el 2026-10-31; hoy siempre agrupa por área y sub-área; desde el 2026-11-01 pasa a ser el chip `Group` de la barra de chips, ver «Lanes / Filas»)
   - [ ] Opciones: Ninguno (modo plano, sin cabeceras), Área (por defecto), Estado y Prioridad; Carpeta, Etiquetas y Vencimiento quedan fuera
   - [ ] Hace falta: modo plano en `buildGanttRows()`, claves de plegado con prefijo por campo (como `toGroupViewModels()`) y color de grupo solo para el área

@@ -1027,9 +1027,9 @@ Límites: un evento fuera de la ventana descargada (de −3 a +6 meses) no se re
 - Solo cambia el texto: los valores guardados (orden y agrupación elegidos) no cambian y no hay migración.
 - **Fuera de alcance**: criterios nuevos de orden o agrupación y combos en la Tabla o el Dashboard.
 
-## 19. Filtros con varios valores y filtros en el calendario (v1.1.14 — filtros con varios valores implementados el 2026-11-03; calendario, diseño no implementado)
+## 19. Filtros con varios valores y filtros en el calendario (v1.1.14 — implementados el 2026-11-03; falta la prueba manual de la barra del calendario y de los filtros múltiples)
 
-> **Estado**: propuesta de la discusión del 2026-10-31, con las decisiones cerradas el 2026-10-31 (§19.4). **§19.1 (varios valores) está implementado (fases M1 y M2) y falta la prueba manual; §19.2 (calendario) sigue sin implementar.** Mecanismo: [[Arquitectura técnica]] §28. Plan: fases M1–M2, CF1 y CF2.
+> **Estado**: propuesta de la discusión del 2026-10-31, con las decisiones cerradas el 2026-10-31 (§19.4). **§19.1 (varios valores, fases M1 y M2) y §19.2 (calendario, fases CF1 y CF2) están implementados; falta la prueba manual.** Mecanismo: [[Arquitectura técnica]] §28. Plan: fases M1–M2, CF1 y CF2.
 
 ### 19.1 Varios valores por filtro
 
@@ -1043,7 +1043,7 @@ Límites: un evento fuera de la ventana descargada (de −3 a +6 meses) no se re
 ### 19.2 Filtros en el calendario
 
 - Solo **prioridad**, **estado**, **área** y **búsqueda**. Los filtros de fecha chocan con el calendario, que ya decide qué fecha ancla cada tarea (ADR-T4 y los ajustes de fechas mostradas); el agrupado y el orden no aplican. Retoma «filtrar el calendario por estado», aplazado desde v1.1.10.
-- La barra va **siempre visible, justo debajo de las pestañas principales**, con el mismo aspecto que en las demás vistas y sin botón para abrirla. Resta algo de alto a las subvistas, la Día incluida, y se acepta.
+- La barra va **justo debajo de las pestañas principales**, como primer elemento del contenido y con el mismo aspecto que en las demás vistas (sin botón para abrirla). Como en ellas, se desplaza con el contenido y no queda fija al hacer scroll (decidido al implementarla el 2026-11-03; un primer intento en la cabecera fija obligó a parches de espaciado). Resta algo de alto a las subvistas, la Día incluida, y se acepta.
 - Un solo estado guardado para el calendario, compartido por sus seis subvistas, como la fecha de referencia. Afecta a todo lo que dibuja tareas: celdas, listas, contadores de la vista Año y selector de fecha acoplado de la vista Día.
 - Se combina con el ajuste de mostrar u ocultar las tareas completadas.
 

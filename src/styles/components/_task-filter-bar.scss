@@ -170,6 +170,7 @@
   }
 }
 
+// En el calendario la barra va en la cabecera fija, bajo las pestañas principales (src/views/calendar-view.ts).
 // En una barra estrecha la búsqueda pasa a su propia línea, a todo el ancho
 @container (max-width: 560px) {
   .oa-filter-bar__search {

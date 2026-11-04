@@ -56,6 +56,8 @@ export interface TaskFilterBarOptions {
   groupOptions?: FilterBarOption[];
   /** Si se pasa, la barra muestra el combo de orden con estos campos y el botón de dirección. */
   sortOptions?: FilterBarOption[];
+  /** Si se pasa, el menú «+ Filtro» ofrece solo estos tipos (el calendario no ofrece fechas). */
+  filterTypes?: readonly FilterChipId[];
 }
 
 /** Dónde abrir un menú: bajo el botón o el chip pulsado, medido una vez porque el chip se redibuja al elegir. */
@@ -233,7 +235,7 @@ export class TaskFilterBar {
   private openTypeMenu(anchor: MenuAnchor): void {
     const active = new Set(getActiveFilterChips(this.state, key => this.options.i18n.t(key)).map(chip => chip.id));
     const menu = new Menu();
-    for (const id of FILTER_CHIP_IDS) {
+    for (const id of this.options.filterTypes ?? FILTER_CHIP_IDS) {
       menu.addItem(item => item
         .setTitle(getFilterTypeLabel(id, key => this.options.i18n.t(key)))
         .setChecked(active.has(id))

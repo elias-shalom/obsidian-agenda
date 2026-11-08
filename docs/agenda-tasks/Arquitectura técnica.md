@@ -1374,7 +1374,7 @@ Manual: las cuatro vistas con cada campo; que Lanes = Ninguno deje cada vista co
 
 Enlaces: [[Especificación de vistas]] §20; fases L1 (núcleo; independiente), L2 (barra; depende de L1 y M2), L3 (Lista y Tabla; depende de L2) y L4 (Kanban y Gantt; depende de L2) del [[Plan de implementación]].
 
-## 30. Calendario: días no laborables, feriados, proyección y hábitos (v1.1.15, diseño — no implementado)
+## 30. Calendario: días no laborables, feriados, proyección y hábitos (v1.1.15 — §30.2 NL1 implementado el 2026-11-08; el resto, diseño no implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §21. Fases del Plan: NL1, NL2, FE1, FE2, PR1, PR2 y HC1 en [[Plan de implementación]]. Los hábitos tienen su propia documentación en `docs/habit-tracker-agenda/`, que HC1 reutiliza (periodo activo y vacaciones, fases HA1 y HV1 del Plan de hábitos).
 
@@ -1395,6 +1395,13 @@ Hoy cada subvista arma sus días en `generateViewData()` y consulta `getTasksFor
 - **Flujo**: casilla → `saveSettings()` → refresco de las vistas de calendario abiertas (`SettingTab.refreshCalendarViews()`, como `weekStartDay`), del Gantt y de los hábitos (`HabitManager.refreshHabits()`, porque las frecuencias se resuelven al parsear y quedan en la caché de `habit-manager.ts`).
 
 **ADR-CL1 — Un solo ajuste de días no laborables.** Lo comparten el calendario, el Gantt, la Semana laboral y las frecuencias de hábitos. Razón: evita tres definiciones de «fin de semana». Consecuencia aceptada: cambiarlo altera rachas y porcentajes de hábitos, por eso el aviso.
+
+**Implementado el 2026-11-08 (Fase NL1)**:
+- **Módulo puro** `src/core/non-working-days.ts`: `DEFAULT_NON_WORKING_DAYS`, `isValidNonWorkingSet()`, `sanitizeNonWorkingDays()`, `isNonWorkingDay()`, `getWorkweekDays()`, `getWorkweekDates()` y `toggleNonWorkingDay()` (que rechaza el cambio que rompe la regla de extremos). `loadSettings()` sanea el valor guardado y lo copia, para no compartir la lista del valor por defecto.
+- **Calendario**: `CalendarView` gana `getNonWorkingDays()` e `isNonWorking(date)`; Mes, Semana y Lista añaden `isNonWorking` a los datos de cada día y las plantillas ponen `oa-calendar-non-working`. En `_calendar-common.scss` el sombreado es un `background-image` con el mismo color que las columnas de fin de semana del Gantt, de modo que se suma a «hoy» y «seleccionado» (que pintan `background-color`) en vez de taparlos. Lo que se ve encima cuando coinciden con feriados, fantasmas y chips de hábitos sigue por resolver (FE2, PR2 y HC1).
+- **Semana laboral**: `generateViewData()` toma el lunes de la semana de la fecha (como antes) y genera `getWorkweekDates()`; con el ajuste por defecto el resultado es idéntico al de antes (lo cubre `calendar-weekday-labels.test.cjs`). El número de columnas sale de `data-day-count` en `.oa-calendar-week-days-row`, que `setupViewSpecificEventListeners()` copia a `--oa-workweek-days` (sin estilos en línea); se retiró la regla que ocultaba el 6.º y el 7.º día. Los once estilos de cuadrícula alternativos están diseñados para cinco días, así que el selector solo aparece con cinco (`WeekViewData.gridStylesAvailable`); con otro número se usa la cuadrícula por defecto.
+- **Gantt**: `weekend` usa `isNonWorkingDay()`; las clases `oa-gantt-day--weekend` y `oa-gantt-grid-day--weekend` se conservan.
+- **Ajustes**: `renderNonWorkingDays()` dibuja siete casillas (`.oa-non-working-days`, en `components/_settings.scss`) con el texto fijo de `non_working_days_desc`; la casilla que rompe la regla vuelve a su estado y un `Notice` lo explica. Al cambiar se refrescan las vistas de calendario (incluida la Lista, que no estaba en `CALENDAR_VIEW_TYPES`) y el Gantt (`NON_WORKING_VIEW_TYPES`). El texto menciona solo lo que NL1 cambia; NL2 lo ampliará con hábitos y recurrentes.
 
 ### 30.3 Feriados (FE1, FE2)
 

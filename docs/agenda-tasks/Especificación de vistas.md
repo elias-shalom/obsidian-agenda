@@ -1318,7 +1318,7 @@ Un archivo de reglas del usuario (feriados personales o un país nuevo); que los
 
 ### 21.7 Por resolver al diseñar
 
-- Cómo se calcula el inicio de la Semana laboral si el primer día de la semana configurada está oculto.
+- Cómo se calcula el inicio de la Semana laboral si el primer día de la semana configurada está oculto: resuelto el 2026-11-08 (NL1). La Semana laboral usa la misma semana de lunes a domingo que la Semana (la que contiene la fecha, con el lunes como inicio) y quita los días marcados; no depende de `weekStartDay`. Limitación asumida: con una semana laboral que cruza el domingo (por ejemplo, domingo a jueves) el domingo aparece al final de su semana de lunes a domingo.
 - Cómo trata el editor de hábitos (`resolveFrequencyMode()`) una lista de días que coincide con un preset cuando el ajuste cambia.
 - Feriados: en qué dirección se recorre un feriado observado; cómo se muestran dos feriados el mismo día; cómo se traducen los nombres de los feriados.
 - Fantasmas: si la barra de filtros del calendario y el ajuste de ocultar completadas los afectan (se supone que los filtros sí); si conservan la hora y la duración de la real (como `shiftTaskDates()` al escribir la siguiente).

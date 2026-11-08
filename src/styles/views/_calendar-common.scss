@@ -9,6 +9,20 @@
   padding: 10px;
 }
 
+/* Día no laborable (v1.1.15, NL1): un tinte sobre el fondo del día en Mes, Semana y Lista. Va como imagen de
+   fondo para sumarse a «hoy» y «seleccionado» (que pintan `background-color`) en vez de taparlos, y con el mismo
+   color que las columnas de fin de semana del Gantt. */
+.oa-calendar-month-day,
+.oa-calendar-week-day-container,
+.oa-calendar-list-row {
+  &.oa-calendar-non-working {
+    background-image: linear-gradient(
+      color-mix(in srgb, var(--background-modifier-hover) 60%, transparent),
+      color-mix(in srgb, var(--background-modifier-hover) 60%, transparent)
+    );
+  }
+}
+
 .oa-calendar-toolbar {
   display: flex;
   justify-content: space-between;

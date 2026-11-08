@@ -16,6 +16,7 @@ import { TaskViewState } from '../core/task-view-state';
 import { CALENDAR_FILTER_TYPES, filterTasksForCalendar, loadCalendarState, parseCalendarState, saveCalendarState } from '../core/calendar-state';
 import { TaskFilterBar } from '../core/task-filter-bar';
 import { closeFilterPopover } from '../core/task-filter-popover';
+import { DEFAULT_NON_WORKING_DAYS, isNonWorkingDay } from '../core/non-working-days';
 
 export const CALENDAR_VIEW_TYPE = 'calendar-view';
 
@@ -181,6 +182,17 @@ export abstract class CalendarView extends BaseView {
   protected getWeekStartDay(): number {
     const plugin = this.plugin as AgendaPlugin;
     return plugin.settings?.weekStartDay ?? 1; // 1=Lun por defecto (ISO)
+  }
+
+  /** Días ISO marcados como no laborables en los ajustes (v1.1.15, NL1). */
+  protected getNonWorkingDays(): readonly number[] {
+    const plugin = this.plugin as AgendaPlugin;
+    return plugin.settings?.nonWorkingDays ?? DEFAULT_NON_WORKING_DAYS;
+  }
+
+  /** ¿El día cae en un día no laborable? Lo usan Mes, Semana y Lista para sombrearlo. */
+  protected isNonWorking(date: DateTime): boolean {
+    return isNonWorkingDay(date, this.getNonWorkingDays());
   }
 
   protected getLocalizedDayNames(): string[] {

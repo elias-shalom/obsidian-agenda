@@ -709,12 +709,14 @@ Varios valores en los filtros de fecha; excluir valores («no es»); agrupado y 
 >
 > **Orden de trabajo**: NL1 → NL2; FE1 → FE2; PR1 → PR2; HC1 al final, cuando HA1 y HV1 del plan de hábitos estén hechas. NL1, FE1 y PR1 son independientes entre sí. CV15 cierra la versión.
 
-### Fase NL1 — Días no laborables y sombreado (independiente; Especificación §21, Arquitectura §30)
-- [ ] Ajuste con siete casillas de días no laborables, por defecto sábado y domingo (nombre propuesto `nonWorkingDays`, ver Modelo de datos §13), en ambas rutas de `setting-tab.ts`.
-- [ ] Sombreado de esos días en Mes, Semana y Lista del calendario; no en Día, Año ni Semana laboral.
-- [ ] Semana laboral: oculta los días marcados; nunca queda vacía porque el ajuste exige al menos un día marcado y uno sin marcar (`sanitizeNonWorkingDays()`; el ajuste rechaza el cambio y muestra un `Notice`).
-- [ ] Gantt: el sombreado deja de ser fijo (`date.weekday >= 6` en `gantt-view.ts`) y usa el ajuste.
-- [ ] Verificable sola: Node (función de día no laborable, días visibles de la Semana laboral y regla de extremos: ninguno marcado y los siete marcados se rechazan); prueba manual cambiando el ajuste con el calendario y el Gantt abiertos.
+### Fase NL1 — Días no laborables y sombreado (independiente; Especificación §21, Arquitectura §30) — **implementada el 2026-11-08; falta la prueba manual**
+- [x] Ajuste con siete casillas de días no laborables, por defecto sábado y domingo (`nonWorkingDays` en `settings.ts`, Modelo de datos §13), en ambas rutas de `setting-tab.ts` (`renderNonWorkingDays()`); `loadSettings()` lo sanea (`sanitizeNonWorkingDays()`).
+- [x] Sombreado de esos días en Mes, Semana y Lista del calendario (clase `oa-calendar-non-working`, un tinte como imagen de fondo para sumarse a «hoy» y «seleccionado»); no en Día, Año ni Semana laboral.
+- [x] Semana laboral: oculta los días marcados; nunca queda vacía porque el ajuste exige al menos un día marcado y uno sin marcar (`toggleNonWorkingDay()` rechaza el cambio y muestra un `Notice`). Usa la misma semana de lunes a domingo que la Semana (resuelto el 2026-11-08) y el número de columnas sale de `--oa-workweek-days`; los once estilos de cuadrícula solo se ofrecen con cinco días (`gridStylesAvailable`).
+- [x] Gantt: el sombreado deja de ser fijo (`date.weekday >= 6`) y usa el ajuste.
+- [x] Al cambiar una casilla se refrescan el calendario (con la Lista) y el Gantt abiertos.
+- [x] Verificable con Node (`tests/non-working-days.test.cjs`, 17 pruebas, y 8 pruebas nuevas en `tests/calendar-weekday-labels.test.cjs`): función de día no laborable, días de la Semana laboral con 1 a 6 días, regla de extremos, saneo de valores inválidos, la Semana laboral por defecto idéntica a la de antes y el sombreado en Semana y Lista.
+- [ ] Prueba manual cambiando el ajuste con el calendario y el Gantt abiertos: sombreado en Mes, Semana y Lista (también sobre «hoy» y el día seleccionado), Semana laboral con 4, 5 y 6 días, el aviso al desmarcar el último día no laborable y al marcar el séptimo, escritorio, `is-tablet` e `is-phone`.
 
 ### Fase NL2 — Frecuencias de hábitos con el ajuste y aviso (depende de NL1)
 - [ ] Las frecuencias «Fin de semana» y «Lunes a viernes» de los hábitos usan el ajuste en lugar de `[6, 7]` fijo (`FREQUENCY_PRESETS` y `resolveFrequencyMode()` en `habit-editor.ts`, `habit-table-view.ts` y el caso `weekend` de `habit-parser.ts`).

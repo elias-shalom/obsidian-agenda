@@ -38,7 +38,7 @@
   {{#equals calendar.viewType "list"}}
   <div class="oa-calendar-list-view">
     {{#each calendar.days}}
-      <div class="oa-calendar-list-row {{#if isToday}}oa-calendar-today{{/if}} {{#if isSelected}}oa-calendar-selected{{/if}}" data-date="{{toISODate date}}">
+      <div class="oa-calendar-list-row {{#if isToday}}oa-calendar-today{{/if}} {{#if isSelected}}oa-calendar-selected{{/if}} {{#if isNonWorking}}oa-calendar-non-working{{/if}}" data-date="{{toISODate date}}">
         <div class="oa-calendar-list-row-header">
           <span class="oa-calendar-list-row-day-name">{{dayName}}</span>
           <span class="oa-calendar-list-row-date">{{dayOfMonth}}</span>

@@ -1,12 +1,26 @@
 import AgendaPlugin from '../main';
-import { App, PluginSettingTab, Setting, SettingDefinitionItem, TFolder, debounce } from 'obsidian';
+import { App, Notice, PluginSettingTab, Setting, SettingDefinitionItem, TFolder, debounce } from 'obsidian';
 import { I18n } from "../core/i18n";
 import { BaseView } from '../views/base-view';
 import type { AgendaPluginSettings } from './settings';
 import { DEFAULT_SETTINGS } from './settings';
 import { evaluateHabitFolderHint } from '../habits/habit-folder';
+import { toggleNonWorkingDay } from '../core/non-working-days';
 
 const CALENDAR_VIEW_TYPES = ['calendar-month-view', 'calendar-year-view', 'calendar-week-view', 'calendar-workweek-view', 'calendar-day-view'];
+/** Vistas que cambian al tocar los días no laborables: el calendario completo (con la Lista) y el Gantt. */
+const NON_WORKING_VIEW_TYPES = [...CALENDAR_VIEW_TYPES, 'calendar-list-view', 'gantt-view'];
+
+/** Días ISO con la clave de traducción de su abreviatura, de lunes a domingo. */
+const WEEKDAY_LABELS: readonly { iso: number; key: string }[] = [
+  { iso: 1, key: 'day_mon' },
+  { iso: 2, key: 'day_tue' },
+  { iso: 3, key: 'day_wed' },
+  { iso: 4, key: 'day_thu' },
+  { iso: 5, key: 'day_fri' },
+  { iso: 6, key: 'day_sat' },
+  { iso: 7, key: 'day_sun' },
+];
 
 export class SettingTab extends PluginSettingTab {
   plugin: AgendaPlugin;
@@ -24,6 +38,43 @@ export class SettingTab extends PluginSettingTab {
         leaf.view.refreshView().catch(console.error);
       }
     });
+  }
+
+  /** Refresca las vistas que dependen de los días no laborables (calendario con su Lista y Gantt), si están abiertas. */
+  private refreshNonWorkingViews(): void {
+    this.plugin.app.workspace.iterateAllLeaves((leaf) => {
+      if (NON_WORKING_VIEW_TYPES.includes(leaf.view.getViewType()) && leaf.view instanceof BaseView) {
+        leaf.view.refreshView().catch(console.error);
+      }
+    });
+  }
+
+  /**
+   * Siete casillas, de lunes a domingo, con los días no laborables (v1.1.15, NL1). El ajuste exige al menos un día
+   * marcado y uno sin marcar: la casilla que rompería la regla vuelve a su estado y un aviso lo explica.
+   */
+  private renderNonWorkingDays(setting: Setting): void {
+    const row = setting.controlEl.createDiv({ cls: 'oa-non-working-days' });
+
+    for (const { iso, key } of WEEKDAY_LABELS) {
+      const label = row.createEl('label', { cls: 'oa-non-working-day' });
+      label.createSpan({ text: this.i18n.t(key) });
+      const box = label.createEl('input', { type: 'checkbox' });
+      box.checked = this.plugin.settings.nonWorkingDays.includes(iso);
+
+      box.addEventListener('change', () => {
+        const result = toggleNonWorkingDay(this.plugin.settings.nonWorkingDays, iso);
+        if (result.rejected) {
+          box.checked = !box.checked;
+          new Notice(this.i18n.t('non_working_days_min'));
+          return;
+        }
+        this.plugin.settings.nonWorkingDays = result.days;
+        this.plugin.saveSettings()
+          .then(() => this.refreshNonWorkingViews())
+          .catch(console.error);
+      });
+    }
   }
 
   /** Campo de la carpeta de hábitos con un aviso informativo debajo (v1.1.13, S4); no impide guardar. */
@@ -172,6 +223,11 @@ export class SettingTab extends PluginSettingTab {
                   this.refreshCalendarViews();
                 }));
             },
+          },
+          {
+            name: this.i18n.t('non_working_days'),
+            desc: this.i18n.t('non_working_days_desc'),
+            render: (setting) => this.renderNonWorkingDays(setting),
           },
         ],
       },
@@ -381,6 +437,11 @@ export class SettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
           this.refreshCalendarViews();
         }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("non_working_days"))
+      .setDesc(this.i18n.t("non_working_days_desc"))
+      .then(setting => this.renderNonWorkingDays(setting));
 
     new Setting(containerEl).setName(this.i18n.t("habit_settings")).setHeading();
 

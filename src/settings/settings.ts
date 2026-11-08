@@ -16,6 +16,11 @@ export interface AgendaPluginSettings {
   calendarShowCompletedTasks: boolean;
   /** Días visibles en la vista de lista del calendario (v1.1.10, §4.10): mínimo 7, máximo 14. */
   calendarListDaysToShow: number;
+  /**
+   * Días no laborables (v1.1.15, NL1): días ISO (1 = lunes … 7 = domingo). Los comparten el sombreado del
+   * calendario, la Semana laboral y el Gantt. Siempre hay al menos uno marcado y uno sin marcar.
+   */
+  nonWorkingDays: number[];
 
   // Habits settings
   habitFolderPath: string;
@@ -48,6 +53,7 @@ export const DEFAULT_SETTINGS: AgendaPluginSettings = {
   calendarShowScheduledDates: true,
   calendarShowCompletedTasks: true,
   calendarListDaysToShow: 14,
+  nonWorkingDays: [6, 7],
 
   habitFolderPath: "daily plan/daily routine/habit",
   habitDaysToShow: 21,

@@ -4,12 +4,17 @@ const path = require('node:path');
 const { test } = require('node:test');
 const ts = require('typescript');
 const { DateTime } = require('luxon');
+const { loadSource } = require('./helpers/load-source.cjs');
+
+const nonWorkingDays = loadSource('core/non-working-days.ts');
 
 // Exercise the real view generators without starting Obsidian. The parent view
 // supplies its contract: weekday names are rotated to the configured week start.
 function loadView(file, exportName, locale) {
   class CalendarView {
     getWeekStartDay() { return this.plugin.settings.weekStartDay; }
+    getNonWorkingDays() { return this.plugin.settings.nonWorkingDays ?? [6, 7]; }
+    isNonWorking(date) { return nonWorkingDays.isNonWorkingDay(date, this.getNonWorkingDays()); }
     getLocalizedDayNames() {
       const monday = DateTime.fromISO('2026-10-26', { locale });
       return Array.from({ length: 7 }, (_, index) =>
@@ -29,6 +34,7 @@ function loadView(file, exportName, locale) {
       return { CalendarViewType: { Week: 'week', WorkWeek: 'workweek', List: 'list' } };
     }
     if (id === 'luxon') return { DateTime };
+    if (id === '../core/non-working-days') return nonWorkingDays;
     throw new Error(`Unexpected view dependency: ${id}`);
   };
   new Function('require', 'module', 'exports', outputText)(requireStub, module, module.exports);
@@ -77,3 +83,69 @@ for (const [file, exportName, count] of views) {
     });
   }
 }
+
+// --- Non-working days (v1.1.15, NL1) ---------------------------------------------
+
+function buildView(file, exportName, settings, date = '2026-11-04') {
+  const View = loadView(file, exportName, 'en');
+  const view = new View();
+  view.plugin = { settings: { weekStartDay: 1, calendarListDaysToShow: 14, ...settings } };
+  view.currentDate = DateTime.fromISO(date, { locale: 'en' }); // Wednesday
+  view.windowStart = null;
+  view.tasksByDate = new Map();
+  return view;
+}
+
+const isoDays = (result) => result.days.map(day => day.date.toISODate());
+
+test('Work Week keeps Monday to Friday with the default setting', () => {
+  const result = buildView('calendar-workweek-view.ts', 'CalendarWorkWeekView', { nonWorkingDays: [6, 7] }).generateViewData();
+  assert.deepEqual(isoDays(result), ['2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05', '2026-11-06']);
+  assert.equal(result.gridStylesAvailable, true);
+});
+
+test('Work Week hides the marked days and keeps the others in order', () => {
+  const result = buildView('calendar-workweek-view.ts', 'CalendarWorkWeekView', { nonWorkingDays: [1, 7] }).generateViewData();
+  assert.deepEqual(isoDays(result), ['2026-11-03', '2026-11-04', '2026-11-05', '2026-11-06', '2026-11-07']);
+  assert.equal(result.days.every(day => day.date.weekday !== 1 && day.date.weekday !== 7), true);
+});
+
+test('Work Week shows six days with a single non-working day, and one with six', () => {
+  const six = buildView('calendar-workweek-view.ts', 'CalendarWorkWeekView', { nonWorkingDays: [7] }).generateViewData();
+  assert.equal(six.days.length, 6);
+  const one = buildView('calendar-workweek-view.ts', 'CalendarWorkWeekView', { nonWorkingDays: [1, 2, 3, 4, 5, 6] }).generateViewData();
+  assert.deepEqual(isoDays(one), ['2026-11-08']);
+});
+
+test('Work Week offers the alternative grid styles only with five days', () => {
+  for (const [days, expected] of [[[6, 7], true], [[7], false], [[1, 6, 7], false], [[2, 3, 6], false]]) {
+    const result = buildView('calendar-workweek-view.ts', 'CalendarWorkWeekView', { nonWorkingDays: days }).generateViewData();
+    assert.equal(result.gridStylesAvailable, expected, `ajuste ${days}`);
+  }
+});
+
+test('Work Week period name spans the first and last day shown', () => {
+  const result = buildView('calendar-workweek-view.ts', 'CalendarWorkWeekView', { nonWorkingDays: [1, 7] }).generateViewData();
+  assert.equal(result.periodName, 'Nov 3 - Nov 7, 2026');
+});
+
+test('Work Week on a Sunday belongs to the week that started the previous Monday, as before', () => {
+  const result = buildView('calendar-workweek-view.ts', 'CalendarWorkWeekView', { nonWorkingDays: [6, 7] }, '2026-11-08').generateViewData();
+  assert.deepEqual(isoDays(result), ['2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05', '2026-11-06']);
+});
+
+test('Week and List flag the non-working days and only those', () => {
+  for (const [file, name] of [['calendar-week-view.ts', 'CalendarWeekView'], ['calendar-list-view.ts', 'CalendarListView']]) {
+    const result = buildView(file, name, { nonWorkingDays: [5, 6] }).generateViewData();
+    for (const day of result.days) assert.equal(day.isNonWorking, [5, 6].includes(day.date.weekday), `${name} ${day.date.toISODate()}`);
+    assert.equal(result.days.some(day => day.isNonWorking), true);
+    assert.equal(result.days.some(day => !day.isNonWorking), true);
+  }
+});
+
+test('Week and List flag Saturday and Sunday by default', () => {
+  for (const [file, name] of [['calendar-week-view.ts', 'CalendarWeekView'], ['calendar-list-view.ts', 'CalendarListView']]) {
+    const result = buildView(file, name, {}).generateViewData();
+    for (const day of result.days) assert.equal(day.isNonWorking, day.date.weekday >= 6, `${name} ${day.date.toISODate()}`);
+  }
+});

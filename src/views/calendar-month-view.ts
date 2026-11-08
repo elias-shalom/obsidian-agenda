@@ -43,6 +43,7 @@ export class CalendarMonthView extends CalendarView {
       isToday: boolean;
       isSelected: boolean;
       dayOfMonth: number;
+      isNonWorking: boolean;
       tasksForDay: ITask[];
     };
     
@@ -65,6 +66,7 @@ export class CalendarMonthView extends CalendarView {
         isToday: currentDay.hasSame(DateTime.now(), 'day'),
         isSelected: currentDay.hasSame(this.currentDate, 'day'),
         dayOfMonth: currentDay.day,
+        isNonWorking: this.isNonWorking(currentDay),
         tasksForDay: this.getTasksForDate(currentDay)
       };
       

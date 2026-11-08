@@ -53,6 +53,7 @@ export class CalendarWeekView extends CalendarView {
         // Usar el nombre localizado del día en lugar de toFormat()
         dayName: localizedDayNames[dayIndex],
         formattedDate: `${localizedDayNames[dayIndex]} ${currentDay.day}`,
+        isNonWorking: this.isNonWorking(currentDay),
         tasksForDay: dayTasks
       });
       

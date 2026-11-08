@@ -8,6 +8,7 @@ import { TASK_MODAL_TYPE, ModalManager } from "./core/modal-manager";
 import { addTaskFieldMenuItems } from "./core/task-field-menu";
 import { isTaskLine } from "./core/task-line-fields";
 import { DEFAULT_SETTINGS, AgendaPluginSettings, migrateTabSettings } from "./settings/settings";
+import { sanitizeNonWorkingDays } from "./core/non-working-days";
 import { DayChangeWatcher } from "./core/day-change";
 import { getWhatsNewEntries, planUpdateAnnouncement } from "./core/whats-new";
 import { WhatsNewModal } from "./modals/whats-new-modal";
@@ -147,6 +148,9 @@ export default class ObsidianAgenda extends Plugin {
 
     // Merge genérico: cualquier clave guardada sobrescribe su default, sin necesidad de listarla aquí.
     this.settings = { ...DEFAULT_SETTINGS, ...data };
+    // Una lista de días no laborables inválida (editada a mano) vuelve a sábado y domingo; además se copia para
+    // no compartir la lista del valor por defecto.
+    this.settings.nonWorkingDays = sanitizeNonWorkingDays(this.settings.nonWorkingDays);
   }
 
   async saveSettings(): Promise<void> {

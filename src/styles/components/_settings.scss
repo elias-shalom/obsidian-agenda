@@ -1,0 +1,31 @@
+// Controles propios de la pantalla de ajustes del plugin.
+
+// Siete casillas de los días no laborables, de lunes a domingo (v1.1.15, NL1): una tira con el día encima de
+// cada casilla; en una pantalla estrecha pasa a otra línea sin partir una pareja día-casilla.
+.oa-non-working-days {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.oa-non-working-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 36px;
+  padding: 4px 2px;
+  border-radius: var(--radius-s);
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--background-modifier-hover);
+  }
+
+  input {
+    margin: 0;
+  }
+}

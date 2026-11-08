@@ -30,6 +30,8 @@ export interface WeekDayData {
   /** Mes abreviado y localizado (p. ej. "oct"); solo lo usa la vista de Lista (v1.1.11, fix), ya
    * que su ventana de días puede cruzar un límite de mes y Semana/Semana laboral no lo necesitan. */
   monthAbbr?: string;
+  /** Día marcado como no laborable en los ajustes (v1.1.15, NL1); Mes, Semana y Lista lo sombrean. */
+  isNonWorking?: boolean;
 }
 
 /**
@@ -41,6 +43,8 @@ export interface WeekViewData {
   days: WeekDayData[];
   dayNames: string[];
   periodName: string;
+  /** Solo la Semana laboral: los estilos de cuadrícula alternativos solo valen con cinco días. */
+  gridStylesAvailable?: boolean;
 }
 
 /**
@@ -533,6 +537,7 @@ export interface MonthViewData {
       isToday: boolean;
       isSelected: boolean;
       dayOfMonth: number;
+      isNonWorking: boolean;
       tasksForDay: ITask[];
     }[];
     weekNumber: number;

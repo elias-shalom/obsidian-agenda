@@ -12,6 +12,7 @@ import { TaskViewState, filterTasksByViewState } from '../core/task-view-state';
 import { TASK_SORT_COLUMNS, sortTasksByColumn } from '../core/task-column-sort';
 import { getReferenceDate, setReferenceDate } from '../core/calendar-reference-date';
 import { LANE_OPTIONS } from '../core/task-lanes';
+import { DEFAULT_NON_WORKING_DAYS, isNonWorkingDay } from '../core/non-working-days';
 import {
   GANTT_GROUP_OPTIONS, GANTT_ZOOMS, GanttDependencies, GanttDragMode, GanttField, GanttRow, GanttSpan, GanttZoom,
   applyGanttEdit, buildDependencyIndex, buildGanttGroupedRows, buildGanttLanes, clampGanttDelta, ganttCenter, ganttWeekBands, ganttWindow,
@@ -119,6 +120,8 @@ export class GanttView extends BaseView {
     const t = (key: string, params?: Record<string, string | number>) => this.i18n.t(key, params);
     const locale = getLanguage() || 'en';
     const weekStart = this.getWeekStartDay();
+    // Las columnas sombreadas siguen al ajuste de días no laborables (v1.1.15, NL1)
+    const nonWorkingDays = this.plugin.settings.nonWorkingDays ?? DEFAULT_NON_WORKING_DAYS;
 
     const sorted = sortTasksByColumn(
       filterTasksByViewState(this.tasks, this.viewState),
@@ -169,7 +172,7 @@ export class GanttView extends BaseView {
           day: date.day,
           weekday: date.setLocale(locale).toFormat(win.days > 14 ? 'ccccc' : 'ccc'),
           today: date.hasSame(now, 'day'),
-          weekend: date.weekday >= 6,
+          weekend: isNonWorkingDay(date, nonWorkingDays),
           weekStart: (date.weekday - weekStart + 7) % 7 === 0,
         };
       }),

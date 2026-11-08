@@ -32,6 +32,8 @@
 
   &.oa-calendar-today {
     background-color: color-mix(in srgb, $today-border-color 8%, transparent);
+    // El `border-bottom` de la fila le gana al borde de «hoy» de `_calendar-common.scss` y dejaba sin cerrar el recuadro
+    border-bottom: 2px solid $today-border-color;
   }
 
   // Fecha de referencia compartida: independiente de "hoy", ambos se aplican si coinciden

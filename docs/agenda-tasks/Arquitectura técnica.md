@@ -1374,7 +1374,7 @@ Manual: las cuatro vistas con cada campo; que Lanes = Ninguno deje cada vista co
 
 Enlaces: [[Especificación de vistas]] §20; fases L1 (núcleo; independiente), L2 (barra; depende de L1 y M2), L3 (Lista y Tabla; depende de L2) y L4 (Kanban y Gantt; depende de L2) del [[Plan de implementación]].
 
-## 30. Calendario: días no laborables, feriados, proyección y hábitos (v1.1.15 — §30.2 NL1 y NL2 implementados el 2026-11-08; el resto, diseño no implementado)
+## 30. Calendario: días no laborables, feriados, proyección y hábitos (v1.1.15 — §30.2 NL1 y NL2 y §30.3 FE1 implementados el 2026-11-08; el resto, diseño no implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §21. Fases del Plan: NL1, NL2, FE1, FE2, PR1, PR2 y HC1 en [[Plan de implementación]]. Los hábitos tienen su propia documentación en `docs/habit-tracker-agenda/`, que HC1 reutiliza (periodo activo y vacaciones, fases HA1 y HV1 del Plan de hábitos).
 
@@ -1411,7 +1411,7 @@ Hoy cada subvista arma sus días en `generateViewData()` y consulta `getTasksFor
 
 ### 30.3 Feriados (FE1, FE2)
 
-- **Motor de reglas embebido y sin red**, en `src/core/holidays/` (por crear), con el cálculo puro separado de los datos:
+- **Motor de reglas embebido y sin red**, en `src/core/holidays/`, con el cálculo puro separado de los datos:
 
 | Archivo | Responsabilidad |
 |---|---|
@@ -1425,6 +1425,12 @@ Hoy cada subvista arma sus días en `generateViewData()` y consulta `getTasksFor
 - **Marcado** (solo visual): tinte tenue y etiqueta con el nombre en Mes, Semana, Semana laboral y Lista; encabezado en Día; punto con tooltip en Año; columna tintada en el Gantt (`gantt-view.ts`: el arreglo `days` gana `holiday`, y `gantt-view.hbs` una clase en la cabecera y en `.oa-gantt-grid-day`). No afectan a la Semana laboral, las rachas ni las tareas (la regla de §30.2 no los lee).
 
 **ADR-CL2 — Reglas, no listas de fechas.** Los feriados se calculan por regla para cualquier año, con la lista explícita solo para lo que no sigue una regla. Razón: el vault no necesita actualizarse cada año y el motor se prueba con fechas conocidas.
+
+**Implementado el 2026-11-08 (Fase FE1)**, en `src/core/holidays/`:
+- `holiday-rules.ts`: tipos `HolidayRule` (unión discriminada por `type`: `fixed`, `nthWeekday`, `easter`, `observed`, `cycle`, `explicit`), `HolidayCountryData` y `HolidayRegion`; `evaluateRule(rule, year)` devuelve la fecha ISO o `null` y `getEasterDate(year)`. El cálculo usa fechas UTC a mediodía, sin Luxon ni dependencia del huso. Una fecha inválida (29 de febrero en un año no bisiesto) da `null` en vez de rodar al mes siguiente.
+- `holiday-data-mx.ts` y `holiday-data-us.ts`: reglas nacionales (oficiales y no oficiales) y regionales (campo `region`, con su lista `regions`). México: los días de la Ley Federal del Trabajo (febrero, marzo y noviembre corridos al lunes, el 1 de diciembre cada seis años desde 1934); EE. UU.: los federales.
+- `holiday-calendar.ts`: `getHolidaysForRange(calendars, start, end)` → `Map<fechaISO, HolidayEntry[]>`; `HolidayCalendarConfig` es la forma del futuro ajuste `holidayCalendars`; caché por país y año; evalúa un año antes y uno después del rango porque un feriado observado puede cruzar el año (1 de enero de 2028 → viernes 31 de diciembre de 2027). Un calendario sin región ve solo las reglas nacionales; con región, las nacionales y las de esa región.
+- **Decisiones**: el recorrido de los observados es un parámetro de la regla (`onSaturday`, `onSunday`; EE. UU.: sábado → viernes y domingo → lunes) y sigue el fin de semana legal, no el ajuste de días no laborables del usuario; el feriado observado aparece solo en el día recorrido. Dos calendarios que incluyen el mismo feriado dan una entrada por calendario, con su color (cómo se dibujan dos feriados en un día queda para FE2). Los nombres son claves de traducción (`holiday_mx_*`, `holiday_us_*`) que se añaden a los idiomas en FE2.
 
 ### 30.4 Proyección de recurrentes (PR1, PR2)
 

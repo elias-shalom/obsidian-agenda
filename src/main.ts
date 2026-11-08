@@ -9,6 +9,7 @@ import { addTaskFieldMenuItems } from "./core/task-field-menu";
 import { isTaskLine } from "./core/task-line-fields";
 import { DEFAULT_SETTINGS, AgendaPluginSettings, migrateTabSettings } from "./settings/settings";
 import { sanitizeNonWorkingDays } from "./core/non-working-days";
+import { sanitizeHolidayCalendars } from "./core/holidays/holiday-calendar";
 import { DayChangeWatcher } from "./core/day-change";
 import { getWhatsNewEntries, planUpdateAnnouncement } from "./core/whats-new";
 import { WhatsNewModal } from "./modals/whats-new-modal";
@@ -151,6 +152,7 @@ export default class ObsidianAgenda extends Plugin {
     // Una lista de días no laborables inválida (editada a mano) vuelve a sábado y domingo; además se copia para
     // no compartir la lista del valor por defecto.
     this.settings.nonWorkingDays = sanitizeNonWorkingDays(this.settings.nonWorkingDays);
+    this.settings.holidayCalendars = sanitizeHolidayCalendars(this.settings.holidayCalendars);
   }
 
   async saveSettings(): Promise<void> {

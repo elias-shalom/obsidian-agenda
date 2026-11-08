@@ -51,6 +51,9 @@
             <div class="oa-calendar-day-column-header {{#if isToday}}oa-calendar-today{{/if}} {{#if isReferenceDay}}oa-calendar-selected{{/if}}" data-date="{{dateIso}}">
               <div class="oa-calendar-day-name">{{dayName}}</div>
               <div class="oa-calendar-date">{{dayOfMonth}}</div>
+              {{#each holidays}}
+                <div class="oa-calendar-holiday oa-calendar-holiday--header" data-holiday-color="{{color}}" title="{{name}}">{{name}}</div>
+              {{/each}}
             </div>
           {{/each}}
         </div>

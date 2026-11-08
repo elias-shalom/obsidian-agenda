@@ -200,6 +200,7 @@ export class CalendarDayView extends CalendarView {
       allDayDue,
       allDayStart,
       allDayScheduled,
+      holidays: this.getHolidays(date),
     };
 
     return { column, hourSlotsByHour };

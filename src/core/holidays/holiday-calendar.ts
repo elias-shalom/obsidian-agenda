@@ -32,6 +32,52 @@ const COUNTRIES: Readonly<Record<string, HolidayCountryData>> = {
   [US_HOLIDAYS.country]: US_HOLIDAYS,
 };
 
+/** Colores que se reparten entre los calendarios nuevos para que no empiecen todos iguales. */
+export const HOLIDAY_COLOR_PALETTE: readonly string[] = ['#e5484d', '#3e63dd', '#30a46c', '#f5a524'];
+
+const HEX_COLOR = /^#[0-9a-f]{6}$/i;
+
+/** Un calendario nuevo para el botón «Añadir»: el primer país, solo oficiales y el siguiente color de la paleta. */
+export function createHolidayCalendar(existingCount: number): HolidayCalendarConfig {
+  const [first] = getHolidayCountries();
+  return {
+    country: first.country,
+    official: true,
+    unofficial: false,
+    color: HOLIDAY_COLOR_PALETTE[existingCount % HOLIDAY_COLOR_PALETTE.length],
+  };
+}
+
+/**
+ * Deja el ajuste guardado en una lista válida: descarta lo que no es un calendario de un país conocido, quita la
+ * región que el país no tiene y corrige el color o las casillas ausentes. Cualquier otro valor da la lista vacía
+ * («ninguno activo»).
+ */
+export function sanitizeHolidayCalendars(raw: unknown): HolidayCalendarConfig[] {
+  if (!Array.isArray(raw)) return [];
+
+  const result: HolidayCalendarConfig[] = [];
+  for (const item of raw) {
+    if (typeof item !== 'object' || item === null) continue;
+    const entry = item as Record<string, unknown>;
+    const data = typeof entry.country === 'string' ? COUNTRIES[entry.country] : undefined;
+    if (!data) continue;
+
+    const region = typeof entry.region === 'string' && data.regions.some(r => r.code === entry.region) ? entry.region : undefined;
+    const calendar: HolidayCalendarConfig = {
+      country: data.country,
+      official: typeof entry.official === 'boolean' ? entry.official : true,
+      unofficial: typeof entry.unofficial === 'boolean' ? entry.unofficial : false,
+      color: typeof entry.color === 'string' && HEX_COLOR.test(entry.color)
+        ? entry.color
+        : HOLIDAY_COLOR_PALETTE[result.length % HOLIDAY_COLOR_PALETTE.length],
+    };
+    if (region) calendar.region = region;
+    result.push(calendar);
+  }
+  return result;
+}
+
 interface EvaluatedRule {
   rule: HolidayRule;
   date: string;
@@ -65,6 +111,46 @@ function evaluateCountryYear(data: HolidayCountryData, year: number): EvaluatedR
 function isVisible(rule: HolidayRule, calendar: HolidayCalendarConfig): boolean {
   if (rule.region !== undefined && rule.region !== calendar.region) return false;
   return rule.category === 'official' ? calendar.official : calendar.unofficial;
+}
+
+/**
+ * Consulta día a día con los años ya calculados: cada vista pregunta por muchos días seguidos y solo se evalúa
+ * un año completo la primera vez que se toca. Sin calendarios no calcula nada.
+ */
+export class HolidayLookup {
+  private readonly years = new Map<number, Map<string, HolidayEntry[]>>();
+
+  constructor(private readonly calendars: readonly HolidayCalendarConfig[]) {}
+
+  get hasCalendars(): boolean {
+    return this.calendars.length > 0;
+  }
+
+  /** Feriados de un día (fecha ISO `AAAA-MM-DD`), en el orden de los calendarios; vacío si no hay ninguno. */
+  get(iso: string): readonly HolidayEntry[] {
+    if (!this.hasCalendars) return NO_HOLIDAYS;
+    const year = Number(iso.slice(0, 4));
+    let entries = this.years.get(year);
+    if (!entries) {
+      entries = getHolidaysForRange(this.calendars, `${year}-01-01`, `${year}-12-31`);
+      this.years.set(year, entries);
+    }
+    return entries.get(iso) ?? NO_HOLIDAYS;
+  }
+}
+
+const NO_HOLIDAYS: readonly HolidayEntry[] = [];
+
+let sharedLookup: { signature: string; lookup: HolidayLookup } | null = null;
+
+/**
+ * Consulta compartida por todas las vistas: se reutiliza mientras el ajuste no cambie y se rehace cuando cambia,
+ * así un dibujado completo no recalcula los feriados de cada subvista.
+ */
+export function getHolidayLookup(calendars: readonly HolidayCalendarConfig[]): HolidayLookup {
+  const signature = JSON.stringify(calendars);
+  if (!sharedLookup || sharedLookup.signature !== signature) sharedLookup = { signature, lookup: new HolidayLookup(calendars) };
+  return sharedLookup.lookup;
 }
 
 /**

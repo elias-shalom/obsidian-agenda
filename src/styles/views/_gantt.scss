@@ -160,6 +160,11 @@
     background-color: color-mix(in srgb, var(--background-modifier-hover) 60%, transparent);
   }
 
+  // Feriado (v1.1.15, FE2): una franja del color de su calendario bajo el día
+  &--holiday {
+    box-shadow: inset 0 -3px 0 var(--oa-holiday-color, var(--text-faint));
+  }
+
   &--today {
     background-color: var(--interactive-accent);
     color: var(--text-on-accent);
@@ -197,6 +202,14 @@
 
   &--weekend {
     background-color: color-mix(in srgb, var(--background-modifier-hover) 50%, transparent);
+  }
+
+  // Columna tintada por el feriado: va como imagen de fondo para sumarse al sombreado de fin de semana
+  &--holiday {
+    background-image: linear-gradient(
+      color-mix(in srgb, var(--oa-holiday-color, var(--text-faint)) 16%, transparent),
+      color-mix(in srgb, var(--oa-holiday-color, var(--text-faint)) 16%, transparent)
+    );
   }
 }
 

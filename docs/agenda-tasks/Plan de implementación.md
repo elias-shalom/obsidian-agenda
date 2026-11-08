@@ -733,11 +733,12 @@ Varios valores en los filtros de fecha; excluir valores («no es»); agrupado y 
 - [x] Verificable sola: `tests/holiday-rules.test.cjs` (26 pruebas): cada tipo de regla con fechas conocidas de varios años (los lunes de feb, mar y nov de México, MLK, Memorial Day, Acción de Gracias, Semana Santa, observado dentro y fuera del año y el ciclo de 6 años), consistencia de los datos y consulta por rango.
 - [ ] Revisar los datos regionales (solo Chiapas y Puebla en México; Alaska, California, Hawái, Luisiana, Massachusetts, Maine y Texas en EE. UU.) y las traducciones de los nombres antes de publicar.
 
-### Fase FE2 — Calendarios de feriados y marcado (depende de FE1; Especificación §21, Arquitectura §30)
-- [ ] Ajustes: lista de calendarios de feriados con país, región opcional, casillas Oficiales y No oficiales y un color; ninguno activo por defecto (Modelo de datos §13).
-- [ ] Marcado con tinte tenue en las 6 vistas del calendario y en el Gantt: etiqueta con el nombre en Mes, Semana, Semana laboral y Lista; encabezado en Día; punto con tooltip en Año; columna tintada en el Gantt.
-- [ ] Solo visual: no afectan a la Semana laboral, las rachas ni las tareas.
-- [ ] Verificable sola: con un calendario de México activo, el 1 de enero y el tercer lunes de noviembre aparecen en las vistas; con ninguno activo no cambia nada.
+### Fase FE2 — Calendarios de feriados y marcado (depende de FE1; Especificación §21, Arquitectura §30) — **implementada el 2026-11-08; falta la prueba manual**
+- [x] Ajustes: lista de calendarios de feriados con país, región opcional, casillas Oficiales y No oficiales y un color; ninguno activo por defecto (Modelo de datos §13). `holidayCalendars` en `settings.ts`, saneado al cargar (`sanitizeHolidayCalendars()`); lista en `setting-tab.ts` (`renderHolidayCalendars()`, ambas rutas) dentro de la pestaña Calendario; cada cambio refresca el calendario y el Gantt abiertos.
+- [x] Marcado con tinte tenue en las 6 vistas del calendario y en el Gantt: etiqueta con el nombre en Mes, Semana, Semana laboral y Lista; encabezado en Día; punto con tooltip en Año; columna tintada en el Gantt. Los nombres están traducidos a los 6 idiomas (`holiday_mx_*`, `holiday_us_*`).
+- [x] Solo visual: no afectan a la Semana laboral, las rachas ni las tareas.
+- [x] Verificable con Node: `tests/holiday-rules.test.cjs` (35 pruebas: ajuste guardado, consulta día a día, claves de traducción en los 6 idiomas) y `tests/calendar-weekday-labels.test.cjs` (los feriados llegan a los datos de Semana, Semana laboral y Lista y no ocultan días).
+- [ ] Prueba manual: con un calendario de México activo, el 1 de enero y el tercer lunes de noviembre aparecen en Mes, Semana, Semana laboral, Lista, Día, Año y Gantt (claro y oscuro, escritorio y `is-phone`); con ninguno activo no cambia nada; región, casillas, color y quitar; dos calendarios que coinciden en un día; ajustes en las dos rutas (Obsidian ≥ 1.13 y `display()`).
 
 ### Fase PR1 — Proyección de recurrentes: cálculo y fantasmas (independiente; Especificación §21, Arquitectura §30)
 - [ ] Cálculo de N ocurrencias posteriores a la real con `getNextOccurrenceDate()` (`src/core/task-recurrence.ts`); las reglas `when done` no se proyectan.

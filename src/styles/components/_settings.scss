@@ -46,6 +46,65 @@
   }
 }
 
+// Calendarios de feriados (v1.1.15, FE2): como los días no laborables, el texto va arriba y la lista debajo, a todo el ancho.
+.oa-holiday-calendars-setting {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+
+  .setting-item-control {
+    justify-content: flex-start;
+  }
+}
+
+.oa-holiday-calendars {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.oa-holiday-empty {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.oa-holiday-calendar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+}
+
+.oa-holiday-category {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  cursor: pointer;
+
+  input {
+    margin: 0;
+  }
+}
+
+.oa-holiday-color {
+  width: 36px;
+  height: 28px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.oa-holiday-remove {
+  margin-left: auto;
+}
+
 // Siete casillas de los días no laborables, de lunes a domingo (v1.1.15, NL1): una tira con el día encima de
 // cada casilla; en una pantalla estrecha pasa a otra línea sin partir una pareja día-casilla.
 // La descripción es larga y estrecharía la columna del control (casillas en vertical): el texto va arriba y la tira debajo, a todo el ancho.

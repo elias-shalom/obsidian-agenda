@@ -67,6 +67,7 @@ export class CalendarListView extends CalendarView {
         dayName: localizedDayNames[dayIndex],
         formattedDate: `${localizedDayNames[dayIndex]} ${currentDay.day}`,
         isNonWorking: this.isNonWorking(currentDay),
+        holidays: this.getHolidays(currentDay),
         // La ventana de días puede cruzar un límite de mes (fix v1.1.11, §4.10).
         monthAbbr: currentDay.setLocale(locale).toFormat('MMM'),
         tasksForDay: dayTasks,

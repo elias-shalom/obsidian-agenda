@@ -7,6 +7,7 @@ const { DateTime } = require('luxon');
 const { loadSource } = require('./helpers/load-source.cjs');
 
 const nonWorkingDays = loadSource('core/non-working-days.ts');
+const holidayCalendar = loadSource('core/holidays/holiday-calendar.ts');
 
 // Exercise the real view generators without starting Obsidian. The parent view
 // supplies its contract: weekday names are rotated to the configured week start.
@@ -15,6 +16,10 @@ function loadView(file, exportName, locale) {
     getWeekStartDay() { return this.plugin.settings.weekStartDay; }
     getNonWorkingDays() { return this.plugin.settings.nonWorkingDays ?? [6, 7]; }
     isNonWorking(date) { return nonWorkingDays.isNonWorkingDay(date, this.getNonWorkingDays()); }
+    getHolidays(date) {
+      const lookup = holidayCalendar.getHolidayLookup(this.plugin.settings.holidayCalendars ?? []);
+      return lookup.get(date.toISODate()).map(entry => ({ name: entry.nameKey, color: entry.color, official: entry.category === 'official' }));
+    }
     getLocalizedDayNames() {
       const monday = DateTime.fromISO('2026-10-26', { locale });
       return Array.from({ length: 7 }, (_, index) =>
@@ -148,4 +153,29 @@ test('Week and List flag Saturday and Sunday by default', () => {
     const result = buildView(file, name, {}).generateViewData();
     for (const day of result.days) assert.equal(day.isNonWorking, day.date.weekday >= 6, `${name} ${day.date.toISODate()}`);
   }
+});
+
+// --- Holidays (v1.1.15, FE2) -------------------------------------------------------
+
+const MEXICO = { country: 'MX', official: true, unofficial: false, color: '#2e7d32' };
+
+test('Week, Work Week and List carry the holidays of each day', () => {
+  for (const [file, name] of [['calendar-week-view.ts', 'CalendarWeekView'], ['calendar-workweek-view.ts', 'CalendarWorkWeekView'], ['calendar-list-view.ts', 'CalendarListView']]) {
+    const result = buildView(file, name, { holidayCalendars: [MEXICO] }, '2026-11-16').generateViewData(); // tercer lunes de noviembre
+    const withHoliday = result.days.filter(day => day.holidays.length > 0);
+    assert.deepEqual(withHoliday.map(day => day.date.toISODate()), ['2026-11-16'], name);
+    assert.deepEqual(withHoliday[0].holidays, [{ name: 'holiday_mx_revolution_day', color: '#2e7d32', official: true }], name);
+  }
+});
+
+test('with no holiday calendar no day has holidays', () => {
+  for (const [file, name] of [['calendar-week-view.ts', 'CalendarWeekView'], ['calendar-workweek-view.ts', 'CalendarWorkWeekView'], ['calendar-list-view.ts', 'CalendarListView']]) {
+    const result = buildView(file, name, {}, '2026-11-16').generateViewData();
+    assert.equal(result.days.every(day => day.holidays.length === 0), true, name);
+  }
+});
+
+test('a holiday never hides a day of the Work Week', () => {
+  const result = buildView('calendar-workweek-view.ts', 'CalendarWorkWeekView', { holidayCalendars: [MEXICO] }, '2026-11-16').generateViewData();
+  assert.deepEqual(isoDays(result), ['2026-11-16', '2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20']);
 });

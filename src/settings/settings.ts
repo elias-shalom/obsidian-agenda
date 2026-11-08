@@ -1,3 +1,5 @@
+import type { HolidayCalendarConfig } from '../core/holidays/holiday-calendar';
+
 export interface AgendaPluginSettings {
   // Define your plugin settings here
   showOverviewTab: boolean;
@@ -21,6 +23,11 @@ export interface AgendaPluginSettings {
    * calendario, la Semana laboral y el Gantt. Siempre hay al menos uno marcado y uno sin marcar.
    */
   nonWorkingDays: number[];
+  /**
+   * Calendarios de feriados activos (v1.1.15, FE2): país, región opcional, casillas Oficiales y No oficiales y un
+   * color. Vacío por defecto («ninguno activo»). Solo visual.
+   */
+  holidayCalendars: HolidayCalendarConfig[];
 
   // Habits settings
   habitFolderPath: string;
@@ -54,6 +61,7 @@ export const DEFAULT_SETTINGS: AgendaPluginSettings = {
   calendarShowCompletedTasks: true,
   calendarListDaysToShow: 14,
   nonWorkingDays: [6, 7],
+  holidayCalendars: [],
 
   habitFolderPath: "daily plan/daily routine/habit",
   habitDaysToShow: 21,

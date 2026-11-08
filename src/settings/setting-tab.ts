@@ -1,11 +1,12 @@
 import AgendaPlugin from '../main';
-import { App, Notice, PluginSettingTab, Setting, SettingDefinitionItem, TFolder, debounce } from 'obsidian';
+import { App, Notice, PluginSettingTab, Setting, SettingDefinitionItem, TFolder, debounce, setIcon } from 'obsidian';
 import { I18n } from "../core/i18n";
 import { BaseView } from '../views/base-view';
 import type { AgendaPluginSettings } from './settings';
 import { DEFAULT_SETTINGS } from './settings';
 import { evaluateHabitFolderHint } from '../habits/habit-folder';
 import { toggleNonWorkingDay } from '../core/non-working-days';
+import { createHolidayCalendar, getHolidayCountries, getHolidayCountry, type HolidayCalendarConfig } from '../core/holidays/holiday-calendar';
 
 const CALENDAR_VIEW_TYPES = ['calendar-month-view', 'calendar-year-view', 'calendar-week-view', 'calendar-workweek-view', 'calendar-day-view'];
 /** Vistas que cambian al tocar los días no laborables: el calendario completo (con la Lista) y el Gantt. */
@@ -50,8 +51,8 @@ export class SettingTab extends PluginSettingTab {
     });
   }
 
-  /** Refresca las vistas que dependen de los días no laborables (calendario con su Lista y Gantt), si están abiertas. */
-  private refreshNonWorkingViews(): void {
+  /** Refresca las vistas que marcan días (no laborables y feriados): el calendario completo (con la Lista) y el Gantt, si están abiertos. */
+  private refreshDayMarkingViews(): void {
     this.plugin.app.workspace.iterateAllLeaves((leaf) => {
       if (NON_WORKING_VIEW_TYPES.includes(leaf.view.getViewType()) && leaf.view instanceof BaseView) {
         leaf.view.refreshView().catch(console.error);
@@ -83,7 +84,7 @@ export class SettingTab extends PluginSettingTab {
         this.plugin.settings.nonWorkingDays = result.days;
         this.plugin.saveSettings()
           .then(async () => {
-            this.refreshNonWorkingViews();
+            this.refreshDayMarkingViews();
             // Las frecuencias «Fin de semana» y «Lunes a viernes» se resuelven al leer cada hábito: se vuelven a leer
             await this.plugin.refreshHabits();
             document.dispatchEvent(new CustomEvent('obsidian-agenda:habits-refresh'));
@@ -92,6 +93,92 @@ export class SettingTab extends PluginSettingTab {
           .catch(console.error);
       });
     }
+  }
+
+  /**
+   * Lista de calendarios de feriados (v1.1.15, FE2): una fila por calendario con país, región, las casillas Oficiales
+   * y No oficiales, el color y quitar, más un botón para añadir. No hay ninguno por defecto. Cada cambio se guarda y
+   * refresca el calendario y el Gantt abiertos; es solo visual.
+   */
+  private renderHolidayCalendars(setting: Setting): void {
+    setting.settingEl.addClass('oa-holiday-calendars-setting');
+    this.drawHolidayCalendars(setting.controlEl.createDiv({ cls: 'oa-holiday-calendars' }));
+  }
+
+  private drawHolidayCalendars(list: HTMLElement): void {
+    list.empty();
+    const calendars = this.plugin.settings.holidayCalendars;
+
+    if (calendars.length === 0) list.createDiv({ cls: 'oa-holiday-empty', text: this.i18n.t('holiday_calendars_empty') });
+    calendars.forEach((calendar, index) => this.drawHolidayCalendarRow(list, calendar, index));
+
+    const add = list.createEl('button', { cls: 'oa-holiday-add', text: this.i18n.t('holiday_add_calendar'), attr: { type: 'button' } });
+    add.addEventListener('click', () => {
+      calendars.push(createHolidayCalendar(calendars.length));
+      this.saveHolidayCalendars(list);
+    });
+  }
+
+  private drawHolidayCalendarRow(list: HTMLElement, calendar: HolidayCalendarConfig, index: number): void {
+    const row = list.createDiv({ cls: 'oa-holiday-calendar' });
+
+    const country = row.createEl('select', { cls: 'dropdown', attr: { 'aria-label': this.i18n.t('holiday_country') } });
+    for (const { country: code } of getHolidayCountries()) {
+      country.createEl('option', { value: code, text: this.i18n.t(`holiday_country_${code.toLowerCase()}`) });
+    }
+    country.value = calendar.country;
+    country.addEventListener('change', () => {
+      calendar.country = country.value;
+      delete calendar.region; // las regiones son de cada país
+      this.saveHolidayCalendars(list);
+    });
+
+    const region = row.createEl('select', { cls: 'dropdown', attr: { 'aria-label': this.i18n.t('holiday_region') } });
+    region.createEl('option', { value: '', text: this.i18n.t('holiday_region_national') });
+    for (const { code, name } of getHolidayCountry(calendar.country)?.regions ?? []) {
+      region.createEl('option', { value: code, text: name });
+    }
+    region.value = calendar.region ?? '';
+    region.addEventListener('change', () => {
+      if (region.value) calendar.region = region.value;
+      else delete calendar.region;
+      this.saveHolidayCalendars(list, false);
+    });
+
+    for (const category of ['official', 'unofficial'] as const) {
+      const label = row.createEl('label', { cls: 'oa-holiday-category' });
+      const box = label.createEl('input', { type: 'checkbox' });
+      box.checked = calendar[category];
+      label.createSpan({ text: this.i18n.t(`holiday_${category}`) });
+      box.addEventListener('change', () => {
+        calendar[category] = box.checked;
+        this.saveHolidayCalendars(list, false);
+      });
+    }
+
+    const color = row.createEl('input', { cls: 'oa-holiday-color', type: 'color', attr: { 'aria-label': this.i18n.t('holiday_color') } });
+    color.value = calendar.color;
+    color.addEventListener('change', () => {
+      calendar.color = color.value;
+      this.saveHolidayCalendars(list, false);
+    });
+
+    const remove = row.createEl('button', { cls: 'clickable-icon oa-holiday-remove', attr: { type: 'button', 'aria-label': this.i18n.t('holiday_remove_calendar') } });
+    setIcon(remove, 'trash-2');
+    remove.addEventListener('click', () => {
+      this.plugin.settings.holidayCalendars.splice(index, 1);
+      this.saveHolidayCalendars(list);
+    });
+  }
+
+  /** Guarda los calendarios de feriados y refresca las vistas; `redraw` vuelve a dibujar la lista (alta, baja o país). */
+  private saveHolidayCalendars(list: HTMLElement, redraw = true): void {
+    this.plugin.saveSettings()
+      .then(() => {
+        this.refreshDayMarkingViews();
+        if (redraw) this.drawHolidayCalendars(list);
+      })
+      .catch(console.error);
   }
 
   /**
@@ -291,6 +378,11 @@ export class SettingTab extends PluginSettingTab {
             name: this.i18n.t('non_working_days'),
             desc: this.i18n.t('non_working_days_desc'),
             render: (setting) => this.renderNonWorkingDays(setting),
+          },
+          {
+            name: this.i18n.t('holiday_calendars'),
+            desc: this.i18n.t('holiday_calendars_desc'),
+            render: (setting) => this.renderHolidayCalendars(setting),
           },
         ],
       },
@@ -524,6 +616,11 @@ export class SettingTab extends PluginSettingTab {
       .setName(this.i18n.t("non_working_days"))
       .setDesc(this.i18n.t("non_working_days_desc"))
       .then(setting => this.renderNonWorkingDays(setting));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("holiday_calendars"))
+      .setDesc(this.i18n.t("holiday_calendars_desc"))
+      .then(setting => this.renderHolidayCalendars(setting));
   }
 
   private displayHabitsSection(containerEl: HTMLElement): void {

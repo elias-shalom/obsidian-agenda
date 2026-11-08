@@ -31,6 +31,29 @@
   padding: 5px 0;
 }
 
+/* Feriado (v1.1.15, FE2): etiqueta con el nombre, tinte tenue del color de su calendario de feriados
+   (`--oa-holiday-color`, puesto desde `CalendarView.applyHolidayColors()`) y un borde del mismo color. Va antes de
+   las tareas del día en Mes, Semana, Semana laboral y Lista, y bajo la fecha en el encabezado de Día. */
+.oa-calendar-holiday {
+  flex: 0 0 auto;
+  margin-bottom: 2px;
+  padding: 1px 6px;
+  border-left: 3px solid var(--oa-holiday-color, var(--text-faint));
+  border-radius: var(--radius-s);
+  background-color: color-mix(in srgb, var(--oa-holiday-color, var(--text-faint)) 18%, transparent);
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &--header {
+    margin: 2px auto 0;
+    max-width: 100%;
+  }
+}
+
 /* Agrupa el botón del selector de fecha junto al título del período (v1.1.9), para que el
    `justify-content: space-between` del toolbar siga separando solo dos bloques: este grupo
    y la navegación, en vez de desperdigar el botón entre ambos. */

@@ -64,6 +64,9 @@
                       <span class="oa-year-day-number {{#if hasTasksDue}}oa-day-has-tasks{{/if}}">
                         {{dayOfMonth}}
                       </span>
+                      {{#if holidays.length}}
+                        <span class="oa-year-holiday-dot" data-holiday-color="{{holidays.0.color}}" title="{{holidayTitle}}"></span>
+                      {{/if}}
                     </div>
                   </div>
                 {{/each}}

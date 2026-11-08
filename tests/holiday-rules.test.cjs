@@ -3,7 +3,10 @@ const { test } = require('node:test');
 const { loadSource } = require('./helpers/load-source.cjs');
 
 const { evaluateRule, getEasterDate } = loadSource('core/holidays/holiday-rules.ts');
-const { getHolidaysForRange, getHolidayCountries, getHolidayCountry } = loadSource('core/holidays/holiday-calendar.ts');
+const {
+  getHolidaysForRange, getHolidayCountries, getHolidayCountry, sanitizeHolidayCalendars, createHolidayCalendar,
+  HolidayLookup, getHolidayLookup,
+} = loadSource('core/holidays/holiday-calendar.ts');
 
 const rule = (spec) => ({ id: 'r', nameKey: 'k', category: 'official', ...spec });
 
@@ -205,4 +208,89 @@ test('sin calendarios, país desconocido o rango invertido no hay feriados', () 
 test('un rango de varios años devuelve los feriados de cada uno', () => {
   const holidays = getHolidaysForRange([MX], '2025-01-01', '2027-12-31');
   for (const date of ['2025-02-03', '2026-02-02', '2027-02-01', '2025-11-17', '2027-11-15']) assert.ok(holidays.has(date), date);
+});
+
+// --- Ajuste guardado (FE2) --------------------------------------------------
+
+test('sanitizeHolidayCalendars: un valor que no es lista da «ninguno activo»', () => {
+  for (const raw of [undefined, null, 'MX', 5, {}]) assert.deepEqual(sanitizeHolidayCalendars(raw), []);
+});
+
+test('sanitizeHolidayCalendars: conserva lo válido y descarta lo demás', () => {
+  const result = sanitizeHolidayCalendars([
+    { country: 'MX', region: 'PUE', official: true, unofficial: true, color: '#112233' },
+    { country: 'FR', official: true, unofficial: false, color: '#112233' },
+    null,
+    'US',
+    { country: 'US', official: false, unofficial: true, color: '#AABBCC' },
+  ]);
+  assert.deepEqual(result, [
+    { country: 'MX', region: 'PUE', official: true, unofficial: true, color: '#112233' },
+    { country: 'US', official: false, unofficial: true, color: '#AABBCC' },
+  ]);
+});
+
+test('sanitizeHolidayCalendars: quita la región que el país no tiene y corrige color y casillas', () => {
+  const [calendar] = sanitizeHolidayCalendars([{ country: 'US', region: 'PUE', color: 'rojo' }]);
+  assert.equal('region' in calendar, false);
+  assert.equal(calendar.official, true);
+  assert.equal(calendar.unofficial, false);
+  assert.match(calendar.color, /^#[0-9a-f]{6}$/i);
+});
+
+test('createHolidayCalendar: el primer país, solo oficiales y colores distintos', () => {
+  const first = createHolidayCalendar(0);
+  const second = createHolidayCalendar(1);
+  assert.equal(first.country, getHolidayCountries()[0].country);
+  assert.equal(first.official, true);
+  assert.equal(first.unofficial, false);
+  assert.notEqual(first.color, second.color);
+  assert.deepEqual(sanitizeHolidayCalendars([first]), [first]);
+});
+
+// --- Consulta día a día (FE2) -----------------------------------------------
+
+test('HolidayLookup: sin calendarios no devuelve nada', () => {
+  const lookup = new HolidayLookup([]);
+  assert.equal(lookup.hasCalendars, false);
+  assert.deepEqual([...lookup.get('2026-12-25')], []);
+});
+
+test('HolidayLookup: responde por día y por año', () => {
+  const lookup = new HolidayLookup([MX]);
+  assert.deepEqual(lookup.get('2026-11-16').map(h => h.ruleId), ['revolution-day']);
+  assert.deepEqual(lookup.get('2027-11-15').map(h => h.ruleId), ['revolution-day']);
+  assert.deepEqual([...lookup.get('2026-11-17')], []);
+});
+
+test('HolidayLookup: un feriado observado de otro año se ve en su día recorrido', () => {
+  assert.deepEqual(new HolidayLookup([US]).get('2027-12-31').map(h => h.ruleId), ['new-year']);
+});
+
+test('getHolidayLookup se reutiliza mientras el ajuste no cambia y se rehace cuando cambia', () => {
+  const first = getHolidayLookup([MX]);
+  assert.equal(getHolidayLookup([{ ...MX }]), first);
+  const changed = getHolidayLookup([{ ...MX, official: false }]);
+  assert.notEqual(changed, first);
+  assert.deepEqual([...changed.get('2026-11-16')], []);
+});
+
+// --- Traducciones -----------------------------------------------------------
+
+test('cada feriado y cada texto del ajuste tienen traducción en los 6 idiomas', () => {
+  const { readFileSync } = require('node:fs');
+  const path = require('node:path');
+  const keys = new Set();
+  for (const data of getHolidayCountries()) {
+    keys.add(`holiday_country_${data.country.toLowerCase()}`);
+    for (const r of data.rules) keys.add(r.nameKey);
+  }
+  for (const key of ['holiday_calendars', 'holiday_calendars_desc', 'holiday_calendars_empty', 'holiday_add_calendar',
+    'holiday_remove_calendar', 'holiday_country', 'holiday_region', 'holiday_region_national', 'holiday_official',
+    'holiday_unofficial', 'holiday_color']) keys.add(key);
+
+  for (const locale of ['en', 'es', 'de', 'fr', 'it', 'pt']) {
+    const translations = JSON.parse(readFileSync(path.join(__dirname, '..', 'src', 'locales', `${locale}.json`), 'utf8'));
+    for (const key of keys) assert.ok(typeof translations[key] === 'string' && translations[key].trim() !== '', `${locale}: falta ${key}`);
+  }
 });

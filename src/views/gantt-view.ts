@@ -13,6 +13,7 @@ import { TASK_SORT_COLUMNS, sortTasksByColumn } from '../core/task-column-sort';
 import { getReferenceDate, setReferenceDate } from '../core/calendar-reference-date';
 import { LANE_OPTIONS } from '../core/task-lanes';
 import { DEFAULT_NON_WORKING_DAYS, isNonWorkingDay } from '../core/non-working-days';
+import { getHolidayLookup } from '../core/holidays/holiday-calendar';
 import {
   GANTT_GROUP_OPTIONS, GANTT_ZOOMS, GanttDependencies, GanttDragMode, GanttField, GanttRow, GanttSpan, GanttZoom,
   applyGanttEdit, buildDependencyIndex, buildGanttGroupedRows, buildGanttLanes, clampGanttDelta, ganttCenter, ganttWeekBands, ganttWindow,
@@ -122,6 +123,8 @@ export class GanttView extends BaseView {
     const weekStart = this.getWeekStartDay();
     // Las columnas sombreadas siguen al ajuste de días no laborables (v1.1.15, NL1)
     const nonWorkingDays = this.plugin.settings.nonWorkingDays ?? DEFAULT_NON_WORKING_DAYS;
+    // Los feriados de los calendarios activos tiñen su columna (v1.1.15, FE2); solo visual
+    const holidays = getHolidayLookup(this.plugin.settings.holidayCalendars ?? []);
 
     const sorted = sortTasksByColumn(
       filterTasksByViewState(this.tasks, this.viewState),
@@ -168,12 +171,15 @@ export class GanttView extends BaseView {
       weekBands: ganttWeekBands(win, weekStart).map(band => ({ label: `${t('gantt_week_prefix')}${band.weekNumber}`, left: band.left, width: band.width })),
       days: Array.from({ length: win.days }, (_, index) => {
         const date = win.start.plus({ days: index });
+        const dayHolidays = holidays.get(date.toISODate() ?? '');
         return {
           day: date.day,
           weekday: date.setLocale(locale).toFormat(win.days > 14 ? 'ccccc' : 'ccc'),
           today: date.hasSame(now, 'day'),
           weekend: isNonWorkingDay(date, nonWorkingDays),
           weekStart: (date.weekday - weekStart + 7) % 7 === 0,
+          holidayColor: dayHolidays[0]?.color ?? '',
+          holidayTitle: dayHolidays.map(entry => t(entry.nameKey)).join(', '),
         };
       }),
       todayLeft: ganttCenter(now, win),
@@ -276,6 +282,9 @@ export class GanttView extends BaseView {
   }
 
   private wireChart(container: HTMLElement): void {
+    container.querySelectorAll<HTMLElement>('[data-holiday-color]').forEach(el => {
+      el.setCssProps({ '--oa-holiday-color': el.dataset.holidayColor ?? '' });
+    });
     container.querySelectorAll<HTMLElement>('[data-group-color]').forEach(el => {
       el.setCssProps({ '--oa-gantt-color': el.dataset.groupColor ?? '' });
     });

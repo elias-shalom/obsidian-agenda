@@ -57,6 +57,7 @@ export class CalendarWorkWeekView extends CalendarView {
         dayOfWeek: currentDay.weekday,
         dayName: localizedDayNames[dayIndex],
         formattedDate: `${localizedDayNames[dayIndex]} ${currentDay.day}`,
+        holidays: this.getHolidays(currentDay),
         tasksForDay: dayTasks
       };
     });

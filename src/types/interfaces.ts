@@ -16,6 +16,16 @@ export interface AgendaPlugin extends Plugin {
 }
 
 /**
+ * Un feriado que se dibuja en un día (v1.1.15, FE2): nombre ya traducido y color del calendario de feriados que lo
+ * incluye. Solo visual.
+ */
+export interface HolidayLabel {
+  name: string;
+  color: string;
+  official: boolean;
+}
+
+/**
  * Datos de un día específico en la vista semanal
  */
 export interface WeekDayData {
@@ -32,6 +42,8 @@ export interface WeekDayData {
   monthAbbr?: string;
   /** Día marcado como no laborable en los ajustes (v1.1.15, NL1); Mes, Semana y Lista lo sombrean. */
   isNonWorking?: boolean;
+  /** Feriados del día según los calendarios de feriados activos (v1.1.15, FE2). */
+  holidays?: HolidayLabel[];
 }
 
 /**
@@ -391,6 +403,8 @@ export interface DayColumnData {
   allDayStart: ITask[];
   /** Tareas con `scheduled` como ancla pero sin hora asignada (caso límite, ver Plan de implementación) */
   allDayScheduled: ITask[];
+  /** Feriados del día según los calendarios de feriados activos (v1.1.15, FE2). */
+  holidays: HolidayLabel[];
 }
 
 export type DaysToShow = 1 | 3 | 5;
@@ -538,6 +552,7 @@ export interface MonthViewData {
       isSelected: boolean;
       dayOfMonth: number;
       isNonWorking: boolean;
+      holidays: HolidayLabel[];
       tasksForDay: ITask[];
     }[];
     weekNumber: number;
@@ -565,6 +580,9 @@ export interface YearViewData {
         dayOfMonth: number;
         hasTasksDue: boolean;
         taskCount: number;
+        /** Feriados del día (v1.1.15, FE2): el punto usa el color del primero y el tooltip lista los nombres. */
+        holidays: HolidayLabel[];
+        holidayTitle: string;
       }[];
       weekNumber: number;
     }[];

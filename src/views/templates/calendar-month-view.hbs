@@ -56,6 +56,9 @@
                   <span class="oa-calendar-month-day-number">{{dayOfMonth}}</span>
                 </div>
                 <div class="oa-calendar-month-day-content">
+                  {{#each holidays}}
+                    <div class="oa-calendar-holiday" data-holiday-color="{{color}}" title="{{name}}">{{name}}</div>
+                  {{/each}}
                   {{#each tasksForDay}}
                     <div class="oa-calendar-task oa-calendar-task--{{calendarDateType}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
                         draggable="true"

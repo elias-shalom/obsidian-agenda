@@ -1,7 +1,7 @@
 import { WorkspaceLeaf, Plugin, Notice, setIcon } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask, CalendarViewData, ViewData, AgendaPlugin } from '../types/interfaces';
+import { ITask, CalendarViewData, ViewData, AgendaPlugin, HolidayLabel } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import Handlebars from 'handlebars';
@@ -17,6 +17,7 @@ import { CALENDAR_FILTER_TYPES, filterTasksForCalendar, loadCalendarState, parse
 import { TaskFilterBar } from '../core/task-filter-bar';
 import { closeFilterPopover } from '../core/task-filter-popover';
 import { DEFAULT_NON_WORKING_DAYS, isNonWorkingDay } from '../core/non-working-days';
+import { getHolidayLookup } from '../core/holidays/holiday-calendar';
 
 export const CALENDAR_VIEW_TYPE = 'calendar-view';
 
@@ -195,6 +196,17 @@ export abstract class CalendarView extends BaseView {
     return isNonWorkingDay(date, this.getNonWorkingDays());
   }
 
+  /** Feriados del día según los calendarios de feriados activos (v1.1.15, FE2); vacío si no hay ninguno. */
+  protected getHolidays(date: DateTime): HolidayLabel[] {
+    const plugin = this.plugin as AgendaPlugin;
+    const lookup = getHolidayLookup(plugin.settings?.holidayCalendars ?? []);
+    return lookup.get(date.toISODate() ?? '').map(entry => ({
+      name: this.i18n.t(entry.nameKey),
+      color: entry.color,
+      official: entry.category === 'official',
+    }));
+  }
+
   protected getLocalizedDayNames(): string[] {
     const allDays = [
       { key: 'day_mon', iso: 1 },
@@ -360,11 +372,23 @@ export abstract class CalendarView extends BaseView {
   }
 
   /**
+   * El color de cada feriado viaja en `data-holiday-color` (las plantillas no llevan estilos en línea) y aquí
+   * pasa a la variable CSS que usan el tinte y el punto del Año (v1.1.15, FE2).
+   */
+  private applyHolidayColors(container: HTMLElement): void {
+    container.querySelectorAll<HTMLElement>('[data-holiday-color]').forEach(el => {
+      el.setCssProps({ '--oa-holiday-color': el.dataset.holidayColor ?? '' });
+    });
+  }
+
+  /**
    * Sobrescribe el método de BaseView para implementar event listeners específicos de CalendarView
    * @param container Contenedor donde se aplican los listeners
    * @param _data Datos utilizados para renderizar la vista (no usado en la implementación base)
    */
   protected setupViewSpecificEventListeners(container: HTMLElement, _data: CalendarViewData): void {
+    this.applyHolidayColors(container);
+
     // Add event listeners for navigation buttons
     const prevButton = container.querySelector('.oa-calendar-prev');
     const nextButton = container.querySelector('.oa-calendar-next');

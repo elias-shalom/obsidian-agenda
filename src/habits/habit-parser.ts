@@ -2,6 +2,7 @@ import type { TFile } from 'obsidian';
 import type { AgendaPluginSettings } from '../settings/settings';
 import type { Daytime, ICompletions, IHabit } from './habit';
 import { dayCompletedDates } from './habit-completions';
+import { getFrequencyPresetDays } from '../core/non-working-days';
 
 export interface IHabitParser {
   parse(file: TFile, fm: Record<string, unknown>, settings: AgendaPluginSettings): IHabit | null;
@@ -59,7 +60,7 @@ function parseCompletions(value: unknown, daytimes: Daytime[]): ICompletions {
   return result;
 }
 
-function normalizeFrequencySet(value: unknown): Set<number> {
+function normalizeFrequencySet(value: unknown, nonWorkingDays?: readonly number[]): Set<number> {
   const defaultSet = new Set<number>([1, 2, 3, 4, 5, 6, 7]);
 
   const tokens = (() => {
@@ -98,11 +99,12 @@ function normalizeFrequencySet(value: unknown): Set<number> {
         for (let i = 1; i <= 7; i += 1) output.add(i);
         break;
       case 'workweek':
-        for (let i = 1; i <= 5; i += 1) output.add(i);
+        // «Lunes a viernes» son los días laborables del ajuste (v1.1.15, NL2)
+        for (const day of getFrequencyPresetDays('workweek', nonWorkingDays)) output.add(day);
         break;
       case 'weekend':
-        output.add(6);
-        output.add(7);
+        // «Fin de semana» son los días no laborables del ajuste
+        for (const day of getFrequencyPresetDays('weekend', nonWorkingDays)) output.add(day);
         break;
       default:
         if (token in weekdayMap) output.add(weekdayMap[token]);
@@ -191,7 +193,7 @@ export function parseHabit(
     subArea: toText(fm['sub-area']).trim(),
     related,
     relatedFile: related[0] ?? '',
-    frequencySet: normalizeFrequencySet(fm.frequency),
+    frequencySet: normalizeFrequencySet(fm.frequency, settings.nonWorkingDays),
     priority: normalizePriority(fm.priority ?? settings.habitDefaultPriority),
     daytimes,
     color: toText(fm.color, toText(settings.habitDefaultColor)).trim(),

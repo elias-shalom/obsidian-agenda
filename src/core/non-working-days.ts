@@ -61,3 +61,73 @@ export function toggleNonWorkingDay(current: readonly number[], day: number): No
   const next = base.includes(day) ? base.filter(candidate => candidate !== day) : [...base, day].sort((a, b) => a - b);
   return isValidNonWorkingSet(next) ? { days: next, rejected: false } : { days: base, rejected: true };
 }
+
+export function isDefaultNonWorkingDays(days: readonly number[]): boolean {
+  const clean = sanitizeNonWorkingDays([...days]);
+  return clean.length === DEFAULT_NON_WORKING_DAYS.length && clean.every((day, index) => day === DEFAULT_NON_WORKING_DAYS[index]);
+}
+
+// --- Frecuencias de hábitos y recurrentes (Fase NL2) ----------------------------------
+
+/** Frecuencias predefinidas de un hábito; «Fin de semana» son los días no laborables y «Lunes a viernes» el resto. */
+export type FrequencyPreset = 'everyday' | 'workweek' | 'weekend';
+
+/** Los días ISO de una frecuencia predefinida según el ajuste (por defecto, sábado y domingo). */
+export function getFrequencyPresetDays(preset: FrequencyPreset, nonWorkingDays: readonly number[] = DEFAULT_NON_WORKING_DAYS): number[] {
+  const nonWorking = sanitizeNonWorkingDays([...nonWorkingDays]);
+  if (preset === 'weekend') return nonWorking;
+  if (preset === 'workweek') return getWorkweekDays(nonWorking);
+  return [...ALL_DAYS];
+}
+
+/**
+ * Qué frecuencia predefinida describe exactamente `days`, o `custom` si ninguna. Con un ajuste distinto, una
+ * lista guardada con días explícitos puede coincidir con otra predefinida (o dejar de coincidir con la que
+ * coincidía): lo que se muestra siempre sale de la comparación con el ajuste de ahora.
+ */
+export function matchFrequencyPreset(days: Iterable<number>, nonWorkingDays: readonly number[] = DEFAULT_NON_WORKING_DAYS): FrequencyPreset | 'custom' {
+  const set = new Set(days);
+  for (const preset of ['everyday', 'workweek', 'weekend'] as const) {
+    const expected = getFrequencyPresetDays(preset, nonWorkingDays);
+    if (set.size === expected.length && expected.every(day => set.has(day))) return preset;
+  }
+  return 'custom';
+}
+
+export type RecurrenceDayKind = 'weekday' | 'weekend';
+
+/** Los días de `every weekday` (los laborables) y de `every weekend` (los no laborables) según el ajuste. */
+export function getRecurrenceDays(kind: RecurrenceDayKind, nonWorkingDays: readonly number[] = DEFAULT_NON_WORKING_DAYS): number[] {
+  return getFrequencyPresetDays(kind === 'weekend' ? 'weekend' : 'workweek', nonWorkingDays);
+}
+
+const RRULE_DAY_NAMES: readonly string[] = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
+
+/** Días ISO como valor de `BYDAY` (`MO,TU,…`), de lunes a domingo. */
+export function toRRuleDays(days: readonly number[]): string {
+  return [...new Set(days)].filter(isIsoDay).sort((a, b) => a - b).map(day => RRULE_DAY_NAMES[day - 1]).join(',');
+}
+
+const RECURRENCE_DAY_KIND_REGEX = /\bevery\s+(?:\d+\s+)?(weekday|weekend)\b/i;
+
+/** `weekday` o `weekend` si el texto de recurrencia es de ese tipo; `null` en otro caso. */
+export function findRecurrenceDayKind(recurrenceText: string): RecurrenceDayKind | null {
+  const match = recurrenceText.match(RECURRENCE_DAY_KIND_REGEX);
+  return match ? (match[1].toLowerCase() as RecurrenceDayKind) : null;
+}
+
+export interface RecurrenceDaysNote {
+  kind: RecurrenceDayKind;
+  /** Los días ISO que el ajuste da a esa recurrencia. */
+  days: number[];
+}
+
+/**
+ * La nota del Task Modal bajo el campo de recurrencia: solo cuando el texto es `every weekday` o `every weekend`
+ * y el ajuste no es el habitual (sábado y domingo), porque entonces los días no coinciden con los del plugin Tasks.
+ */
+export function describeRecurrenceDays(recurrenceText: string, nonWorkingDays: readonly number[]): RecurrenceDaysNote | null {
+  const kind = findRecurrenceDayKind(recurrenceText);
+  if (!kind || isDefaultNonWorkingDays(nonWorkingDays)) return null;
+  return { kind, days: getRecurrenceDays(kind, nonWorkingDays) };
+}

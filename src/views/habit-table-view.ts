@@ -7,6 +7,7 @@ import { TaskManager } from '../core/task-manager';
 import { HabitManager, getAreaColor, getAreaLabel, dayCompleted, isScheduled } from '../habits';
 import type { Daytime, IHabit } from '../habits';
 import { computeStats } from '../habits/habit-streak';
+import { matchFrequencyPreset } from '../core/non-working-days';
 
 export const HABIT_TABLE_VIEW_TYPE = 'habit-table-view';
 
@@ -74,9 +75,9 @@ export class HabitTableView extends HabitView {
 
   private frequencyLabel(habit: IHabit): string {
     const set = habit.frequencySet;
-    if (set.size === 7 && [1, 2, 3, 4, 5, 6, 7].every(day => set.has(day))) return this.i18n.t('habit_freq_everyday');
-    if (set.size === 5 && [1, 2, 3, 4, 5].every(day => set.has(day))) return this.i18n.t('habit_freq_workweek');
-    if (set.size === 2 && [6, 7].every(day => set.has(day))) return this.i18n.t('habit_freq_weekend');
+    // Las frecuencias predefinidas siguen el ajuste de días no laborables (v1.1.15, NL2)
+    const preset = matchFrequencyPreset(set, this.habitManager.getSettings().nonWorkingDays);
+    if (preset !== 'custom') return this.i18n.t(`habit_freq_${preset}`);
 
     return [1, 2, 3, 4, 5, 6, 7]
       .filter(day => set.has(day))

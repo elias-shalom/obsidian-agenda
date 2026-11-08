@@ -2,6 +2,7 @@ import { OnCompletion, TaskPriorityEmoji } from "../types/enums";
 import { I18n } from "../core/i18n";
 import { rrulestr } from 'rrule';
 import { DateTime } from "luxon";
+import { DEFAULT_NON_WORKING_DAYS, getRecurrenceDays, toRRuleDays } from "../core/non-working-days";
 
 /**
  * Interfaz para la configuración de emojios en las tareas
@@ -745,8 +746,9 @@ export class TaskSection {
    * @returns Texto en formato RRULE o null si no se pudo convertir
    */
   /** Pura (no usa estado de instancia); expuesta como estática para que `task-recurrence.ts`
-   * (v1.1.10) pueda reutilizarla sin instanciar un `TaskSection`. */
-  static convertToRRuleFormat(recurrenceText: string): string | null {
+   * (v1.1.10) pueda reutilizarla sin instanciar un `TaskSection`. `nonWorkingDays` (v1.1.15, NL2) decide qué días
+   * son `every weekend` (los no laborables) y `every weekday` (los demás); sin él, sábado y domingo como siempre. */
+  static convertToRRuleFormat(recurrenceText: string, nonWorkingDays: readonly number[] = DEFAULT_NON_WORKING_DAYS): string | null {
     // todo: Se debe de implementar un auto compelete para el texto de recurrencia
     // todo: Ejemplo: every 2 weeks until 2023-12-31 count 5 by weekdays
     try {
@@ -824,8 +826,8 @@ export class TaskSection {
         friday: "FR",
         saturday: "SA",
         sunday: "SU",
-        weekday: "MO,TU,WE,TH,FR",
-        weekend: "SA,SU"
+        weekday: toRRuleDays(getRecurrenceDays("weekday", nonWorkingDays)),
+        weekend: toRRuleDays(getRecurrenceDays("weekend", nonWorkingDays))
       };
       
       for (const [day, abbr] of Object.entries(weekdays)) {

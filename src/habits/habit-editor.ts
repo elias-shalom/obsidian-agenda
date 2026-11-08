@@ -6,6 +6,8 @@ import { getAreaLabel } from './habit';
 import type { Daytime, HabitArea, IHabit } from './habit';
 import { TimeDial } from '../core/time-dial';
 import { HabitFolderModal } from './habit-folder-modal';
+import { getFrequencyPresetDays, matchFrequencyPreset } from '../core/non-working-days';
+import type { FrequencyPreset } from '../core/non-working-days';
 
 // @ts-ignore: Plugin de esbuild maneja los archivos .hbs
 import habitEditorTemplate from './templates/habit-editor-modal.hbs';
@@ -23,11 +25,6 @@ const WEEKDAY_OPTIONS: { key: string; iso: number }[] = [
   { key: 'saturday', iso: 6 },
   { key: 'sunday', iso: 7 },
 ];
-const FREQUENCY_PRESETS: Record<'everyday' | 'workweek' | 'weekend', number[]> = {
-  everyday: [1, 2, 3, 4, 5, 6, 7],
-  workweek: [1, 2, 3, 4, 5],
-  weekend: [6, 7],
-};
 
 function daytimeLabelKey(daytime: Daytime): string {
   return `habit_daytime_${daytime.replace(/\s+/g, '_')}`;
@@ -76,14 +73,16 @@ export class HabitEditorModal extends Modal {
     this.helpersRegistered = true;
   }
 
-  private resolveFrequencyMode(habit?: IHabit): 'everyday' | 'workweek' | 'weekend' | 'custom' {
+  /** Frecuencia predefinida que describe el hábito con el ajuste de ahora (v1.1.15, NL2: «Fin de semana» y «Lunes a viernes» siguen los días no laborables). */
+  private resolveFrequencyMode(habit?: IHabit): FrequencyPreset | 'custom' {
     if (!habit) return 'everyday';
+    return matchFrequencyPreset(habit.frequencySet, this.habitManager.getSettings().nonWorkingDays);
+  }
 
-    const set = habit.frequencySet;
-    if (set.size === 7 && [1, 2, 3, 4, 5, 6, 7].every(day => set.has(day))) return 'everyday';
-    if (set.size === 5 && [1, 2, 3, 4, 5].every(day => set.has(day))) return 'workweek';
-    if (set.size === 2 && [6, 7].every(day => set.has(day))) return 'weekend';
-    return 'custom';
+  /** Días ISO de una frecuencia predefinida según el ajuste de días no laborables. */
+  private presetDays(mode: string): number[] | undefined {
+    if (mode !== 'everyday' && mode !== 'workweek' && mode !== 'weekend') return undefined;
+    return getFrequencyPresetDays(mode, this.habitManager.getSettings().nonWorkingDays);
   }
 
   /** Opciones del combobox de sub-área: subcarpetas de 2º/3er nivel del área + opción vacía + valor legado si ya no existe como carpeta */
@@ -141,7 +140,7 @@ export class HabitEditorModal extends Modal {
         label: this.i18n.t(`habit_freq_${key}`),
         checked: habit
           ? habit.frequencySet.has(iso)
-          : (FREQUENCY_PRESETS[frequencyMode as keyof typeof FREQUENCY_PRESETS]?.includes(iso) ?? false),
+          : (this.presetDays(frequencyMode)?.includes(iso) ?? false),
       })),
       daytimes: DAYTIME_OPTIONS.map(daytime => ({
         value: daytime,
@@ -251,21 +250,16 @@ export class HabitEditorModal extends Modal {
     }));
 
     const applyPreset = (mode: string) => {
-      const days = FREQUENCY_PRESETS[mode as keyof typeof FREQUENCY_PRESETS];
+      const days = this.presetDays(mode);
       if (!days) return;
       checkboxes.forEach(({ iso, input }) => {
         if (input) input.checked = days.includes(iso);
       });
     };
 
-    const computeModeFromCheckboxes = (): 'everyday' | 'workweek' | 'weekend' | 'custom' => {
-      const checked = checkboxes.filter(({ input }) => input?.checked).map(({ iso }) => iso).sort();
-      const matches = (days: number[]) => checked.length === days.length && days.every(day => checked.includes(day));
-
-      if (matches(FREQUENCY_PRESETS.everyday)) return 'everyday';
-      if (matches(FREQUENCY_PRESETS.workweek)) return 'workweek';
-      if (matches(FREQUENCY_PRESETS.weekend)) return 'weekend';
-      return 'custom';
+    const computeModeFromCheckboxes = (): FrequencyPreset | 'custom' => {
+      const checked = checkboxes.filter(({ input }) => input?.checked).map(({ iso }) => iso);
+      return matchFrequencyPreset(checked, this.habitManager.getSettings().nonWorkingDays);
     };
 
     select.addEventListener('change', () => {

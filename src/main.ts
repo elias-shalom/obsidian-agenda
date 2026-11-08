@@ -30,7 +30,7 @@ export default class ObsidianAgenda extends Plugin {
       this.taskManager = new TaskManager(app, this.i18n, this);
       this.habitManager = new HabitManager(app, () => this.settings, this.i18n, () => this.saveSettings());
       this.viewManager = new ViewManager(this, this.i18n, this.taskManager, this.habitManager); // Pasar la instancia del plugin
-      this.modalManager = new ModalManager(app, this.i18n, this.taskManager);
+      this.modalManager = new ModalManager(app, this.i18n, this.taskManager, () => this.settings.nonWorkingDays);
   }
 
   /// Método de inicializa del plugin.
@@ -155,6 +155,11 @@ export default class ObsidianAgenda extends Plugin {
 
   async saveSettings(): Promise<void> {
     await this.saveData(this.settings);
+  }
+
+  /** Vuelve a leer los hábitos con los ajustes de ahora (p. ej. tras cambiar los días no laborables, v1.1.15 NL2). */
+  async refreshHabits(): Promise<void> {
+    await this.habitManager.refreshHabits();
   }
 
   /** Muestra una sola vez las novedades de la versión instalada; la versión vista se guarda antes de abrir el modal. */

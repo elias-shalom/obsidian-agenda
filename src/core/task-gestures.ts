@@ -80,7 +80,7 @@ export function attachTaskGestures(el: HTMLElement, options: TaskGestureOptions)
       menu.addItem((menuItem) => menuItem
         .setTitle(`${icon} ${options.i18n.t(labelKey)}`)
         .onClick(() => {
-          changeTaskStatus(task, status, options).then(changed => {
+          changeTaskStatus(task, status, { ...options, nonWorkingDays: plugin.settings.nonWorkingDays }).then(changed => {
             if (changed) notifyChanged();
           }).catch(console.error);
         }));
@@ -89,16 +89,19 @@ export function attachTaskGestures(el: HTMLElement, options: TaskGestureOptions)
   });
 }
 
-/** Reescribe el estado de la tarea; devuelve `false` (con aviso) si la nota cambió y no se pudo localizar la línea. */
+/**
+ * Reescribe el estado de la tarea; devuelve `false` (con aviso) si la nota cambió y no se pudo localizar la línea.
+ * `nonWorkingDays` (v1.1.15, NL2) da los días de las recurrentes `every weekday` y `every weekend`.
+ */
 export async function changeTaskStatus(
   task: ITask,
   status: CoreTaskStatus,
-  options: Pick<TaskGestureOptions, 'taskWriter' | 'i18n'>
+  options: Pick<TaskGestureOptions, 'taskWriter' | 'i18n'> & { nonWorkingDays?: readonly number[] }
 ): Promise<boolean> {
   const { taskWriter, i18n } = options;
   const todayIso = DateTime.now().toFormat('yyyy-MM-dd');
   // Calculado antes de escribir: necesita la recurrencia/fechas tal como están ahora (ADR-R1).
-  const nextOccurrenceLine = buildRecurrenceOccurrence(task, status);
+  const nextOccurrenceLine = buildRecurrenceOccurrence(task, status, options.nonWorkingDays);
 
   const written = await taskWriter.updateTaskLine(
     task.file.path, task.line.number, task.line.text, (line) => upsertTaskStatus(line, status, todayIso)

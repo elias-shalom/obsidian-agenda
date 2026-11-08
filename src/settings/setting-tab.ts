@@ -71,7 +71,13 @@ export class SettingTab extends PluginSettingTab {
         }
         this.plugin.settings.nonWorkingDays = result.days;
         this.plugin.saveSettings()
-          .then(() => this.refreshNonWorkingViews())
+          .then(async () => {
+            this.refreshNonWorkingViews();
+            // Las frecuencias «Fin de semana» y «Lunes a viernes» se resuelven al leer cada hábito: se vuelven a leer
+            await this.plugin.refreshHabits();
+            document.dispatchEvent(new CustomEvent('obsidian-agenda:habits-refresh'));
+            new Notice(this.i18n.t('non_working_days_changed'));
+          })
           .catch(console.error);
       });
     }

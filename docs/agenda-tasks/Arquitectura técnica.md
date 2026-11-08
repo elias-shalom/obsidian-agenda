@@ -1374,7 +1374,7 @@ Manual: las cuatro vistas con cada campo; que Lanes = Ninguno deje cada vista co
 
 Enlaces: [[Especificación de vistas]] §20; fases L1 (núcleo; independiente), L2 (barra; depende de L1 y M2), L3 (Lista y Tabla; depende de L2) y L4 (Kanban y Gantt; depende de L2) del [[Plan de implementación]].
 
-## 30. Calendario: días no laborables, feriados, proyección y hábitos (v1.1.15 — §30.2 NL1 y NL2 y §30.3 FE1 y FE2 implementados el 2026-11-08; el resto, diseño no implementado)
+## 30. Calendario: días no laborables, feriados, proyección y hábitos (v1.1.15 — §30.2 NL1 y NL2, §30.3 FE1 y FE2 y §30.4 PR1 implementados el 2026-11-08; el resto, diseño no implementado)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §21. Fases del Plan: NL1, NL2, FE1, FE2, PR1, PR2 y HC1 en [[Plan de implementación]]. Los hábitos tienen su propia documentación en `docs/habit-tracker-agenda/`, que HC1 reutiliza (periodo activo y vacaciones, fases HA1 y HV1 del Plan de hábitos).
 
@@ -1441,7 +1441,7 @@ Hoy cada subvista arma sus días en `generateViewData()` y consulta `getTasksFor
 
 ### 30.4 Proyección de recurrentes (PR1, PR2)
 
-- **Módulo puro** `src/core/task-projection.ts` (por crear): `projectOccurrences(task, count)` devuelve hasta `count` ocurrencias posteriores a la real. Encadena `getNextOccurrenceDate()` de `src/core/task-recurrence.ts`: la fecha de referencia sigue siendo `scheduled > due > start` (ADR-R2), la primera llamada usa la fecha real y cada una de las siguientes la fecha anterior. Cada fantasma desplaza todas las fechas de la tarea los mismos días, como `buildNextOccurrenceLine()` (que usa `shiftTaskDates()`), y conserva hora y duración.
+- **Módulo puro** `src/core/task-projection.ts`: `projectOccurrences(task, count, nonWorkingDays?)` devuelve hasta `count` ocurrencias posteriores a la real. Encadena `getNextOccurrenceDate()` de `src/core/task-recurrence.ts`: la fecha de referencia sigue siendo `scheduled > due > start` (ADR-R2), la primera llamada usa la fecha real y cada una de las siguientes la fecha anterior. Cada fantasma desplaza todas las fechas de la tarea los mismos días, como `buildNextOccurrenceLine()` (que usa `shiftTaskDates()`), y conserva hora y duración.
 - **No se proyectan** las reglas `when done` (`getNextOccurrenceDate()` las calcula desde hoy y dependen de cuándo se complete), las tareas sin fecha de referencia ni las de recurrencia inválida (la función devuelve `null`).
 - **Ajuste** `projectedOccurrences: number` (`data.json`; nombre propuesto), por defecto 10; con 0 se desactiva. N cuenta ocurrencias, no tiempo: un tope en meses costaría 365 cálculos en una tarea diaria.
 - **Vistas**: Mes, Semana, Semana laboral, Día y Lista del calendario; no en Año, Gantt, Lista, Tabla, Kanban ni Overview.
@@ -1449,6 +1449,8 @@ Hoy cada subvista arma sus días en `generateViewData()` y consulta `getTasksFor
 - **Consecuencia asumida**: una diaria desaparece pasados N días (en el mes se ve «cortada») y una mensual se ve hasta N meses.
 
 **ADR-CL3 — Fantasmas virtuales.** Las ocurrencias proyectadas existen solo en memoria. Razón: escribirlas en las notas duplicaría tareas y chocaría con la regla de que la siguiente ocurrencia se crea al completar (ADR-R1).
+
+**Implementado el 2026-11-08 (Fase PR1)**: `projectOccurrences()` devuelve `ProjectedOccurrence[]` (`task`: copia de la tarea real con las fechas de inicio, vencimiento y programada desplazadas, en estado pendiente (` `, ícono Todo) y con `done`/`cancelled` en `null`; `source`: la real; `index`, desde 1). El fantasma conserva `file` y `line` de la real, de modo que abrirlo lleva a la tarea real, y tiene un `id` propio (`ruta#línea+índice`) para no chocar con ella. **No proyecta** una tarea terminada (`x`), cancelada (`-`) o que no es tarea (`~`): al completar una recurrente la siguiente ocurrencia ya existe como otra línea real, que proyecta por su cuenta (así no se duplica); una tarea en curso o en espera sí proyecta. La proyección se detiene sola si la regla se queda sin ocurrencias (`until`) o no avanza. `count` se trunca a entero y un valor no positivo o no numérico da la lista vacía. El tope superior de N (p. ej. 50) lo impondrá el ajuste en PR2, no esta función.
 
 ### 30.5 Hábitos en el calendario (HC1)
 

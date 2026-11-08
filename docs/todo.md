@@ -498,10 +498,10 @@ Los filtros tienen diseño en `docs/agenda-tasks/Especificación de vistas.md` �
   - [x] Se marcan en las 6 vistas del calendario y en el Gantt, con tinte tenue: etiqueta con el nombre en Mes, Semana, Semana laboral y Lista; encabezado en Día; punto con tooltip en Año; columna tintada en el Gantt (falta la prueba manual)
   - [x] Solo visual: no afectan a la Semana laboral, las rachas ni las tareas
   - [ ] Fuera por ahora: un archivo de reglas del usuario (feriados personales o un país nuevo)
-- [ ] **[v1.1.15] Calendario: proyectar las ocurrencias de las tareas recurrentes** (decidido el 2026-11-01; viene de «Calendar Enhancements»; hoy una tarea recurrente solo crea la siguiente ocurrencia al completarla (ADR-R1); reutiliza `getNextOccurrenceDate()` de `src/core/task-recurrence.ts`)
+- [ ] **[v1.1.15] Calendario: proyectar las ocurrencias de las tareas recurrentes** (decidido el 2026-11-01; viene de «Calendar Enhancements»; **PR1 (cálculo) implementada el 2026-11-08; falta PR2 (ajuste y vistas)**; hoy una tarea recurrente solo crea la siguiente ocurrencia al completarla (ADR-R1); reutiliza `getNextOccurrenceDate()` de `src/core/task-recurrence.ts`)
   - [ ] Se proyectan N ocurrencias por tarea, posteriores a la ocurrencia real (no «un mes»: un tope por tiempo costaría 365 cálculos en una diaria); N es un ajuste numérico, por defecto 10, y con 0 se desactiva
   - [ ] Se dibujan como fantasmas atenuadas con la insignia `🔁`, de solo lectura: no se escriben en la nota, no se arrastran ni se completan; clic y doble clic llevan a la tarea real; al completar la real se escribe la siguiente como hoy (ADR-R1)
-  - [ ] Las reglas `when done` no se proyectan (dependen de cuándo se complete)
+  - [x] Las reglas `when done` no se proyectan (dependen de cuándo se complete); tampoco las tareas terminadas o canceladas, cuya siguiente ocurrencia ya existe (PR1, `src/core/task-projection.ts`)
   - [ ] Vistas: Mes, Semana, Semana laboral, Día y Lista del calendario; no en Año, Gantt, Lista, Tabla, Kanban ni Overview
   - [ ] Consecuencia asumida: una diaria desaparece pasados N días (en el mes se ve «cortada») y una mensual se ve hasta N meses
 - [ ] **[v1.1.16] Dashboard (Overview): widgets de hábitos** (decidido el 2026-11-01 en lo principal; viene de «UX Improvements»; reutiliza el cálculo de `habit-stats.ts` y `habit-streak.ts` y el panel de casillas del Overview)

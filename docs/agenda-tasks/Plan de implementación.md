@@ -740,14 +740,14 @@ Varios valores en los filtros de fecha; excluir valores («no es»); agrupado y 
 - [x] Verificable con Node: `tests/holiday-rules.test.cjs` (35 pruebas: ajuste guardado, consulta día a día, claves de traducción en los 6 idiomas) y `tests/calendar-weekday-labels.test.cjs` (los feriados llegan a los datos de Semana, Semana laboral y Lista y no ocultan días).
 - [ ] Prueba manual: con un calendario de México activo, el 1 de enero y el tercer lunes de noviembre aparecen en Mes, Semana, Semana laboral, Lista, Día, Año y Gantt (claro y oscuro, escritorio y `is-phone`); con ninguno activo no cambia nada; región, casillas, color y quitar; dos calendarios que coinciden en un día; ajustes en las dos rutas (Obsidian ≥ 1.13 y `display()`).
 
-### Fase PR1 — Proyección de recurrentes: cálculo y fantasmas (independiente; Especificación §21, Arquitectura §30)
-- [ ] Cálculo de N ocurrencias posteriores a la real con `getNextOccurrenceDate()` (`src/core/task-recurrence.ts`); las reglas `when done` no se proyectan.
-- [ ] Entradas fantasma de solo lectura (no se escriben en la nota, no se arrastran ni se completan) con la insignia `🔁` y aspecto atenuado; clic y doble clic llevan a la tarea real.
-- [ ] Verificable sola: `node --test` (N ocurrencias en diarias, semanales y mensuales; `when done` excluida; sin duplicar la real; con 0 no proyecta).
+### Fase PR1 — Proyección de recurrentes: cálculo y fantasmas (independiente; Especificación §21, Arquitectura §30) — **implementada el 2026-11-08 (cálculo y modelo del fantasma); el dibujado pasa a PR2**
+- [x] Cálculo de N ocurrencias posteriores a la real con `getNextOccurrenceDate()` (`src/core/task-recurrence.ts`), encadenadas como al completar una tras otra; las reglas `when done` no se proyectan (`projectOccurrences()` en `src/core/task-projection.ts`).
+- [x] Modelo de la entrada fantasma (`ProjectedOccurrence`: copia de la tarea con las fechas desplazadas, en estado pendiente, con el `file` y la `line` de la real, más `source` e `index`). La insignia `🔁`, el aspecto atenuado, el solo lectura (sin arrastrar ni completar) y los clics hacia la tarea real son de dibujado y se hacen en PR2.
+- [x] Verificable sola: `tests/task-projection.test.cjs` (22 pruebas: N ocurrencias en diarias, semanales y mensuales; `when done` excluida; terminadas y canceladas excluidas; sin duplicar la real; con 0 no proyecta; referencia `scheduled > due > start`; hora y duración; `every weekday` con el ajuste de días no laborables).
 
 ### Fase PR2 — Ajuste N y vistas (depende de PR1)
 - [ ] Ajuste numérico N, por defecto 10; con 0 se desactiva.
-- [ ] Fantasmas en Mes, Semana, Semana laboral, Día y Lista del calendario; no en Año, Gantt, Lista, Tabla, Kanban ni Overview; respetan los filtros de la barra del calendario.
+- [ ] Fantasmas en Mes, Semana, Semana laboral, Día y Lista del calendario con la insignia `🔁` y aspecto atenuado, de solo lectura (sin arrastrar ni completar; clic y doble clic llevan a la tarea real); no en Año, Gantt, Lista, Tabla, Kanban ni Overview; respetan los filtros de la barra del calendario.
 - [ ] Al completar la real se escribe la siguiente como hoy (ADR-R1); una diaria desaparece pasados N días (consecuencia asumida).
 - [ ] Verificable sola: prueba manual con una diaria, una semanal y una mensual; completar la real no duplica la siguiente.
 

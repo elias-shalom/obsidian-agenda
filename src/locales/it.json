@@ -186,6 +186,8 @@
   "project_tasks_tooltip": "Attività attive raggruppate per cartella principale del vault. Vengono mostrate fino a cinque cartelle e tre attività per cartella.",
 
   "general_settings": "Impostazioni generali",
+  "settings_tab_general": "Generale",
+  "settings_sections": "Sezioni delle impostazioni",
   "tabs_visibility_settings": "Visibilita delle schede",
   "show_overview_tab": "Mostra scheda Panoramica",
   "show_tasks_tab": "Mostra scheda Attività",

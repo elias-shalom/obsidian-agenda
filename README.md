@@ -432,7 +432,7 @@ The plugin recognizes and properly handles all standard Obsidian Tasks metadata,
 - **Widget Configuration** - Personalize dashboard widgets
 - **Display Preferences** - Adjust how tasks are displayed
 - **Show what's new after an update** - Opens a window with the news the first time you start Obsidian after updating (on by default)
-- **Task Modal mode** - The "More fields" (advanced) section of the Create/Edit Task modal remembers whether you left it expanded or collapsed, per device
+- **Non-working days** - One checkbox per weekday (Saturday and Sunday by default): shaded in the calendar's Month, Week and List views and in the Gantt, hidden in Work Week, and used by the habit frequencies "Weekend" and "Work week" and the recurrences `every weekend` and `every weekday`- **Task Modal mode** - The "More fields" (advanced) section of the Create/Edit Task modal remembers whether you left it expanded or collapsed, per device
 
 ### Habit Tracker Settings
 - **Habit Folder Path** - Vault folder scanned (recursively) for habit notes
@@ -442,7 +442,7 @@ The plugin recognizes and properly handles all standard Obsidian Tasks metadata,
 - **Default Max Gap** - Default tolerance (in days) before a streak breaks
 - **Tab Visibility** - Show/hide each habit view (Grid, Routine, Dashboard, Weekly, Table) independently
 
-Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks**
+Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks**. The panel is split into three tabs: **General**, **Calendar** and **Habits**
 
 ---
 

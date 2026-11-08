@@ -186,6 +186,8 @@
   "project_tasks_tooltip": "Tareas activas agrupadas por carpeta raíz del vault. Se muestran hasta cinco carpetas y un máximo de tres tareas por carpeta.",
 
   "general_settings": "Configuración general",
+  "settings_tab_general": "General",
+  "settings_sections": "Secciones de la configuración",
   "tabs_visibility_settings": "Visibilidad de pestañas",
   "show_overview_tab": "Mostrar pestaña General",
   "show_tasks_tab": "Mostrar pestaña Tareas",

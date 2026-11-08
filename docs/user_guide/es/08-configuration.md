@@ -1,10 +1,9 @@
 # 9. Configuración
 
-Accede a todos los ajustes del plugin desde **Configuración de Obsidian → Plugins de la comunidad → Agenda Tasks**. Los ajustes están agrupados exactamente como aparecen en ese panel.
+Accede a todos los ajustes del plugin desde **Configuración de Obsidian → Plugins de la comunidad → Agenda Tasks**. El panel tiene tres pestañas arriba —**General**, **Calendario** y **Hábitos**— y cada una muestra solo sus ajustes, como se listan a continuación.
 
 ## Configuración general
 
-- **La semana empieza el** — qué día de la semana tratan las vistas de calendario como el primero de la semana.
 - **Mostrar novedades al actualizar** — abre una ventana con las novedades la primera vez que inicias Obsidian tras actualizar el plugin (activado por defecto). Aparece una sola vez por actualización y, si saltaste varias versiones, las muestra todas.
 
 ## Visibilidad de pestañas
@@ -15,9 +14,11 @@ Accede a todos los ajustes del plugin desde **Configuración de Obsidian → Plu
 
 ## Calendario
 
+- **La semana empieza el** — qué día de la semana tratan las vistas de calendario como el primero de la semana.
 - **Mostrar fechas de vencimiento/inicio/programada** — elige de forma independiente qué tipos de fecha aparecen en las vistas de calendario, cada uno con su propio ícono y color (ver [7. Formato de tareas y metadatos](06-task-format.md)).
 - **Mostrar tareas completadas** — mantén las tareas completadas atenuadas en el calendario, u ocúltalas por completo.
 - **Vista de lista: días a mostrar** — el tamaño de la ventana continua para la vista de Lista del calendario (mínimo 7, máximo 14, por defecto 14). Ver [5. Vistas de calendario](04-calendar-views.md).
+- **Días no laborables** — una casilla por día, de lunes a domingo (sábado y domingo por defecto). Los días marcados se sombrean en las vistas Mes, Semana y Lista del calendario y en el Gantt; la Semana laboral los oculta. También son los días de las frecuencias de hábitos «Fin de semana» y «Lunes a viernes» y de las recurrencias `every weekend` y `every weekday`, así que cambiarlos modifica las rachas y los porcentajes de los hábitos y las fechas de esas tareas recurrentes. Debe quedar al menos un día laborable y uno no laborable; la casilla que rompería esa regla vuelve a su estado y un aviso lo explica.
 
 ## Hábitos
 

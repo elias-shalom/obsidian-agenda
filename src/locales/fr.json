@@ -186,6 +186,8 @@
   "project_tasks_tooltip": "Tâches actives regroupées par dossier racine du coffre. Jusqu'à cinq dossiers et trois tâches par dossier sont affichés.",
 
   "general_settings": "Paramètres généraux",
+  "settings_tab_general": "Général",
+  "settings_sections": "Sections des paramètres",
   "tabs_visibility_settings": "Visibilite des onglets",
   "show_overview_tab": "Afficher l'onglet Apercu",
   "show_tasks_tab": "Afficher l'onglet Tâches",

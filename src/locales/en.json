@@ -187,6 +187,8 @@
   "project_tasks_tooltip": "Active tasks grouped by the vault's root folder. Up to five folders and three tasks per folder are shown.",
 
   "general_settings": "General settings",
+  "settings_tab_general": "General",
+  "settings_sections": "Settings sections",
   "tabs_visibility_settings": "Tab Visibility",
   "show_overview_tab": "Show Overview tab",
   "show_tasks_tab": "Show Tasks tab",

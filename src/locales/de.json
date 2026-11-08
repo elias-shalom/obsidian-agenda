@@ -179,6 +179,8 @@
   "system_health_tooltip": "Prozentsatz der Aufgaben, die der Parser als gültig erkennt. Wenn es keine Aufgaben gibt, zeigt diese Kennzahl 100 %.",
 
   "general_settings": "Allgemeine einstellungen",
+  "settings_tab_general": "Allgemein",
+  "settings_sections": "Einstellungsbereiche",
   "tabs_visibility_settings": "Sichtbarkeit der Tabs",
   "show_overview_tab": "Tab \"Ubersicht\" anzeigen",
   "show_tasks_tab": "Tab \"Aufgaben\" anzeigen",

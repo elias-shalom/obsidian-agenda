@@ -22,8 +22,18 @@ const WEEKDAY_LABELS: readonly { iso: number; key: string }[] = [
   { iso: 7, key: 'day_sun' },
 ];
 
+/** Las pestañas de la pantalla de ajustes (v1.1.15): General, Calendario y Hábitos. */
+type SettingsSection = 'general' | 'calendar' | 'habits';
+const SETTINGS_SECTIONS: readonly { id: SettingsSection; labelKey: string }[] = [
+  { id: 'general', labelKey: 'settings_tab_general' },
+  { id: 'calendar', labelKey: 'calendar_settings' },
+  { id: 'habits', labelKey: 'habit_settings' },
+];
+
 export class SettingTab extends PluginSettingTab {
   plugin: AgendaPlugin;
+  /** Pestaña abierta; se conserva mientras la pantalla de ajustes siga abierta y al volver a ella. */
+  private activeSection: SettingsSection = 'general';
 
 
   constructor(app: App, plugin: AgendaPlugin, private i18n: I18n) {
@@ -54,6 +64,7 @@ export class SettingTab extends PluginSettingTab {
    * marcado y uno sin marcar: la casilla que rompería la regla vuelve a su estado y un aviso lo explica.
    */
   private renderNonWorkingDays(setting: Setting): void {
+    setting.settingEl.addClass('oa-non-working-days-setting');
     const row = setting.controlEl.createDiv({ cls: 'oa-non-working-days' });
 
     for (const { iso, key } of WEEKDAY_LABELS) {
@@ -81,6 +92,39 @@ export class SettingTab extends PluginSettingTab {
           .catch(console.error);
       });
     }
+  }
+
+  /**
+   * Barra con las pestañas General, Calendario y Hábitos. Al elegir una, `onSelect` hace que la pantalla muestre
+   * solo sus ajustes: en la ruta declarativa vuelve a evaluar `visible` de cada grupo y en `display()` repinta.
+   */
+  private renderSectionTabs(parent: HTMLElement, onSelect: () => void): void {
+    const bar = parent.createDiv({ cls: 'oa-settings-tabs', attr: { role: 'tablist', 'aria-label': this.i18n.t('settings_sections') } });
+
+    for (const section of SETTINGS_SECTIONS) {
+      const button = bar.createEl('button', {
+        cls: 'oa-settings-tab',
+        text: this.i18n.t(section.labelKey),
+        attr: { type: 'button', role: 'tab', 'data-section': section.id },
+      });
+
+      button.addEventListener('click', () => {
+        if (section.id === this.activeSection) return;
+        this.activeSection = section.id;
+        this.markActiveSectionTab(bar);
+        onSelect();
+      });
+    }
+
+    this.markActiveSectionTab(bar);
+  }
+
+  private markActiveSectionTab(bar: HTMLElement): void {
+    bar.querySelectorAll<HTMLElement>('.oa-settings-tab').forEach(button => {
+      const active = button.dataset.section === this.activeSection;
+      button.toggleClass('oa-active', active);
+      button.setAttribute('aria-selected', String(active));
+    });
   }
 
   /** Campo de la carpeta de hábitos con un aviso informativo debajo (v1.1.13, S4); no impide guardar. */
@@ -119,8 +163,19 @@ export class SettingTab extends PluginSettingTab {
   getSettingDefinitions(): SettingDefinitionItem<keyof AgendaPluginSettings>[] {
     return [
       {
+        // Barra de pestañas (v1.1.15): cada grupo de abajo se muestra solo en su pestaña
+        name: this.i18n.t('settings_sections'),
+        searchable: false,
+        render: (setting) => {
+          setting.settingEl.addClass('oa-settings-tabs-row');
+          // refreshDomState solo existe en Obsidian >= 1.13, la única versión que usa esta ruta declarativa
+          this.renderSectionTabs(setting.controlEl, () => (this as { refreshDomState?: () => void }).refreshDomState?.());
+        },
+      },
+      {
         type: 'group',
         heading: this.i18n.t('general_settings'),
+        visible: () => this.activeSection === 'general',
         items: [
           {
             name: this.i18n.t('show_whats_new_on_update'),
@@ -132,6 +187,7 @@ export class SettingTab extends PluginSettingTab {
       {
         type: 'group',
         heading: this.i18n.t('tabs_visibility_settings'),
+        visible: () => this.activeSection === 'general',
         items: [
           { name: this.i18n.t('show_overview_tab'), control: { type: 'toggle', key: 'showOverviewTab' } },
           { name: this.i18n.t('show_tasks_tab'), control: { type: 'toggle', key: 'showTasksTab' } },
@@ -139,6 +195,13 @@ export class SettingTab extends PluginSettingTab {
           { name: this.i18n.t('show_gantt_tab'), control: { type: 'toggle', key: 'showGanttTab' } },
           { name: this.i18n.t('show_calendar_tab'), control: { type: 'toggle', key: 'showCalendarTab' } },
           { name: this.i18n.t('show_habit_tab'), control: { type: 'toggle', key: 'showHabitTab' } },
+        ],
+      },
+      {
+        type: 'group',
+        heading: this.i18n.t('calendar_settings'),
+        visible: () => this.activeSection === 'calendar',
+        items: [
           {
             name: this.i18n.t('week_start_day'),
             render: (setting) => {
@@ -162,12 +225,6 @@ export class SettingTab extends PluginSettingTab {
                 }));
             },
           },
-        ],
-      },
-      {
-        type: 'group',
-        heading: this.i18n.t('calendar_settings'),
-        items: [
           {
             name: this.i18n.t('calendar_show_due_dates'),
             render: (setting) => {
@@ -240,6 +297,7 @@ export class SettingTab extends PluginSettingTab {
       {
         type: 'group',
         heading: this.i18n.t('habit_settings'),
+        visible: () => this.activeSection === 'habits',
         items: [
           {
             name: this.i18n.t('habit_folder_path'),
@@ -278,6 +336,7 @@ export class SettingTab extends PluginSettingTab {
       {
         type: 'group',
         heading: this.i18n.t('habit_tab_visibility'),
+        visible: () => this.activeSection === 'habits',
         items: [
           { name: this.i18n.t('show_habit_grid_tab'), control: { type: 'toggle', key: 'showHabitGridTab' } },
           { name: this.i18n.t('show_habit_dashboard_tab'), control: { type: 'toggle', key: 'showHabitDashboardTab' } },
@@ -297,10 +356,25 @@ export class SettingTab extends PluginSettingTab {
 
   /** @deprecated Mantenido para Obsidian < 1.13.0, que no soporta getSettingDefinitions(). */
   display(): void {
-    let { containerEl } = this;
+    const { containerEl } = this;
 
     containerEl.empty();
 
+    // Barra de pestañas y, debajo, los ajustes de la pestaña elegida; al cambiar de pestaña solo se repinta esa zona
+    const sectionEl = createDiv();
+    this.renderSectionTabs(containerEl, () => this.displaySection(sectionEl));
+    containerEl.appendChild(sectionEl);
+    this.displaySection(sectionEl);
+  }
+
+  private displaySection(containerEl: HTMLElement): void {
+    containerEl.empty();
+    if (this.activeSection === 'calendar') this.displayCalendarSection(containerEl);
+    else if (this.activeSection === 'habits') this.displayHabitsSection(containerEl);
+    else this.displayGeneralSection(containerEl);
+  }
+
+  private displayGeneralSection(containerEl: HTMLElement): void {
     new Setting(containerEl).setName(this.i18n.t("general_settings")).setHeading();
 
     new Setting(containerEl)
@@ -368,6 +442,10 @@ export class SettingTab extends PluginSettingTab {
           this.plugin.settings.showHabitTab = value;
           await this.plugin.saveSettings();
         }));
+  }
+
+  private displayCalendarSection(containerEl: HTMLElement): void {
+    new Setting(containerEl).setName(this.i18n.t("calendar_settings")).setHeading();
 
     new Setting(containerEl)
       .setName(this.i18n.t("week_start_day"))
@@ -389,8 +467,6 @@ export class SettingTab extends PluginSettingTab {
             }
           });
         }));
-
-    new Setting(containerEl).setName(this.i18n.t("calendar_settings")).setHeading();
 
     new Setting(containerEl)
       .setName(this.i18n.t("calendar_show_due_dates"))
@@ -448,7 +524,9 @@ export class SettingTab extends PluginSettingTab {
       .setName(this.i18n.t("non_working_days"))
       .setDesc(this.i18n.t("non_working_days_desc"))
       .then(setting => this.renderNonWorkingDays(setting));
+  }
 
+  private displayHabitsSection(containerEl: HTMLElement): void {
     new Setting(containerEl).setName(this.i18n.t("habit_settings")).setHeading();
 
     new Setting(containerEl)

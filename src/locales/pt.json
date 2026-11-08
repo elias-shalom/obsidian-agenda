@@ -186,6 +186,8 @@
   "project_tasks_tooltip": "Tarefas ativas agrupadas pela pasta raiz do vault. São exibidas até cinco pastas e no máximo três tarefas por pasta.",
 
   "general_settings": "Configurações gerais",
+  "settings_tab_general": "Geral",
+  "settings_sections": "Seções das configurações",
   "tabs_visibility_settings": "Visibilidade das abas",
   "show_overview_tab": "Mostrar aba Visao geral",
   "show_tasks_tab": "Mostrar aba Tarefas",

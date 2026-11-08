@@ -1,11 +1,68 @@
 // Controles propios de la pantalla de ajustes del plugin.
 
+// Pestañas General / Calendario / Hábitos (v1.1.15)
+.oa-settings-tabs {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.oa-settings-tab {
+  padding: 6px 14px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: var(--radius-s) var(--radius-s) 0 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-muted);
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--background-modifier-hover);
+    color: var(--text-normal);
+  }
+
+  &.oa-active {
+    border-bottom-color: var(--interactive-accent);
+    color: var(--text-normal);
+    font-weight: var(--font-semibold);
+  }
+}
+
+// Fila declarativa que solo contiene la barra de pestañas: sin columna de texto, control a todo el ancho
+.oa-settings-tabs-row {
+  padding-bottom: 0;
+  border-top: none;
+
+  .setting-item-info {
+    display: none;
+  }
+
+  .setting-item-control {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+}
+
 // Siete casillas de los días no laborables, de lunes a domingo (v1.1.15, NL1): una tira con el día encima de
 // cada casilla; en una pantalla estrecha pasa a otra línea sin partir una pareja día-casilla.
+// La descripción es larga y estrecharía la columna del control (casillas en vertical): el texto va arriba y la tira debajo, a todo el ancho.
+.oa-non-working-days-setting {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+
+  .setting-item-control {
+    justify-content: flex-start;
+  }
+}
+
 .oa-non-working-days {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 8px;
 }
 

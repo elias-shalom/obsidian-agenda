@@ -1,10 +1,9 @@
 # 9. Configuration
 
-Access every plugin setting via **Obsidian Settings → Community Plugins → Agenda Tasks**. Settings are grouped exactly as they appear in that panel.
+Access every plugin setting via **Obsidian Settings → Community Plugins → Agenda Tasks**. The panel has three tabs at the top — **General**, **Calendar** and **Habits** — and each tab shows only its own settings, as listed below.
 
 ## General settings
 
-- **Week starts on** — which weekday calendar views treat as the first day of the week.
 - **Show what's new after an update** — opens a window with the news the first time you start Obsidian after updating the plugin (on by default). It appears once per update and, if you skipped several versions, lists them all.
 
 ## Tab Visibility
@@ -15,9 +14,11 @@ Access every plugin setting via **Obsidian Settings → Community Plugins → Ag
 
 ## Calendar
 
+- **Week starts on** — which weekday calendar views treat as the first day of the week.
 - **Show Due/Start/Scheduled Dates** — independently choose which date types appear on calendar views, each with its own icon + color badge (see [7. Task Format and Metadata](06-task-format.md)).
 - **Show Completed Tasks** — keep completed tasks dimmed on the calendar, or hide them entirely.
 - **List view: days to show** — the rolling window size for the calendar's List view (minimum 7, maximum 14, default 14). See [5. Calendar Views](04-calendar-views.md).
+- **Non-working days** — one checkbox per weekday, Monday to Sunday (Saturday and Sunday by default). The marked days are shaded in the calendar's Month, Week and List views and in the Gantt; the Work Week view hides them. They are also the days of the habit frequencies "Weekend" and "Work week" and of the recurrences `every weekend` and `every weekday`, so changing them changes habit streaks and percentages and the dates of those recurring tasks. At least one working day and one non-working day must remain; a checkbox that would break this stays as it was and a notice explains why.
 
 ## Habits
 

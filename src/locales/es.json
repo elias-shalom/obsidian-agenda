@@ -270,6 +270,8 @@
   "calendar_projection_count": "Recurrentes proyectadas",
   "calendar_projection_count_desc": "Cuántas ocurrencias futuras de cada tarea recurrente muestra el calendario como copias atenuadas (de 0 a 50; 0 lo desactiva). Son de solo lectura: al completar la tarea real se escribe la siguiente como siempre. Las tareas con \"when done\" no se proyectan.",
   "calendar_projected_task": "Ocurrencia proyectada de una tarea recurrente",
+  "filter_recurring_tasks": "Tareas recurrentes",
+  "filter_recurring_hidden": "Ocultas",
   "non_working_days": "Días no laborables",
   "non_working_days_desc": "Se sombrean en las vistas Mes, Semana y Lista del calendario y en el Gantt; la Semana laboral los oculta. También son los días de las frecuencias de hábitos «Fin de semana» y «Días laborables» (cambian las rachas y los porcentajes) y de las recurrencias «every weekend» y «every weekday». Debe quedar al menos un día laborable y uno no laborable.",
   "non_working_days_min": "Debe quedar al menos un día laborable y uno no laborable.",

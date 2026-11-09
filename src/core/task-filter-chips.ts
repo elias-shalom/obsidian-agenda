@@ -6,13 +6,13 @@ import { getStatusOptions } from './task-status-options';
 import { ROOT_AREA, buildAreaRoute, isAreaMarked, parseAreaRoute } from './area';
 import type { FilterPopoverOption, FilterPopoverSection } from './task-filter-popover';
 
-export type FilterChipId = 'priority' | 'status' | 'area' | 'start' | 'scheduled' | 'due';
+export type FilterChipId = 'priority' | 'status' | 'area' | 'start' | 'scheduled' | 'due' | 'projected';
 
-/** Tipos de filtro, en el orden en que se ofrecen y se muestran. La sub-área va dentro del de área. */
+/** Tipos de filtro, en el orden en que se ofrecen y se muestran. La sub-área va dentro del de área. `projected` solo lo ofrece el calendario. */
 export const FILTER_CHIP_IDS: readonly FilterChipId[] = ['priority', 'status', 'area', 'start', 'scheduled', 'due'];
 
 /** Claves de `TaskViewState` que editan los filtros. */
-export const FILTER_STATE_KEYS: readonly (keyof TaskViewState)[] = ['priority', 'status', 'areas', 'start', 'scheduled', 'due'];
+export const FILTER_STATE_KEYS: readonly (keyof TaskViewState)[] = ['priority', 'status', 'areas', 'start', 'scheduled', 'due', 'projected'];
 
 const TYPE_LABEL_KEYS: Record<FilterChipId, string> = {
   priority: 'task_priority',
@@ -21,6 +21,7 @@ const TYPE_LABEL_KEYS: Record<FilterChipId, string> = {
   start: 'start_date',
   scheduled: 'scheduled_date',
   due: 'due_date',
+  projected: 'filter_recurring_tasks',
 };
 
 const PRIORITY_OPTIONS = [
@@ -82,6 +83,9 @@ export function getFilterValueOptions(id: Exclude<FilterChipId, 'area'>, transla
     case 'start':
     case 'scheduled':
       return DATE_OPTIONS.map(({ value, labelKey }) => ({ value, label: translate(labelKey) }));
+    case 'projected':
+      // Su único valor activo es «ocultas»: por defecto el filtro está en «mostrar» y no tiene chip
+      return [{ value: 'hide', label: translate('filter_recurring_hidden') }];
   }
 }
 
@@ -167,6 +171,7 @@ export function getActiveFilterChips(state: TaskViewState, translate: Translate)
   if (state.start !== 'all') add('start', [labelOf('start', state.start)]);
   if (state.scheduled !== 'all') add('scheduled', [labelOf('scheduled', state.scheduled)]);
   if (state.due !== 'all') add('due', [labelOf('due', state.due)]);
+  if (state.projected === 'hide') add('projected', [labelOf('projected', 'hide')]);
   return chips;
 }
 
@@ -179,10 +184,11 @@ export function clearFilterChip(state: TaskViewState, id: FilterChipId): TaskVie
     case 'start': return { ...state, start: 'all' };
     case 'scheduled': return { ...state, scheduled: 'all' };
     case 'due': return { ...state, due: 'all' };
+    case 'projected': return { ...state, projected: 'show' };
   }
 }
 
 /** El estado sin ningún filtro; no toca la búsqueda, el agrupado ni el orden. */
 export function clearAllFilters(state: TaskViewState): TaskViewState {
-  return FILTER_CHIP_IDS.reduce(clearFilterChip, state);
+  return [...FILTER_CHIP_IDS, 'projected' as const].reduce(clearFilterChip, state);
 }

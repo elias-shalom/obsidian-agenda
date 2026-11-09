@@ -269,6 +269,8 @@
   "calendar_projection_count": "Attività ricorrenti proiettate",
   "calendar_projection_count_desc": "Quante occorrenze future di ogni attività ricorrente il calendario mostra come copie attenuate (da 0 a 50; 0 le disattiva). Sono di sola lettura: completando l'attività reale viene scritta la successiva come sempre. Le attività con \"when done\" non vengono proiettate.",
   "calendar_projected_task": "Occorrenza proiettata di un'attività ricorrente",
+  "filter_recurring_tasks": "Attività ricorrenti",
+  "filter_recurring_hidden": "Nascoste",
   "non_working_days": "Giorni non lavorativi",
   "non_working_days_desc": "Vengono ombreggiati nelle viste Mese, Settimana ed Elenco del calendario e nel Gantt; la Settimana lavorativa li nasconde. Sono anche i giorni delle frequenze delle abitudini «Weekend» e «Settimana lavorativa» (serie e percentuali cambiano) e delle ricorrenze «every weekend» e «every weekday». Deve restare almeno un giorno lavorativo e uno non lavorativo.",
   "non_working_days_min": "Deve restare almeno un giorno lavorativo e uno non lavorativo.",

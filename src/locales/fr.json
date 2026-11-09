@@ -269,6 +269,8 @@
   "calendar_projection_count": "Tâches récurrentes projetées",
   "calendar_projection_count_desc": "Nombre d'occurrences futures de chaque tâche récurrente que le calendrier affiche en copies atténuées (de 0 à 50 ; 0 désactive). Elles sont en lecture seule : terminer la tâche réelle écrit la suivante comme d'habitude. Les tâches avec \"when done\" ne sont pas projetées.",
   "calendar_projected_task": "Occurrence projetée d'une tâche récurrente",
+  "filter_recurring_tasks": "Tâches récurrentes",
+  "filter_recurring_hidden": "Masquées",
   "non_working_days": "Jours non ouvrés",
   "non_working_days_desc": "Ils sont grisés dans les vues Mois, Semaine et Liste du calendrier et dans le Gantt ; la Semaine de travail les masque. Ce sont aussi les jours des fréquences d'habitudes « Week-end » et « Semaine de travail » (les séries et les pourcentages changent) et des récurrences « every weekend » et « every weekday ». Il doit rester au moins un jour ouvré et un jour non ouvré.",
   "non_working_days_min": "Il doit rester au moins un jour ouvré et un jour non ouvré.",

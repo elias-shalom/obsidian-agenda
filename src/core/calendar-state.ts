@@ -14,7 +14,7 @@ import { TaskViewState, filterTasksByViewState, parseTaskViewState } from './tas
 export const CALENDAR_STATE_KEY = 'obsidian-agenda-calendar-view-state';
 
 /** Tipos de filtro que ofrece el calendario, en el orden de la barra (`filterTypes` de `TaskFilterBar`, Fase CF2). */
-export const CALENDAR_FILTER_TYPES = ['priority', 'status', 'area', 'start', 'scheduled', 'due'] as const;
+export const CALENDAR_FILTER_TYPES = ['priority', 'status', 'area', 'start', 'scheduled', 'due', 'projected'] as const;
 
 /** Los que se activan con un solo clic en el primer menú de «+ Filtro» (✓), sin elegir un valor: solo «con fecha». */
 export const CALENDAR_DIRECT_FILTER_TYPES = ['start', 'scheduled', 'due'] as const;
@@ -26,10 +26,10 @@ const parseCalendarDateFilter = (value: string): string => (value === 'hasdate' 
 
 /** Valida el estado leído y descarta lo que el calendario no usa: lo demás vuelve a su valor por defecto. */
 export function parseCalendarState(raw: unknown): TaskViewState {
-  const { search, priority, status, areas, start, scheduled, due } = parseTaskViewState(raw);
+  const { search, priority, status, areas, start, scheduled, due, projected } = parseTaskViewState(raw);
   return {
     ...parseTaskViewState({}),
-    search, priority, status, areas,
+    search, priority, status, areas, projected,
     start: parseCalendarDateFilter(start),
     scheduled: parseCalendarDateFilter(scheduled),
     due: parseCalendarDateFilter(due),
@@ -53,7 +53,7 @@ export function saveCalendarState(app: App, state: TaskViewState): void {
 /** ¿Hay algún filtro activo? Sin ninguno, el calendario dibuja todas las tareas como antes. */
 export function hasCalendarFilters(state: TaskViewState): boolean {
   return state.search.trim() !== '' || state.priority.length > 0 || state.status.length > 0 || state.areas.length > 0
-    || state.start !== 'all' || state.scheduled !== 'all' || state.due !== 'all';
+    || state.start !== 'all' || state.scheduled !== 'all' || state.due !== 'all' || state.projected === 'hide';
 }
 
 /**

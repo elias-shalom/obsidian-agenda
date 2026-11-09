@@ -42,15 +42,17 @@ function makeBar(options = {}) {
 const calendarBar = () => makeBar({ filterTypes: CALENDAR_FILTER_TYPES, directFilterTypes: CALENDAR_DIRECT_FILTER_TYPES });
 const openTypeMenu = (bar) => { bar.openTypeMenu({ x: 0, y: 0 }); return FakeMenu.last.items; };
 
-test('el primer menú del calendario ofrece los seis tipos, con los de fecha al final', () => {
+test('el primer menú del calendario ofrece siete tipos: los de fecha y, al final, «Tareas recurrentes»', () => {
   const { bar } = calendarBar();
-  assert.equal(openTypeMenu(bar).length, 6);
+  const items = openTypeMenu(bar);
+  assert.equal(items.length, 7);
+  assert.equal(items[6].title, 'filter_recurring_tasks');
 });
 
 test('pulsar un tipo de fecha directo lo activa con «con fecha» y lo marca con ✓', () => {
   const { bar, changes } = calendarBar();
   const items = openTypeMenu(bar);
-  const dateItems = items.slice(3);
+  const dateItems = items.slice(3, 6);
   assert.equal(dateItems.every(item => !item.checked), true);
 
   dateItems[1].click();
@@ -59,7 +61,7 @@ test('pulsar un tipo de fecha directo lo activa con «con fecha» y lo marca con
   assert.equal(changes[0].state.scheduled, 'hasdate');
   assert.equal(bar.getState().scheduled, 'hasdate');
 
-  const reopened = openTypeMenu(bar).slice(3);
+  const reopened = openTypeMenu(bar).slice(3, 6);
   assert.deepEqual(reopened.map(item => item.checked), [false, true, false]);
 });
 
@@ -106,11 +108,55 @@ test('sin tipos directos (Lista, Tabla, Gantt) los de fecha siguen abriendo su l
   try {
     const { bar, changes } = makeBar();
     const items = openTypeMenu(bar);
-    assert.equal(items.length, 6);
+    assert.equal(items.length, 6, 'Lista, Tabla y Gantt no ofrecen «Tareas recurrentes»');
     items[4].click();
     assert.equal(changes.length, 0, 'no cambia ningún filtro todavía');
     assert.equal(queued.length, 1, 'se encola el segundo menú');
   } finally {
     delete global.window;
   }
+});
+
+// --- «Tareas recurrentes» (v1.1.15): marcado por defecto, se desmarca para ocultar las proyectadas -------
+
+const { getActiveFilterChips, clearFilterChip, clearAllFilters } = loadSource('core/task-filter-chips.ts', { obsidian: { Menu: FakeMenu, setIcon() {} } });
+
+test('«Tareas recurrentes» está marcado por defecto y no tiene chip', () => {
+  const { bar } = calendarBar();
+  assert.equal(bar.getState().projected, 'show');
+  assert.equal(openTypeMenu(bar)[6].checked, true);
+  assert.deepEqual(getActiveFilterChips(bar.getState(), i18n.t), []);
+});
+
+test('desmarcarlo oculta las proyectadas y muestra un chip; volver a marcarlo las devuelve', () => {
+  const { bar, changes } = calendarBar();
+  openTypeMenu(bar)[6].click();
+  assert.equal(bar.getState().projected, 'hide');
+  assert.deepEqual(changes[0].changed, ['projected']);
+  assert.equal(openTypeMenu(bar)[6].checked, false);
+
+  const [chip] = getActiveFilterChips(bar.getState(), i18n.t);
+  assert.deepEqual([chip.id, chip.typeLabel, chip.valueLabel], ['projected', 'filter_recurring_tasks', 'filter_recurring_hidden']);
+
+  openTypeMenu(bar)[6].click();
+  assert.equal(bar.getState().projected, 'show');
+});
+
+test('el chip «Tareas recurrentes: ocultas» se quita al pulsarlo', () => {
+  const { bar } = calendarBar();
+  openTypeMenu(bar)[6].click();
+  bar.openValueMenu('projected', { x: 0, y: 0 });
+  assert.equal(bar.getState().projected, 'show');
+});
+
+test('Limpiar y la × devuelven «Tareas recurrentes» a mostrar', () => {
+  const hidden = { ...parseCalendarState({}), projected: 'hide' };
+  assert.equal(clearFilterChip(hidden, 'projected').projected, 'show');
+  assert.equal(clearAllFilters(hidden).projected, 'show');
+});
+
+test('el estado del calendario conserva «ocultas» y cualquier otro valor vuelve a mostrar', () => {
+  assert.equal(parseCalendarState({ projected: 'hide' }).projected, 'hide');
+  assert.equal(parseCalendarState({ projected: 'otra cosa' }).projected, 'show');
+  assert.equal(parseCalendarState({}).projected, 'show');
 });

@@ -269,6 +269,8 @@
   "calendar_projection_count": "Projizierte Wiederholungen",
   "calendar_projection_count_desc": "Wie viele künftige Vorkommen jeder wiederkehrenden Aufgabe der Kalender als abgeblasste Kopien zeigt (0 bis 50; 0 schaltet es aus). Sie sind schreibgeschützt: Beim Abschließen der echten Aufgabe wird das nächste Vorkommen wie gewohnt geschrieben. Aufgaben mit \"when done\" werden nicht projiziert.",
   "calendar_projected_task": "Projiziertes Vorkommen einer wiederkehrenden Aufgabe",
+  "filter_recurring_tasks": "Wiederkehrende Aufgaben",
+  "filter_recurring_hidden": "Ausgeblendet",
   "non_working_days": "Arbeitsfreie Tage",
   "non_working_days_desc": "Werden in den Ansichten Monat, Woche und Liste des Kalenders sowie im Gantt schattiert; die Arbeitswoche blendet sie aus. Es sind auch die Tage der Gewohnheitshäufigkeiten „Wochenende“ und „Arbeitswoche“ (Serien und Prozentwerte ändern sich) sowie der Wiederholungen „every weekend“ und „every weekday“. Mindestens ein Arbeitstag und ein arbeitsfreier Tag müssen übrig bleiben.",
   "non_working_days_min": "Mindestens ein Arbeitstag und ein arbeitsfreier Tag müssen übrig bleiben.",

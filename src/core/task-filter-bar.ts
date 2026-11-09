@@ -275,6 +275,15 @@ export class TaskFilterBar {
     const active = new Set(getActiveFilterChips(this.state, key => this.options.i18n.t(key)).map(chip => chip.id));
     const menu = new Menu();
     for (const id of this.options.filterTypes ?? FILTER_CHIP_IDS) {
+      // «Tareas recurrentes» (solo el calendario) va marcado por defecto y se desmarca para ocultar las proyectadas
+      if (id === 'projected') {
+        const shown = this.state.projected !== 'hide';
+        menu.addItem(item => item
+          .setTitle(getFilterTypeLabel(id, key => this.options.i18n.t(key)))
+          .setChecked(shown)
+          .onClick(() => this.update({ projected: shown ? 'hide' : 'show' })));
+        continue;
+      }
       const direct = this.isDirectType(id);
       menu.addItem(item => item
         .setTitle(getFilterTypeLabel(id, key => this.options.i18n.t(key)))
@@ -292,6 +301,12 @@ export class TaskFilterBar {
   }
 
   private openValueMenu(id: FilterChipId, anchor: MenuAnchor): void {
+    // El chip «Tareas recurrentes: ocultas» solo tiene un valor: pulsarlo vuelve a mostrarlas, igual que su ×
+    if (id === 'projected') {
+      this.update({ projected: 'show' });
+      return;
+    }
+
     // Un filtro directo solo tiene un valor: pulsar su chip lo quita, igual que su ×
     if (this.isDirectType(id)) {
       this.update({ [id]: 'all' });

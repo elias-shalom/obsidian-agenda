@@ -357,7 +357,7 @@ test('la barra ofrece prioridad, estado, área y «con fecha», y arranca con el
   calendarState.saveCalendarState(view.app, state({ priority: ['high'] }));
   await view.onOpen();
 
-  assert.deepEqual([...view.filterBar.options.filterTypes], ['priority', 'status', 'area', 'start', 'scheduled', 'due']);
+  assert.deepEqual([...view.filterBar.options.filterTypes], ['priority', 'status', 'area', 'start', 'scheduled', 'due', 'projected']);
   assert.deepEqual([...view.filterBar.options.directFilterTypes], ['start', 'scheduled', 'due']);
   assert.deepEqual(view.filterBar.options.state.priority, ['high']);
   assert.equal(view.filterBar.options.groupOptions, undefined, 'sin agrupado');
@@ -545,6 +545,31 @@ test('si no se muestran las programadas, el fantasma se ancla a la siguiente fec
   assert.equal(ghost.id, 'w+1');
   assert.equal(ghost.calendarDateType, 'due');
   assert.deepEqual(ids(view.getTasksForDate(day.plus({ days: 8 }), true)), [], 'la programada oculta no ancla nada');
+});
+
+test('desmarcar «Tareas recurrentes» en la barra oculta las proyectadas y no las tareas reales', async () => {
+  const view = loadCalendarView();
+  view.loadedTasks = [...tasks, recurringTask('r')];
+  view.plugin.settings.calendarProjectionCount = 3;
+  await view.onOpen();
+  assert.deepEqual(ids(view.getTasksForDate(nextDay, true)), ['r+1']);
+
+  view.filterBar.options.onChange(state({ projected: 'hide' }), ['projected']);
+  await settle();
+  assert.deepEqual(ids(view.getTasksForDate(nextDay, true)), [], 'sin proyectadas');
+  assert.ok(ids(view.getTasksForDate(day, true)).includes('r'), 'la tarea real sigue');
+
+  view.filterBar.options.onChange(state({ projected: 'show' }), ['projected']);
+  await settle();
+  assert.deepEqual(ids(view.getTasksForDate(nextDay, true)), ['r+1'], 'al volver a marcarlo reaparecen');
+});
+
+test('«Tareas recurrentes» desmarcado se recuerda al abrir el calendario', async () => {
+  const view = loadCalendarView();
+  view.loadedTasks = [...tasks, recurringTask('r')];
+  calendarState.saveCalendarState(view.app, state({ projected: 'hide' }));
+  await view.onOpen();
+  assert.deepEqual(ids(view.getTasksForDate(nextDay, true)), []);
 });
 
 test('un filtro oculta los fantasmas junto a su tarea real', async () => {

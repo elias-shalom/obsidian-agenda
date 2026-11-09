@@ -132,11 +132,12 @@ export abstract class CalendarView extends BaseView {
 
   /** Lo que reciben la plantilla y los listeners: los datos de la subvista (`calendar`) junto a las tareas y la fecha actual. */
   private buildCalendarViewData(): ViewData {
-    // Los fantasmas salen de las tareas que pasan los filtros, así que un filtro los oculta junto a su tarea real
+    // Los fantasmas salen de las tareas que pasan los filtros, así que un filtro los oculta junto a su tarea real;
+    // y «Tareas recurrentes» desmarcado en la barra los oculta todos
     const plugin = this.plugin as AgendaPlugin;
     this.projectedTasks = projectAllOccurrences(
       this.visibleTasks,
-      sanitizeProjectionCount(plugin.settings?.calendarProjectionCount),
+      this.calendarState.projected === 'hide' ? 0 : sanitizeProjectionCount(plugin.settings?.calendarProjectionCount),
       this.getNonWorkingDays()
     );
 

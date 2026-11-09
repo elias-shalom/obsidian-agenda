@@ -269,6 +269,8 @@
   "calendar_projection_count": "Tarefas recorrentes projetadas",
   "calendar_projection_count_desc": "Quantas ocorrências futuras de cada tarefa recorrente o calendário mostra como cópias atenuadas (de 0 a 50; 0 desativa). São somente leitura: ao concluir a tarefa real, a próxima é escrita como sempre. Tarefas com \"when done\" não são projetadas.",
   "calendar_projected_task": "Ocorrência projetada de uma tarefa recorrente",
+  "filter_recurring_tasks": "Tarefas recorrentes",
+  "filter_recurring_hidden": "Ocultas",
   "non_working_days": "Dias não úteis",
   "non_working_days_desc": "São sombreados nas vistas Mês, Semana e Lista do calendário e no Gantt; a Semana útil os oculta. Também são os dias das frequências de hábitos «Fim de semana» e «Semana de trabalho» (sequências e percentuais mudam) e das recorrências «every weekend» e «every weekday». Deve restar pelo menos um dia útil e um dia não útil.",
   "non_working_days_min": "Deve restar pelo menos um dia útil e um dia não útil.",

@@ -146,30 +146,26 @@
   margin-right: 2px;
 }
 
-/* Distintivo visual por tipo de fecha (v1.1.4, ADR-T4-bis): mismo icono que el usuario ya
-   escribió (📅/🛫/⏳) + un acento de color, consistente en Mes/Semana/Semana laboral/Día. */
-.oa-calendar-task--due {
-  border-left-color: var(--interactive-accent) !important;
-
-  &::before {
-    content: "📅 ";
-  }
+/* Distintivo visual por tipo de fecha (v1.1.4, ADR-T4-bis): el mismo icono que el usuario ya escribió
+   (📅/🛫/⏳) al inicio de la píldora, consistente en Mes/Semana/Semana laboral/Día/Lista. */
+.oa-calendar-task--due::before {
+  content: "📅 ";
 }
 
-.oa-calendar-task--start {
-  border-left-color: #3b82c4 !important;
-
-  &::before {
-    content: "🛫 ";
-  }
+.oa-calendar-task--start::before {
+  content: "🛫 ";
 }
 
-.oa-calendar-task--scheduled {
-  border-left-color: #16a34a !important;
+.oa-calendar-task--scheduled::before {
+  content: "⏳ ";
+}
 
-  &::before {
-    content: "⏳ ";
-  }
+/* Margen izquierdo de la píldora (v1.1.15): el color del área de la tarea (`--oa-area-color`, puesto desde
+   `CalendarView.applyHolidayColors()` a partir de `data-area-color`), como los carriles y grupos de las demás
+   vistas; el tipo de fecha ya lo dice el icono. Una nota en la raíz del vault no tiene área ni atributo, y usa
+   el color de acento por defecto. */
+.oa-calendar-task {
+  border-left-color: var(--oa-area-color, var(--interactive-accent)) !important;
 }
 
 .oa-calendar-task--done {

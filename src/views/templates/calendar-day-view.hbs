@@ -72,6 +72,7 @@
                       {{#each allDayDue}}
                         <div class="oa-calendar-task oa-calendar-task--due {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}} {{#if isProjected}}oa-calendar-task--projected{{/if}}"
                             {{#if isProjected}}data-projected="true"{{/if}}
+                                                    {{#if areaColor}}data-area-color="{{areaColor}}"{{/if}}
                             data-file-path="{{file.path}}"
                             data-line-number="{{line.number}}"
                             data-tooltip="{{section.desc}}">
@@ -87,6 +88,7 @@
                       {{#each allDayStart}}
                         <div class="oa-calendar-task oa-calendar-task--start {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}} {{#if isProjected}}oa-calendar-task--projected{{/if}}"
                             {{#if isProjected}}data-projected="true"{{/if}}
+                                                    {{#if areaColor}}data-area-color="{{areaColor}}"{{/if}}
                             data-file-path="{{file.path}}"
                             data-line-number="{{line.number}}"
                             data-tooltip="{{section.desc}}">
@@ -103,11 +105,12 @@
                         <div class="oa-calendar-task oa-calendar-task--scheduled {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}} {{#if isProjected}}oa-calendar-task--projected{{/if}}"
                             draggable="{{#if isProjected}}false{{else}}true{{/if}}"
                             {{#if isProjected}}data-projected="true"{{/if}}
-                            data-file-path="{{file.path}}"
-                            data-line-number="{{line.number}}"
-                            data-date-type="scheduled"
-                            data-tooltip="{{section.desc}}">
-                          {{#if isProjected}}<span class="oa-calendar-task-projected-badge" title="{{t 'calendar_projected_task'}}">🔁</span>{{/if}}
+                                                    {{#if areaColor}}data-area-color="{{areaColor}}"{{/if}}
+                                                    data-file-path="{{file.path}}"
+                                                    data-line-number="{{line.number}}"
+                                                    data-date-type="scheduled"
+                                                    data-tooltip="{{section.desc}}">
+                                                  {{#if isProjected}}<span class="oa-calendar-task-projected-badge" title="{{t 'calendar_projected_task'}}">🔁</span>{{/if}}
                           <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
                           <span class="oa-task-title">{{section.desc}}</span>
                         </div>
@@ -132,6 +135,7 @@
                         <div class="oa-calendar-task oa-calendar-task--scheduled oa-calendar-task--duration oa-calendar-duration-segment--{{segmentRole}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}} {{#if isProjected}}oa-calendar-task--projected{{/if}}"
                             draggable="{{#if isProjected}}false{{else}}true{{/if}}"
                             {{#if isProjected}}data-projected="true"{{/if}}
+                            {{#if areaColor}}data-area-color="{{areaColor}}"{{/if}}
                             data-file-path="{{file.path}}"
                             data-line-number="{{line.number}}"
                             data-date-type="scheduled"
@@ -156,6 +160,7 @@
                         <div class="oa-calendar-task oa-calendar-task--scheduled oa-calendar-task--duration oa-calendar-duration-segment--{{segmentRole}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}} {{#if isProjected}}oa-calendar-task--projected{{/if}}"
                             draggable="{{#if isProjected}}false{{else}}true{{/if}}"
                             {{#if isProjected}}data-projected="true"{{/if}}
+                            {{#if areaColor}}data-area-color="{{areaColor}}"{{/if}}
                             data-file-path="{{file.path}}"
                             data-line-number="{{line.number}}"
                             data-date-type="scheduled"

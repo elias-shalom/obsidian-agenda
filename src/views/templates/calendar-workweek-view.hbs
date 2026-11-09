@@ -69,6 +69,7 @@
                 <div class="oa-calendar-task oa-calendar-task--{{calendarDateType}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}} {{#if isProjected}}oa-calendar-task--projected{{/if}}"
                     draggable="{{#if isProjected}}false{{else}}true{{/if}}"
                     {{#if isProjected}}data-projected="true"{{/if}}
+                    {{#if areaColor}}data-area-color="{{areaColor}}"{{/if}}
                     data-file-path="{{file.path}}" 
                     data-line-number="{{line.number}}"
                     data-date-type="{{calendarDateType}}"

@@ -18,6 +18,7 @@ import { TaskFilterBar } from '../core/task-filter-bar';
 import { closeFilterPopover } from '../core/task-filter-popover';
 import { DEFAULT_NON_WORKING_DAYS, isNonWorkingDay } from '../core/non-working-days';
 import { getHolidayLookup } from '../core/holidays/holiday-calendar';
+import { getAreaColor, resolveTaskArea } from '../core/area';
 import { projectAllOccurrences, sanitizeProjectionCount } from '../core/task-projection';
 
 export const CALENDAR_VIEW_TYPE = 'calendar-view';
@@ -43,8 +44,8 @@ export interface TaskDragPayload {
 /** Tipo de fecha que ancla una tarea a un día del calendario (v1.1.4, ADR-T4 en docs/agenda-tasks). */
 export type CalendarDateType = 'due' | 'start' | 'scheduled';
 
-/** Una tarea tal como la dibujan las vistas del calendario; `isProjected` marca una ocurrencia proyectada de solo lectura (v1.1.15, PR2). */
-export type CalendarTask = ITask & { calendarDateType: CalendarDateType; isProjected?: boolean };
+/** Una tarea tal como la dibujan las vistas del calendario; `isProjected` marca una ocurrencia proyectada de solo lectura (v1.1.15, PR2) y `areaColor` es el color de su área (vacío en la raíz del vault). */
+export type CalendarTask = ITask & { calendarDateType: CalendarDateType; areaColor?: string; isProjected?: boolean };
 
 /** Orden de prioridad de la fecha que ancla una ocurrencia proyectada (ADR-R2). */
 const PROJECTED_ANCHOR_ORDER: readonly CalendarDateType[] = ['scheduled', 'due', 'start'];
@@ -254,7 +255,7 @@ export abstract class CalendarView extends BaseView {
     for (const task of this.visibleTasks) {
       if (!showCompleted && task.state.status === 'x') continue;
       const type = this.resolveCalendarAnchor(task, date, enabled);
-      if (type) result.push({ ...task, calendarDateType: type });
+      if (type) result.push({ ...task, calendarDateType: type, areaColor: this.areaColorOf(task) });
     }
 
     // Las ocurrencias proyectadas (v1.1.15, PR2) van tras las reales; Año y el selector de fecha no las piden.
@@ -262,11 +263,21 @@ export abstract class CalendarView extends BaseView {
     if (includeProjected) {
       for (const ghost of this.projectedTasks) {
         const type = this.resolveProjectedAnchor(ghost, date, enabled);
-        if (type) result.push({ ...ghost, calendarDateType: type, isProjected: true });
+        if (type) result.push({ ...ghost, calendarDateType: type, areaColor: this.areaColorOf(ghost), isProjected: true });
       }
     }
 
     return result;
+  }
+
+  /**
+   * Color del margen izquierdo de la píldora: el del área de la tarea (primera carpeta de su nota), como en los
+   * carriles y grupos de las demás vistas. Una nota en la raíz del vault no tiene área y devuelve vacío: la
+   * píldora usa el color por defecto.
+   */
+  private areaColorOf(task: ITask): string {
+    const { area } = resolveTaskArea(task.file.path ?? '');
+    return area ? getAreaColor(area) : '';
   }
 
   /** Lee de los settings si las tareas completadas se muestran (atenuadas) u ocultan por completo en el calendario. */
@@ -421,12 +432,16 @@ export abstract class CalendarView extends BaseView {
   }
 
   /**
-   * El color de cada feriado viaja en `data-holiday-color` (las plantillas no llevan estilos en línea) y aquí
-   * pasa a la variable CSS que usan el tinte y el punto del Año (v1.1.15, FE2).
+   * El color de cada feriado y el del área de cada tarea viajan en `data-holiday-color` y `data-area-color` (las
+   * plantillas no llevan estilos en línea) y aquí pasan a las variables CSS que usan el tinte, el punto del Año y
+   * el margen izquierdo de las píldoras (v1.1.15).
    */
   private applyHolidayColors(container: HTMLElement): void {
     container.querySelectorAll<HTMLElement>('[data-holiday-color]').forEach(el => {
       el.setCssProps({ '--oa-holiday-color': el.dataset.holidayColor ?? '' });
+    });
+    container.querySelectorAll<HTMLElement>('[data-area-color]').forEach(el => {
+      el.setCssProps({ '--oa-area-color': el.dataset.areaColor ?? '' });
     });
   }
 

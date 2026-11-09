@@ -4,6 +4,7 @@ const { DateTime } = require('luxon');
 const { loadSource } = require('./helpers/load-source.cjs');
 
 const calendarState = loadSource('core/calendar-state.ts');
+const area = loadSource('core/area.ts');
 const viewState = loadSource('core/task-view-state.ts');
 
 const NAME_TO_SYMBOL = { Todo: ' ', InProgress: '/', OnHold: '?', Done: 'x', Cancelled: '-', nonTask: '~' };
@@ -232,6 +233,26 @@ test('CalendarView sin filtros dibuja todas las tareas del día', async () => {
 });
 
 // --- Fechas marcadas en la barra: solo se dibujan las píldoras de esos tipos --------
+
+test('cada píldora lleva el color de su área y las notas de la raíz no llevan ninguno', async () => {
+  const view = loadCalendarView();
+  await view.onOpen();
+  const byId = Object.fromEntries(view.getTasksForDate(day).map(item => [item.id, item.areaColor]));
+  assert.equal(byId.a, area.getAreaColor('Work'));
+  assert.equal(byId.b, area.getAreaColor('Work'), 'la sub-área no cambia el color: manda la primera carpeta');
+  assert.equal(byId.c, area.getAreaColor('Personal'));
+  assert.equal(byId.d, '', 'sin carpeta: color por defecto');
+  assert.notEqual(byId.a, byId.c);
+});
+
+test('un fantasma lleva el color del área de su tarea real', async () => {
+  const view = loadCalendarView();
+  view.loadedTasks = [recurringTask('r')];
+  view.plugin.settings.calendarProjectionCount = 1;
+  await view.onOpen();
+  const [ghost] = view.getTasksForDate(nextDay, true);
+  assert.equal(ghost.areaColor, area.getAreaColor('Work'));
+});
 
 async function openWithDates(changes, settings = {}) {
   const view = loadCalendarView();

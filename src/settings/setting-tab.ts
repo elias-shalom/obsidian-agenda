@@ -6,6 +6,7 @@ import type { AgendaPluginSettings } from './settings';
 import { DEFAULT_SETTINGS } from './settings';
 import { evaluateHabitFolderHint } from '../habits/habit-folder';
 import { toggleNonWorkingDay } from '../core/non-working-days';
+import { MAX_PROJECTION_COUNT } from '../core/task-projection';
 import { createHolidayCalendar, getHolidayCountries, getHolidayCountry, type HolidayCalendarConfig } from '../core/holidays/holiday-calendar';
 
 const CALENDAR_VIEW_TYPES = ['calendar-month-view', 'calendar-year-view', 'calendar-week-view', 'calendar-workweek-view', 'calendar-day-view'];
@@ -51,7 +52,7 @@ export class SettingTab extends PluginSettingTab {
     });
   }
 
-  /** Refresca las vistas que marcan días (no laborables y feriados): el calendario completo (con la Lista) y el Gantt, si están abiertos. */
+  /** Refresca las vistas que marcan días o proyectan recurrentes (no laborables, feriados y fantasmas): el calendario completo (con la Lista) y el Gantt, si están abiertos. */
   private refreshDayMarkingViews(): void {
     this.plugin.app.workspace.iterateAllLeaves((leaf) => {
       if (NON_WORKING_VIEW_TYPES.includes(leaf.view.getViewType()) && leaf.view instanceof BaseView) {
@@ -375,6 +376,20 @@ export class SettingTab extends PluginSettingTab {
             },
           },
           {
+            name: this.i18n.t('calendar_projection_count'),
+            desc: this.i18n.t('calendar_projection_count_desc'),
+            render: (setting) => {
+              setting.addSlider(slider => slider
+                .setLimits(0, MAX_PROJECTION_COUNT, 1)
+                .setValue(this.plugin.settings.calendarProjectionCount)
+                .onChange(async (value) => {
+                  this.plugin.settings.calendarProjectionCount = value;
+                  await this.plugin.saveSettings();
+                  this.refreshDayMarkingViews();
+                }));
+            },
+          },
+          {
             name: this.i18n.t('non_working_days'),
             desc: this.i18n.t('non_working_days_desc'),
             render: (setting) => this.renderNonWorkingDays(setting),
@@ -610,6 +625,18 @@ export class SettingTab extends PluginSettingTab {
           this.plugin.settings.calendarListDaysToShow = value;
           await this.plugin.saveSettings();
           this.refreshCalendarViews();
+        }));
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("calendar_projection_count"))
+      .setDesc(this.i18n.t("calendar_projection_count_desc"))
+      .addSlider(slider => slider
+        .setLimits(0, MAX_PROJECTION_COUNT, 1)
+        .setValue(this.plugin.settings.calendarProjectionCount)
+        .onChange(async (value) => {
+          this.plugin.settings.calendarProjectionCount = value;
+          await this.plugin.saveSettings();
+          this.refreshDayMarkingViews();
         }));
 
     new Setting(containerEl)

@@ -432,6 +432,7 @@ The plugin recognizes and properly handles all standard Obsidian Tasks metadata,
 - **Widget Configuration** - Personalize dashboard widgets
 - **Display Preferences** - Adjust how tasks are displayed
 - **Show what's new after an update** - Opens a window with the news the first time you start Obsidian after updating (on by default)
+- **Projected recurring tasks** - Future occurrences of each recurring task (0 to 50, default 10) drawn as faded, read-only copies in the Month, Week, Work Week, Day and List calendar views
 - **Non-working days** - One checkbox per weekday (Saturday and Sunday by default): shaded in the calendar's Month, Week and List views and in the Gantt, hidden in Work Week, and used by the habit frequencies "Weekend" and "Work week" and the recurrences `every weekend` and `every weekday`
 - **Holiday calendars** - Public holidays of Mexico and the United States (with optional states), official and/or unofficial, each calendar with its own color; marked in the six calendar views and in the Gantt, visual only (none active by default)- **Task Modal mode** - The "More fields" (advanced) section of the Create/Edit Task modal remembers whether you left it expanded or collapsed, per device
 

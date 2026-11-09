@@ -70,10 +70,12 @@
                   {{#if allDayDue.length}}
                     <div class="oa-calendar-allday-row">
                       {{#each allDayDue}}
-                        <div class="oa-calendar-task oa-calendar-task--due {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
+                        <div class="oa-calendar-task oa-calendar-task--due {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}} {{#if isProjected}}oa-calendar-task--projected{{/if}}"
+                            {{#if isProjected}}data-projected="true"{{/if}}
                             data-file-path="{{file.path}}"
                             data-line-number="{{line.number}}"
                             data-tooltip="{{section.desc}}">
+                          {{#if isProjected}}<span class="oa-calendar-task-projected-badge" title="{{t 'calendar_projected_task'}}">🔁</span>{{/if}}
                           <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
                           <span class="oa-task-title">{{section.desc}}</span>
                         </div>
@@ -83,10 +85,12 @@
                   {{#if allDayStart.length}}
                     <div class="oa-calendar-allday-row">
                       {{#each allDayStart}}
-                        <div class="oa-calendar-task oa-calendar-task--start {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
+                        <div class="oa-calendar-task oa-calendar-task--start {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}} {{#if isProjected}}oa-calendar-task--projected{{/if}}"
+                            {{#if isProjected}}data-projected="true"{{/if}}
                             data-file-path="{{file.path}}"
                             data-line-number="{{line.number}}"
                             data-tooltip="{{section.desc}}">
+                          {{#if isProjected}}<span class="oa-calendar-task-projected-badge" title="{{t 'calendar_projected_task'}}">🔁</span>{{/if}}
                           <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
                           <span class="oa-task-title">{{section.desc}}</span>
                         </div>
@@ -96,12 +100,14 @@
                   {{#if allDayScheduled.length}}
                     <div class="oa-calendar-allday-row">
                       {{#each allDayScheduled}}
-                        <div class="oa-calendar-task oa-calendar-task--scheduled {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
-                            draggable="true"
+                        <div class="oa-calendar-task oa-calendar-task--scheduled {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}} {{#if isProjected}}oa-calendar-task--projected{{/if}}"
+                            draggable="{{#if isProjected}}false{{else}}true{{/if}}"
+                            {{#if isProjected}}data-projected="true"{{/if}}
                             data-file-path="{{file.path}}"
                             data-line-number="{{line.number}}"
                             data-date-type="scheduled"
                             data-tooltip="{{section.desc}}">
+                          {{#if isProjected}}<span class="oa-calendar-task-projected-badge" title="{{t 'calendar_projected_task'}}">🔁</span>{{/if}}
                           <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
                           <span class="oa-task-title">{{section.desc}}</span>
                         </div>
@@ -123,8 +129,9 @@
                   <div class="oa-calendar-duration-track">
                     <div class="oa-calendar-half-slot oa-calendar-half-slot--upper">
                       {{#each upperHalfSegments}}
-                        <div class="oa-calendar-task oa-calendar-task--scheduled oa-calendar-task--duration oa-calendar-duration-segment--{{segmentRole}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
-                            draggable="true"
+                        <div class="oa-calendar-task oa-calendar-task--scheduled oa-calendar-task--duration oa-calendar-duration-segment--{{segmentRole}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}} {{#if isProjected}}oa-calendar-task--projected{{/if}}"
+                            draggable="{{#if isProjected}}false{{else}}true{{/if}}"
+                            {{#if isProjected}}data-projected="true"{{/if}}
                             data-file-path="{{file.path}}"
                             data-line-number="{{line.number}}"
                             data-date-type="scheduled"
@@ -133,18 +140,22 @@
                             style="left: {{laneLeftPercent}}%; width: {{laneWidthPercent}}%;">
                           {{#equals segmentRole "half"}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/equals}}
                           {{#equals segmentRole "start"}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/equals}}
+                          {{#if isProjected}}{{#equals segmentRole "half"}}<span class="oa-calendar-task-projected-badge" title="{{t 'calendar_projected_task'}}">🔁</span>{{/equals}}{{#equals segmentRole "start"}}<span class="oa-calendar-task-projected-badge" title="{{t 'calendar_projected_task'}}">🔁</span>{{/equals}}{{/if}}
                           <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
                           <span class="oa-task-title">{{section.desc}}</span>
                           {{#if date.scheduledDuration}}<span class="oa-calendar-task-duration">{{date.scheduledDuration}}m</span>{{/if}}
+                          {{#unless isProjected}}
                           {{#equals segmentRole "half"}}<div class="oa-calendar-resize-handle" draggable="false" data-file-path="{{file.path}}" data-line-number="{{line.number}}" data-current-duration="{{date.scheduledDuration}}"></div>{{/equals}}
                           {{#equals segmentRole "end"}}<div class="oa-calendar-resize-handle" draggable="false" data-file-path="{{file.path}}" data-line-number="{{line.number}}" data-current-duration="{{date.scheduledDuration}}"></div>{{/equals}}
+                          {{/unless}}
                         </div>
                       {{/each}}
                     </div>
                     <div class="oa-calendar-half-slot oa-calendar-half-slot--lower">
                       {{#each lowerHalfSegments}}
-                        <div class="oa-calendar-task oa-calendar-task--scheduled oa-calendar-task--duration oa-calendar-duration-segment--{{segmentRole}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
-                            draggable="true"
+                        <div class="oa-calendar-task oa-calendar-task--scheduled oa-calendar-task--duration oa-calendar-duration-segment--{{segmentRole}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}} {{#if isProjected}}oa-calendar-task--projected{{/if}}"
+                            draggable="{{#if isProjected}}false{{else}}true{{/if}}"
+                            {{#if isProjected}}data-projected="true"{{/if}}
                             data-file-path="{{file.path}}"
                             data-line-number="{{line.number}}"
                             data-date-type="scheduled"
@@ -153,11 +164,14 @@
                             style="left: {{laneLeftPercent}}%; width: {{laneWidthPercent}}%;">
                           {{#equals segmentRole "half"}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/equals}}
                           {{#equals segmentRole "start"}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/equals}}
+                          {{#if isProjected}}{{#equals segmentRole "half"}}<span class="oa-calendar-task-projected-badge" title="{{t 'calendar_projected_task'}}">🔁</span>{{/equals}}{{#equals segmentRole "start"}}<span class="oa-calendar-task-projected-badge" title="{{t 'calendar_projected_task'}}">🔁</span>{{/equals}}{{/if}}
                           <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
                           <span class="oa-task-title">{{section.desc}}</span>
                           {{#if date.scheduledDuration}}<span class="oa-calendar-task-duration">{{date.scheduledDuration}}m</span>{{/if}}
+                          {{#unless isProjected}}
                           {{#equals segmentRole "half"}}<div class="oa-calendar-resize-handle" draggable="false" data-file-path="{{file.path}}" data-line-number="{{line.number}}" data-current-duration="{{date.scheduledDuration}}"></div>{{/equals}}
                           {{#equals segmentRole "end"}}<div class="oa-calendar-resize-handle" draggable="false" data-file-path="{{file.path}}" data-line-number="{{line.number}}" data-current-duration="{{date.scheduledDuration}}"></div>{{/equals}}
+                          {{/unless}}
                         </div>
                       {{/each}}
                     </div>

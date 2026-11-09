@@ -15,6 +15,7 @@ function task(id, { file, status = 'Todo', priority, due = null, scheduled = nul
     file: { path: file },
     line: { number: 1 },
     section: { desc, tags: [] },
+    flow: { repeat: '' },
     date: { due, start: null, scheduled },
   };
 }
@@ -340,4 +341,104 @@ test('un área guardada que ya no existe no vacía el calendario', async () => {
   } finally {
     FakeFilterBar.prototype.getState = function () { return this.options.state; };
   }
+});
+
+// --- Ocurrencias proyectadas (v1.1.15, PR2) ---------------------------------------
+
+function recurringTask(id, priority = 'high') {
+  return { ...task(id, { file: 'Work/Proj/r.md', priority, due: day }), flow: { repeat: 'every day' } };
+}
+
+const nextDay = day.plus({ days: 1 });
+
+test('las ocurrencias proyectadas se piden aparte y van detrás de las reales', async () => {
+  const view = loadCalendarView();
+  view.loadedTasks = [...tasks, recurringTask('r')];
+  view.plugin.settings.calendarProjectionCount = 3;
+  await view.onOpen();
+
+  assert.deepEqual(ids(view.getTasksForDate(day, true)), ['a', 'b', 'c', 'd', 'r']);
+  assert.deepEqual(ids(view.getTasksForDate(nextDay)), [], 'sin pedirlas, Año y el selector de fecha no las ven');
+
+  const ghosts = view.getTasksForDate(nextDay, true);
+  assert.deepEqual(ids(ghosts), ['r+1']);
+  assert.equal(ghosts[0].isProjected, true);
+  assert.equal(ghosts[0].calendarDateType, 'due');
+  assert.equal(ids(view.getTasksForDate(day.plus({ days: 3 }), true)).length, 1);
+  assert.deepEqual(ids(view.getTasksForDate(day.plus({ days: 4 }), true)), [], 'solo N ocurrencias');
+});
+
+test('las reales no llevan la marca de proyectada', async () => {
+  const view = loadCalendarView();
+  view.loadedTasks = [...tasks, recurringTask('r')];
+  await view.onOpen();
+  assert.equal(view.getTasksForDate(day, true).some(item => item.isProjected), false);
+});
+
+test('con N en 0 el calendario no proyecta nada', async () => {
+  const view = loadCalendarView();
+  view.loadedTasks = [...tasks, recurringTask('r')];
+  view.plugin.settings.calendarProjectionCount = 0;
+  await view.onOpen();
+  assert.deepEqual(ids(view.getTasksForDate(nextDay, true)), []);
+});
+
+test('sin el ajuste guardado se proyectan 10', async () => {
+  const view = loadCalendarView();
+  view.loadedTasks = [...tasks, recurringTask('r')];
+  await view.onOpen();
+  assert.equal(ids(view.getTasksForDate(day.plus({ days: 10 }), true)).length, 1);
+  assert.deepEqual(ids(view.getTasksForDate(day.plus({ days: 11 }), true)), []);
+});
+
+// Una semanal con inicio, programada y vencimiento: la real sale el miércoles 4 (programada), el martes 3 (inicio...)
+function weeklyWithThreeDates() {
+  const base = task('w', { file: 'Work/Proj/w.md', priority: 'high', due: day.plus({ days: 7 }), scheduled: day.plus({ days: 1 }) });
+  base.date.start = day.minus({ days: 2 });
+  base.flow = { repeat: 'every week' };
+  return base;
+}
+
+test('un fantasma se dibuja solo en su fecha de referencia, no en cada una de sus fechas', async () => {
+  const view = loadCalendarView();
+  view.loadedTasks = [weeklyWithThreeDates()];
+  view.plugin.settings.calendarProjectionCount = 2;
+  view.plugin.settings.calendarShowStartDates = true;
+  await view.onOpen();
+
+  const scheduled = day.plus({ days: 1 });
+  // La referencia es la programada (4 de noviembre): los fantasmas caen una y dos semanas después
+  assert.deepEqual(ids(view.getTasksForDate(scheduled.plus({ days: 7 }), true)), ['w+1']);
+  assert.deepEqual(ids(view.getTasksForDate(scheduled.plus({ days: 14 }), true)), ['w+2']);
+  // Ni su vencimiento ni su inicio desplazados dibujan otra copia
+  assert.deepEqual(ids(view.getTasksForDate(day.plus({ days: 14 }), true)), [], 'vencimiento desplazado');
+  assert.deepEqual(ids(view.getTasksForDate(day.plus({ days: 21 }), true)), [], 'vencimiento desplazado');
+  assert.deepEqual(ids(view.getTasksForDate(day.plus({ days: 5 }), true)), [], 'inicio desplazado');
+  assert.equal(view.getTasksForDate(scheduled.plus({ days: 7 }), true)[0].calendarDateType, 'scheduled');
+});
+
+test('si no se muestran las programadas, el fantasma se ancla a la siguiente fecha que sí se muestra', async () => {
+  const view = loadCalendarView();
+  view.loadedTasks = [weeklyWithThreeDates()];
+  view.plugin.settings.calendarProjectionCount = 1;
+  view.plugin.settings.calendarShowScheduledDates = false;
+  await view.onOpen();
+
+  // Vencimiento real: 10 de noviembre; el fantasma, una semana después
+  const [ghost] = view.getTasksForDate(day.plus({ days: 14 }), true);
+  assert.equal(ghost.id, 'w+1');
+  assert.equal(ghost.calendarDateType, 'due');
+  assert.deepEqual(ids(view.getTasksForDate(day.plus({ days: 8 }), true)), [], 'la programada oculta no ancla nada');
+});
+
+test('un filtro oculta los fantasmas junto a su tarea real', async () => {
+  const view = loadCalendarView();
+  view.loadedTasks = [...tasks, recurringTask('r', 'low')];
+  calendarState.saveCalendarState(view.app, state({ priority: ['high'] }));
+  await view.onOpen();
+  assert.deepEqual(ids(view.getTasksForDate(nextDay, true)), []);
+
+  view.filterBar.options.onChange(state({ priority: ['low'] }), ['priority']);
+  await settle();
+  assert.deepEqual(ids(view.getTasksForDate(nextDay, true)), ['r+1']);
 });

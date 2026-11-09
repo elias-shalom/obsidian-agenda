@@ -31,6 +31,8 @@ export interface TaskGestureOptions {
   openFile: (filePath: string, lineNumber?: number) => Promise<void>;
   /** Los clics y clic derecho sobre elementos que coinciden se ignoran (botones, enlaces, campos). */
   ignoreSelector?: string;
+  /** Entrada de solo lectura (ocurrencia proyectada, v1.1.15): clic y doble clic abren la tarea real, sin menú de estado. */
+  readOnly?: boolean;
 }
 
 /**
@@ -70,6 +72,10 @@ export function attachTaskGestures(el: HTMLElement, options: TaskGestureOptions)
   });
 
   el.addEventListener('contextmenu', (event) => {
+    if (options.readOnly) {
+      event.preventDefault();
+      return;
+    }
     if (isIgnored(event)) return;
     event.preventDefault();
     const task = options.getTask();

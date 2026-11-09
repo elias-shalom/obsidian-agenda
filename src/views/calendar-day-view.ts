@@ -85,7 +85,7 @@ export class CalendarDayView extends CalendarView {
   /** Genera los datos de una sola columna de día (todo-el-día + segmentos de hora), de forma
    * independiente: los carriles de solapamiento no se comparten entre columnas (v1.1.10, §13.2). */
   private buildDayColumn(date: DateTime): { column: DayColumnData; hourSlotsByHour: HourSlot[] } {
-    const dayTasks = this.getTasksForDate(date);
+    const dayTasks = this.getTasksForDate(date, true);
     const dateIso = date.toISODate() ?? '';
 
     // Tareas ancladas por `scheduled` con hora asignada -> franjas horarias (modo punto/bloque, ADR-T2)

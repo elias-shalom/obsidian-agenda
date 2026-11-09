@@ -55,7 +55,7 @@ export class CalendarListView extends CalendarView {
     const locale = getLanguage() || 'en';
 
     for (let i = 0; i < daysToShow; i++) {
-      const dayTasks = this.getTasksForDate(currentDay);
+      const dayTasks = this.getTasksForDate(currentDay, true);
       const dayIndex = (currentDay.weekday - this.getWeekStartDay() + 7) % 7;
 
       days.push({

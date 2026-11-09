@@ -28,6 +28,11 @@ export interface AgendaPluginSettings {
    * color. Vacío por defecto («ninguno activo»). Solo visual.
    */
   holidayCalendars: HolidayCalendarConfig[];
+  /**
+   * Ocurrencias futuras que el calendario proyecta por cada tarea recurrente (v1.1.15, PR2): entre 0 y 50, por
+   * defecto 10; con 0 no se proyecta nada. Cuenta ocurrencias, no tiempo.
+   */
+  calendarProjectionCount: number;
 
   // Habits settings
   habitFolderPath: string;
@@ -62,6 +67,7 @@ export const DEFAULT_SETTINGS: AgendaPluginSettings = {
   calendarListDaysToShow: 14,
   nonWorkingDays: [6, 7],
   holidayCalendars: [],
+  calendarProjectionCount: 10,
 
   habitFolderPath: "daily plan/daily routine/habit",
   habitDaysToShow: 21,

@@ -24,6 +24,17 @@ export interface ProjectedOccurrence {
 
 const WHEN_DONE_REGEX = /\bwhen\s+done\s*$/i;
 
+/** Ocurrencias que se proyectan por tarea si el usuario no cambia el ajuste (v1.1.15, PR2). */
+export const DEFAULT_PROJECTION_COUNT = 10;
+/** Tope del ajuste: N cuenta ocurrencias, no tiempo, y cada una cuesta un cálculo de la regla. */
+export const MAX_PROJECTION_COUNT = 50;
+
+/** Deja el ajuste guardado en un entero entre 0 (desactivado) y el tope; cualquier otro valor vuelve al de por defecto. */
+export function sanitizeProjectionCount(raw: unknown): number {
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) return DEFAULT_PROJECTION_COUNT;
+  return Math.min(MAX_PROJECTION_COUNT, Math.max(0, Math.floor(raw)));
+}
+
 /** Una tarea terminada o cancelada no proyecta: su siguiente ocurrencia ya existe como otra línea (o no habrá). */
 const NON_PROJECTING_STATUSES: readonly string[] = [CoreTaskStatus.Done, CoreTaskStatus.Cancelled, CoreTaskStatus.nonTask];
 
@@ -66,6 +77,19 @@ export function projectOccurrences(
   }
 
   return occurrences;
+}
+
+/**
+ * Los fantasmas de todas las tareas dadas, listos para que una vista los dibuje junto a las reales. Con N en 0 no
+ * calcula nada; el orden es el de las tareas y, dentro de cada una, el de sus ocurrencias.
+ */
+export function projectAllOccurrences(
+  tasks: readonly ITask[],
+  count: number,
+  nonWorkingDays: readonly number[] = DEFAULT_NON_WORKING_DAYS
+): ITask[] {
+  if (!(count >= 1)) return [];
+  return tasks.flatMap(task => projectOccurrences(task, count, nonWorkingDays).map(occurrence => occurrence.task));
 }
 
 function buildGhost(task: ITask, deltaDays: number, index: number): ITask {

@@ -5,7 +5,9 @@ const { loadSource } = require('./helpers/load-source.cjs');
 
 // Proyección de recurrentes (v1.1.15, PR1): ocurrencias fantasma en memoria de una tarea con 🔁.
 const stubs = { obsidian: {} };
-const { projectOccurrences } = loadSource('core/task-projection.ts', stubs);
+const {
+  projectOccurrences, projectAllOccurrences, sanitizeProjectionCount, DEFAULT_PROJECTION_COUNT, MAX_PROJECTION_COUNT,
+} = loadSource('core/task-projection.ts', stubs);
 
 const day = (iso) => DateTime.fromISO(iso);
 const iso = (date) => date?.toISODate() ?? null;
@@ -173,4 +175,43 @@ test('proyectar no modifica la tarea real', () => {
   projectOccurrences(task, 5);
   assert.equal(JSON.stringify(task), before);
   assert.equal(task.state.status, '/');
+});
+
+// --- El ajuste N y todas las tareas (PR2) ------------------------------------------
+
+test('sanitizeProjectionCount: por defecto 10 y entre 0 y 50', () => {
+  assert.equal(DEFAULT_PROJECTION_COUNT, 10);
+  assert.equal(MAX_PROJECTION_COUNT, 50);
+  for (const raw of [undefined, null, '5', NaN, Infinity, {}]) assert.equal(sanitizeProjectionCount(raw), 10, String(raw));
+  assert.equal(sanitizeProjectionCount(0), 0);
+  assert.equal(sanitizeProjectionCount(7), 7);
+  assert.equal(sanitizeProjectionCount(7.9), 7);
+  assert.equal(sanitizeProjectionCount(-4), 0);
+  assert.equal(sanitizeProjectionCount(500), 50);
+});
+
+test('projectAllOccurrences junta los fantasmas de cada tarea recurrente y salta las demás', () => {
+  const daily = makeTask({ id: 'A.md#1' });
+  const weekly = makeTask({ id: 'B.md#2', flow: { repeat: 'every week' } });
+  const plain = makeTask({ id: 'C.md#3', flow: { repeat: '' } });
+  const done = makeTask({ id: 'D.md#4', state: { status: 'x' } });
+  const ghosts = projectAllOccurrences([daily, weekly, plain, done], 2);
+  assert.deepEqual(ghosts.map(g => g.id), ['A.md#1+1', 'A.md#1+2', 'B.md#2+1', 'B.md#2+2']);
+});
+
+test('projectAllOccurrences con N en 0 o sin tareas no devuelve nada', () => {
+  assert.deepEqual(projectAllOccurrences([makeTask()], 0), []);
+  assert.deepEqual(projectAllOccurrences([makeTask()], -1), []);
+  assert.deepEqual(projectAllOccurrences([], 10), []);
+});
+
+test('el ajuste y la insignia tienen traducción en los 6 idiomas', () => {
+  const { readFileSync } = require('node:fs');
+  const path = require('node:path');
+  for (const locale of ['en', 'es', 'de', 'fr', 'it', 'pt']) {
+    const translations = JSON.parse(readFileSync(path.join(__dirname, '..', 'src', 'locales', `${locale}.json`), 'utf8'));
+    for (const key of ['calendar_projection_count', 'calendar_projection_count_desc', 'calendar_projected_task']) {
+      assert.ok(typeof translations[key] === 'string' && translations[key].trim() !== '', `${locale}: falta ${key}`);
+    }
+  }
 });

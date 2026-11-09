@@ -180,6 +180,36 @@
   }
 }
 
+/* Ocurrencia proyectada de una tarea recurrente (v1.1.15, PR2): una píldora de solo contorno (sin relleno, borde
+   discontinuo), con el título en cursiva y la insignia 🔁 al inicio, para no confundirla con una tarea terminada
+   (que va rellena, atenuada y tachada). El selector es más específico que el de las píldoras de cada vista. */
+.oa-calendar-task.oa-calendar-task--projected[data-projected="true"] {
+  background-color: transparent;
+  border-style: dashed;
+  // El margen izquierdo, que lleva el color del tipo de fecha, queda sólido y del mismo ancho que en las demás píldoras
+  border-left-style: solid;
+  border-width: 1px 1px 1px 8px;
+  border-color: var(--text-muted);
+  box-shadow: none;
+  opacity: 0.85;
+  cursor: default;
+
+  .oa-task-title {
+    font-style: italic;
+  }
+
+  // Los bloques con duración se ven como una sola píldora: sin borde entre sus segmentos
+  &.oa-calendar-duration-segment--start { border-bottom-width: 0; }
+  &.oa-calendar-duration-segment--middle { border-top-width: 0; border-bottom-width: 0; }
+  &.oa-calendar-duration-segment--end { border-top-width: 0; }
+}
+
+.oa-calendar-task-projected-badge {
+  order: -1; // antes del 📅/🛫/⏳ del tipo de fecha y de la hora
+  flex: 0 0 auto;
+  margin-right: 3px;
+}
+
 /* Drag and drop (v1.1.4, Fase D): arrastrar una tarea a otro día/hora. */
 .oa-calendar-task[draggable="true"] {
   cursor: grab;

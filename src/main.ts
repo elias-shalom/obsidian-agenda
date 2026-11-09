@@ -10,6 +10,7 @@ import { isTaskLine } from "./core/task-line-fields";
 import { DEFAULT_SETTINGS, AgendaPluginSettings, migrateTabSettings } from "./settings/settings";
 import { sanitizeNonWorkingDays } from "./core/non-working-days";
 import { sanitizeHolidayCalendars } from "./core/holidays/holiday-calendar";
+import { sanitizeProjectionCount } from "./core/task-projection";
 import { DayChangeWatcher } from "./core/day-change";
 import { getWhatsNewEntries, planUpdateAnnouncement } from "./core/whats-new";
 import { WhatsNewModal } from "./modals/whats-new-modal";
@@ -153,6 +154,7 @@ export default class ObsidianAgenda extends Plugin {
     // no compartir la lista del valor por defecto.
     this.settings.nonWorkingDays = sanitizeNonWorkingDays(this.settings.nonWorkingDays);
     this.settings.holidayCalendars = sanitizeHolidayCalendars(this.settings.holidayCalendars);
+    this.settings.calendarProjectionCount = sanitizeProjectionCount(this.settings.calendarProjectionCount);
   }
 
   async saveSettings(): Promise<void> {

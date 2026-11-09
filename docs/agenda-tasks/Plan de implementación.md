@@ -745,11 +745,12 @@ Varios valores en los filtros de fecha; excluir valores («no es»); agrupado y 
 - [x] Modelo de la entrada fantasma (`ProjectedOccurrence`: copia de la tarea con las fechas desplazadas, en estado pendiente, con el `file` y la `line` de la real, más `source` e `index`). La insignia `🔁`, el aspecto atenuado, el solo lectura (sin arrastrar ni completar) y los clics hacia la tarea real son de dibujado y se hacen en PR2.
 - [x] Verificable sola: `tests/task-projection.test.cjs` (22 pruebas: N ocurrencias en diarias, semanales y mensuales; `when done` excluida; terminadas y canceladas excluidas; sin duplicar la real; con 0 no proyecta; referencia `scheduled > due > start`; hora y duración; `every weekday` con el ajuste de días no laborables).
 
-### Fase PR2 — Ajuste N y vistas (depende de PR1)
-- [ ] Ajuste numérico N, por defecto 10; con 0 se desactiva.
-- [ ] Fantasmas en Mes, Semana, Semana laboral, Día y Lista del calendario con la insignia `🔁` y aspecto atenuado, de solo lectura (sin arrastrar ni completar; clic y doble clic llevan a la tarea real); no en Año, Gantt, Lista, Tabla, Kanban ni Overview; respetan los filtros de la barra del calendario.
-- [ ] Al completar la real se escribe la siguiente como hoy (ADR-R1); una diaria desaparece pasados N días (consecuencia asumida).
-- [ ] Verificable sola: prueba manual con una diaria, una semanal y una mensual; completar la real no duplica la siguiente.
+### Fase PR2 — Ajuste N y vistas (depende de PR1) — **implementada el 2026-11-08; falta la prueba manual**
+- [x] Ajuste numérico N (`calendarProjectionCount`), por defecto 10 y entre 0 y 50; con 0 se desactiva (control deslizante en la pestaña Calendario, ambas rutas; `loadSettings()` lo sanea con `sanitizeProjectionCount()`).
+- [x] Fantasmas en Mes, Semana, Semana laboral, Día y Lista del calendario con la insignia `🔁` y aspecto atenuado (borde discontinuo), de solo lectura (sin arrastrar, sin cambiar el tamaño en Día, sin menú de estado; clic y doble clic llevan a la tarea real); no en Año, Gantt, Tabla, Kanban ni Overview; respetan los filtros de la barra del calendario.
+- [x] Al completar la real se escribe la siguiente como hoy (ADR-R1); una diaria desaparece pasados N días (consecuencia asumida). Una tarea terminada no proyecta, así que el fantasma que ocupaba su lugar lo pasa a ocupar la línea nueva.
+- [x] Verificable con Node: `tests/calendar-filters.test.cjs` (el calendario pide los fantasmas aparte, detrás de las reales; con N en 0 no hay; sin el ajuste son 10; un filtro oculta los fantasmas con su tarea real) y `tests/task-projection.test.cjs` (el ajuste y `projectAllOccurrences()`).
+- [ ] Prueba manual con una diaria, una semanal y una mensual (también `every weekday`): los fantasmas en las cinco vistas, atenuados y con `🔁`; clic abre la tarea real y doble clic su nota; no se arrastran ni se redimensionan en Día; completar la real no duplica la siguiente; con N = 0, 10 y 50; con un filtro de prioridad o área; escritorio y `is-phone`.
 
 ### Fase HC1 — Hábitos en el calendario (depende de HA1 y HV1 de [[habit-tracker-agenda/Plan de implementación]]; Especificación §21, Arquitectura §30)
 - [ ] Ajuste «Mostrar hábitos en el calendario», desactivado por defecto; sin efecto si la pestaña Hábitos está oculta.

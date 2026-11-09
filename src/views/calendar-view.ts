@@ -18,6 +18,7 @@ import { TaskFilterBar } from '../core/task-filter-bar';
 import { closeFilterPopover } from '../core/task-filter-popover';
 import { DEFAULT_NON_WORKING_DAYS, isNonWorkingDay } from '../core/non-working-days';
 import { getHolidayLookup } from '../core/holidays/holiday-calendar';
+import { projectAllOccurrences, sanitizeProjectionCount } from '../core/task-projection';
 
 export const CALENDAR_VIEW_TYPE = 'calendar-view';
 
@@ -42,12 +43,20 @@ export interface TaskDragPayload {
 /** Tipo de fecha que ancla una tarea a un día del calendario (v1.1.4, ADR-T4 en docs/agenda-tasks). */
 export type CalendarDateType = 'due' | 'start' | 'scheduled';
 
+/** Una tarea tal como la dibujan las vistas del calendario; `isProjected` marca una ocurrencia proyectada de solo lectura (v1.1.15, PR2). */
+export type CalendarTask = ITask & { calendarDateType: CalendarDateType; isProjected?: boolean };
+
+/** Orden de prioridad de la fecha que ancla una ocurrencia proyectada (ADR-R2). */
+const PROJECTED_ANCHOR_ORDER: readonly CalendarDateType[] = ['scheduled', 'due', 'start'];
+
 export abstract class CalendarView extends BaseView {
   protected tasks: ITask[] = []; 
   /** Filtros del calendario (v1.1.14, CF1): uno solo, compartido por las seis subvistas. */
   protected calendarState: TaskViewState = parseCalendarState({});
   /** Tareas que pasan los filtros del calendario; de aquí salen todas las que se dibujan. `this.tasks` queda completa para buscar una tarea por su línea. */
   protected visibleTasks: ITask[] = [];
+  /** Ocurrencias proyectadas de las tareas recurrentes visibles (v1.1.15, PR2); se recalculan en cada dibujado. */
+  private projectedTasks: ITask[] = [];
   /** Barra de filtros del calendario (v1.1.14, CF2): se crea en `onOpen()` y se monta tras cada dibujado completo. */
   protected filterBar: TaskFilterBar | null = null;
   /** Contenedor de la barra montada: un redibujado parcial lo conserva para que el buscador no pierda el foco. */
@@ -121,6 +130,14 @@ export abstract class CalendarView extends BaseView {
 
   /** Lo que reciben la plantilla y los listeners: los datos de la subvista (`calendar`) junto a las tareas y la fecha actual. */
   private buildCalendarViewData(): ViewData {
+    // Los fantasmas salen de las tareas que pasan los filtros, así que un filtro los oculta junto a su tarea real
+    const plugin = this.plugin as AgendaPlugin;
+    this.projectedTasks = projectAllOccurrences(
+      this.visibleTasks,
+      sanitizeProjectionCount(plugin.settings?.calendarProjectionCount),
+      this.getNonWorkingDays()
+    );
+
     return {
       tasks: this.tasks,
       currentDate: this.currentDate,
@@ -228,15 +245,24 @@ export abstract class CalendarView extends BaseView {
    * `calendarShowCompletedTasks`; es el único punto por donde las seis subvistas, el selector de fecha y los
    * contadores de la vista Año obtienen las tareas.
    */
-  protected getTasksForDate(date: DateTime): (ITask & { calendarDateType: CalendarDateType })[] {
+  protected getTasksForDate(date: DateTime, includeProjected = false): CalendarTask[] {
     const enabled = this.getCalendarDateSettings();
     const showCompleted = this.getCalendarShowCompletedTasks();
-    const result: (ITask & { calendarDateType: CalendarDateType })[] = [];
+    const result: CalendarTask[] = [];
 
     for (const task of this.visibleTasks) {
       if (!showCompleted && task.state.status === 'x') continue;
       const type = this.resolveCalendarAnchor(task, date, enabled);
       if (type) result.push({ ...task, calendarDateType: type });
+    }
+
+    // Las ocurrencias proyectadas (v1.1.15, PR2) van tras las reales; Año y el selector de fecha no las piden.
+    // Cada una se dibuja una sola vez, en su fecha de referencia, no en cada una de sus fechas desplazadas.
+    if (includeProjected) {
+      for (const ghost of this.projectedTasks) {
+        const type = this.resolveProjectedAnchor(ghost, date, enabled);
+        if (type) result.push({ ...ghost, calendarDateType: type, isProjected: true });
+      }
     }
 
     return result;
@@ -256,6 +282,23 @@ export abstract class CalendarView extends BaseView {
       start: plugin.settings?.calendarShowStartDates ?? false,
       scheduled: plugin.settings?.calendarShowScheduledDates ?? true,
     };
+  }
+
+  /**
+   * Para una ocurrencia proyectada: solo cuenta su fecha de referencia, la de mayor prioridad (`scheduled > due >
+   * start`) entre los tipos que el calendario muestra. Una tarea real aparece en cada una de sus fechas, pero
+   * repetir eso en cada fantasma llenaría los días anteriores a la tarea real de copias de sus fechas de inicio y
+   * vencimiento.
+   */
+  private resolveProjectedAnchor(
+    task: ITask,
+    date: DateTime,
+    enabled: { due: boolean; start: boolean; scheduled: boolean }
+  ): CalendarDateType | null {
+    const type = PROJECTED_ANCHOR_ORDER.find(candidate => enabled[candidate] && task.date[candidate]);
+    if (!type) return null;
+    const value = task.date[type];
+    return value?.isValid && value.hasSame(date, 'day') ? type : null;
   }
 
   /** Resuelve, con prioridad `scheduled > due > start`, qué tipo de fecha ancla esta tarea al día dado (o null si ninguna aplica). */
@@ -436,6 +479,10 @@ export abstract class CalendarView extends BaseView {
   // Event listeners para tareas
     const taskItems = container.querySelectorAll<HTMLElement>('.oa-calendar-task');
     taskItems.forEach(item => {
+      // Una ocurrencia proyectada es de solo lectura (v1.1.15, PR2): clic y doble clic llevan a la tarea real,
+      // sin menú de estado y sin arrastre.
+      const isProjected = item.dataset.projected === 'true';
+
       // Clic edita, doble clic abre el archivo y clic derecho cambia el estado (gestos compartidos).
       attachTaskGestures(item, {
         plugin: this.plugin as AgendaPlugin,
@@ -448,7 +495,10 @@ export abstract class CalendarView extends BaseView {
         },
         onChanged: () => this.refreshView(),
         openFile: (filePath, lineNumber) => this.openTaskFile(filePath, lineNumber),
+        readOnly: isProjected,
       });
+
+      if (isProjected) return;
 
       // Drag and drop (v1.1.4, Fase D): el `dragstart` es común a todas las vistas de calendario;
       // cada vista decide qué hace con el payload al recibir el `drop` (cambiar de día u hora).

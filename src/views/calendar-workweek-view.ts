@@ -46,7 +46,7 @@ export class CalendarWorkWeekView extends CalendarView {
 
     // Prepara los datos de los días
     const days: WeekDayData[] = workDates.map((currentDay) => {
-      const dayTasks = this.getTasksForDate(currentDay);
+      const dayTasks = this.getTasksForDate(currentDay, true);
       const dayIndex = (currentDay.weekday - this.getWeekStartDay() + 7) % 7;
 
       return {

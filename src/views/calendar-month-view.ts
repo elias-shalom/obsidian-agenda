@@ -69,7 +69,7 @@ export class CalendarMonthView extends CalendarView {
         dayOfMonth: currentDay.day,
         isNonWorking: this.isNonWorking(currentDay),
         holidays: this.getHolidays(currentDay),
-        tasksForDay: this.getTasksForDate(currentDay)
+        tasksForDay: this.getTasksForDate(currentDay, true)
       };
       
       currentWeekDays.push(dayData);

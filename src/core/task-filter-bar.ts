@@ -62,9 +62,17 @@ export interface TaskFilterBarOptions {
   laneOptions?: FilterBarOption[];
   /** Cómo resuelve la vista un campo que ya usa el otro chip (Kanban lo bloquea; las demás lo cambian a Ninguno). */
   axisRules?: AxisConflictOptions;
-  /** Si se pasa, el menú «+ Filtro» ofrece solo estos tipos (el calendario no ofrece fechas). */
+  /** Si se pasa, el menú «+ Filtro» ofrece solo estos tipos (el calendario no ofrece los filtros de fecha relativos). */
   filterTypes?: readonly FilterChipId[];
+  /**
+   * Tipos de fecha que se activan con un solo clic en el primer menú (marcados con ✓), sin segundo paso: valen
+   * «con fecha» (`hasdate`) o «todos». Los usa el calendario: con fecha de inicio, programada o de vencimiento.
+   */
+  directFilterTypes?: readonly DirectFilterType[];
 }
+
+/** Filtros de fecha que el primer menú puede activar directamente. */
+export type DirectFilterType = 'start' | 'scheduled' | 'due';
 
 /** Dónde abrir un menú: bajo el botón o el chip pulsado, medido una vez porque el chip se redibuja al elegir. */
 interface MenuAnchor {
@@ -267,15 +275,29 @@ export class TaskFilterBar {
     const active = new Set(getActiveFilterChips(this.state, key => this.options.i18n.t(key)).map(chip => chip.id));
     const menu = new Menu();
     for (const id of this.options.filterTypes ?? FILTER_CHIP_IDS) {
+      const direct = this.isDirectType(id);
       menu.addItem(item => item
         .setTitle(getFilterTypeLabel(id, key => this.options.i18n.t(key)))
         .setChecked(active.has(id))
-        .onClick(() => this.showNext(() => this.openValueMenu(id, anchor))));
+        // Los tipos directos se marcan y desmarcan aquí mismo; los demás abren su lista de valores
+        .onClick(() => direct
+          ? this.update({ [id]: active.has(id) ? 'all' : 'hasdate' })
+          : this.showNext(() => this.openValueMenu(id, anchor))));
     }
     menu.showAtPosition(anchor);
   }
 
+  private isDirectType(id: FilterChipId): id is DirectFilterType {
+    return (this.options.directFilterTypes as readonly FilterChipId[] | undefined)?.includes(id) ?? false;
+  }
+
   private openValueMenu(id: FilterChipId, anchor: MenuAnchor): void {
+    // Un filtro directo solo tiene un valor: pulsar su chip lo quita, igual que su ×
+    if (this.isDirectType(id)) {
+      this.update({ [id]: 'all' });
+      return;
+    }
+
     // Prioridad, estado y área aceptan varios valores: popover con casillas que no se cierra al marcar
     if (id === 'area') {
       this.openAreaPopover(anchor);

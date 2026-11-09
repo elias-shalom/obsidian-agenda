@@ -41,8 +41,8 @@ Lanes and Group cannot use the same field, since the groups would repeat the lan
 **Why is a task shown in several lanes?**
 When splitting by **Tag**, a task with several tags appears in each of its lanes, so the counts can add up to more than the number of tasks.
 
-**The calendar does not show the date filters, grouping or sort — is that expected?**
-Yes. The calendar's filter bar offers search, Priority, Status and Area only. Its settings are shared by the six calendar layouts and are separate from the Tasks tab.
+**The calendar's filter bar has no relative date filters, grouping or sort — is that expected?**
+Yes. The calendar's filter bar offers search, Priority, Status, Area and, in **+ Filter**, **Start date**, **Scheduled date** and **Due date** as one-click items. These three choose which date pills the calendar draws: with **Scheduled date** ticked you only see the scheduled-date pills (the due and start pills of the same tasks are hidden); tick several to see the pills of all of them, and tick one again to turn it off. What you tick here takes priority over the **Show … dates** settings, and with none ticked those settings apply as usual. Relative filters (past, today, next 7 days…) and "without date" are not offered, because a task without a date never appears in the calendar. Its settings are shared by the six calendar layouts and are separate from the Tasks tab.
 
 ## Getting help
 

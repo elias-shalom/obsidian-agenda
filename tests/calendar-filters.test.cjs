@@ -38,14 +38,22 @@ test('el estado vacío del calendario no filtra nada', () => {
   assert.equal(calendarState.filterTasksForCalendar(tasks, empty), tasks);
 });
 
-test('el calendario solo conserva búsqueda, prioridad, estado y área', () => {
+test('el calendario solo conserva búsqueda, prioridad, estado, área y «con fecha»', () => {
   const parsed = calendarState.parseCalendarState({
     search: 'x', priority: ['high'], status: ['Todo'], areas: ['Work'],
     due: 'overdue', start: 'today', scheduled: 'future', group: 'status', sortColumn: 'due', sortDirection: 'asc',
   });
   assert.deepEqual([parsed.search, parsed.priority, parsed.status, parsed.areas], ['x', ['high'], ['Todo'], ['Work']]);
+  // Los filtros de fecha relativos (vencidas, hoy, futuras…) no valen en el calendario
   assert.deepEqual([parsed.due, parsed.start, parsed.scheduled, parsed.group], ['all', 'all', 'all', '']);
   assert.deepEqual([parsed.sortColumn, parsed.sortDirection], ['priority', 'desc']);
+});
+
+test('el calendario conserva «con fecha» de inicio, programada y vencimiento', () => {
+  const parsed = calendarState.parseCalendarState({ start: 'hasdate', scheduled: 'hasdate', due: 'hasdate' });
+  assert.deepEqual([parsed.start, parsed.scheduled, parsed.due], ['hasdate', 'hasdate', 'hasdate']);
+  // «Sin fecha» nunca dibujaría nada en el calendario: no se admite
+  assert.equal(calendarState.parseCalendarState({ due: 'nodate' }).due, 'all');
 });
 
 test('el estado antiguo con un solo valor se convierte igual que en las demás vistas', () => {
@@ -59,6 +67,9 @@ test('hasCalendarFilters detecta cada filtro', () => {
   assert.equal(calendarState.hasCalendarFilters(state({ priority: ['low'] })), true);
   assert.equal(calendarState.hasCalendarFilters(state({ status: ['Done'] })), true);
   assert.equal(calendarState.hasCalendarFilters(state({ areas: ['/'] })), true);
+  assert.equal(calendarState.hasCalendarFilters(state({ start: 'hasdate' })), true);
+  assert.equal(calendarState.hasCalendarFilters(state({ scheduled: 'hasdate' })), true);
+  assert.equal(calendarState.hasCalendarFilters(state({ due: 'hasdate' })), true);
 });
 
 test('el calendario guarda con su propia clave', () => {
@@ -99,9 +110,27 @@ test('filtra por prioridad, estado, área y búsqueda', () => {
   assert.deepEqual(filter({ search: 'b' }), ['b']);
 });
 
-test('el calendario ignora los filtros de fecha aunque lleguen en el estado', () => {
+test('el calendario ignora los filtros de fecha relativos aunque lleguen en el estado', () => {
   const dated = { ...state({}), due: 'overdue', scheduled: 'today' };
   assert.deepEqual(ids(calendarState.filterTasksForCalendar(tasks, dated)), ['a', 'b', 'c', 'd']);
+});
+
+test('las fechas marcadas no quitan tareas: solo cambian qué píldoras se dibujan', () => {
+  const filter = (changes) => ids(calendarState.filterTasksForCalendar(tasks, state(changes)));
+  assert.deepEqual(filter({ due: 'hasdate' }), ['a', 'b', 'c', 'd']);
+  assert.deepEqual(filter({ scheduled: 'hasdate', start: 'hasdate' }), ['a', 'b', 'c', 'd']);
+});
+
+test('las fechas marcadas se combinan con los demás filtros', () => {
+  const filter = (changes) => ids(calendarState.filterTasksForCalendar(tasks, state(changes)));
+  assert.deepEqual(filter({ due: 'hasdate', priority: ['high'] }), ['a', 'c']);
+  assert.deepEqual(filter({ due: 'hasdate', areas: ['Work'], status: ['Todo'] }), ['a']);
+});
+
+test('getActiveCalendarDateTypes lista los tipos marcados en el orden de la barra', () => {
+  assert.deepEqual(calendarState.getActiveCalendarDateTypes(state({})), []);
+  assert.deepEqual(calendarState.getActiveCalendarDateTypes(state({ due: 'hasdate', start: 'hasdate' })), ['start', 'due']);
+  assert.deepEqual(calendarState.getActiveCalendarDateTypes(state({ scheduled: 'hasdate' })), ['scheduled']);
 });
 
 // --- Integración con CalendarView --------------------------------------------
@@ -202,6 +231,71 @@ test('CalendarView sin filtros dibuja todas las tareas del día', async () => {
   assert.deepEqual(ids(view.getTasksForDate(day)), ['a', 'b', 'c', 'd']);
 });
 
+// --- Fechas marcadas en la barra: solo se dibujan las píldoras de esos tipos --------
+
+async function openWithDates(changes, settings = {}) {
+  const view = loadCalendarView();
+  Object.assign(view.plugin.settings, settings);
+  calendarState.saveCalendarState(view.app, state(changes));
+  await view.onOpen();
+  return view;
+}
+
+test('con Programada marcada solo se ven las píldoras de la fecha programada', async () => {
+  const view = await openWithDates({ scheduled: 'hasdate' });
+  const shown = view.getTasksForDate(day);
+  assert.deepEqual(ids(shown), ['c']);
+  assert.equal(shown[0].calendarDateType, 'scheduled');
+});
+
+test('con Vencimiento marcada se ocultan las píldoras de la fecha programada', async () => {
+  const view = await openWithDates({ due: 'hasdate' });
+  assert.deepEqual(ids(view.getTasksForDate(day)), ['a', 'b', 'd']);
+});
+
+test('con dos fechas marcadas se ven las píldoras de las dos', async () => {
+  const view = await openWithDates({ due: 'hasdate', scheduled: 'hasdate' });
+  assert.deepEqual(ids(view.getTasksForDate(day)), ['a', 'b', 'c', 'd']);
+});
+
+test('con Inicio marcada y ninguna tarea con inicio no se dibuja nada', async () => {
+  const view = await openWithDates({ start: 'hasdate' });
+  assert.deepEqual(ids(view.getTasksForDate(day)), []);
+});
+
+test('lo marcado en la barra manda sobre los ajustes «Mostrar fechas»', async () => {
+  const view = await openWithDates({ scheduled: 'hasdate' }, { calendarShowScheduledDates: false, calendarShowDueDates: true });
+  assert.deepEqual(ids(view.getTasksForDate(day)), ['c']);
+});
+
+test('sin fechas marcadas mandan los ajustes «Mostrar fechas»', async () => {
+  const view = await openWithDates({}, { calendarShowDueDates: false });
+  assert.deepEqual(ids(view.getTasksForDate(day)), ['c']);
+});
+
+test('desmarcar la fecha en la barra devuelve todas las píldoras', async () => {
+  const view = await openWithDates({ scheduled: 'hasdate' });
+  view.filterBar.options.onChange(state({}), ['scheduled']);
+  await settle();
+  assert.deepEqual(ids(view.getTasksForDate(day)), ['a', 'b', 'c', 'd']);
+});
+
+test('los fantasmas siguen las fechas marcadas', async () => {
+  const view = loadCalendarView();
+  const recurring = weeklyWithThreeDates();
+  view.loadedTasks = [recurring];
+  view.plugin.settings.calendarProjectionCount = 1;
+  view.plugin.settings.calendarShowStartDates = true;
+  calendarState.saveCalendarState(view.app, state({ due: 'hasdate' }));
+  await view.onOpen();
+
+  // Con solo Vencimiento: la copia va en el vencimiento desplazado, no en la fecha programada
+  assert.deepEqual(ids(view.getTasksForDate(day.plus({ days: 8 }), true)), [], 'programada oculta');
+  const [ghost] = view.getTasksForDate(day.plus({ days: 14 }), true);
+  assert.equal(ghost.id, 'w+1');
+  assert.equal(ghost.calendarDateType, 'due');
+});
+
 test('CalendarView filtra con el estado guardado al abrir y en cada navegación', async () => {
   const view = loadCalendarView();
   calendarState.saveCalendarState(view.app, state({ priority: ['high'] }));
@@ -237,12 +331,13 @@ test('los filtros no cambian qué fecha ancla cada tarea', async () => {
 
 // --- Barra del calendario (Fase CF2) ------------------------------------------
 
-test('la barra solo ofrece prioridad, estado y área, y arranca con el estado guardado', async () => {
+test('la barra ofrece prioridad, estado, área y «con fecha», y arranca con el estado guardado', async () => {
   const view = loadCalendarView();
   calendarState.saveCalendarState(view.app, state({ priority: ['high'] }));
   await view.onOpen();
 
-  assert.deepEqual([...view.filterBar.options.filterTypes], ['priority', 'status', 'area']);
+  assert.deepEqual([...view.filterBar.options.filterTypes], ['priority', 'status', 'area', 'start', 'scheduled', 'due']);
+  assert.deepEqual([...view.filterBar.options.directFilterTypes], ['start', 'scheduled', 'due']);
   assert.deepEqual(view.filterBar.options.state.priority, ['high']);
   assert.equal(view.filterBar.options.groupOptions, undefined, 'sin agrupado');
   assert.equal(view.filterBar.options.sortOptions, undefined, 'sin orden');

@@ -13,7 +13,7 @@ import { getReferenceDate, setReferenceDate } from '../core/calendar-reference-d
 import { CalendarDatePicker } from '../core/calendar-date-picker';
 import { clearTooltips, installTooltips } from '../core/tooltips';
 import { TaskViewState } from '../core/task-view-state';
-import { CALENDAR_FILTER_TYPES, filterTasksForCalendar, loadCalendarState, parseCalendarState, saveCalendarState } from '../core/calendar-state';
+import { CALENDAR_DIRECT_FILTER_TYPES, CALENDAR_FILTER_TYPES, filterTasksForCalendar, getActiveCalendarDateTypes, loadCalendarState, parseCalendarState, saveCalendarState } from '../core/calendar-state';
 import { TaskFilterBar } from '../core/task-filter-bar';
 import { closeFilterPopover } from '../core/task-filter-popover';
 import { DEFAULT_NON_WORKING_DAYS, isNonWorkingDay } from '../core/non-working-days';
@@ -100,6 +100,7 @@ export abstract class CalendarView extends BaseView {
       tasks: this.tasks,
       state: loadCalendarState(this.app),
       filterTypes: CALENDAR_FILTER_TYPES,
+      directFilterTypes: CALENDAR_DIRECT_FILTER_TYPES,
       onChange: (state) => this.onCalendarFiltersChanged(state),
     });
     this.calendarState = this.filterBar.getState();
@@ -277,6 +278,11 @@ export abstract class CalendarView extends BaseView {
   /** Lee de los settings qué tipos de fecha se muestran en el calendario (ADR-T4). */
   protected getCalendarDateSettings(): { due: boolean; start: boolean; scheduled: boolean } {
     const plugin = this.plugin as AgendaPlugin;
+    const picked = getActiveCalendarDateTypes(this.calendarState);
+    // Las fechas marcadas en la barra mandan sobre los ajustes: solo se dibujan las píldoras de esos tipos
+    if (picked.length > 0) {
+      return { due: picked.includes('due'), start: picked.includes('start'), scheduled: picked.includes('scheduled') };
+    }
     return {
       due: plugin.settings?.calendarShowDueDates ?? true,
       start: plugin.settings?.calendarShowStartDates ?? false,

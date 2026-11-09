@@ -41,8 +41,8 @@ Filas y Grupo no pueden usar el mismo campo, porque los grupos repetirían las f
 **¿Por qué una tarea aparece en varias filas?**
 Al dividir por **Etiqueta**, una tarea con varias etiquetas aparece en cada una de sus filas, así que los totales pueden sumar más que el número de tareas.
 
-**El calendario no muestra los filtros de fecha, el agrupado ni el orden — ¿es lo esperado?**
-Sí. La barra de filtros del calendario ofrece solo búsqueda, Prioridad, Estado y Área. Su configuración la comparten los seis diseños de calendario y es independiente de la pestaña Tareas.
+**La barra de filtros del calendario no tiene filtros de fecha relativos, agrupado ni orden — ¿es lo esperado?**
+Sí. La barra de filtros del calendario ofrece búsqueda, Prioridad, Estado, Área y, en **+ Filtro**, **Fecha de inicio**, **Fecha programada** y **Fecha de vencimiento** como elementos de un solo clic. Estos tres eligen qué píldoras de fecha dibuja el calendario: con **Fecha programada** marcada solo ves las píldoras de la fecha programada (las de vencimiento e inicio de esas mismas tareas se ocultan); marca varias para ver las píldoras de todas, y vuelve a pulsar una para desactivarla. Lo que marques aquí manda sobre los ajustes **Mostrar fechas…** y, sin ninguna marcada, esos ajustes se aplican como siempre. No se ofrecen los filtros relativos (pasadas, hoy, próximos 7 días…) ni «sin fecha», porque una tarea sin fecha nunca aparece en el calendario. Su configuración la comparten los seis diseños de calendario y es independiente de la pestaña Tareas.
 
 ## Obtener ayuda
 

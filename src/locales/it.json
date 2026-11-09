@@ -503,6 +503,10 @@
   "habit_delete_confirm": "Clicca di nuovo per confermare l'eliminazione",
   "habit_status_active": "Attivo",
   "habit_status_inactive": "Inattivo",
+  "habit_active_from": "Attivo dal",
+  "habit_active_until": "Attivo fino al",
+  "habit_period_invalid": "«Attivo dal» non può essere successivo a «Attivo fino al»",
+  "habit_period_clear": "Svuota la data",
   "habit_freq_custom": "Giorni personalizzati",
   "habit_time_unit_minutes": "min"
 }

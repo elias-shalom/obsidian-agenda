@@ -503,6 +503,10 @@
   "habit_delete_confirm": "Erneut klicken, um das Löschen zu bestätigen",
   "habit_status_active": "Aktiv",
   "habit_status_inactive": "Inaktiv",
+  "habit_active_from": "Aktiv ab",
+  "habit_active_until": "Aktiv bis",
+  "habit_period_invalid": "„Aktiv ab“ darf nicht nach „Aktiv bis“ liegen",
+  "habit_period_clear": "Datum leeren",
   "habit_freq_custom": "Benutzerdefinierte Tage",
   "habit_time_unit_minutes": "Min"
 }

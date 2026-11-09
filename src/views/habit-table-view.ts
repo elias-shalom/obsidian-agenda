@@ -4,7 +4,8 @@ import { HabitView } from './habit-view';
 import { AgendaPlugin, ViewData } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { TaskManager } from '../core/task-manager';
-import { HabitManager, getAreaColor, getAreaLabel, dayCompleted, isScheduled } from '../habits';
+import { HabitManager, getAreaColor, getAreaLabel, dayCompleted } from '../habits';
+import { countsOn } from '../habits/habit-calendar';
 import type { Daytime, IHabit } from '../habits';
 import { computeStats } from '../habits/habit-streak';
 import { matchFrequencyPreset } from '../core/non-working-days';
@@ -92,7 +93,7 @@ export class HabitTableView extends HabitView {
 
     for (let offset = 29; offset >= 0; offset -= 1) {
       const date = today.minus({ days: offset });
-      if (!isScheduled(habit, date)) continue;
+      if (!countsOn(habit, date)) continue;
 
       scheduled += 1;
       if (dayCompleted(habit, date.toISODate() ?? '')) done += 1;

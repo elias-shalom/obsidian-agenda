@@ -65,7 +65,7 @@ La vista **Grid** se basa en la referencia de código abierto **Habit Tracker 21
 | 5 | [[Especificación de vistas]] | Wireframes y specs de cada vista, incluida la Grid HT21; §11–§14: selector circular, periodo activo y vacaciones, hábitos en el calendario y widgets del Dashboard (v1.1.15–v1.1.16, diseño). |
 | 6 | [[Plan de implementación]] | Fases, tareas por archivo, verificación y riesgos; bloque de ampliaciones con las fases HA1, HV1 y HU1 (v1.1.15). |
 
-> **Ampliaciones v1.1.15–v1.1.16 (diseño, no implementado)**: [[Modelo de datos]] §8 (campos `desde`/`hasta`, vacaciones y frecuencias con días no laborables) y [[Arquitectura técnica]] §10 (mecanismo, archivos, pruebas y riesgos). Las partes de calendario y Dashboard se detallan en `docs/agenda-tasks/` (Especificación §21 y §22, Arquitectura §30 y §31).
+> **Ampliaciones v1.1.15–v1.1.16 (diseño, no implementado)**: [[Modelo de datos]] §8 (campos `from`/`until`, vacaciones y frecuencias con días no laborables) y [[Arquitectura técnica]] §10 (mecanismo, archivos, pruebas y riesgos). Las partes de calendario y Dashboard se detallan en `docs/agenda-tasks/` (Especificación §21 y §22, Arquitectura §30 y §31).
 
 ## Estado
 
@@ -77,7 +77,7 @@ La vista **Grid** se basa en la referencia de código abierto **Habit Tracker 21
 - [ ] Fase 3: Vista Rutina diaria
 - [ ] Fase 4: Dashboard
 - [ ] Fase 5: Semanal + Lista/Tabla
-- [ ] **v1.1.15** HA1 — periodo activo (`desde`/`hasta`)
+- [x] **v1.1.15** HA1 — periodo activo (`from`/`until`) (implementado el 2026-11-09)
 - [ ] **v1.1.15** HV1 — vacaciones y botón «Vacaciones»
 - [ ] **v1.1.15** HU1 — selector circular de subvistas
 - [ ] **v1.1.15** frecuencias con días no laborables (NL2) y hábitos en el calendario (HC1), fases del Plan de agenda-tasks

@@ -267,6 +267,15 @@ export class HabitManager {
     return [...this.habitCache.values()].sort((a, b) => a.name.localeCompare(b.name));
   }
 
+  /**
+   * Hábitos para los porcentajes históricos (v1.1.15, HA1): los activos y los desactivados que tienen `until`. Los
+   * desactivados siguen contando hasta ese día, así el porcentaje de una fecha pasada no cambia al desactivar un
+   * hábito; los inactivos sin `until` (notas anteriores) siguen fuera. No son filas de ninguna vista.
+   */
+  getHabitsForStats(): IHabit[] {
+    return this.getAllHabits().filter(habit => habit.status !== 'inactive' || habit.activeUntil !== null);
+  }
+
   getHabit(file: TFile): IHabit | null {
     const cached = this.habitCache.get(file.path);
     if (cached) return cached;
@@ -291,7 +300,7 @@ export class HabitManager {
   }
 
   computeDashboard() {
-    return computeDashboard(this.getHabits());
+    return computeDashboard(this.getHabits(), this.getHabitsForStats());
   }
 
   /** Abre el modal de crear/editar hábito (crear si no se pasa hábito) */

@@ -45,6 +45,10 @@ export interface IHabit {
   color: string;
   maxGap: number;
   status: string;
+  /** Primer día activo (`fm.from`, `AAAA-MM-DD` válido) o `null` (v1.1.15, HA1). */
+  activeFrom: string | null;
+  /** Último día activo (`fm.until`, `AAAA-MM-DD` válido) o `null`; el plugin lo escribe al desactivar el hábito. */
+  activeUntil: string | null;
   completions: ICompletions;
   /** Espejo HT21 day-level, derivado de completions (nunca se lee directo del disco) */
   entries: Set<string>;

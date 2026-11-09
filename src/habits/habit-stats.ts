@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
 import type { Daytime, IHabit, IHabitDayStat, HabitDashboardData } from './habit';
-import { dayCompleted, isScheduled } from './habit';
+import { dayCompleted } from './habit';
+import { countsOn } from './habit-calendar';
 import { computeStats } from './habit-streak';
 
 function toIsoDate(date: DateTime): string {
@@ -16,7 +17,7 @@ export function computeAreaStats(
   const totals: Record<string, { done: number; scheduled: number; weightDone: number; weightTotal: number }> = {};
 
   for (const habit of habits) {
-    if (!isScheduled(habit, date)) continue;
+    if (!countsOn(habit, date)) continue;
 
     const area = habit.area;
     if (!(area in totals)) {
@@ -56,7 +57,7 @@ export function computeDaytimeStats(
   const totals: Record<string, { done: number; scheduled: number; weightDone: number; weightTotal: number }> = {};
 
   for (const habit of habits) {
-    if (!isScheduled(habit, date)) continue;
+    if (!countsOn(habit, date)) continue;
 
     const daytimes = habit.daytimes.length > 0 ? habit.daytimes : (['morning'] as Daytime[]);
     for (const daytime of daytimes) {
@@ -99,7 +100,7 @@ export function computeHistory30d(habits: IHabit[]): IHabitDayStat[] {
     let weightTotal = 0;
 
     for (const habit of habits) {
-      if (!isScheduled(habit, date)) continue;
+      if (!countsOn(habit, date)) continue;
 
       total += 1;
       weightTotal += habit.priority;
@@ -140,7 +141,7 @@ export function computeYearHistory(habits: IHabit[], year: number): IHabitDaySta
     let weightTotal = 0;
 
     for (const habit of habits) {
-      if (!isScheduled(habit, date)) continue;
+      if (!countsOn(habit, date)) continue;
 
       total += 1;
       weightTotal += habit.priority;
@@ -167,7 +168,12 @@ export function computeYearHistory(habits: IHabit[], year: number): IHabitDaySta
   return result;
 }
 
-export function computeDashboard(habits: IHabit[]): HabitDashboardData {
+/**
+ * Datos del Dashboard. `habits` son los hábitos activos (filas, rachas y total) y `statsHabits`, por defecto los
+ * mismos, la lista de los porcentajes: con los desactivados que tienen `until` incluidos, el historial de fechas
+ * pasadas no cambia al desactivar un hábito (v1.1.15, HA1).
+ */
+export function computeDashboard(habits: IHabit[], statsHabits: IHabit[] = habits): HabitDashboardData {
   const today = DateTime.local();
   const isoToday = toIsoDate(today);
 
@@ -176,8 +182,8 @@ export function computeDashboard(habits: IHabit[]): HabitDashboardData {
   let weightDone = 0;
   let weightTotal = 0;
 
-  for (const habit of habits) {
-    if (!isScheduled(habit, today)) continue;
+  for (const habit of statsHabits) {
+    if (!countsOn(habit, today)) continue;
 
     todayTotal += 1;
     weightTotal += habit.priority;
@@ -197,8 +203,8 @@ export function computeDashboard(habits: IHabit[]): HabitDashboardData {
     currentStreak,
     maxStreak,
     totalHabits: habits.length,
-    byArea: computeAreaStats(habits, isoToday),
-    byDaytime: computeDaytimeStats(habits, isoToday),
-    history30d: computeHistory30d(habits),
+    byArea: computeAreaStats(statsHabits, isoToday),
+    byDaytime: computeDaytimeStats(statsHabits, isoToday),
+    history30d: computeHistory30d(statsHabits),
   };
 }

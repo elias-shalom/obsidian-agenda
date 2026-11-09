@@ -2,6 +2,7 @@ import type { TFile } from 'obsidian';
 import type { AgendaPluginSettings } from '../settings/settings';
 import type { Daytime, ICompletions, IHabit } from './habit';
 import { dayCompletedDates } from './habit-completions';
+import { parseActiveDate } from './habit-calendar';
 import { getFrequencyPresetDays } from '../core/non-working-days';
 
 export interface IHabitParser {
@@ -199,6 +200,8 @@ export function parseHabit(
     color: toText(fm.color, toText(settings.habitDefaultColor)).trim(),
     maxGap: Number.isFinite(maxGapValue) ? Math.max(0, Math.round(maxGapValue)) : 0,
     status,
+    activeFrom: parseActiveDate(fm.from),
+    activeUntil: parseActiveDate(fm.until),
     completions,
     entries: new Set(dayCompletedDates(completions, { daytimes })),
   };

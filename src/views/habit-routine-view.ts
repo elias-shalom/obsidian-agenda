@@ -4,7 +4,8 @@ import { HabitView } from './habit-view';
 import { AgendaPlugin, ViewData } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { TaskManager } from '../core/task-manager';
-import { HabitManager, isScheduled, getAreaColor, getAreaTextColor, getAreaLabel } from '../habits';
+import { HabitManager, getAreaColor, getAreaTextColor, getAreaLabel } from '../habits';
+import { countsOn } from '../habits/habit-calendar';
 import type { Daytime, HabitArea } from '../habits';
 import { computeOccurrenceCells, computeOccurrenceStats } from '../habits/habit-streak';
 
@@ -94,7 +95,7 @@ export class HabitRoutineView extends HabitView {
     }
 
     for (const habit of this.habits) {
-      if (!isScheduled(habit, this.selectedDate)) continue;
+      if (!countsOn(habit, this.selectedDate)) continue;
 
       const doneToday = habit.completions[dateIso] ?? [];
 

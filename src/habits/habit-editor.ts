@@ -8,6 +8,8 @@ import { TimeDial } from '../core/time-dial';
 import { HabitFolderModal } from './habit-folder-modal';
 import { getFrequencyPresetDays, matchFrequencyPreset } from '../core/non-working-days';
 import type { FrequencyPreset } from '../core/non-working-days';
+import { DateTime } from 'luxon';
+import { activeUntilForStatus, isValidPeriod, parseActiveDate } from './habit-calendar';
 
 // @ts-ignore: Plugin de esbuild maneja los archivos .hbs
 import habitEditorTemplate from './templates/habit-editor-modal.hbs';
@@ -42,6 +44,9 @@ interface HabitFormValues {
   maxGap: number;
   color: string;
   status: string;
+  /** Periodo activo (`from`/`until`, `AAAA-MM-DD`); cadena vacía si el campo está vacío (v1.1.15, HA1). */
+  activeFrom: string;
+  activeUntil: string;
   area: HabitArea;
   subArea: string;
   relatedFiles: string[];
@@ -117,6 +122,8 @@ export class HabitEditorModal extends Modal {
       priority: habit?.priority ?? 3,
       maxGap: habit?.maxGap ?? 0,
       color: habit?.color ?? '',
+      activeFrom: habit?.activeFrom ?? '',
+      activeUntil: habit?.activeUntil ?? '',
       relatedFiles: habit?.related ?? [],
       statusActive: (habit?.status ?? 'active') === 'active',
       statusLabelText: (habit?.status ?? 'active') === 'active'
@@ -171,12 +178,24 @@ export class HabitEditorModal extends Modal {
 
     const statusCheckbox = this.contentEl.querySelector<HTMLInputElement>('#oa-habit-status');
     const statusLabel = this.contentEl.querySelector<HTMLElement>('#oa-habit-status-label');
+    const activeUntilInput = this.contentEl.querySelector<HTMLInputElement>('#oa-habit-active-until');
     statusCheckbox?.addEventListener('change', () => {
       if (statusLabel) {
         statusLabel.textContent = statusCheckbox.checked
           ? this.i18n.t('habit_status_active')
           : this.i18n.t('habit_status_inactive');
       }
+      // Desactivar escribe `until` = hoy y reactivar lo borra (v1.1.15, HA1); el usuario aún puede cambiarlo antes de guardar
+      if (activeUntilInput) {
+        activeUntilInput.value = activeUntilForStatus(statusCheckbox.checked, activeUntilInput.value, DateTime.local().toISODate() ?? '');
+      }
+    });
+
+    this.contentEl.querySelectorAll<HTMLButtonElement>('[data-clear-for]').forEach(button => {
+      button.addEventListener('click', () => {
+        const input = this.contentEl.querySelector<HTMLInputElement>(`#${button.dataset.clearFor ?? ''}`);
+        if (input) input.value = '';
+      });
     });
 
     this.wireRangeSlider('oa-habit-priority', 'oa-habit-priority-value');
@@ -445,6 +464,9 @@ export class HabitEditorModal extends Modal {
     const maxGap = Math.max(0, Number(get<HTMLInputElement>('oa-habit-max-gap')?.value ?? 0) || 0);
     const color = get<HTMLInputElement>('oa-habit-color')?.value.trim() ?? '';
     const status = get<HTMLInputElement>('oa-habit-status')?.checked ? 'active' : 'inactive';
+    // Un valor que no es una fecha válida (el navegador deja `''`) cuenta como campo vacío
+    const activeFrom = parseActiveDate(get<HTMLInputElement>('oa-habit-active-from')?.value) ?? '';
+    const activeUntil = parseActiveDate(get<HTMLInputElement>('oa-habit-active-until')?.value) ?? '';
     const area = get<HTMLSelectElement>('oa-habit-area')?.value ?? 'temporal';
     const subAreaSelect = get<HTMLSelectElement>('oa-habit-sub-area');
     const subArea = subAreaSelect ? subAreaSelect.value : (this.habit?.subArea ?? '');
@@ -464,7 +486,7 @@ export class HabitEditorModal extends Modal {
       form.querySelector<HTMLInputElement>(`#oa-habit-daytime-${daytime.replace(/\s+/g, '_')}`)?.checked
     );
 
-    return { name, description, time, priority, maxGap, color, status, area, subArea, relatedFiles, frequency, daytimes };
+    return { name, description, time, priority, maxGap, color, status, activeFrom, activeUntil, area, subArea, relatedFiles, frequency, daytimes };
   }
 
   private async handleSubmit(form: HTMLFormElement): Promise<void> {
@@ -476,6 +498,10 @@ export class HabitEditorModal extends Modal {
 
     if (Array.isArray(values.frequency) && values.frequency.length === 0) {
       throw new Error(this.i18n.t('habit_frequency_required'));
+    }
+
+    if (!isValidPeriod(values.activeFrom, values.activeUntil)) {
+      throw new Error(this.i18n.t('habit_period_invalid'));
     }
 
     if (values.daytimes.length === 0) {
@@ -535,6 +561,8 @@ export class HabitEditorModal extends Modal {
     if (values.subArea) frontmatter['sub-area'] = values.subArea;
     if (values.relatedFiles.length > 0) frontmatter.related = values.relatedFiles;
     if (values.color) frontmatter.color = values.color;
+    if (values.activeFrom) frontmatter.from = values.activeFrom;
+    if (values.activeUntil) frontmatter.until = values.activeUntil;
 
     const content = `---\n${stringifyYaml(frontmatter)}---\n${values.description ? `${values.description}\n` : ''}`;
     await this.app.vault.create(filePath, content);
@@ -581,6 +609,20 @@ export class HabitEditorModal extends Modal {
         fm.color = values.color;
       } else {
         delete fm.color;
+      }
+      // Periodo activo (v1.1.15, HA1): se escribe o se borra, sin tocar completions ni entries. Las claves `desde` y
+      // `hasta` de una versión de prueba ya no se leen y se quitan al guardar.
+      delete fm.desde;
+      delete fm.hasta;
+      if (values.activeFrom) {
+        fm.from = values.activeFrom;
+      } else {
+        delete fm.from;
+      }
+      if (values.activeUntil) {
+        fm.until = values.activeUntil;
+      } else {
+        delete fm.until;
       }
       // completions/entries no se tocan: se preservan tal cual estaban.
       return `---\n${stringifyYaml(fm)}---\n${values.description ? `${values.description}\n` : ''}`;

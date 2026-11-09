@@ -323,7 +323,7 @@ this.addCommand({ id: "oa-habit-edit", name: this.i18n.t("habit_edit_habit"),
 - [ ] `npm run build` y `npm run lint` en verde.
 - [ ] Limpieza de listeners en `onunload`/`onClose`.
 
-## 10. Periodo activo, vacaciones, selector circular y frecuencias con días no laborables (v1.1.15 — diseño, no implementado)
+## 10. Periodo activo, vacaciones, selector circular y frecuencias con días no laborables (v1.1.15 — HA1 implementada el 2026-11-09 y frecuencias (NL2) el 2026-11-08; vacaciones y selector, diseño)
 
 Decidido el 2026-11-02 (hábitos en el calendario y widgets del Dashboard, en §10.7 y §10.8). Comportamiento en [[Especificación de vistas]] §11–§14; datos en [[Modelo de datos]] §8; fases HA1, HV1 y HU1 en [[Plan de implementación]]. Todo lo de esta sección es **diseño**: los archivos y funciones marcados «por crear» son propuestas.
 
@@ -333,11 +333,11 @@ Decidido el 2026-11-02 (hábitos en el calendario y widgets del Dashboard, en §
 |---|---|
 | `src/habits/habit-calendar.ts` | **Por crear.** Funciones puras, sin importar `obsidian`: `isActiveOn()`, `findVacation()`, `countsOn()` y los tipos `IHabitVacation`/`IHabitCalcContext` ([[Modelo de datos]] §8.2–§8.5). Es el único sitio con la regla; así se prueba con `node --test`. |
 | `src/habits/habit.ts` | `IHabit` gana `activeFrom`/`activeUntil`; `IHabitCell` y `IHabitDayStat` ganan `vacation`. `isScheduled()` se conserva (significa «toca ese día de la semana»). |
-| `src/habits/habit-parser.ts` | Lee `desde`/`hasta` (solo `AAAA-MM-DD`); `normalizeFrequencySet()` recibe los días no laborables y resuelve `weekend`/`workweek` con ellos (§10.6). |
-| `src/habits/habit-manager.ts` | Nuevo `getHabitsForStats()` (activos + inactivos con `hasta`) y `getCalcContext()` (lee `habitVacations` de los ajustes). `getHabits()` no cambia. `computeDashboard()` usa ambos. |
+| `src/habits/habit-parser.ts` | Lee `from`/`until` (solo `AAAA-MM-DD`); `normalizeFrequencySet()` recibe los días no laborables y resuelve `weekend`/`workweek` con ellos (§10.6). |
+| `src/habits/habit-manager.ts` | Nuevo `getHabitsForStats()` (activos + inactivos con `until`) y `getCalcContext()` (lee `habitVacations` de los ajustes). `getHabits()` no cambia. `computeDashboard()` usa ambos. |
 | `src/habits/habit-streak.ts` | `computeCells`, `computeStats`, `computeOccurrenceCells`, `computeOccurrenceStats`, `isRunContinuous` e `isOccurrenceRunContinuous` reciben el contexto (parámetro opcional, por defecto sin vacaciones) y usan `countsOn()` donde hoy usan `isScheduled()` para decidir si un día cuenta. |
 | `src/habits/habit-stats.ts` | `computeAreaStats`, `computeDaytimeStats`, `computeHistory30d`, `computeYearHistory` y `computeDashboard` usan `countsOn()` en el denominador y rellenan `vacation` en `IHabitDayStat`. |
-| `src/habits/habit-editor.ts` | Dos `<input type="date">` (`desde`, `hasta`) con botón de vaciar; el switch de `status` autocompleta/borra `hasta`; `FREQUENCY_PRESETS` y `resolveFrequencyMode()` salen de los días no laborables; escribe `desde`/`hasta` en `createHabit()` y `updateHabit()` (y los borra si están vacíos). |
+| `src/habits/habit-editor.ts` | Dos `<input type="date">` (`from`, `until`) con botón de vaciar; el switch de `status` autocompleta/borra `until`; `FREQUENCY_PRESETS` y `resolveFrequencyMode()` salen de los días no laborables; escribe `from`/`until` en `createHabit()` y `updateHabit()` (y los borra si están vacíos). |
 | `src/habits/habit-writer.ts` | **Sin cambios**: el toggle sigue escribiendo solo `completions` y `entries`; el cálculo decide después qué cuenta. |
 | `src/views/habit-view.ts` | El `change` del `<select>` pasa a clic sobre los botones circulares; añade el botón «Vacaciones» (§10.4). |
 | `src/views/templates/habit-{grid,overview,routine,weekly,table}-view.hbs` | Se reemplaza el `<select id="oa-habit-view-dropdown">` por el grupo de botones (§10.5); se añade el botón «Vacaciones». |
@@ -349,13 +349,21 @@ Decidido el 2026-11-02 (hábitos en el calendario y widgets del Dashboard, en §
 
 ### 10.2 Periodo activo
 
-1. **Parser**: `parseHabit()` añade `activeFrom`/`activeUntil` = `fm.desde`/`fm.hasta` si son cadenas `AAAA-MM-DD` válidas (también la fecha real, `DateTime.isValid`); si no, `null`. Sin fechas y con `status` activo, nada cambia.
-2. **Manager**: `getHabits()` (filas de Grid, Semanal, Rutina y Dashboard «hoy») sigue filtrando por `status`. `getHabitsForStats()` devuelve además los inactivos con `hasta`, para que los porcentajes de días pasados no cambien al desactivar un hábito (ADR-DM1 de [[Modelo de datos]]). `getAllHabits()` (Lista) no cambia.
+1. **Parser**: `parseHabit()` añade `activeFrom`/`activeUntil` = `fm.from`/`fm.until` si son cadenas `AAAA-MM-DD` válidas (también la fecha real, `DateTime.isValid`); si no, `null`. Sin fechas y con `status` activo, nada cambia.
+2. **Manager**: `getHabits()` (filas de Grid, Semanal, Rutina y Dashboard «hoy») sigue filtrando por `status`. `getHabitsForStats()` devuelve además los inactivos con `until`, para que los porcentajes de días pasados no cambien al desactivar un hábito (ADR-DM1 de [[Modelo de datos]]). `getAllHabits()` (Lista) no cambia.
 3. **Cálculo**: cada función de `habit-stats.ts` y `habit-streak.ts` filtra por `isActiveOn(habit, iso)` dentro de `countsOn()`; los días fuera del periodo son neutrales, igual que los no programados.
-4. **Editor**: al **apagar** el switch de `status` se rellena el selector `hasta` con la fecha de hoy; al **encender** se vacía `hasta` (y se conserva `desde`). El guardado valida `desde ≤ hasta` con mensaje inline (`habit_period_invalid`). `updateHabit()` ya reconstruye un solo bloque YAML con `vault.process` (§3.3): se añaden `fm.desde`/`fm.hasta` o `delete` si están vacíos; `completions` y `entries` no se tocan.
+4. **Editor**: al **apagar** el switch de `status` se rellena el selector `until` con la fecha de hoy; al **encender** se vacía `until` (y se conserva `from`). El guardado valida `from ≤ until` con mensaje inline (`habit_period_invalid`). `updateHabit()` ya reconstruye un solo bloque YAML con `vault.process` (§3.3): se añaden `fm.from`/`fm.until` o `delete` si están vacíos; `completions` y `entries` no se tocan.
 5. **Refresco**: sin eventos nuevos; el guardado ya llama a `refreshHabits()` y emite `obsidian-agenda:habits-refresh`.
 
 > **ADR-AR1 — La regla vive en `habit-calendar.ts` y no en cada función de cálculo**: `countsOn()` es el único lugar que decide si un día cuenta (programado, activo, vacaciones). Racional: hoy `isScheduled()` se repite en 11 funciones de `habit-streak.ts` y `habit-stats.ts`; añadir dos reglas en cada una las haría divergir. Consecuencia: el parámetro de contexto se propaga a todas.
+
+**Implementado el 2026-11-09 (Fase HA1)**:
+- **`habit-calendar.ts`** (puro): `parseActiveDate()` (cadena `AAAA-MM-DD` o `Date` de YAML, con fecha real de calendario; si no, `null`), `isInPeriod()` (extremos inclusivos; uno ausente no limita), `isActiveOn()` (la regla de §8.3 del Modelo de datos con el `status`), `countsOn()` (toca por la frecuencia **y** cae en el periodo), `isValidPeriod()` y `activeUntilForStatus()` (la regla del switch del editor).
+- **`countsOn()` no mira `status`** a propósito: quien arma la lista decide qué hábitos entran (`getHabits()` los activos, `getHabitsForStats()` también los desactivados con `until`, la Tabla todos). Si lo mirara, los hábitos inactivos de la Tabla perderían su racha y su `% 30 d`. `isActiveOn()` queda para los consumidores que sí necesitan el estado (HC1).
+- **Sustituciones**: las funciones de `habit-streak.ts` (celdas, racha, continuidad) y `habit-stats.ts` (por área, por daytime, 30 días, año, hoy) usan `countsOn()` donde usaban `isScheduled()`; también la lista del día de la Rutina y el `% 30 d` de la Tabla. En las celdas, `scheduled` pasa a significar «cuenta»: un día fuera del periodo se ve como no programado (`--oa-unscheduled`), y una marca guardada fuera del periodo no cuenta.
+- **`getHabitsForStats()`** (`HabitManager`) y **`computeDashboard(habits, statsHabits = habits)`**: los porcentajes (hoy, por área y daytime, 30 días) salen de `statsHabits`; las rachas y `totalHabits`, de `habits` (solo los activos, así la racha de un hábito desactivado hace meses no entra en la «actual»). El heatmap anual de la vista Dashboard usa `getHabitsForStats()`.
+- **Habit Creator**: dos `<input type="date">` con botón de vaciar (`data-clear-for`); el `change` del switch de estado pone `until` = hoy al desactivar (un `until` ya anterior a hoy se respeta, uno futuro pasa a hoy) y lo vacía al reactivar; el guardado valida `from ≤ until` (`habit_period_invalid`) y escribe o borra `from`/`until` en `createHabit()` y `updateHabit()` sin tocar `completions` ni `entries`.
+- **Limitación asumida**: la Rutina, el Grid y el Semanal siguen mostrando solo hábitos activos, así que el porcentaje de una fecha pasada **en la Rutina** (que sale de sus filas) sí cambia al desactivar un hábito; el historial estable es el del Dashboard y el heatmap.
 
 ### 10.3 Vacaciones: ajustes y cálculo
 
@@ -440,7 +448,7 @@ Claves nuevas propuestas: `habit_active_from`, `habit_active_until`, `habit_peri
 
 | Archivo (por crear) | Casos |
 |---|---|
-| `habit-period.test.cjs` | **Periodo activo**: `isActiveOn` en los extremos (`desde`/`hasta` inclusivos); sin fechas siempre activo; `inactive` sin `hasta` nunca; `inactive` con `hasta`; fechas inválidas = ausentes; `desde > hasta` nunca activo. **Historial estable**: dos hábitos, uno desactivado con `hasta` = 10 de marzo; el porcentaje del 5 de marzo es igual antes y después de desactivar, y el del 15 solo cuenta al otro. Racha: los días antes de `desde` no rompen ni suman. |
+| `habit-period.test.cjs` | **Periodo activo**: `isActiveOn` en los extremos (`from`/`until` inclusivos); sin fechas siempre activo; `inactive` sin `until` nunca; `inactive` con `until`; fechas inválidas = ausentes; `from > until` nunca activo. **Historial estable**: dos hábitos, uno desactivado con `until` = 10 de marzo; el porcentaje del 5 de marzo es igual antes y después de desactivar, y el del 15 solo cuenta al otro. Racha: los días antes de `from` no rompen ni suman. |
 | `habit-vacations.test.cjs` | **Vacaciones**: `findVacation` con extremos inclusivos, solapados y descartados inválidos. Día sin marcar: racha 18, 19, (20–21 en vacaciones), 22 con `maxGap` 0 → continúa; sin vacaciones se corta. Denominador: dos hábitos y vacaciones sin marcas → `total` 0 y `vacation: true`. **Marca en vacaciones**: A marcado y B no → ese día `total` 1, `done` 1 (100 %, no 50 %) y la racha de A suma el día. Multi-daytime: solo una ocurrencia marcada → cuenta en esa daytime y no en la otra. Día no programado marcado en vacaciones → neutral. Marcado fuera del periodo → neutral. Celdas: `vacation` y clase; marcada conserva `ticked`. |
 | `habit-frequency.test.cjs` | **Frecuencias**: con `[6, 7]` el resultado es idéntico al actual (`weekend` `{6,7}`, `workweek` `{1..5}`); con `[5, 6]` → `weekend` `{5,6}` y `workweek` `{1,2,3,4,7}`; con `[7]`; `everyday` y la lista de nombres no cambian; `resolveFrequencyMode` extraída. **Racha**: un hábito `workweek` marcado de lunes a viernes mantiene la racha el sábado con `[6, 7]` y la rompe con `[7]` (documenta el riesgo). Casos de ajuste en extremo: ya no se dan, porque el ajuste rechaza «ningún día marcado» y «los siete marcados» (prueba de `sanitizeNonWorkingDays()` en el Plan de agenda-tasks, NL1). |
 | `habit-heatmap-parity.test.cjs` (HM1) | La métrica del heatmap migrado devuelve los mismos valores y niveles que `computeYearHistory()` para un conjunto fijo de hábitos (comparación con un resultado guardado antes de migrar). |
@@ -455,13 +463,13 @@ Claves nuevas propuestas: `habit_active_from`, `habit_active_until`, `habit_peri
 | `app.setting.open()`/`openTabById()` son **API no documentada** y pueden cambiar | Acceso defensivo con comprobación de tipos y `try/catch`; `Notice` con la ruta; probar en cada versión mínima y actual de Obsidian. |
 | La **migración del heatmap** (HM1) cambia su aspecto o sus valores | Criterio de aceptación «idéntico»: prueba de paridad de la métrica y comparación visual en claro/oscuro; la marca de vacaciones forma parte del contrato del componente. |
 | La regla de conteo se **duplica** en muchas funciones y diverge | `countsOn()` único en `habit-calendar.ts` (ADR-AR1) y pruebas de la tabla de [[Modelo de datos]] §8.5. |
-| Hábitos antiguos con `status: inactive` y sin `hasta` | Siguen excluidos de porcentajes (comportamiento actual); no se migran notas. |
+| Hábitos antiguos con `status: inactive` y sin `until` | Siguen excluidos de porcentajes (comportamiento actual); no se migran notas. |
 | `frequencySet` calculado al parsear queda **obsoleto** al cambiar el ajuste | Re-parseo con `refreshHabits()` + evento de refresco al cambiar el ajuste. |
 | Dos dispositivos con **ajustes distintos** (`data.json` sincronizado) | El ajuste y la lista de vacaciones viajan en `data.json`; se asume el último guardado. |
 
 ### 10.12 Checklist de integración (v1.1.15)
 
-- [ ] HA1: `desde`/`hasta` leídos y escritos; el porcentaje de días pasados no cambia al desactivar.
+- [x] HA1: `from`/`until` leídos y escritos; el porcentaje de días pasados no cambia al desactivar (implementada el 2026-11-09; falta la prueba manual).
 - [ ] HV1: lista de vacaciones en ajustes, cálculo, atenuado en Cuadrícula/Semanal/heatmap y botón «Vacaciones».
 - [ ] HU1: cinco plantillas con botones circulares y `showHabit*Tab` respetados.
 - [ ] NL2 (Plan de agenda-tasks): frecuencias `weekend`/`workweek` siguen los días no laborables, con aviso.

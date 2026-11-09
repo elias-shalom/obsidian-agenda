@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
 import type { Daytime, IHabit, IHabitCell, IHabitStreakStats } from './habit';
-import { dayCompleted, isScheduled, occurrencesFor } from './habit';
+import { dayCompleted, occurrencesFor } from './habit';
+import { countsOn } from './habit-calendar';
 
 function toIsoDate(date: DateTime): string {
   return date.toISODate() ?? date.toFormat('yyyy-MM-dd');
@@ -17,7 +18,7 @@ export function computeCells(
 
   const cells: IHabitCell[] = orderedDates.map(date => {
     const iso = toIsoDate(date);
-    const scheduled = isScheduled(habit, date);
+    const scheduled = countsOn(habit, date);
     const ticked = dayCompleted(habit, iso);
     const occurrences = occurrencesFor(habit, iso);
     const done = occurrences.filter(o => o.done).length;
@@ -134,7 +135,7 @@ function isRunContinuous(habit: IHabit, previous: DateTime, next: DateTime): boo
 
   while (cursor < next) {
     const iso = toIsoDate(cursor);
-    const scheduled = isScheduled(habit, cursor);
+    const scheduled = countsOn(habit, cursor);
     const isPartial = scheduled && !dayCompleted(habit, iso) && (habit.completions[iso]?.length ?? 0) > 0;
 
     if (scheduled && !isPartial) {
@@ -161,7 +162,7 @@ export function computeStats(habit: IHabit): IHabitStreakStats {
   for (const value of sortedEntries) {
     const currentDate = DateTime.fromISO(value, { zone: 'local' });
 
-    if (!isScheduled(habit, currentDate)) {
+    if (!countsOn(habit, currentDate)) {
       continue;
     }
 
@@ -201,7 +202,7 @@ export function computeOccurrenceCells(
 
   const cells: IHabitCell[] = orderedDates.map(date => {
     const iso = toIsoDate(date);
-    const scheduled = isScheduled(habit, date);
+    const scheduled = countsOn(habit, date);
     const ticked = (habit.completions[iso] ?? []).includes(daytime);
 
     return {
@@ -299,7 +300,7 @@ function isOccurrenceRunContinuous(habit: IHabit, previous: DateTime, next: Date
   let cursor = previous.plus({ days: 1 });
 
   while (cursor < next) {
-    if (isScheduled(habit, cursor)) {
+    if (countsOn(habit, cursor)) {
       scheduledGapDays += 1;
     }
     cursor = cursor.plus({ days: 1 });
@@ -325,7 +326,7 @@ export function computeOccurrenceStats(habit: IHabit, daytime: Daytime): IHabitS
   for (const value of dates) {
     const currentDate = DateTime.fromISO(value, { zone: 'local' });
 
-    if (!isScheduled(habit, currentDate)) {
+    if (!countsOn(habit, currentDate)) {
       continue;
     }
 

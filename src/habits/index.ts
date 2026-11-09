@@ -1,4 +1,5 @@
 export * from './habit';
+export * from './habit-calendar';
 export * from './habit-parser';
 export * from './habit-streak';
 export * from './habit-stats';

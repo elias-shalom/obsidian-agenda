@@ -128,6 +128,31 @@
   cursor: pointer;
 }
 
+// Periodo activo (v1.1.15, HA1): selector de fecha con un botón para vaciarlo
+.oa-habit-form-date {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+
+  .oa-form-input {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.oa-habit-form-date__clear {
+  flex: 0 0 auto;
+  padding: 0 0.5rem;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-muted);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text-normal);
+  }
+}
+
 .oa-priority-slider {
   display: flex;
   align-items: center;

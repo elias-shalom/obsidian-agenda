@@ -20,7 +20,8 @@ Open the Habit Creator (from any Habit Tracker view, via its "create" action or 
 - **Max gap** — a slider setting how many days a streak tolerates missing before it breaks.
 - **Area** — a free-form field (not a fixed list) suggested from your vault's root folders.
 - **Related files** — optional wikilinks to supporting notes, added and removed individually.
-- **Active/Inactive** — a switch to pause a habit without deleting it.
+- **Active period** — optional **Active from** and **Active until** dates (each with a button to clear it). Days outside that period are neutral for the habit, like days it is not scheduled: they do not break or add to a streak and do not count in its percentages. With no dates the habit behaves as before.
+- **Active/Inactive** — a switch to pause a habit without deleting it. Turning it **off** fills **Active until** with today (a date earlier than today that you had already set is kept) and turning it **on** clears it, so deactivating a habit does not change the percentages of past dates in the Dashboard and the heatmap: the habit keeps counting up to that day. Days between deactivating and reactivating count as missed.
 
 ## The five views
 

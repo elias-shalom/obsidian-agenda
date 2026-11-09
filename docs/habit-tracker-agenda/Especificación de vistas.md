@@ -251,7 +251,7 @@ Rol: catálogo de hábitos con metadata y stats.
 - Validación inline (mensaje de error bajo el formulario) y `Notice` en errores de escritura (nombre duplicado, etc.).
 - Guardar exitoso → emite `obsidian-agenda:habits-refresh` y cierra el modal.
 
-> **Ampliación v1.1.15**: el modal gana dos selectores de fecha (`desde` y `hasta`) y el switch de `status` pasa a escribir/borrar `hasta`; ver §12.1. Las frecuencias «Fin de semana» y «Lunes a viernes» pasan a seguir el ajuste de días no laborables; ver §12.3.
+> **Ampliación v1.1.15**: el modal gana dos selectores de fecha (`from` y `until`) y el switch de `status` pasa a escribir/borrar `until`; ver §12.1. Las frecuencias «Fin de semana» y «Lunes a viernes» pasan a seguir el ajuste de días no laborables; ver §12.3.
 
 ## 11. Selector de subvistas con botones circulares (v1.1.15 — diseño, no implementado)
 
@@ -300,17 +300,17 @@ Cambiar el orden de las subvistas, mostrar la etiqueta junto al icono, y tocar l
 
 - Los iconos de Lucide propuestos (`calendar-check-2`, `grid-3x3`…) deben existir en la versión de Lucide que incluye el `minAppVersion` del plugin; si alguno no existe, se elige el alias vigente.
 
-## 12. Periodo activo y vacaciones (v1.1.15 — diseño, no implementado)
+## 12. Periodo activo y vacaciones (v1.1.15 — periodo activo implementado el 2026-11-09 (HA1); vacaciones, diseño)
 
 Decidido el 2026-11-02. Dos mecanismos distintos que evitan que cambiar el estado de un hábito o salir de viaje altere el historial: el **periodo activo** (por hábito, en su nota) y las **vacaciones** (global, en los ajustes). Modelo en [[Modelo de datos]] §8; mecanismo en [[Arquitectura técnica]] §10.
 
-### 12.1 Periodo activo (`desde` / `hasta`)
+### 12.1 Periodo activo (`from` / `until`)
 
-- **Campos opcionales en el frontmatter** del hábito, además del `status` actual: `desde` (primer día activo) y `hasta` (último día activo), fechas `AAAA-MM-DD`. **Sin fechas, el hábito se comporta como hoy.**
+- **Campos opcionales en el frontmatter** del hábito, además del `status` actual: `from` (primer día activo) y `until` (último día activo), fechas `AAAA-MM-DD`. **Sin fechas, el hábito se comporta como hoy.**
 - **El porcentaje de una fecha o de un rango cuenta solo los hábitos activos ese día.** Desactivar un hábito hoy no cambia el historial: hoy `HabitManager.getHabits()` descarta los inactivos y el porcentaje de días pasados cambia retroactivamente.
-- **Un solo periodo**, no una lista. Al **desactivar** un hábito (switch de estado del Habit Creator) el plugin escribe `hasta` = hoy; al **reactivarlo** lo borra. Las pausas temporales se resuelven con las vacaciones (§12.2).
+- **Un solo periodo**, no una lista. Al **desactivar** un hábito (switch de estado del Habit Creator) el plugin escribe `until` = hoy; al **reactivarlo** lo borra. Las pausas temporales se resuelven con las vacaciones (§12.2).
 - **Consecuencia asumida**: si alguien desactiva y reactiva un hábito sin usar vacaciones, el hueco cuenta como días sin cumplir.
-- **Habit Creator**: dos selectores de fecha (`desde` y `hasta`), con botón para vaciarlos.
+- **Habit Creator**: dos selectores de fecha (`from` y `until`), con botón para vaciarlos.
 
 ```
 │ Frecuencia      [ everyday ▼ ] / [lu][ma][mi][ju][vi][sá][do]│
@@ -318,7 +318,7 @@ Decidido el 2026-11-02. Dos mecanismos distintos que evitan que cambiar el estad
 │ Status          [ ⚪──⚫ ] Activo                              │
 ```
 
-> **ADR-PER1 — Un periodo, no una lista**: un único par `desde`/`hasta` por hábito. Racional: cubre «empecé este hábito» y «lo dejé» sin una interfaz de rangos múltiples; las pausas puntuales ya tienen su mecanismo (vacaciones). Alternativa descartada: lista de periodos por hábito.
+> **ADR-PER1 — Un periodo, no una lista**: un único par `from`/`until` por hábito. Racional: cubre «empecé este hábito» y «lo dejé» sin una interfaz de rangos múltiples; las pausas puntuales ya tienen su mecanismo (vacaciones). Alternativa descartada: lista de periodos por hábito.
 
 ### 12.2 Vacaciones
 
@@ -360,9 +360,9 @@ Cuadrícula:   Agua   ▣ ▣ ▒🌴 ▒🌴 ▣(marcado en vacaciones) ▣    
 
 | Caso | Comportamiento |
 |---|---|
-| Hábito sin `desde`/`hasta` y `status: active` | Siempre activo (igual que hoy). |
-| `status: inactive` sin `hasta` (nota anterior a v1.1.15) | Nunca activo: ni en filas ni en porcentajes (igual que hoy). |
-| `status: inactive` con `hasta` | Activo hasta `hasta` en el cálculo histórico; no aparece como fila en Cuadrícula, Semanal ni Rutina (igual que un inactivo hoy). |
+| Hábito sin `from`/`until` y `status: active` | Siempre activo (igual que hoy). |
+| `status: inactive` sin `until` (nota anterior a v1.1.15) | Nunca activo: ni en filas ni en porcentajes (igual que hoy). |
+| `status: inactive` con `until` | Activo hasta `until` en el cálculo histórico; no aparece como fila en Cuadrícula, Semanal ni Rutina (igual que un inactivo hoy). |
 | Fecha con formato inválido | Se ignora ese campo (patrón de `entries` inválidas). |
 | Día marcado fuera del periodo activo | No cuenta (mismo criterio que un día no programado, ADR-005 de [[Modelo de datos]]). |
 | Día de vacaciones **no programado** para el hábito | Sigue siendo neutral aunque esté marcado (el día no programado prevalece). |
@@ -376,12 +376,12 @@ Lista de periodos activos por hábito; vacaciones por hábito o por área; que e
 ### 12.6 Por resolver al diseñar
 
 - **Apertura directa de la sección «Vacaciones»** en los ajustes con la API declarativa de Obsidian 1.13 (`getSettingDefinitions()`) y con el `display()` de respaldo (el plugin usa ambos en `setting-tab.ts`).
-- **Extremos del periodo**: se propone que `desde` y `hasta` sean inclusivos (así «desactivar hoy» no quita el día de hoy del historial); confirmar al implementar.
-- **Visibilidad de filas**: se propone que la Cuadrícula, la Semanal y la Rutina sigan mostrando solo los hábitos con `status: active`, y que los días fuera del periodo se vean neutrales y atenuados (como los no programados); confirmar si un hábito con `hasta` pasado debe seguir en las filas.
+- **Extremos del periodo**: resuelto el 2026-11-09 (HA1): `from` y `until` son inclusivos.
+- **Visibilidad de filas**: resuelto el 2026-11-09 (HA1): la Cuadrícula, la Semanal y la Rutina siguen mostrando solo los hábitos con `status: active` (un hábito activo con `until` pasado sigue en las filas) y los días fuera del periodo se ven neutrales y atenuados, como los no programados.
 - **Icono de vacaciones y su botón**: icono (se propone `tree-palm` de Lucide), posición exacta del botón en la barra y cómo cabe el icono en las celdas pequeñas del heatmap (si no cabe, solo atenuado con tooltip).
 - **Cómo se ve un hábito marcado en vacaciones** en la Cuadrícula (se propone: celda marcada normal con el icono pequeño) y las rachas con `maxGap` > 0 (el «día límite» fantasma se calcula hoy por días naturales; falta decidir si salta vacaciones y días no laborables).
 - **Frecuencias con casillas extremas**: resuelto el 2026-11-03: el ajuste exige al menos un día marcado y uno sin marcar, así que «Fin de semana» y «Lunes a viernes» siempre tienen días.
-- **Habit Creator**: si el usuario ya fijó un `hasta` futuro y apaga el switch, si se sobrescribe con hoy.
+- **Habit Creator**: si el usuario ya fijó un `until` futuro y apaga el switch, se sobrescribe con hoy (resuelto el 2026-11-09); un `until` anterior a hoy se respeta.
 - **Rutina diaria** en un día de vacaciones: qué lista y qué porcentaje muestra (los hábitos sin marcar no cuentan; falta decidir si se listan atenuados u ocultos) y el de la Lista/Tabla (columnas de racha y 30 d).
 
 ## 13. Hábitos en el calendario (v1.1.15 — diseño, no implementado)

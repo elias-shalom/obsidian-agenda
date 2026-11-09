@@ -64,7 +64,7 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 Decididas el 2026-11-02; ver [[Especificación de vistas]] §11–§14, [[Modelo de datos]] §8, [[Arquitectura técnica]] §10 y las fases HA1, HV1 y HU1 en [[Plan de implementación]].
 
 **v1.1.15 — Calendario y hábitos**
-- [ ] **Periodo activo** por hábito (`desde`/`hasta` opcionales en la nota): el porcentaje de una fecha o rango cuenta solo los hábitos activos ese día; desactivar un hábito ya no cambia el historial (HA1).
+- [ ] **Periodo activo** por hábito (`from`/`until` opcionales en la nota): el porcentaje de una fecha o rango cuenta solo los hábitos activos ese día; desactivar un hábito ya no cambia el historial (HA1).
 - [ ] **Vacaciones**: lista global de periodos en los ajustes; un día de vacaciones no cuenta como cumplido ni incumplido, salvo para el hábito que el usuario marque; atenuado con icono en Cuadrícula, Semanal y heatmap; botón «Vacaciones» en la barra de Hábitos (HV1).
 - [ ] **Selector de subvistas con botones circulares** en lugar del `<select>` (HU1).
 - [ ] **Frecuencias «Fin de semana» y «Lunes a viernes»** que siguen el ajuste de días no laborables, con aviso (NL2, en el Plan de agenda-tasks).
@@ -94,7 +94,7 @@ Decididas el 2026-11-02; ver [[Especificación de vistas]] §11–§14, [[Modelo
 | US-13 | Como usuario, quiero crear y editar mis hábitos desde el plugin | Un **modal** permite crear (nota nueva en la ruta) y editar (frontmatter) un hábito: name, description, time (dial), área (string libre sugerido por carpetas del vault), subÁrea, frecuencia, prioridad (slider 1–5), daytime (multi), status (switch), maxGap (slider) y color (default = acento del tema); se preservan `completions`. |
 | US-14 | Como usuario, quiero marcar solo las ocurrencias que hice | En un hábito multi-daytime, el grid muestra **una fila por `daytime`** (`morning`/`afternoon`/…) para marcarlas de forma independiente; `entries` solo refleja los días con **todas** las ocurrencias. |
 | US-15 | Como usuario, quiero que un día parcial no me rompa la racha | Marcar 1 de 3 ocurrencias no completa el día (`entries`/racha del hábito agregado en Dashboard), pero **no corta** la racha; en la Grid, cada ocurrencia lleva su propia racha independiente. |
-| US-16 *(v1.1.15, diseño)* | Como usuario, quiero desactivar un hábito sin que cambie mi porcentaje de días pasados | Al desactivarlo el plugin escribe `hasta` = hoy; el porcentaje de una fecha o rango cuenta solo los hábitos activos ese día; sin fechas el hábito se comporta como hoy. |
+| US-16 *(v1.1.15, diseño)* | Como usuario, quiero desactivar un hábito sin que cambie mi porcentaje de días pasados | Al desactivarlo el plugin escribe `until` = hoy; el porcentaje de una fecha o rango cuenta solo los hábitos activos ese día; sin fechas el hábito se comporta como hoy. |
 | US-17 *(v1.1.15, diseño)* | Como usuario, quiero marcar unas vacaciones en las que mis hábitos no cuenten | Los días de vacaciones no cuentan como cumplidos ni incumplidos (no rompen ni suman a la racha, no entran en el porcentaje); si marco un hábito ese día, cuenta solo para él; se ven atenuados con icono y un botón «Vacaciones» abre los ajustes. |
 | US-18 *(v1.1.15, diseño)* | Como usuario, quiero cambiar de subvista con botones de icono | El selector de subvistas son botones circulares con tooltip y `aria-label`, que respetan los ajustes de visibilidad de cada pestaña. |
 | US-19 *(v1.1.15, diseño)* | Como usuario, quiero que «Fin de semana» y «Lunes a viernes» respeten mis días no laborables | Ambas frecuencias siguen el ajuste de días no laborables y el ajuste avisa de que cambia rachas y porcentajes. |
@@ -161,9 +161,9 @@ Decididas el 2026-11-02; ver [[Especificación de vistas]] §11–§14, [[Modelo
 
 ### RF-8 Periodo activo (v1.1.15, diseño)
 
-- Campos opcionales `desde` y `hasta` (`AAAA-MM-DD`) en la nota del hábito, además de `status`; un solo periodo; sin fechas, comportamiento actual ([[Modelo de datos]] §8.1 y §8.3).
-- El porcentaje de una fecha o rango, por hábito, área y daytime, cuenta solo los hábitos activos ese día; desactivar escribe `hasta` = hoy y reactivar lo borra.
-- El Habit Creator gana dos selectores de fecha (`desde` y `hasta`).
+- Campos opcionales `from` y `until` (`AAAA-MM-DD`) en la nota del hábito, además de `status`; un solo periodo; sin fechas, comportamiento actual ([[Modelo de datos]] §8.1 y §8.3).
+- El porcentaje de una fecha o rango, por hábito, área y daytime, cuenta solo los hábitos activos ese día; desactivar escribe `until` = hoy y reactivar lo borra.
+- El Habit Creator gana dos selectores de fecha (`from` y `until`).
 
 ### RF-9 Vacaciones (v1.1.15, diseño)
 
@@ -205,7 +205,7 @@ Decididas el 2026-11-02; ver [[Especificación de vistas]] §11–§14, [[Modelo
 8. El plugin sigue funcionando si la ruta no existe (mensaje claro, sin crash).
 9. En un hábito con 2+ daytimes, la Grid muestra una fila por cada `daytime`; marcar una sola fila NO completa el día agregado del hábito — `entries` solo contiene la fecha cuando **todas** las filas/ocurrencias quedan marcadas.
 10. Crear un hábito desde el modal genera la nota en la ruta configurada con su frontmatter completo; editar preserva `completions`.
-11. *(v1.1.15, diseño)* Desactivar un hábito no cambia el porcentaje de fechas pasadas; una nota sin `desde`/`hasta` se comporta igual que antes.
+11. *(v1.1.15, diseño)* Desactivar un hábito no cambia el porcentaje de fechas pasadas; una nota sin `from`/`until` se comporta igual que antes.
 12. *(v1.1.15, diseño)* En un día de vacaciones un hábito sin marcar no rompe ni suma a la racha ni entra en el porcentaje; uno marcado cuenta solo para sí mismo.
 13. *(v1.1.15, diseño)* Con los días no laborables por defecto, «Fin de semana» y «Lunes a viernes» dan exactamente los mismos días que antes; con otro ajuste los siguen y se avisa.
 14. *(v1.1.16, diseño)* El heatmap anual de hábitos migrado al componente compartido es idéntico al actual (valores, niveles y aspecto).

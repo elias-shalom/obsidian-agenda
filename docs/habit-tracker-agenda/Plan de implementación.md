@@ -111,17 +111,17 @@ tags:
 
 Decididas el 2026-11-02 y organizadas por fases con prefijo propio (`HA1`, `HV1`, `HU1`), independientes de las fases 0–7. Especificación en [[Especificación de vistas]] §11–§14, datos en [[Modelo de datos]] §8 y mecanismo en [[Arquitectura técnica]] §10. **Orden recomendado**: HA1 → HV1 (HU1 puede ir en cualquier momento). Las tres pertenecen a v1.1.15 y cada una se puede probar a mano completa.
 
-### Fase HA1 — Periodo activo (v1.1.15)
+### Fase HA1 — Periodo activo (v1.1.15) — **implementada el 2026-11-09; falta la prueba manual**
 
 **Dependencias**: ninguna. **Verificable por separado**: sí (con vacaciones aún sin implementar).
 
-- [ ] `src/habits/habit-calendar.ts` (puro, sin `obsidian`): `isActiveOn()`, `countsOn()` con contexto de vacaciones opcional (vacío por ahora) y el tipo `IHabitCalcContext`.
-- [ ] `habit.ts` y `habit-parser.ts`: `activeFrom`/`activeUntil` desde `desde`/`hasta` (solo `AAAA-MM-DD`; inválido = ausente).
-- [ ] `HabitManager.getHabitsForStats()` (activos + inactivos con `hasta`); `getHabits()` y `getAllHabits()` no cambian.
-- [ ] `habit-stats.ts` y `habit-streak.ts`: usar `countsOn()` en denominadores y rachas (los días fuera del periodo son neutrales).
-- [ ] `habit-editor.ts`: selectores `desde` y `hasta`, el switch de estado escribe `hasta` = hoy al desactivar y lo borra al reactivar, validación `desde ≤ hasta`; `createHabit()`/`updateHabit()` escriben o borran los campos sin tocar `completions`/`entries`.
-- [ ] i18n en los 6 locales (`habit_active_from`, `habit_active_until`, `habit_period_invalid`).
-- [ ] Pruebas Node `habit-period.test.cjs` ([[Arquitectura técnica]] §10.10): extremos del periodo, `inactive` con y sin `hasta`, historial estable al desactivar.
+- [x] `src/habits/habit-calendar.ts` (puro, sin `obsidian`): `parseActiveDate()`, `isInPeriod()`, `isActiveOn()`, `countsOn()`, `isValidPeriod()` y `activeUntilForStatus()`. El contexto de vacaciones (`IHabitCalcContext`) se añade en HV1, no se dejó un parámetro vacío por adelantado.
+- [x] `habit.ts` y `habit-parser.ts`: `activeFrom`/`activeUntil` desde `from`/`until` (solo `AAAA-MM-DD` válido, también como fecha real; inválido = ausente).
+- [x] `HabitManager.getHabitsForStats()` (activos + inactivos con `until`); `getHabits()` y `getAllHabits()` no cambian. `computeDashboard()` y el heatmap anual lo usan.
+- [x] `habit-stats.ts` y `habit-streak.ts`: usar `countsOn()` en denominadores y rachas (los días fuera del periodo son neutrales); también la Rutina (lista del día) y la Tabla (`pct30d`).
+- [x] `habit-editor.ts`: selectores `from` y `until` con botón de vaciar, el switch de estado escribe `until` = hoy al desactivar (un `until` anterior a hoy se respeta, uno futuro pasa a hoy) y lo borra al reactivar, validación `from ≤ until`; `createHabit()`/`updateHabit()` escriben o borran los campos sin tocar `completions`/`entries`.
+- [x] i18n en los 6 locales (`habit_active_from`, `habit_active_until`, `habit_period_invalid`, `habit_period_clear`).
+- [x] Pruebas Node `tests/habit-period.test.cjs` (22): lectura de las fechas, extremos inclusivos, `inactive` con y sin `until`, reglas del editor, rachas y celdas con días fuera del periodo, historial estable al desactivar, Dashboard con la lista de estadísticas y traducciones.
 
 **Verificar**: `npm run build`, `npm run lint`, `node --test tests`; manual: desactivar y reactivar un hábito de prueba y comprobar que el porcentaje de fechas pasadas no cambia y que una nota sin fechas se comporta igual que antes.
 
@@ -177,7 +177,7 @@ Estas fases viven en `docs/agenda-tasks/Plan de implementación.md` y tocan háb
 | Cambios de vault concurrentes (sync) | Ignorar errores de `cache` estaleado + re-intento único tras `modify`. Listener `offref` limpio en `onunload`. |
 | **(v1.1.15)** El ajuste de días no laborables **altera rachas y porcentajes** de los hábitos `weekend`/`workweek` | Aviso fijo y `Notice` en el ajuste; los tokens no reescriben notas; con el ajuste por defecto el resultado es idéntico; pruebas Node de regresión (`habit-frequency.test.cjs`). |
 | **(v1.1.15)** `app.setting.open()` y `openTabById()` son **API no documentada** de Obsidian | Acceso defensivo con comprobación de tipos y `try/catch`; `Notice` con la ruta «Ajustes → Agenda Tasks → Vacaciones»; probar en la versión mínima y en la actual. |
-| **(v1.1.15)** Desactivar un hábito cambiaba el porcentaje de fechas pasadas | `hasta` = hoy al desactivar y `getHabitsForStats()`; prueba de historial estable (HA1). |
+| **(v1.1.15)** Desactivar un hábito cambiaba el porcentaje de fechas pasadas | `until` = hoy al desactivar y `getHabitsForStats()`; prueba de historial estable (HA1). |
 | **(v1.1.16)** La **migración del heatmap** de hábitos al componente reutilizable (HM1) cambia su aspecto o valores, o pierde la marca de vacaciones | Criterio «idéntico» con prueba de paridad de la métrica y revisión visual en claro/oscuro; la marca de vacaciones forma parte del contrato del componente. |
 
 ## Orden de commits sugerido
@@ -192,6 +192,6 @@ Estas fases viven en `docs/agenda-tasks/Plan de implementación.md` y tocan háb
 
 Ampliaciones v1.1.15 (una por fase, en este orden):
 
-8. `feat(habits): periodo activo desde/hasta` (HA1)
+8. `feat(habits): periodo activo from/until` (HA1)
 9. `feat(habits): vacaciones globales y botón de ajustes` (HV1)
 10. `feat(habits): selector circular de subvistas` (HU1)

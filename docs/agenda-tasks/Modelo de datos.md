@@ -359,7 +359,7 @@ Reglas (decididas 2026-11-03): Lanes y Group no repiten campo, entendido por fam
 
 ## 13. Calendario: días no laborables, feriados, proyección y hábitos (v1.1.15 — diseño, no implementado)
 
-> Comportamiento: [[Especificación de vistas]] §21. Mecanismo: [[Arquitectura técnica]] §30. Los hábitos (periodo activo `desde`/`hasta` y lista de vacaciones) están en el modelo de `docs/habit-tracker-agenda/`.
+> Comportamiento: [[Especificación de vistas]] §21. Mecanismo: [[Arquitectura técnica]] §30. Los hábitos (periodo activo `from`/`until` y lista de vacaciones) están en el modelo de `docs/habit-tracker-agenda/`.
 
 ### 13.1 Ajustes nuevos (en `data.json`, junto a los `calendar*` de hoy)
 

@@ -20,7 +20,8 @@ Abre el Habit Creator (desde cualquier vista de Seguimiento de hábitos, mediant
 - **Tolerancia máxima (max gap)** — un control deslizante que define cuántos días seguidos sin cumplir tolera una racha antes de romperse.
 - **Área** — un campo de texto libre (no una lista fija), sugerido a partir de las carpetas raíz de tu bóveda.
 - **Archivos relacionados** — wikilinks opcionales a notas de apoyo, añadidos y quitados de forma individual.
-- **Activo/Inactivo** — un interruptor para pausar un hábito sin eliminarlo.
+- **Periodo activo** — fechas opcionales **Activo desde** y **Activo hasta** (cada una con un botón para vaciarla). Los días fuera de ese periodo son neutrales para el hábito, como los días en que no toca: no rompen ni suman a una racha y no cuentan en sus porcentajes. Sin fechas el hábito se comporta como antes.
+- **Activo/Inactivo** — un interruptor para pausar un hábito sin eliminarlo. Al **apagarlo** se rellena **Activo hasta** con la fecha de hoy (si ya habías puesto una fecha anterior a hoy, se conserva) y al **encenderlo** se vacía, de modo que desactivar un hábito no cambia los porcentajes de las fechas pasadas en el Dashboard y el heatmap: el hábito sigue contando hasta ese día. Los días entre desactivar y reactivar cuentan como no cumplidos.
 
 ## Las cinco vistas
 

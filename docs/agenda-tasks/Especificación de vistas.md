@@ -1283,7 +1283,7 @@ Hoy una tarea recurrente solo crea la siguiente ocurrencia al completarla (§4.9
 
 Se dibujan como **entradas virtuales**: no se escribe nada en ningún archivo, no pasan por el gestor de tareas y **no son tareas**. (Se descartó escribir líneas `[x]` en la nota del hábito: duplicados, líneas editadas a mano y notas que crecen.)
 
-- Cada día en que toca el hábito hay una entrada con su nombre, en su franja (`daytime`: despertar, mañana, tarde, noche) y con el color de su área; respeta el periodo activo (`desde`/`hasta`) y los días de vacaciones de los hábitos.
+- Cada día en que toca el hábito hay una entrada con su nombre, en su franja (`daytime`: despertar, mañana, tarde, noche) y con el color de su área; respeta el periodo activo (`from`/`until`) y los días de vacaciones de los hábitos.
 - **Clic** marca o desmarca (reutiliza la escritura de `completions` de `src/habits/habit-writer.ts`); **doble clic** abre la nota del hábito.
 - **Mes, Semana, Semana laboral y Lista**: un solo **chip resumen por día** (`🔁 3/5`, cumplidos de los que tocan ese día) que abre un popover con la lista de hábitos del día y su casilla; ocupa una línea sin importar cuántos hábitos haya y cabe en móvil. **Día**: una sección «Hábitos» completa, agrupada por franja.
 

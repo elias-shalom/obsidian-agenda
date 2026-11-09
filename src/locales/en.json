@@ -505,6 +505,10 @@
   "habit_delete_confirm": "Click again to confirm delete",
   "habit_status_active": "Active",
   "habit_status_inactive": "Inactive",
+  "habit_active_from": "Active from",
+  "habit_active_until": "Active until",
+  "habit_period_invalid": "\"Active from\" must not be after \"Active until\"",
+  "habit_period_clear": "Clear date",
   "habit_freq_custom": "Custom days",
   "habit_time_unit_minutes": "min"
 }

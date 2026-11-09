@@ -116,7 +116,7 @@ export class HabitOverviewView extends HabitView {
     const gridStart = yearStart.minus({ days: sundayIndex(yearStart) });
     const gridEnd = yearEnd.plus({ days: 6 - sundayIndex(yearEnd) });
 
-    const statsByDate = new Map(computeYearHistory(this.habits, year).map(day => [day.date, day]));
+    const statsByDate = new Map(computeYearHistory(this.habitManager.getHabitsForStats(), year).map(day => [day.date, day]));
 
     const weekdayLabels: string[] = [];
     for (let i = 0; i < 7; i += 1) {

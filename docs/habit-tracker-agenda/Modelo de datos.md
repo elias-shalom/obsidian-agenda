@@ -412,22 +412,24 @@ Provenientes de `test-vault/broken-habits/` de HT21:
 | Nombre con caracteres especiales | OK (por basename). |
 | Zona horaria / DST | Trabajar siempre con fechas **locales** `yyyy-MM-dd` (no UTC) para evitar `ticked` de un día diferente. |
 
-## 8. Periodo activo, vacaciones y frecuencias con días no laborables (v1.1.15 — diseño, no implementado)
+## 8. Periodo activo, vacaciones y frecuencias con días no laborables (v1.1.15 — periodo activo (§8.1 a §8.3) implementado el 2026-11-09 en `src/habits/habit-calendar.ts`; vacaciones (§8.4 y §8.5), diseño)
 
-Decidido el 2026-11-02. Añade dos campos opcionales al frontmatter (`desde`, `hasta`), una lista global de vacaciones en los ajustes y un cambio en cómo se resuelven los tokens de `frequency`. Comportamiento visible en [[Especificación de vistas]] §12; mecanismo en [[Arquitectura técnica]] §10. **Nada de lo descrito aquí existe aún en `src/habits/`**: los nombres marcados «por crear» son propuestas.
+Decidido el 2026-11-02. Añade dos campos opcionales al frontmatter (`from`, `until`), una lista global de vacaciones en los ajustes y un cambio en cómo se resuelven los tokens de `frequency`. Comportamiento visible en [[Especificación de vistas]] §12; mecanismo en [[Arquitectura técnica]] §10. **Nada de lo descrito aquí existe aún en `src/habits/`**: los nombres marcados «por crear» son propuestas.
 
 ### 8.1 Campos nuevos de la nota (frontmatter)
 
 | Campo | Tipo | Uso | Obligatorio |
 |---|---|---|---|
-| `desde` | string `AAAA-MM-DD` | Primer día en que el hábito está activo | No |
-| `hasta` | string `AAAA-MM-DD` | Último día en que el hábito está activo | No |
+| `from` | string `AAAA-MM-DD` | Primer día en que el hábito está activo | No |
+| `until` | string `AAAA-MM-DD` | Último día en que el hábito está activo | No |
 
 ```yaml
 status: inactive          # el plugin lo escribe al desactivar…
-hasta: 2026-11-02         # …junto con hasta = hoy; al reactivar se borra `hasta`
-desde: 2026-03-01         # opcional
+until: 2026-11-02         # …junto con `until` = hoy; al reactivar se borra `until`
+from: 2026-03-01          # opcional
 ```
+
+Las claves van en inglés (`from`, `until`), como el resto del frontmatter del hábito (decidido el 2026-11-09; en las primeras pruebas se llamaron `desde` y `hasta`, que ya no se leen).
 
 - Lectura: igual que `entries` (§2.3): solo se aceptan cadenas `AAAA-MM-DD`; cualquier otro valor se ignora y el campo cuenta como ausente.
 - **Sin ninguna de las dos fechas el hábito se comporta como hoy** (activo si `status` no es `inactive`).
@@ -440,8 +442,8 @@ desde: 2026-03-01         # opcional
 // src/habits/habit.ts — campos nuevos (por crear)
 export interface IHabit {
   // ...existentes (§3)
-  activeFrom: string | null;   // fm.desde válido o null
-  activeUntil: string | null;  // fm.hasta válido o null
+  activeFrom: string | null;   // fm.from válido o null
+  activeUntil: string | null;  // fm.until válido o null
 }
 
 // src/habits/habit-calendar.ts — por crear (funciones puras, sin `obsidian`)
@@ -467,14 +469,14 @@ export function isActiveOn(h: Pick<IHabit, 'status' | 'activeFrom' | 'activeUnti
 }
 ```
 
-| `status` | `desde` / `hasta` | Activo en la fecha `d` |
+| `status` | `from` / `until` | Activo en la fecha `d` |
 |---|---|---|
 | `active` | ninguna | Siempre (igual que hoy) |
-| `active` | `desde` y/o `hasta` | `desde ≤ d ≤ hasta` (extremos ausentes = sin límite) |
-| `inactive` | sin `hasta` | Nunca (igual que hoy: ni filas ni porcentajes) |
-| `inactive` | con `hasta` | `d ≤ hasta` (y `d ≥ desde` si existe): así desactivar hoy no cambia el historial |
+| `active` | `from` y/o `until` | `from ≤ d ≤ until` (extremos ausentes = sin límite) |
+| `inactive` | sin `until` | Nunca (igual que hoy: ni filas ni porcentajes) |
+| `inactive` | con `until` | `d ≤ until` (y `d ≥ from` si existe): así desactivar hoy no cambia el historial |
 
-> **ADR-DM1 — `status: inactive` con `hasta` sigue contando en el historial**: hoy `HabitManager.getHabits()` descarta los inactivos y el porcentaje de fechas pasadas cambia retroactivamente. Decisión: el plugin, al desactivar, escribe `status: inactive` **y** `hasta` = hoy; el cálculo histórico usa una lista que incluye los inactivos con `hasta` (por crear: `HabitManager.getHabitsForStats()`), y cada día se filtra con `isActiveOn`. Las filas de Grid, Semanal y Rutina siguen saliendo de `getHabits()` (solo `status` activo). Racional: no rompe ninguna vista existente y las notas antiguas sin fechas no cambian.
+> **ADR-DM1 — `status: inactive` con `until` sigue contando en el historial**: hoy `HabitManager.getHabits()` descarta los inactivos y el porcentaje de fechas pasadas cambia retroactivamente. Decisión: el plugin, al desactivar, escribe `status: inactive` **y** `until` = hoy; el cálculo histórico usa una lista que incluye los inactivos con `until` (por crear: `HabitManager.getHabitsForStats()`), y cada día se filtra con `isActiveOn`. Las filas de Grid, Semanal y Rutina siguen saliendo de `getHabits()` (solo `status` activo). Racional: no rompe ninguna vista existente y las notas antiguas sin fechas no cambian.
 
 ### 8.4 Vacaciones
 
@@ -533,9 +535,9 @@ export function countsOn(h: IHabit, date: DateTime, done: boolean, ctx: IHabitCa
 
 | Caso | Comportamiento (propuesto) |
 |---|---|
-| `desde` > `hasta` | El hábito nunca está activo; el Habit Creator lo impide al guardar con validación inline. |
-| `hasta` < hoy con `status: active` (editada a mano) | Activo hasta `hasta`; la fila sigue saliendo (el `status` manda para las filas, ADR-DM1). |
-| Reactivar un hábito | Se borra `hasta`; `desde` se conserva. El hueco entre `hasta` y hoy cuenta como días sin cumplir. |
+| `from` > `until` | El hábito nunca está activo; el Habit Creator lo impide al guardar con validación inline. |
+| `until` < hoy con `status: active` (editada a mano) | Activo hasta `until`; la fila sigue saliendo (el `status` manda para las filas, ADR-DM1). |
+| Reactivar un hábito | Se borra `until`; `from` se conserva. El hueco entre `until` y hoy cuenta como días sin cumplir. |
 | Fecha de vacaciones inexistente (`2026-02-30`) | Se descarta el periodo. |
 | Vacaciones vacías o ausentes en `data.json` | `[]` (comportamiento actual). |
 | Vacaciones sobre un día no programado | Neutral de todos modos (§8.5). |

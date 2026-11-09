@@ -7,6 +7,8 @@ import { DEFAULT_SETTINGS } from './settings';
 import { evaluateHabitFolderHint } from '../habits/habit-folder';
 import { toggleNonWorkingDay } from '../core/non-working-days';
 import { MAX_PROJECTION_COUNT } from '../core/task-projection';
+import { isValidPeriod, type IHabitVacation } from '../habits/habit-calendar';
+import { DateTime } from 'luxon';
 import { createHolidayCalendar, getHolidayCountries, getHolidayCountry, type HolidayCalendarConfig } from '../core/holidays/holiday-calendar';
 
 const CALENDAR_VIEW_TYPES = ['calendar-month-view', 'calendar-year-view', 'calendar-week-view', 'calendar-workweek-view', 'calendar-day-view'];
@@ -180,6 +182,100 @@ export class SettingTab extends PluginSettingTab {
         if (redraw) this.drawHolidayCalendars(list);
       })
       .catch(console.error);
+  }
+
+  /**
+   * Lista de vacaciones de hábitos (v1.1.15, HV1): una fila por periodo con desde, hasta, nombre opcional y quitar,
+   * más un botón para añadir. Es la fuente única de todos los hábitos; cada cambio se guarda y refresca las vistas
+   * de hábitos abiertas. Un periodo con `hasta` anterior a `desde` se rechaza y el campo vuelve a su valor.
+   */
+  private renderHabitVacations(setting: Setting): void {
+    setting.settingEl.addClass('oa-habit-vacations-setting');
+    this.drawHabitVacations(setting.controlEl.createDiv({ cls: 'oa-habit-vacations' }));
+  }
+
+  private drawHabitVacations(list: HTMLElement): void {
+    list.empty();
+    const vacations = this.plugin.settings.habitVacations;
+
+    if (vacations.length === 0) list.createDiv({ cls: 'oa-holiday-empty', text: this.i18n.t('habit_vacations_empty') });
+    vacations.forEach((vacation, index) => this.drawHabitVacationRow(list, vacation, index));
+
+    const add = list.createEl('button', { cls: 'oa-holiday-add', text: this.i18n.t('habit_vacation_add'), attr: { type: 'button' } });
+    add.addEventListener('click', () => {
+      const today = DateTime.local().toISODate() ?? '';
+      vacations.push({ from: today, to: today });
+      this.saveHabitVacations(list);
+    });
+  }
+
+  private drawHabitVacationRow(list: HTMLElement, vacation: IHabitVacation, index: number): void {
+    const row = list.createDiv({ cls: 'oa-holiday-calendar oa-habit-vacation' });
+
+    for (const field of ['from', 'to'] as const) {
+      const input = row.createEl('input', {
+        cls: 'oa-habit-vacation-date',
+        type: 'date',
+        attr: { 'aria-label': this.i18n.t(`habit_vacation_${field}`) },
+      });
+      input.value = vacation[field];
+      input.addEventListener('change', () => {
+        const next = { ...vacation, [field]: input.value };
+        if (!input.value || !isValidPeriod(next.from, next.to)) {
+          input.value = vacation[field];
+          new Notice(this.i18n.t('habit_vacation_invalid'));
+          return;
+        }
+        vacation[field] = input.value;
+        this.saveHabitVacations(list, false);
+      });
+    }
+
+    const name = row.createEl('input', {
+      cls: 'oa-habit-vacation-name',
+      type: 'text',
+      attr: { placeholder: this.i18n.t('habit_vacation_name'), 'aria-label': this.i18n.t('habit_vacation_name') },
+    });
+    name.value = vacation.name ?? '';
+    name.addEventListener('change', () => {
+      const value = name.value.trim();
+      if (value) vacation.name = value;
+      else delete vacation.name;
+      this.saveHabitVacations(list, false);
+    });
+
+    const remove = row.createEl('button', { cls: 'clickable-icon oa-holiday-remove', attr: { type: 'button', 'aria-label': this.i18n.t('habit_vacation_remove') } });
+    setIcon(remove, 'trash-2');
+    remove.addEventListener('click', () => {
+      this.plugin.settings.habitVacations.splice(index, 1);
+      this.saveHabitVacations(list);
+    });
+  }
+
+  /** Guarda las vacaciones y refresca las vistas de hábitos abiertas; `redraw` vuelve a dibujar la lista (alta o baja). */
+  private saveHabitVacations(list: HTMLElement, redraw = true): void {
+    this.plugin.saveSettings()
+      .then(() => {
+        document.dispatchEvent(new CustomEvent('obsidian-agenda:habits-refresh'));
+        if (redraw) this.drawHabitVacations(list);
+      })
+      .catch(console.error);
+  }
+
+  /** Deja elegida la pestaña Hábitos antes de abrir los ajustes (botón «Vacaciones»). */
+  prepareHabitSettings(): void {
+    this.activeSection = 'habits';
+  }
+
+  /**
+   * Con los ajustes ya abiertos, repinta la pestaña elegida si hace falta y lleva la vista a la lista de vacaciones.
+   * `refreshDomState` solo existe en Obsidian >= 1.13.
+   */
+  revealVacations(): void {
+    (this as { refreshDomState?: () => void }).refreshDomState?.();
+    window.setTimeout(() => {
+      this.containerEl.querySelector('.oa-habit-vacations-setting')?.scrollIntoView({ block: 'center' });
+    }, 200);
   }
 
   /**
@@ -437,6 +533,18 @@ export class SettingTab extends PluginSettingTab {
             name: this.i18n.t('show_habit_sub_area_field'),
             desc: this.i18n.t('show_habit_sub_area_field_desc'),
             control: { type: 'toggle', key: 'showHabitSubAreaField' },
+          },
+        ],
+      },
+      {
+        type: 'group',
+        heading: this.i18n.t('habit_vacations'),
+        visible: () => this.activeSection === 'habits',
+        items: [
+          {
+            name: this.i18n.t('habit_vacations_periods'),
+            desc: this.i18n.t('habit_vacations_desc'),
+            render: (setting) => this.renderHabitVacations(setting),
           },
         ],
       },
@@ -728,6 +836,13 @@ export class SettingTab extends PluginSettingTab {
           this.plugin.settings.showHabitSubAreaField = value;
           await this.plugin.saveSettings();
         }));
+
+    new Setting(containerEl).setName(this.i18n.t("habit_vacations")).setHeading();
+
+    new Setting(containerEl)
+      .setName(this.i18n.t("habit_vacations_periods"))
+      .setDesc(this.i18n.t("habit_vacations_desc"))
+      .then(setting => this.renderHabitVacations(setting));
 
     new Setting(containerEl).setName(this.i18n.t("habit_tab_visibility")).setHeading();
 

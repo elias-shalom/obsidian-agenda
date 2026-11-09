@@ -80,6 +80,7 @@ export class HabitGridView extends HabitView {
       actual: date.toISODate() === todayIso,
     }));
 
+    const ctx = this.calcContext;
     const records: GridRowRecord[] = [];
 
     for (const habit of this.habits) {
@@ -87,7 +88,7 @@ export class HabitGridView extends HabitView {
       const isMulti = daytimes.length > 1;
 
       for (const daytime of daytimes) {
-        const cells = computeOccurrenceCells(habit, daytime, dates, habit.maxGap, this.plugin.settings.habitShowStreaks);
+        const cells = computeOccurrenceCells(habit, daytime, dates, habit.maxGap, this.plugin.settings.habitShowStreaks, ctx);
         const bridges = computeUnscheduledBridges(cells);
         const scheduledCells = cells.filter(cell => cell.scheduled);
         const doneCount = scheduledCells.filter(cell => cell.ticked).length;
@@ -100,7 +101,7 @@ export class HabitGridView extends HabitView {
           daytimeLabel: this.i18n.t(daytimeLabelKey(daytime)),
           showDaytimeLabel: isMulti || this.plugin.settings.habitShowSingleDaytimeLabel,
           color: habit.color,
-          streak: computeOccurrenceStats(habit, daytime).current,
+          streak: computeOccurrenceStats(habit, daytime, ctx).current,
           pct,
           area: habit.area,
           priority: habit.priority,
@@ -111,6 +112,7 @@ export class HabitGridView extends HabitView {
               ...cell,
               actual: cell.date === todayIso,
               bridge: bridges[index],
+              vacationLabel: cell.vacation ? this.vacationLabel(cell.vacationName) : '',
               // Marcado como hecho pero fuera de la frecuencia actual (se cambió la config después de completarlo)
               unscheduledTicked: !cell.scheduled && cell.ticked,
               runSingle: isRun && cell.streakStart && cell.streakEnd,

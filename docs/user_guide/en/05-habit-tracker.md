@@ -55,6 +55,16 @@ A sortable catalog of all habits (including inactive ones, shown read-only) with
 
 A streak counts consecutive completed occurrences. The **max gap** setting controls how many unscheduled/missed days in a row are still tolerated before the streak resets — useful for habits that aren't scheduled every single day. A habit completed on a day that's since been removed from its frequency shows a distinct "conflict" marker instead of silently breaking the streak.
 
+## Vacations
+
+Define vacation periods in **Settings → Agenda Tasks → Habits → Vacations** (each period has a start date, an end date and an optional name, such as "Christmas"), or click the **🌴** button in the Habit Tracker toolbar to jump straight there. They apply to **all** habits:
+
+- A vacation day you **didn't** tick is neutral: it doesn't break the streak, doesn't count as missed and doesn't lower any percentage.
+- A vacation day you **did** tick counts, but only for that habit: it extends its streak and enters its percentage.
+- The Grid and Weekly views show vacation days dimmed with a 🌴 icon (the tooltip shows the period name), and the yearly heatmap shows untouched vacation days with diagonal stripes instead of 0%. You can still tick any dimmed cell.
+
+If the button can't open the settings (it relies on an undocumented Obsidian API), a notice shows the path to follow by hand.
+
 ## Next steps
 
 - [8. Gestures and Interactions](07-gestures.md) for the Habit Tracker gesture reference.

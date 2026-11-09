@@ -508,6 +508,18 @@
   "habit_active_until": "Activo hasta",
   "habit_period_invalid": "«Activo desde» no puede ser posterior a «Activo hasta»",
   "habit_period_clear": "Vaciar fecha",
+  "habit_vacations": "Vacaciones",
+  "habit_vacations_periods": "Periodos de vacaciones",
+  "habit_vacations_desc": "Días en los que los hábitos no se exigen: un día sin marcar no rompe la racha ni baja el porcentaje, y uno marcado cuenta solo para ese hábito. Aplica a todos los hábitos.",
+  "habit_vacations_empty": "No hay periodos de vacaciones.",
+  "habit_vacation_add": "Añadir periodo",
+  "habit_vacation_from": "Desde",
+  "habit_vacation_to": "Hasta",
+  "habit_vacation_name": "Nombre (opcional)",
+  "habit_vacation_remove": "Quitar periodo",
+  "habit_vacation_invalid": "La fecha final no puede ser anterior a la inicial.",
+  "habit_vacation": "Vacaciones",
+  "habit_vacations_open_failed": "No se pudieron abrir los ajustes. Ve a Ajustes → Agenda Tasks → Vacaciones.",
   "habit_freq_custom": "Días personalizados",
   "habit_time_unit_minutes": "min"
 }

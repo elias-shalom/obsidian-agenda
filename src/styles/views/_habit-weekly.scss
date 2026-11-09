@@ -212,6 +212,24 @@ $habit-weekly-pill-cap-inset: 3px;
   cursor: default;
 }
 
+// Día de vacaciones (v1.1.15, HV1): igual que en la Cuadrícula; ver `_habit-grid.scss`.
+.oa-habit-weekly-cell--vacation.oa-habit-weekly-cell--unscheduled:not(:disabled) {
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.oa-habit-weekly-cell--vacation:not(.oa-habit-weekly-cell--ticked):not(.oa-habit-weekly-cell--unscheduled-ticked)::before {
+  content: '🌴';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  font-size: 0.75rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
 // Día no programado encerrado entre dos días de una misma racha: raya delgada de conexión.
 .oa-habit-weekly-cell--bridge {
   opacity: 1;

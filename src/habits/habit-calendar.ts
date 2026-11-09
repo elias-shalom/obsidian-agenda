@@ -1,12 +1,27 @@
 // src/habits/habit-calendar.ts
-// Cuándo cuenta un día para un hábito (v1.1.15, Fase HA1; ver docs/habit-tracker-agenda/Modelo de datos.md §8.3 y
-// Arquitectura técnica.md §10.2). Funciones puras, sin `obsidian`: es el único sitio con la regla, así las rachas,
-// los porcentajes y las vistas no la repiten. Las vacaciones (HV1) se añaden aquí.
+// Cuándo cuenta un día para un hábito (v1.1.15, Fases HA1 y HV1; ver docs/habit-tracker-agenda/Modelo de datos.md
+// §8.3–§8.5 y Arquitectura técnica.md §10.2–§10.3). Funciones puras, sin `obsidian`: es el único sitio con la regla,
+// así las rachas, los porcentajes y las vistas no la repiten.
 import { DateTime } from 'luxon';
 import type { IHabit } from './habit';
 import { isScheduled } from './habit';
 
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Periodo de vacaciones del ajuste `habitVacations`: fechas ISO inclusivas y un nombre opcional. */
+export interface IHabitVacation {
+  from: string;
+  to: string;
+  name?: string;
+}
+
+/** Lo que las funciones de cálculo necesitan de los ajustes; ellas nunca los leen. */
+export interface IHabitCalcContext {
+  vacations: readonly IHabitVacation[];
+}
+
+/** Contexto sin vacaciones: el comportamiento anterior a HV1. */
+export const NO_VACATIONS: IHabitCalcContext = { vacations: [] };
 
 /** Fecha `AAAA-MM-DD` válida del calendario (no solo con el formato) o `null`: así un campo `from`/`until` mal escrito cuenta como ausente. */
 export function parseActiveDate(value: unknown): string | null {
@@ -48,11 +63,46 @@ export function activeUntilForStatus(active: boolean, current: string, today: st
 }
 
 /**
- * ¿Ese día cuenta para el hábito en rachas y porcentajes? Cuando toca por su frecuencia y cae dentro de su periodo;
- * si no, es neutral, igual que un día no programado. No mira `status`: quien arma la lista de hábitos ya decidió
- * cuáles entran (`getHabits()` los activos, `getHabitsForStats()` también los desactivados con `until`, la Tabla
- * todos).
+ * Lista de vacaciones válida a partir de lo guardado en `data.json`: se descartan las filas que no son objetos, con
+ * una fecha inexistente o con `to` anterior a `from`. Los periodos solapados se dejan como están: un día es de
+ * vacaciones si cae en alguno.
  */
-export function countsOn(habit: Pick<IHabit, 'frequencySet' | 'activeFrom' | 'activeUntil'>, date: DateTime): boolean {
-  return isScheduled(habit, date) && isInPeriod(habit, date.toISODate() ?? date.toFormat('yyyy-MM-dd'));
+export function sanitizeVacations(value: unknown): IHabitVacation[] {
+  if (!Array.isArray(value)) return [];
+
+  const result: IHabitVacation[] = [];
+  for (const item of value) {
+    if (!item || typeof item !== 'object') continue;
+    const raw = item as Record<string, unknown>;
+    const from = parseActiveDate(raw.from);
+    const to = parseActiveDate(raw.to);
+    if (!from || !to || to < from) continue;
+
+    const name = typeof raw.name === 'string' ? raw.name.trim() : '';
+    result.push(name ? { from, to, name } : { from, to });
+  }
+  return result;
+}
+
+/** Periodo de vacaciones que contiene la fecha ISO (extremos inclusivos) o `null`; alimenta el atenuado y el tooltip. */
+export function findVacation(vacations: readonly IHabitVacation[], date: string): IHabitVacation | null {
+  return vacations.find(vacation => vacation.from <= date && date <= vacation.to) ?? null;
+}
+
+/**
+ * ¿Ese día cuenta para el hábito en rachas y porcentajes? Cuando toca por su frecuencia y cae dentro de su periodo;
+ * si no, es neutral, igual que un día no programado. En un día de vacaciones solo cuenta si está marcado (`done`),
+ * y entonces solo para ese hábito (ADR-DM2). `done` es la ocurrencia —o el día completo, según el agregado—; sin
+ * `ctx` no hay vacaciones. No mira `status`: quien arma la lista de hábitos ya decidió cuáles entran (`getHabits()`
+ * los activos, `getHabitsForStats()` también los desactivados con `until`, la Tabla todos).
+ */
+export function countsOn(
+  habit: Pick<IHabit, 'frequencySet' | 'activeFrom' | 'activeUntil'>,
+  date: DateTime,
+  done = false,
+  ctx: IHabitCalcContext = NO_VACATIONS
+): boolean {
+  const iso = date.toISODate() ?? date.toFormat('yyyy-MM-dd');
+  if (!isScheduled(habit, date) || !isInPeriod(habit, iso)) return false;
+  return done || findVacation(ctx.vacations, iso) === null;
 }

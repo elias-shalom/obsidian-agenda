@@ -105,6 +105,25 @@
   margin-left: auto;
 }
 
+// Lista de vacaciones de hábitos (v1.1.15, HV1): reutiliza la fila de los feriados; las fechas ocupan su ancho y el
+// nombre se estira para llenar la fila.
+.oa-habit-vacations {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.oa-habit-vacation-date {
+  width: auto;
+}
+
+.oa-habit-vacation-name {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+
 // Siete casillas de los días no laborables, de lunes a domingo (v1.1.15, NL1): una tira con el día encima de
 // cada casilla; en una pantalla estrecha pasa a otra línea sin partir una pareja día-casilla.
 // La descripción es larga y estrecharía la columna del control (casillas en vertical): el texto va arriba y la tira debajo, a todo el ancho.

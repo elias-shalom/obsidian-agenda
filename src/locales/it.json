@@ -507,6 +507,18 @@
   "habit_active_until": "Attivo fino al",
   "habit_period_invalid": "«Attivo dal» non può essere successivo a «Attivo fino al»",
   "habit_period_clear": "Svuota la data",
+  "habit_vacations": "Vacanze",
+  "habit_vacations_periods": "Periodi di vacanza",
+  "habit_vacations_desc": "Giorni in cui le abitudini non sono richieste: un giorno non spuntato non interrompe la serie né abbassa la percentuale, e uno spuntato conta solo per quell'abitudine. Vale per tutte le abitudini.",
+  "habit_vacations_empty": "Nessun periodo di vacanza.",
+  "habit_vacation_add": "Aggiungi periodo",
+  "habit_vacation_from": "Dal",
+  "habit_vacation_to": "Al",
+  "habit_vacation_name": "Nome (facoltativo)",
+  "habit_vacation_remove": "Rimuovi periodo",
+  "habit_vacation_invalid": "La data finale non può precedere quella iniziale.",
+  "habit_vacation": "Vacanza",
+  "habit_vacations_open_failed": "Impossibile aprire le impostazioni. Vai su Impostazioni → Agenda Tasks → Vacanze.",
   "habit_freq_custom": "Giorni personalizzati",
   "habit_time_unit_minutes": "min"
 }

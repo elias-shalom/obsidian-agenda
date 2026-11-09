@@ -1,6 +1,7 @@
 import { App, EventRef, TFile, TFolder, parseYaml } from 'obsidian';
 import type { AgendaPluginSettings } from '../settings/settings';
 import type { Daytime, IHabit } from './habit';
+import type { IHabitCalcContext } from './habit-calendar';
 import { parseHabit } from './habit-parser';
 import { ensureFolderPath } from './habit-folder';
 import { computeDashboard } from './habit-stats';
@@ -299,8 +300,13 @@ export class HabitManager {
     this.habitCache.set(file.path, { ...habit, completions: nextCompletions, entries: nextEntries });
   }
 
+  /** Lo que las funciones puras de cálculo necesitan de los ajustes (v1.1.15, HV1): hoy, las vacaciones. */
+  getCalcContext(): IHabitCalcContext {
+    return { vacations: this.settingsGetter().habitVacations ?? [] };
+  }
+
   computeDashboard() {
-    return computeDashboard(this.getHabits(), this.getHabitsForStats());
+    return computeDashboard(this.getHabits(), this.getHabitsForStats(), this.getCalcContext());
   }
 
   /** Abre el modal de crear/editar hábito (crear si no se pasa hábito) */

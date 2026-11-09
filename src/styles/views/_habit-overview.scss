@@ -335,6 +335,15 @@
   box-shadow: inset 0 0 0 1px var(--text-accent, var(--interactive-accent));
 }
 
+// Día de vacaciones sin ninguna marca (v1.1.15, HV1): rayas diagonales en lugar de un 0 %; el nombre va en el tooltip.
+.oa-habit-heatmap-cell--vacation {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--background-modifier-border) 0 2px,
+    transparent 2px 4px
+  );
+}
+
 .oa-habit-heatmap-cell-tooltip {
   position: absolute;
   bottom: 100%;

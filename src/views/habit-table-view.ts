@@ -88,15 +88,17 @@ export class HabitTableView extends HabitView {
 
   private pct30d(habit: IHabit): number {
     const today = DateTime.local();
+    const ctx = this.calcContext;
     let done = 0;
     let scheduled = 0;
 
     for (let offset = 29; offset >= 0; offset -= 1) {
       const date = today.minus({ days: offset });
-      if (!countsOn(habit, date)) continue;
+      const completed = dayCompleted(habit, date.toISODate() ?? '');
+      if (!countsOn(habit, date, completed, ctx)) continue;
 
       scheduled += 1;
-      if (dayCompleted(habit, date.toISODate() ?? '')) done += 1;
+      if (completed) done += 1;
     }
 
     return scheduled === 0 ? 0 : Math.round((done / scheduled) * 100);
@@ -138,7 +140,7 @@ export class HabitTableView extends HabitView {
       priority: habit.priority,
       daytimes: habit.daytimes.map(daytime => this.i18n.t(daytimeLabelKey(daytime))),
       time: habit.time,
-      streak: computeStats(habit).current,
+      streak: computeStats(habit, this.calcContext).current,
       pct30d: this.pct30d(habit),
       active: habit.status !== 'inactive',
     }));

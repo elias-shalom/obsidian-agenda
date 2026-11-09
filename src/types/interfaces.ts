@@ -10,6 +10,8 @@ export interface AgendaPlugin extends Plugin {
     activateView: (viewType: string, leaf: WorkspaceLeaf) => void;    
   };
   settings: AgendaPluginSettings;
+  /** Abre los ajustes del plugin en la lista de vacaciones de hábitos (v1.1.15, HV1). */
+  openHabitSettings: () => void;
   modalManager: {
     openModal: (modalType: string, options?: ModalOptions) => void;
   };

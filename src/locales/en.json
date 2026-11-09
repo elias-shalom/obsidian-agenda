@@ -509,6 +509,18 @@
   "habit_active_until": "Active until",
   "habit_period_invalid": "\"Active from\" must not be after \"Active until\"",
   "habit_period_clear": "Clear date",
+  "habit_vacations": "Vacations",
+  "habit_vacations_periods": "Vacation periods",
+  "habit_vacations_desc": "Days when habits are not required: an unticked day does not break the streak or lower the percentage, and a ticked one counts only for that habit. Applies to all habits.",
+  "habit_vacations_empty": "No vacation periods.",
+  "habit_vacation_add": "Add period",
+  "habit_vacation_from": "From",
+  "habit_vacation_to": "To",
+  "habit_vacation_name": "Name (optional)",
+  "habit_vacation_remove": "Remove period",
+  "habit_vacation_invalid": "The end date cannot be before the start date.",
+  "habit_vacation": "Vacation",
+  "habit_vacations_open_failed": "Could not open the settings. Go to Settings → Agenda Tasks → Vacations.",
   "habit_freq_custom": "Custom days",
   "habit_time_unit_minutes": "min"
 }

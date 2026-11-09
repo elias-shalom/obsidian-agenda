@@ -55,6 +55,16 @@ Un catálogo ordenable de todos los hábitos (incluyendo los inactivos, mostrado
 
 Una racha cuenta ocurrencias cumplidas consecutivas. El ajuste de **tolerancia máxima (max gap)** controla cuántos días seguidos sin programar/sin cumplir se siguen tolerando antes de que la racha se reinicie — útil para hábitos que no están programados todos los días. Un hábito cumplido en un día que desde entonces se quitó de su frecuencia muestra un marcador distintivo de "conflicto" en vez de romper la racha silenciosamente.
 
+## Vacaciones
+
+Define periodos de vacaciones en **Ajustes → Agenda Tasks → Hábitos → Vacaciones** (cada periodo tiene una fecha de inicio, una de fin y un nombre opcional, como «Navidad»), o pulsa el botón **🌴** de la barra del Seguimiento de hábitos para ir directamente. Aplican a **todos** los hábitos:
+
+- Un día de vacaciones que **no** marcaste es neutral: no rompe la racha, no cuenta como incumplido y no baja ningún porcentaje.
+- Un día de vacaciones que **sí** marcaste cuenta, pero solo para ese hábito: suma a su racha y entra en su porcentaje.
+- La Cuadrícula y la vista Semanal muestran los días de vacaciones atenuados con un icono 🌴 (el tooltip trae el nombre del periodo), y el heatmap anual dibuja con rayas diagonales los días de vacaciones sin marcas en vez de un 0 %. Puedes marcar cualquier celda atenuada.
+
+Si el botón no puede abrir los ajustes (usa una API de Obsidian no documentada), un aviso indica la ruta para llegar a mano.
+
 ## Siguientes pasos
 
 - [8. Gestos e interacciones](07-gestures.md) para la referencia de gestos del Seguimiento de hábitos.

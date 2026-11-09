@@ -3,6 +3,7 @@
     <h2>{{t viewLabelKey}}</h2>
     <span class="oa-habit-grid-range">{{windowLabel}}</span>
     <button id="oa-habit-new-btn" type="button" class="oa-habit-new-btn" aria-label="{{t 'habit_new_habit'}}" title="{{t 'habit_new_habit'}}">+</button>
+    <button id="oa-habit-vacations-btn" type="button" class="oa-habit-vacations-btn" aria-label="{{t 'habit_vacations'}}" title="{{t 'habit_vacations'}}">🌴</button>
   </div>
   <div class="oa-habit-nav-container">
     <div class="oa-habit-view-selector oa-habit-view-selector--labeled" data-label="{{t 'habit_sort_label'}}">
@@ -65,6 +66,7 @@
               {{~#unless this.scheduled}} oa-habit-grid-cell--unscheduled{{/unless}}
               {{~#if this.bridge}} oa-habit-grid-cell--bridge{{/if}}
               {{~#if this.unscheduledTicked}} oa-habit-grid-cell--unscheduled-ticked{{/if}}
+              {{~#if this.vacation}} oa-habit-grid-cell--vacation{{/if}}
               {{~#if this.actual}} oa-habit-grid-cell--today{{/if}}
               {{~#if this.runSingle}} oa-habit-grid-cell--run-single{{/if}}
               {{~#if this.runStart}} oa-habit-grid-cell--run-start{{/if}}
@@ -73,8 +75,8 @@
             data-date="{{this.date}}"
             data-habit-id="{{../id}}"
             aria-label="{{../title}} {{../daytimeLabel}} {{this.date}}"
-            {{#if this.deadline}}title="{{t 'habit_streak_deadline_tooltip'}}"{{/if}}
-            {{#unless this.scheduled}}disabled{{/unless}}>{{~#if this.runEnd}}{{#if (gt this.streakCount 1)}}<span class="oa-habit-grid-cell-count">{{this.streakCount}}</span>{{/if}}{{/if~}}</button>
+            {{#if this.deadline}}title="{{t 'habit_streak_deadline_tooltip'}}"{{else if this.vacationLabel}}title="{{this.vacationLabel}}"{{/if}}
+            {{#unless this.markable}}disabled{{/unless}}>{{~#if this.runEnd}}{{#if (gt this.streakCount 1)}}<span class="oa-habit-grid-cell-count">{{this.streakCount}}</span>{{/if}}{{/if~}}</button>
         {{/each}}
         <div class="oa-habit-grid-streak">{{#if this.streak}}🔥 {{this.streak}}{{else}}–{{/if}}</div>
         <div class="oa-habit-grid-pct">{{this.pct}}%</div>

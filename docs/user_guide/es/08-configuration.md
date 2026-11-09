@@ -32,6 +32,10 @@ Accede a todos los ajustes del plugin desde **Configuración de Obsidian → Plu
 - **Prioridad por defecto** — valor de prioridad inicial (1–5) para hábitos nuevos.
 - **Color por defecto** y **visibilidad del campo de sub-área** — otros valores por defecto del Habit Creator.
 
+### Vacaciones
+
+- **Periodos de vacaciones** — una lista de periodos (fecha de inicio, de fin y un nombre opcional) que aplican a todos los hábitos: un día de vacaciones sin marcar ni rompe una racha ni baja un porcentaje, y uno marcado cuenta solo para ese hábito. **Añadir periodo** crea uno y el botón de la papelera lo quita; una fecha final anterior a la inicial se rechaza. El botón 🌴 de la barra del Seguimiento de hábitos abre esta lista.
+
 ### Visibilidad de pestañas de hábitos
 
 - Mostrar/ocultar cada vista del Seguimiento de hábitos de forma independiente: **Cuadrícula**, **Dashboard**, **Rutina diaria**, **Semanal**, **Tabla**.

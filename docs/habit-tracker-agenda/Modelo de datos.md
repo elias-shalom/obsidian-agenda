@@ -412,9 +412,9 @@ Provenientes de `test-vault/broken-habits/` de HT21:
 | Nombre con caracteres especiales | OK (por basename). |
 | Zona horaria / DST | Trabajar siempre con fechas **locales** `yyyy-MM-dd` (no UTC) para evitar `ticked` de un día diferente. |
 
-## 8. Periodo activo, vacaciones y frecuencias con días no laborables (v1.1.15 — periodo activo (§8.1 a §8.3) implementado el 2026-11-09 en `src/habits/habit-calendar.ts`; vacaciones (§8.4 y §8.5), diseño)
+## 8. Periodo activo, vacaciones y frecuencias con días no laborables (v1.1.15 — periodo activo (§8.1 a §8.3) y vacaciones (§8.4 y §8.5) implementados el 2026-11-09 en `src/habits/habit-calendar.ts`; frecuencias (§8.6) en NL2)
 
-Decidido el 2026-11-02. Añade dos campos opcionales al frontmatter (`from`, `until`), una lista global de vacaciones en los ajustes y un cambio en cómo se resuelven los tokens de `frequency`. Comportamiento visible en [[Especificación de vistas]] §12; mecanismo en [[Arquitectura técnica]] §10. **Nada de lo descrito aquí existe aún en `src/habits/`**: los nombres marcados «por crear» son propuestas.
+Decidido el 2026-11-02. Añade dos campos opcionales al frontmatter (`from`, `until`), una lista global de vacaciones en los ajustes y un cambio en cómo se resuelven los tokens de `frequency`. Comportamiento visible en [[Especificación de vistas]] §12; mecanismo en [[Arquitectura técnica]] §10. Lo descrito aquí existe en `src/habits/`; los nombres que aún digan «por crear» o «propuesta» son los de lo que falta.
 
 ### 8.1 Campos nuevos de la nota (frontmatter)
 
@@ -436,26 +436,28 @@ Las claves van en inglés (`from`, `until`), como el resto del frontmatter del h
 - Un solo periodo por hábito; no hay lista de periodos.
 - La escritura la hace el Habit Creator (`vault.process`, [[Especificación de vistas]] §9) junto con el resto del frontmatter; `habit-writer.ts` (toggle de `completions`/`entries`) **no cambia**.
 
-### 8.2 Interfaz TypeScript (propuesta)
+### 8.2 Interfaz TypeScript
 
 ```ts
-// src/habits/habit.ts — campos nuevos (por crear)
+// src/habits/habit.ts — campos nuevos
 export interface IHabit {
   // ...existentes (§3)
   activeFrom: string | null;   // fm.from válido o null
   activeUntil: string | null;  // fm.until válido o null
 }
 
-// src/habits/habit-calendar.ts — por crear (funciones puras, sin `obsidian`)
+// src/habits/habit-calendar.ts (funciones puras, sin `obsidian`)
 export interface IHabitVacation { from: string; to: string; name?: string }   // fechas ISO inclusivas
-export interface IHabitCalcContext { vacations: IHabitVacation[] }
+export interface IHabitCalcContext { vacations: readonly IHabitVacation[] }   // NO_VACATIONS = { vacations: [] }
 
 // settings (data.json): habitVacations: IHabitVacation[]  — defecto []
 
 // campos nuevos de salida para las vistas
-interface IHabitCell    { /* ...§3 */ vacation: boolean; vacationName?: string }
-interface IHabitDayStat { /* ...§3 */ vacation: boolean }   // día de vacaciones del heatmap
+interface IHabitCell    { /* ...§3 */ vacation: boolean; vacationName?: string; markable: boolean }
+interface IHabitDayStat { /* ...§3 */ vacation: boolean; vacationName?: string }   // día de vacaciones del heatmap
 ```
+
+`markable` indica que la celda se puede marcar: el día toca por frecuencia y cae en el periodo activo, **aunque sea de vacaciones**. Hace falta porque una celda de vacaciones sin marcar es neutral (`scheduled = false`, no cuenta) y, sin `markable`, la Cuadrícula y el Semanal la deshabilitarían como a un día no programado.
 
 ### 8.3 Periodo activo: `isActiveOn`
 
@@ -481,22 +483,23 @@ export function isActiveOn(h: Pick<IHabit, 'status' | 'activeFrom' | 'activeUnti
 ### 8.4 Vacaciones
 
 - **Fuente única**: `habitVacations` en `data.json` (ajustes del plugin, sincronizado entre dispositivos), nunca en las notas de hábito ni en `localStorage`.
-- Un periodo es `{ from, to, name? }`, fechas ISO **inclusivas**. Solapados se unen. Al leer `data.json` se descartan los periodos con fechas inválidas o con `to < from`.
-- `findVacation(vacations, date)` (por crear) devuelve el periodo que contiene la fecha o `null`; es lo que alimenta el atenuado, el icono y el tooltip con el nombre.
+- Un periodo es `{ from, to, name? }`, fechas ISO **inclusivas**. Los solapados se dejan como están: un día es de vacaciones si cae en alguno. Al leer `data.json`, `sanitizeVacations()` descarta las filas que no son objetos, con fechas inválidas o con `to < from`, y recorta el nombre; la pantalla de ajustes rechaza un `to` anterior a `from` al editarlo.
+- `findVacation(vacations, date)` devuelve el periodo que contiene la fecha o `null`; es lo que alimenta el atenuado, el icono y el tooltip con el nombre.
 
 ### 8.5 Regla de cálculo: cuándo cuenta un día
 
 Hoy «cuenta» un día de un hábito si está **programado** (`isScheduled`, §2.5). Pasa a contar si además está **activo** y, en vacaciones, solo si está **marcado**:
 
 ```ts
-// por crear — habit-calendar.ts. `done` = la ocurrencia (o el día completo, según el agregado) está marcada
-export function countsOn(h: IHabit, date: DateTime, done: boolean, ctx: IHabitCalcContext): boolean {
+// habit-calendar.ts. `done` = la ocurrencia (o el día completo, según el agregado) está marcada
+export function countsOn(habit, date: DateTime, done = false, ctx: IHabitCalcContext = NO_VACATIONS): boolean {
   const iso = date.toISODate()!;
-  if (!isScheduled(h, date) || !isActiveOn(h, iso)) return false;          // neutral, como un día no programado
-  if (findVacation(ctx.vacations, iso)) return done;                       // vacaciones: solo si está marcado
-  return true;
+  if (!isScheduled(habit, date) || !isInPeriod(habit, iso)) return false;  // neutral, como un día no programado
+  return done || findVacation(ctx.vacations, iso) === null;                // vacaciones: solo si está marcado
 }
 ```
+
+`countsOn()` no mira `status` (ver HA1): quien arma la lista de hábitos ya decidió cuáles entran. Sin `ctx` no hay vacaciones, así que el comportamiento anterior a HV1 se conserva.
 
 | Día | Hábito sin marcar | Hábito marcado |
 |---|---|---|

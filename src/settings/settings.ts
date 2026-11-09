@@ -1,4 +1,5 @@
 import type { HolidayCalendarConfig } from '../core/holidays/holiday-calendar';
+import type { IHabitVacation } from '../habits/habit-calendar';
 
 export interface AgendaPluginSettings {
   // Define your plugin settings here
@@ -42,6 +43,11 @@ export interface AgendaPluginSettings {
   habitDefaultMaxGap: number;
   habitDefaultPriority: number;
   habitDefaultColor: string;
+  /**
+   * Periodos de vacaciones (v1.1.15, HV1): fechas ISO inclusivas y un nombre opcional. Son la fuente única para
+   * todos los hábitos; un día sin marcar en vacaciones es neutral. Vacía por defecto.
+   */
+  habitVacations: IHabitVacation[];
   showHabitSubAreaField: boolean;
   showHabitGridTab: boolean;
   showHabitDashboardTab: boolean;
@@ -76,6 +82,7 @@ export const DEFAULT_SETTINGS: AgendaPluginSettings = {
   habitDefaultMaxGap: 0,
   habitDefaultPriority: 3,
   habitDefaultColor: "",
+  habitVacations: [],
   showHabitSubAreaField: false,
   showHabitGridTab: true,
   showHabitDashboardTab: true,

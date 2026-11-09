@@ -65,7 +65,7 @@ Decididas el 2026-11-02; ver [[Especificación de vistas]] §11–§14, [[Modelo
 
 **v1.1.15 — Calendario y hábitos**
 - [ ] **Periodo activo** por hábito (`from`/`until` opcionales en la nota): el porcentaje de una fecha o rango cuenta solo los hábitos activos ese día; desactivar un hábito ya no cambia el historial (HA1).
-- [ ] **Vacaciones**: lista global de periodos en los ajustes; un día de vacaciones no cuenta como cumplido ni incumplido, salvo para el hábito que el usuario marque; atenuado con icono en Cuadrícula, Semanal y heatmap; botón «Vacaciones» en la barra de Hábitos (HV1).
+- [x] **Vacaciones** (implementado el 2026-11-09): lista global de periodos en los ajustes; un día de vacaciones no cuenta como cumplido ni incumplido, salvo para el hábito que el usuario marque; atenuado con icono en Cuadrícula y Semanal y con rayas en el heatmap; botón «Vacaciones» en la barra de Hábitos (HV1).
 - [ ] **Selector de subvistas con botones circulares** en lugar del `<select>` (HU1).
 - [ ] **Frecuencias «Fin de semana» y «Lunes a viernes»** que siguen el ajuste de días no laborables, con aviso (NL2, en el Plan de agenda-tasks).
 - [ ] **Hábitos en el calendario**: entradas virtuales (no son tareas), chip `🔁 3/5` con popover, sección por franja en Día y ajuste «Mostrar hábitos en el calendario» desactivado por defecto (HC1, en el Plan de agenda-tasks; detalle en `docs/agenda-tasks/Especificación de vistas.md` §21).
@@ -109,7 +109,7 @@ Decididas el 2026-11-02; ver [[Especificación de vistas]] §11–§14, [[Modelo
 - `habitShowStreaks: boolean` — mostrar indicadores y conteos de racha. Defecto `true`.
 - `habitDefaultMaxGap: number` — tolerancia de huecos por defecto (0 = ninguno).
 - `showHabitGridTab`, `showHabitDashboardTab`, `showHabitRoutineTab`, `showHabitWeeklyTab`, `showHabitListTab: boolean` — visibilidad de pestañas (patrón existente).
-- *(v1.1.15, diseño)* `habitVacations` — lista global de periodos de vacaciones (desde, hasta, nombre opcional), RF-9.
+- *(v1.1.15)* `habitVacations` — lista global de periodos de vacaciones (`from`, `to`, nombre opcional), RF-9.
 
 ### RF-2 Carga de datos
 
@@ -165,11 +165,11 @@ Decididas el 2026-11-02; ver [[Especificación de vistas]] §11–§14, [[Modelo
 - El porcentaje de una fecha o rango, por hábito, área y daytime, cuenta solo los hábitos activos ese día; desactivar escribe `until` = hoy y reactivar lo borra.
 - El Habit Creator gana dos selectores de fecha (`from` y `until`).
 
-### RF-9 Vacaciones (v1.1.15, diseño)
+### RF-9 Vacaciones (v1.1.15, implementado el 2026-11-09)
 
-- Lista global `habitVacations` en los ajustes (desde, hasta y nombre opcional); fuente única para todos los hábitos.
+- Lista global `habitVacations` en los ajustes (`from`, `to` y nombre opcional); fuente única para todos los hábitos.
 - Un día de vacaciones no cuenta como cumplido ni incumplido (no rompe ni suma a la racha, no entra en el denominador); si el usuario marca un hábito ese día, cuenta solo para ese hábito ([[Modelo de datos]] §8.5).
-- Se muestran atenuados con icono en Cuadrícula, Semanal y heatmap; botón «Vacaciones» en la barra de Hábitos que abre los ajustes con `app.setting.open()` y `openTabById('agenda-tasks')` (API no documentada; si falla, un `Notice` indica la ruta).
+- Se muestran atenuados con icono en Cuadrícula y Semanal y con rayas en el heatmap (si no tienen marcas); botón «Vacaciones» en la barra de Hábitos que abre los ajustes con `app.setting.open()` y `openTabById('agenda-tasks')` (API no documentada; si falla, un `Notice` indica la ruta).
 
 ### RF-10 Selector de subvistas y frecuencias (v1.1.15, diseño)
 

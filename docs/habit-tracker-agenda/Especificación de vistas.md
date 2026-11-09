@@ -322,7 +322,7 @@ Decidido el 2026-11-02. Dos mecanismos distintos que evitan que cambiar el estad
 
 ### 12.2 Vacaciones
 
-- **Lista global de periodos en los ajustes de hábitos**: cada periodo tiene `desde`, `hasta` y un **nombre opcional** (p. ej. «Navidad: 20 dic → 2 ene»), con botones para añadir y borrar. Aplica a **todos** los hábitos y es la **fuente única**: la lista vive solo en los ajustes.
+- **Lista global de periodos en los ajustes de hábitos** (implementada el 2026-11-09, grupo «Vacaciones» de la pestaña Hábitos): cada periodo tiene `from`, `to` y un **nombre opcional** (p. ej. «Navidad: 20 dic → 2 ene»), con botones para añadir y borrar. Aplica a **todos** los hábitos y es la **fuente única**: la lista vive solo en los ajustes.
 - **Regla del día de vacaciones**:
 
 | Situación en un día de vacaciones | Racha | Porcentaje |
@@ -331,8 +331,8 @@ Decidido el 2026-11-02. Dos mecanismos distintos que evitan que cambiar el estad
 | Hábito **marcado** por el usuario | Suma a la racha de **ese** hábito | Entra en el porcentaje de **ese** hábito (numerador y denominador) |
 
   El porcentaje global del día (y por área/franja) se calcula entonces solo con los hábitos marcados ese día; si ninguno lo está, el día no tiene dato (no es 0 %).
-- **Vistas**: los días de vacaciones se muestran **atenuados y con un icono** en la **Cuadrícula** (§1), el **Semanal** (§4) y el **heatmap** anual (§3.1). El nombre del periodo sale en el tooltip.
-- **Botón «Vacaciones»** en la barra de Hábitos: abre los ajustes del plugin en esa sección con `app.setting.open()` y `app.setting.openTabById('agenda-tasks')`. **Es una API no documentada de Obsidian** (el plugin hoy no la usa); si falla, un `Notice` indica la ruta: «Ajustes → Agenda Tasks → Vacaciones».
+- **Vistas**: los días de vacaciones se muestran **atenuados y con un icono** (🌴) en la **Cuadrícula** (§1) y el **Semanal** (§4), con el nombre del periodo en el tooltip; la celda sigue siendo marcable y, si está marcada, conserva el color del hábito. En el **heatmap** anual (§3.1) un día de vacaciones **sin ninguna marca** se dibuja con rayas diagonales (la celda mide 11 px y no cabe un icono) en vez de como 0 %, y el tooltip lleva el nombre; con marcas se pinta con su porcentaje. La **Rutina** deja en su lista los hábitos de un día de vacaciones, para poder marcarlos, pero no cuenta en sus porcentajes los que no están marcados.
+- **Botón «Vacaciones»** (🌴) en la barra de Hábitos: abre los ajustes del plugin en la pestaña Hábitos con `app.setting.open()` y `app.setting.openTabById('agenda-tasks')`, y lleva la vista a la lista. **Es una API no documentada de Obsidian** (es la primera vez que el plugin la usa); si falla, un `Notice` indica la ruta: «Ajustes → Agenda Tasks → Vacaciones».
 
 ```
 Ajustes → Agenda Tasks → Vacaciones
@@ -367,7 +367,7 @@ Cuadrícula:   Agua   ▣ ▣ ▒🌴 ▒🌴 ▣(marcado en vacaciones) ▣    
 | Día marcado fuera del periodo activo | No cuenta (mismo criterio que un día no programado, ADR-005 de [[Modelo de datos]]). |
 | Día de vacaciones **no programado** para el hábito | Sigue siendo neutral aunque esté marcado (el día no programado prevalece). |
 | Periodos de vacaciones solapados | Se unen; un día es de vacaciones si cae en alguno. |
-| Periodo de vacaciones con `hasta` < `desde` | Se rechaza al editarlo en ajustes; al leer `data.json` se ignora. |
+| Periodo de vacaciones con `to` < `from` | Se rechaza al editarlo en ajustes (aviso y el campo vuelve a su valor); al leer `data.json` se ignora. |
 
 ### 12.5 Fuera de alcance
 
@@ -375,7 +375,7 @@ Lista de periodos activos por hábito; vacaciones por hábito o por área; que e
 
 ### 12.6 Por resolver al diseñar
 
-- **Apertura directa de la sección «Vacaciones»** en los ajustes con la API declarativa de Obsidian 1.13 (`getSettingDefinitions()`) y con el `display()` de respaldo (el plugin usa ambos en `setting-tab.ts`).
+- **Apertura directa de la sección «Vacaciones»**: resuelto el 2026-11-09 (HV1): es un grupo propio de la pestaña Hábitos, tanto en la ruta declarativa (`getSettingDefinitions()`) como en el `display()` de respaldo; el botón deja elegida esa pestaña y desplaza la vista hasta la lista. Falta probarlo a mano en escritorio y móvil.
 - **Extremos del periodo**: resuelto el 2026-11-09 (HA1): `from` y `until` son inclusivos.
 - **Visibilidad de filas**: resuelto el 2026-11-09 (HA1): la Cuadrícula, la Semanal y la Rutina siguen mostrando solo los hábitos con `status: active` (un hábito activo con `until` pasado sigue en las filas) y los días fuera del periodo se ven neutrales y atenuados, como los no programados.
 - **Icono de vacaciones y su botón**: icono (se propone `tree-palm` de Lucide), posición exacta del botón en la barra y cómo cabe el icono en las celdas pequeñas del heatmap (si no cabe, solo atenuado con tooltip).

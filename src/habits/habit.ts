@@ -69,6 +69,11 @@ export interface IHabitCell {
   streakCount: number;
   deadline: boolean;
   classes: string;
+  /** El día cae en un periodo de vacaciones (v1.1.15, HV1); `vacationName` es el nombre del periodo, si lo tiene. */
+  vacation: boolean;
+  vacationName?: string;
+  /** Se puede marcar: toca por su frecuencia y está en el periodo activo, aunque sea de vacaciones y por tanto neutral. */
+  markable: boolean;
 }
 
 export interface IHabitStreakStats {
@@ -85,6 +90,9 @@ export interface IHabitDayStat {
   weightDone: number;
   weightTotal: number;
   pctWeighted: number;
+  /** El día es de vacaciones (v1.1.15, HV1); sin ninguna marca queda con `total` 0 y el heatmap lo atenúa. */
+  vacation: boolean;
+  vacationName?: string;
 }
 
 export interface HabitDashboardData {

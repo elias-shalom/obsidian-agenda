@@ -32,6 +32,10 @@ Access every plugin setting via **Obsidian Settings → Community Plugins → Ag
 - **Default priority** — starting priority value (1–5) for new habits.
 - **Default color** and **sub-area field visibility** — additional Habit Creator defaults.
 
+### Vacations
+
+- **Vacation periods** — a list of periods (start date, end date and an optional name) that apply to all habits: an unticked vacation day neither breaks a streak nor lowers a percentage, and a ticked one counts only for that habit. **Add period** adds one and the trash button removes it; an end date before the start date is rejected. The 🌴 button in the Habit Tracker toolbar opens this list.
+
 ### Habit tabs visibility
 
 - Show/hide each Habit Tracker view independently: **Grid**, **Dashboard**, **Daily Routine**, **Weekly**, **Table**.

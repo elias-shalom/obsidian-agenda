@@ -6,3 +6,4 @@ export * from './habit-stats';
 export * from './habit-writer';
 export * from './habit-manager';
 export * from './habit-editor';
+export * from './open-habit-settings';

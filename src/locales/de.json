@@ -507,6 +507,18 @@
   "habit_active_until": "Aktiv bis",
   "habit_period_invalid": "„Aktiv ab“ darf nicht nach „Aktiv bis“ liegen",
   "habit_period_clear": "Datum leeren",
+  "habit_vacations": "Urlaub",
+  "habit_vacations_periods": "Urlaubszeiträume",
+  "habit_vacations_desc": "Tage, an denen Gewohnheiten nicht verlangt werden: Ein nicht abgehakter Tag unterbricht die Serie nicht und senkt den Prozentsatz nicht, ein abgehakter zählt nur für diese Gewohnheit. Gilt für alle Gewohnheiten.",
+  "habit_vacations_empty": "Keine Urlaubszeiträume.",
+  "habit_vacation_add": "Zeitraum hinzufügen",
+  "habit_vacation_from": "Von",
+  "habit_vacation_to": "Bis",
+  "habit_vacation_name": "Name (optional)",
+  "habit_vacation_remove": "Zeitraum entfernen",
+  "habit_vacation_invalid": "Das Enddatum darf nicht vor dem Startdatum liegen.",
+  "habit_vacation": "Urlaub",
+  "habit_vacations_open_failed": "Die Einstellungen konnten nicht geöffnet werden. Gehe zu Einstellungen → Agenda Tasks → Urlaub.",
   "habit_freq_custom": "Benutzerdefinierte Tage",
   "habit_time_unit_minutes": "Min"
 }

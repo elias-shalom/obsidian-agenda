@@ -507,6 +507,18 @@
   "habit_active_until": "Ativo até",
   "habit_period_invalid": "\"Ativo desde\" não pode ser posterior a \"Ativo até\"",
   "habit_period_clear": "Limpar data",
+  "habit_vacations": "Férias",
+  "habit_vacations_periods": "Períodos de férias",
+  "habit_vacations_desc": "Dias em que os hábitos não são exigidos: um dia sem marcar não quebra a sequência nem reduz a percentagem, e um dia marcado conta apenas para esse hábito. Aplica-se a todos os hábitos.",
+  "habit_vacations_empty": "Não há períodos de férias.",
+  "habit_vacation_add": "Adicionar período",
+  "habit_vacation_from": "De",
+  "habit_vacation_to": "Até",
+  "habit_vacation_name": "Nome (opcional)",
+  "habit_vacation_remove": "Remover período",
+  "habit_vacation_invalid": "A data final não pode ser anterior à data inicial.",
+  "habit_vacation": "Férias",
+  "habit_vacations_open_failed": "Não foi possível abrir as definições. Vá a Definições → Agenda Tasks → Férias.",
   "habit_freq_custom": "Dias personalizados",
   "habit_time_unit_minutes": "min"
 }

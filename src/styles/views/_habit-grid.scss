@@ -208,6 +208,25 @@ $habit-grid-pill-cap-inset: 3px;
   cursor: default;
 }
 
+// Día de vacaciones (v1.1.15, HV1): atenuado y con un icono; sigue siendo marcable y, si está marcado, la píldora
+// conserva el color del hábito. Si además no toca por frecuencia (deshabilitado) queda tan tenue como un día no programado.
+.oa-habit-grid-cell--vacation.oa-habit-grid-cell--unscheduled:not(:disabled) {
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.oa-habit-grid-cell--vacation:not(.oa-habit-grid-cell--ticked):not(.oa-habit-grid-cell--unscheduled-ticked)::before {
+  content: '🌴';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  font-size: 0.75rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
 // Día no programado encerrado entre dos días de una misma racha: raya delgada de conexión.
 .oa-habit-grid-cell--bridge {
   opacity: 1;

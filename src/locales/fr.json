@@ -507,6 +507,18 @@
   "habit_active_until": "Actif jusqu'au",
   "habit_period_invalid": "« Actif à partir du » ne peut pas être postérieur à « Actif jusqu'au »",
   "habit_period_clear": "Effacer la date",
+  "habit_vacations": "Vacances",
+  "habit_vacations_periods": "Périodes de vacances",
+  "habit_vacations_desc": "Jours où les habitudes ne sont pas exigées : un jour non coché ne casse pas la série ni ne baisse le pourcentage, et un jour coché ne compte que pour cette habitude. S'applique à toutes les habitudes.",
+  "habit_vacations_empty": "Aucune période de vacances.",
+  "habit_vacation_add": "Ajouter une période",
+  "habit_vacation_from": "Du",
+  "habit_vacation_to": "Au",
+  "habit_vacation_name": "Nom (facultatif)",
+  "habit_vacation_remove": "Supprimer la période",
+  "habit_vacation_invalid": "La date de fin ne peut pas précéder la date de début.",
+  "habit_vacation": "Vacances",
+  "habit_vacations_open_failed": "Impossible d'ouvrir les paramètres. Allez dans Paramètres → Agenda Tasks → Vacances.",
   "habit_freq_custom": "Jours personnalisés",
   "habit_time_unit_minutes": "min"
 }

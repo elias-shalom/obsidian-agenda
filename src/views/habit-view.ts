@@ -3,7 +3,7 @@ import { BaseView } from './base-view';
 import { AgendaPlugin, ViewData } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { TaskManager } from '../core/task-manager';
-import { HabitManager, IHabit } from '../habits';
+import { HabitManager, IHabit, IHabitCalcContext } from '../habits';
 
 export type HabitViewSubtype = 'grid' | 'dashboard' | 'routine' | 'weekly' | 'table';
 
@@ -133,6 +133,20 @@ export abstract class HabitView extends BaseView {
     newHabitBtn?.addEventListener('click', () => {
       this.habitManager.openEditor();
     });
+
+    container.querySelector('#oa-habit-vacations-btn')?.addEventListener('click', () => {
+      this.plugin.openHabitSettings();
+    });
+  }
+
+  /** Vacaciones de los ajustes para las funciones puras de cálculo (v1.1.15, HV1). */
+  protected get calcContext(): IHabitCalcContext {
+    return this.habitManager.getCalcContext();
+  }
+
+  /** Texto de una celda o día de vacaciones: el nombre del periodo o, si no lo tiene, «Vacaciones». */
+  protected vacationLabel(name?: string): string {
+    return name ? `🌴 ${name}` : `🌴 ${this.i18n.t('habit_vacation')}`;
   }
 
   private getViewIdForSubtype(subtype: HabitViewSubtype): string {

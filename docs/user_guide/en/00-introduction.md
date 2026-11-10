@@ -2,7 +2,7 @@
 
 **Agenda Tasks** is a task management and calendar plugin for [Obsidian](https://obsidian.md). It turns your vault into a productivity system by reading the tasks you already write in your notes and presenting them through several dedicated views, without changing how you write tasks.
 
-> This manual covers plugin version **1.1.14**. For a plain list of what changed between versions, see the Changelog section of the project [README](../../../README.md#changelog).
+> This manual covers plugin version **1.1.15**. For a plain list of what changed between versions, see the Changelog section of the project [README](../../../README.md#changelog).
 
 ## What it does
 

@@ -67,6 +67,10 @@ Define periodos de vacaciones en **Ajustes → Agenda Tasks → Hábitos → Vac
 
 Si el botón no puede abrir los ajustes (usa una API de Obsidian no documentada), un aviso indica la ruta para llegar a mano.
 
+## Hábitos en el calendario
+
+La pestaña Calendario muestra en cada día un pequeño chip con los hábitos cumplidos de los que tocan ese día, para verlos junto a tus tareas. Púlsalo para marcar hábitos y abrir sus notas sin salir del calendario; ocúltalo con el elemento **Hábitos** del menú **+ Filtro** del calendario. Se muestra por defecto y solo se ofrece si tienes hábitos y la pestaña Hábitos está visible. Ver [5. Vistas de calendario](04-calendar-views.md) para los detalles.
+
 ## Siguientes pasos
 
 - [8. Gestos e interacciones](07-gestures.md) para la referencia de gestos del Seguimiento de hábitos.

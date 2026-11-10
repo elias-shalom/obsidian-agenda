@@ -1210,7 +1210,7 @@ Arrastrar tareas entre carriles; carriles en el calendario, el Dashboard o los h
 - Si un campo con un solo valor (un solo carril) dibuja igualmente su encabezado.
 - Pruebas de Node de `buildLanes()` y de la exclusión entre chips.
 
-## 21. Calendario: días no laborables, feriados, ocurrencias proyectadas y hábitos en el calendario (v1.1.15 — diseño, no implementado)
+## 21. Calendario: días no laborables, feriados, ocurrencias proyectadas y hábitos en el calendario (v1.1.15 — implementado el 2026-11-09)
 
 > **Estado**: decisiones del 2026-11-01 (días no laborables, feriados y recurrentes proyectadas) y del 2026-11-02 (hábitos en el calendario); nada implementado. Mecanismo: [[Arquitectura técnica]] §30. Plan: fases NL1, NL2, FE1, FE2, PR1, PR2 y HC1 de v1.1.15 en [[Plan de implementación]]. Los hábitos tienen además periodo activo, vacaciones y selector circular en la documentación de hábitos (`docs/habit-tracker-agenda/`).
 

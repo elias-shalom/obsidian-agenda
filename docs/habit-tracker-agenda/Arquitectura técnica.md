@@ -224,7 +224,7 @@ export interface AgendaPluginSettings {
   - Toggles de visibilidad por pestaña de hábitos.
   - Botón "Refrescar" → emite `obsidian-agenda:habits-refresh`.
 
-> **Ampliación v1.1.15 (diseño)**: ajuste `habitVacations` (lista de periodos de vacaciones) con su sección «Vacaciones» y el ajuste de días no laborables que comparten calendario, Gantt y frecuencias de hábitos; ver §10.3 y §10.6.
+> **Ampliación v1.1.15 (implementada)**: ajuste `habitVacations` (lista de periodos de vacaciones) con su sección «Vacaciones» y el ajuste de días no laborables que comparten calendario, Gantt y frecuencias de hábitos; ver §10.3 y §10.6.
 
 ## 5. i18n
 
@@ -474,7 +474,7 @@ Claves de vacaciones (HV1, implementadas en los 6 locales): `habit_vacations`, `
 ### 10.12 Checklist de integración (v1.1.15)
 
 - [x] HA1: `from`/`until` leídos y escritos; el porcentaje de días pasados no cambia al desactivar (implementada y probada el 2026-11-09).
-- [x] HV1: lista de vacaciones en ajustes, cálculo, atenuado en Cuadrícula/Semanal/heatmap y botón «Vacaciones» (implementada el 2026-11-09; falta la prueba manual).
-- [x] HU1: cinco plantillas con botones circulares y `showHabit*Tab` respetados (implementada el 2026-11-09; falta la prueba manual).
+- [x] HV1: lista de vacaciones en ajustes, cálculo, atenuado en Cuadrícula/Semanal/heatmap y botón «Vacaciones» (implementada y probada a mano el 2026-11-09).
+- [x] HU1: cinco plantillas con botones circulares y `showHabit*Tab` respetados (implementada y probada a mano el 2026-11-09).
 - [ ] NL2 (Plan de agenda-tasks): frecuencias `weekend`/`workweek` siguen los días no laborables, con aviso.
 - [ ] i18n en los 6 locales; `npm run build` y `npm run lint` en verde; `node --test tests` en verde.

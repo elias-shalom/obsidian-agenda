@@ -67,6 +67,10 @@ Define vacation periods in **Settings → Agenda Tasks → Habits → Vacations*
 
 If the button can't open the settings (it relies on an undocumented Obsidian API), a notice shows the path to follow by hand.
 
+## Habits in the calendar
+
+The Calendar tab shows a small chip on each day with the habits done out of those due that day, so you can see them next to your tasks. Click it to tick habits and open their notes without leaving the calendar; hide it with the **Habits** item of the calendar's **+ Filter** menu. It is shown by default and only offered when you have habits and the Habits tab is visible. See [5. Calendar Views](04-calendar-views.md) for the details.
+
 ## Next steps
 
 - [8. Gestures and Interactions](07-gestures.md) for the Habit Tracker gesture reference.

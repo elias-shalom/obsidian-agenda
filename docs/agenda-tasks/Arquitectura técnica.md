@@ -1374,7 +1374,7 @@ Manual: las cuatro vistas con cada campo; que Lanes = Ninguno deje cada vista co
 
 Enlaces: [[Especificación de vistas]] §20; fases L1 (núcleo; independiente), L2 (barra; depende de L1 y M2), L3 (Lista y Tabla; depende de L2) y L4 (Kanban y Gantt; depende de L2) del [[Plan de implementación]].
 
-## 30. Calendario: días no laborables, feriados, proyección y hábitos (v1.1.15 — §30.2 NL1 y NL2, §30.3 FE1 y FE2 y §30.4 PR1 y PR2 implementados el 2026-11-08; el resto, diseño no implementado)
+## 30. Calendario: días no laborables, feriados, proyección y hábitos (v1.1.15 — implementado y probado a mano el 2026-11-09)
 
 Comportamiento de usuario y decisiones: [[Especificación de vistas]] §21. Fases del Plan: NL1, NL2, FE1, FE2, PR1, PR2 y HC1 en [[Plan de implementación]]. Los hábitos tienen su propia documentación en `docs/habit-tracker-agenda/`, que HC1 reutiliza (periodo activo y vacaciones, fases HA1 y HV1 del Plan de hábitos).
 

@@ -21,7 +21,7 @@ tags:
 
 > Stack: Handlebars (`.hbs`) + TS + luxon + SCSS. Todas las cadenas visibles vía `i18n.t()`.
 > Convenciones de interacción/responsividad descritas en §8.
-> **Ampliaciones v1.1.15–v1.1.16 (diseño, no implementado)**: §11 selector de subvistas con botones circulares, §12 periodo activo, vacaciones y frecuencias que siguen los días no laborables, §13 hábitos en el calendario y §14 widgets de hábitos en el Dashboard. Plan por fases HA1, HV1 y HU1 en [[Plan de implementación]]; modelo en [[Modelo de datos]] §8; mecanismo en [[Arquitectura técnica]] §10.
+> **Ampliaciones v1.1.15–v1.1.16**: §11 a §13 implementadas en v1.1.15 (selector de subvistas con botones circulares, periodo activo, vacaciones y frecuencias que siguen los días no laborables, y hábitos en el calendario); §14 widgets de hábitos en el Dashboard, diseño de v1.1.16, no implementado. Plan por fases HA1, HV1 y HU1 en [[Plan de implementación]]; modelo en [[Modelo de datos]] §8; mecanismo en [[Arquitectura técnica]] §10.
 
 ## 1. Vista Grid (estilo Habit Tracker 21) — PRINCIPAL
 
@@ -300,7 +300,7 @@ Cambiar el orden de las subvistas, mostrar la etiqueta junto al icono, y tocar l
 
 - Los iconos de Lucide (`calendar-check-2`, `layout-grid`…) deben existir en la versión de Lucide que incluye el `minAppVersion` del plugin; si alguno no existe, se elige el alias vigente. Ya pasó con `grid-3x3`, que Obsidian trae como `grid-3x-3`: se cambió a `layout-grid`.
 
-## 12. Periodo activo y vacaciones (v1.1.15 — periodo activo implementado el 2026-11-09 (HA1); vacaciones, diseño)
+## 12. Periodo activo y vacaciones (v1.1.15 — periodo activo y vacaciones implementados el 2026-11-09 (HA1 y HV1))
 
 Decidido el 2026-11-02. Dos mecanismos distintos que evitan que cambiar el estado de un hábito o salir de viaje altere el historial: el **periodo activo** (por hábito, en su nota) y las **vacaciones** (global, en los ajustes). Modelo en [[Modelo de datos]] §8; mecanismo en [[Arquitectura técnica]] §10.
 

@@ -57,7 +57,7 @@ A diferencia de `docs/habit-tracker-agenda/` (que documentó un módulo nuevo **
 - [x] Edición de tareas existentes desde el modal (clic simple en el calendario, doble clic abre el archivo)
 - [ ] Programación por hora del día (v1.1.4, ver `docs/todo.md`)
 - [x] **v1.1.14 — Filtros y Lanes** (implementado y probado a mano el 2026-11-03): filtros con varios valores y en el calendario; barra de chips `Lanes`/`Group`/`Sort` junto a «+ Filtro»; Lanes (Filas) en Kanban, Lista, Tabla y Gantt; `Group` por Inicio y Programada en Lista y Tabla; chip `Group` del Gantt
-- [ ] **v1.1.15 — Calendario y hábitos** (diseño, no implementado): días no laborables y sombreado; feriados de México y EE. UU.; recurrentes proyectadas; hábitos en el calendario (con periodo activo, vacaciones y selector circular, en `docs/habit-tracker-agenda/`)
+- [x] **v1.1.15 — Calendario y hábitos** (implementado el 2026-11-09 y publicado como 1.1.15): días no laborables y sombreado; feriados de México, EE. UU. e Internacional; recurrentes proyectadas; hábitos en el calendario (con periodo activo, vacaciones y selector circular, en `docs/habit-tracker-agenda/`)
 - [ ] **v1.1.16 — Dashboard** (diseño, no implementado): heatmap reutilizable y de tareas; widgets de hábitos; panel de vida con pestañas, arrastre y modo «Editar»; «Agenda de hoy», «Resumen del día» y «Revisión de la semana»
 - [ ] **v1.1.17 — Tareas y estados** (diseño, no implementado): Tabla con columnas y CSV; reloj de esfera para la hora; compatibilidad con Tasks (`🏁 delete` y Generar `🆔`); estados personalizados
 - [ ] v1.1.18 sincronía con Google Calendar (diseño); Google Tasks en v1.1.19 y Microsoft en v1.1.20 (ideas)

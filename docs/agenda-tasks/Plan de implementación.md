@@ -703,9 +703,9 @@ Cambiar el texto de «Sin área» en el agrupado; los títulos «By area» y «B
 ### Fuera de alcance
 Varios valores en los filtros de fecha; excluir valores («no es»); agrupado y orden en el calendario; arrastrar tareas entre carriles; orden manual de Kanban (descartado).
 
-## Próxima fase — v1.1.15: calendario y hábitos (diseño)
+## Fase v1.1.15: calendario y hábitos (implementada; falta el cierre CV15)
 
-> Comportamiento: [[Especificación de vistas]] §21. Mecanismo: [[Arquitectura técnica]] §30. Los hábitos tienen su propio diseño en `docs/habit-tracker-agenda/` (periodo activo, vacaciones y selector circular, fases HA1, HV1 y HU1 de [[habit-tracker-agenda/Plan de implementación]]). **Nada de esta versión está implementado.** Decidido el 2026-11-01 y el 2026-11-02.
+> Comportamiento: [[Especificación de vistas]] §21. Mecanismo: [[Arquitectura técnica]] §30. Los hábitos tienen su propio diseño en `docs/habit-tracker-agenda/` (periodo activo, vacaciones y selector circular, fases HA1, HV1 y HU1 de [[habit-tracker-agenda/Plan de implementación]]). **Todas sus fases están implementadas y probadas a mano** (2026-11-09); solo queda el cierre CV15. Decidido el 2026-11-01 y el 2026-11-02.
 >
 > **Orden de trabajo**: NL1 → NL2; FE1 → FE2; PR1 → PR2; HC1 al final, cuando HA1 y HV1 del plan de hábitos estén hechas. NL1, FE1 y PR1 son independientes entre sí. CV15 cierra la versión.
 
@@ -739,7 +739,7 @@ Varios valores en los filtros de fecha; excluir valores («no es»); agrupado y 
 - [x] Solo visual: no afectan a la Semana laboral, las rachas ni las tareas.
 - [x] Verificable con Node: `tests/holiday-rules.test.cjs` (35 pruebas: ajuste guardado, consulta día a día, claves de traducción en los 6 idiomas) y `tests/calendar-weekday-labels.test.cjs` (los feriados llegan a los datos de Semana, Semana laboral y Lista y no ocultan días).
 
-### Fase FE3 — Solo los oficiales sombrean e «Internacional» (depende de FE2; Especificación §21.2, Arquitectura §30.3) — **implementada el 2026-11-09; falta probarla a mano**
+### Fase FE3 — Solo los oficiales sombrean e «Internacional» (depende de FE2; Especificación §21.2, Arquitectura §30.3) — **implementada y probada a mano el 2026-11-09**
 - [x] El sombreado del día usa `hasOfficialHoliday()` en las 5 plantillas y en las franjas de la vista Día (`HourSlot.isOfficialHoliday`); el Gantt tiñe la columna solo con un feriado oficial. Los no oficiales conservan etiqueta (y punto en el Año).
 - [x] Calendario «Internacional»: `holiday-data-int.ts` (58 días fijos no oficiales en 4 temas), `group` en las reglas, `groups` en el calendario, `isVisible()` por tema, `sanitizeHolidayCalendars()` y `changeHolidayCountry()` para el país con temas; la fila del ajuste muestra una casilla por tema en lugar de región y categorías. Claves `holiday_country_int`, `holiday_group_*` y 58 `holiday_int_*` en los 6 idiomas.
 - [x] Verificable con Node: `tests/holiday-rules.test.cjs` (temas, visibilidad, sanitize, cambio de país, `hasOfficialHoliday`) y `tests/calendar-holiday-shading.test.cjs` (los no oficiales no sombrean en ninguna vista).
@@ -758,7 +758,7 @@ Varios valores en los filtros de fecha; excluir valores («no es»); agrupado y 
 - [x] Verificable con Node: `tests/calendar-filters.test.cjs` (el calendario pide los fantasmas aparte, detrás de las reales; con N en 0 no hay; sin el ajuste son 10; un filtro oculta los fantasmas con su tarea real) y `tests/task-projection.test.cjs` (el ajuste y `projectAllOccurrences()`).
 - [x] Prueba manual (2026-11-09, hecha por el usuario) con una diaria, una semanal y una mensual (también `every weekday`): los fantasmas en las cinco vistas, atenuados y con `🔁`; clic abre la tarea real y doble clic su nota; no se arrastran ni se redimensionan en Día; completar la real no duplica la siguiente; con N = 0, 10 y 50; con un filtro de prioridad o área; escritorio y `is-phone`.
 
-### Fase HC1 — Hábitos en el calendario (depende de HA1 y HV1 de [[habit-tracker-agenda/Plan de implementación]]; Especificación §21, Arquitectura §30) — **implementada el 2026-11-09; falta la prueba manual**
+### Fase HC1 — Hábitos en el calendario (depende de HA1 y HV1 de [[habit-tracker-agenda/Plan de implementación]]; Especificación §21, Arquitectura §30) — **implementada y probada a mano el 2026-11-09**
 - [x] Filtro «Hábitos» al final del menú «+ Filtro» del calendario, marcado por defecto (decidido el 2026-11-09, en lugar de un ajuste): al desmarcarlo se ocultan los hábitos y aparece el chip «Hábitos: Ocultos»; no se ofrece si la pestaña Hábitos está oculta ni si no hay hábitos (`TaskViewState.habits`, `FilterChipId` `'habits'`, `TaskFilterBar.setFilterTypes()`).
 - [x] Entradas virtuales por día en que toca el hábito, respetando el periodo activo y los días de vacaciones; sin escribir en archivos y sin ser tareas (no entran en Lista, Tabla, Kanban, Gantt ni en los conteos). Módulo puro `buildHabitDaySummary()` en `habit-calendar.ts`.
 - [x] Mes, Semana, Semana laboral y Lista: un chip resumen por día con el icono `sunrise` de Rutina y un popover de casillas (el de `task-filter-popover.ts`, ampliado); clic marca o desmarca (escritura de `completions` con `habit-writer.ts`); Día: el mismo chip en el encabezado de cada columna (sin sección aparte); no en Año. Para abrir la nota: botón ↗ en cada fila del popover (el doble clic sobre una casilla marcaría y desmarcaría).
@@ -766,13 +766,13 @@ Varios valores en los filtros de fecha; excluir valores («no es»); agrupado y 
 - [x] Vacaciones: la 🌴 en el chip y en las filas del día; los neutrales atenuados y marcables; el chip de un día de vacaciones sin marcas no lleva fracción.
 - [x] Casos vacíos: sin hábitos no se dibuja nada ni se ofrece el filtro; un día en que no toca ninguno no lleva chip (nunca `0/0`).
 - [x] Pruebas Node `habit-calendar-day.test.cjs` (17: resumen, orden, vacaciones, filtros) y `calendar-habits.test.cjs` (25: modelo del día en `CalendarView`, disponibilidad del filtro, parcial del chip y chip del encabezado del Día), más los casos de «Hábitos» en `filter-bar-direct.test.cjs` y de reparto a las subvistas en `calendar-weekday-labels.test.cjs`.
-- [ ] Prueba manual: con hábitos, marcar uno desde el popover del chip y desde la vista Día actualiza la nota y el Dashboard de hábitos; el ↗ abre la nota; con «Hábitos» desmarcado, o sin hábitos, o con la pestaña oculta, no aparece nada; con un periodo de vacaciones; filtros de área y búsqueda; móvil.
+- [x] Prueba manual (hecha por el usuario el 2026-11-09): con hábitos, marcar uno desde el popover del chip y desde la vista Día actualiza la nota y el Dashboard de hábitos; el ↗ abre la nota; con «Hábitos» desmarcado, o sin hábitos, o con la pestaña oculta, no aparece nada; con un periodo de vacaciones; filtros de área y búsqueda; móvil.
 
-### Fase CV15 — Cierre de v1.1.15: pruebas manuales y documentación (depende de NL1 a HC1)
-- [ ] Pruebas manuales: sombreado y Semana laboral con distintos días marcados; hábitos con frecuencias que siguen el ajuste; feriados de México y EE. UU. en las 6 vistas y el Gantt; fantasmas con N = 0, 10 y 50; hábitos en el calendario con filtros y en móvil; selector circular de Hábitos, periodo activo y vacaciones (fases del plan de hábitos).
-- [ ] README (badge, What's New, News, Features, Gestures, Configuration, Changelog y lista de próximas versiones), manual de usuario en/es, `whats_new.v1_1_15` en los 6 idiomas, `'1.1.15'` en `WHATS_NEW_VERSIONS` de `src/core/whats-new.ts`.
-- [ ] Documentación de desarrollo: pasar §21 y §30 a «implementado».
-- [ ] `npm version 1.1.15 --no-git-tag-version`, `npm run build` y ESLint sobre los archivos tocados.
+### Fase CV15 — Cierre de v1.1.15: pruebas manuales y documentación (depende de NL1 a HC1) — **hecha el 2026-11-10**
+- [x] Pruebas manuales (hechas por el usuario el 2026-11-09): sombreado y Semana laboral con distintos días marcados; hábitos con frecuencias que siguen el ajuste; feriados de México, EE. UU. e Internacional en las 6 vistas y el Gantt; fantasmas con N = 0, 10 y 50; hábitos en el calendario con filtros y en móvil; selector circular de Hábitos, periodo activo y vacaciones (fases del plan de hábitos).
+- [x] README (badge, What's New, News, Features, Gestures, Configuration, Changelog y lista de próximas versiones), manual de usuario en/es, `whats_new.v1_1_15` en los 6 idiomas, `'1.1.15'` en `WHATS_NEW_VERSIONS` de `src/core/whats-new.ts`.
+- [x] Documentación de desarrollo: §21 y §30 pasan a «implementado».
+- [x] `npm version 1.1.15 --no-git-tag-version`, `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
 Archivo de feriados del usuario (feriados personales o un país nuevo); feriados que cambian la Semana laboral, las rachas o las tareas; proyectar en Año, Gantt, Lista, Tabla, Kanban u Overview; proyectar reglas `when done`; escribir los hábitos como tareas en las notas; marcar los días de vacaciones en el calendario.

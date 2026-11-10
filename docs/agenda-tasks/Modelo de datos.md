@@ -357,7 +357,7 @@ Reglas (decididas 2026-11-03): Lanes y Group no repiten campo, entendido por fam
 - Resuelto el 2026-11-03: el valor por defecto de `Group` en Lista sigue siendo Área (`LIST_DEFAULT_GROUP`); al ajustarse solo por un conflicto con Lanes (Lista, Tabla y Gantt), se escribe `'none'` de forma explícita y no el valor por defecto.
 - Si el estado guardado de una vista con un `lanes` que ya no existe (o que choca con `group`) se repara al leer, como hace `parseKanbanState()` con un agrupado desconocido. Parcialmente resuelto en L2: `parseTaskViewState()` deja `lanes` en `''` si el valor no es un campo válido; un choque con `group` no se repara al leer (se evita al elegir) y se decide en L3 y L4, cuando las vistas lean `lanes`.
 
-## 13. Calendario: días no laborables, feriados, proyección y hábitos (v1.1.15 — diseño, no implementado)
+## 13. Calendario: días no laborables, feriados, proyección y hábitos (v1.1.15 — implementado el 2026-11-09)
 
 > Comportamiento: [[Especificación de vistas]] §21. Mecanismo: [[Arquitectura técnica]] §30. Los hábitos (periodo activo `from`/`until` y lista de vacaciones) están en el modelo de `docs/habit-tracker-agenda/`.
 

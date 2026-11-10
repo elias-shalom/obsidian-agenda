@@ -107,7 +107,7 @@ tags:
 - [x] Changelog/MANIFEST bump: versión `1.1.0` en `package.json`/`manifest.json`/`versions.json` (mismo `minAppVersion: 1.8.7`). De paso se corrigió un bug en `version-bump.mjs` (rutas relativas `../manifest.json`/`../versions.json` apuntaban fuera del repo porque el script corre con cwd = raíz del paquete, no `src/`).
 - [ ] Prueba de escritura en vault real (hacer toggle en un hábito de prueba y revertir) — **pendiente, requiere verificación manual**: no hay un `test-vault` en este workspace ni forma de automatizar la escritura real sobre un vault de Obsidian desde aquí; todo lo verificado en esta sesión fue vía `npm run build`.
 
-## Ampliaciones v1.1.15–v1.1.16 (diseño, no implementado)
+## Ampliaciones v1.1.15–v1.1.16 (HA1, HV1 y HU1 implementadas en v1.1.15)
 
 Decididas el 2026-11-02 y organizadas por fases con prefijo propio (`HA1`, `HV1`, `HU1`), independientes de las fases 0–7. Especificación en [[Especificación de vistas]] §11–§14, datos en [[Modelo de datos]] §8 y mecanismo en [[Arquitectura técnica]] §10. **Orden recomendado**: HA1 → HV1 (HU1 puede ir en cualquier momento). Las tres pertenecen a v1.1.15 y cada una se puede probar a mano completa.
 
@@ -125,7 +125,7 @@ Decididas el 2026-11-02 y organizadas por fases con prefijo propio (`HA1`, `HV1`
 
 **Verificar**: `npm run build`, `npm run lint`, `node --test tests`; manual: desactivar y reactivar un hábito de prueba y comprobar que el porcentaje de fechas pasadas no cambia y que una nota sin fechas se comporta igual que antes.
 
-### Fase HV1 — Vacaciones (v1.1.15) — **implementada el 2026-11-09; falta la prueba manual**
+### Fase HV1 — Vacaciones (v1.1.15) — **implementada y probada a mano el 2026-11-09**
 
 **Dependencias**: HA1 (comparte `habit-calendar.ts` y la propagación del contexto). **Verificable por separado**: sí, con los hábitos mostrados solo en Cuadrícula, Semanal y heatmap.
 
@@ -140,7 +140,7 @@ Decididas el 2026-11-02 y organizadas por fases con prefijo propio (`HA1`, `HV1`
 
 **Verificar**: `npm run build`, `npm run lint`, `node --test tests`; manual: vacaciones que incluyan hoy con un hábito marcado y otro no, y botón «Vacaciones» en escritorio y móvil (la API es no documentada; probar también el camino del `Notice`).
 
-### Fase HU1 — Selector circular de subvistas (v1.1.15) — **implementada el 2026-11-09; falta la prueba manual**
+### Fase HU1 — Selector circular de subvistas (v1.1.15) — **implementada y probada a mano el 2026-11-09**
 
 **Dependencias**: ninguna. **Verificable por separado**: sí.
 

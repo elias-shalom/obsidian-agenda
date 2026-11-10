@@ -2,11 +2,11 @@
 
 > A comprehensive task management and calendar plugin for Obsidian
 
-[![Release](https://img.shields.io/badge/version-1.1.14-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
+[![Release](https://img.shields.io/badge/version-1.1.15-blue.svg)](https://github.com/elias-shalom/obsidian-agenda/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Obsidian](https://img.shields.io/badge/Obsidian-1.8.7+-purple.svg)](https://obsidian.md)
 
-> 🆕 **What's New in v1.1.14** — **Lanes**: split Kanban, List, Table and Gantt into one independent widget per area, status, priority, tag, folder or file. Filters now accept **several values** (two priorities, three areas…) and the **calendar** gets its own filter bar. **Group** and **Sort** are now compact buttons next to **+ Filter**, List and Table can group by start and scheduled date, and the Gantt gets a **Group** selector. [See details](#news) · [Full changelog](#changelog).
+> 🆕 **What's New in v1.1.15** — **Calendar and habits**: weekends and **holidays** (Mexico, United States and a new **International** calendar of UN days) are shaded in the calendar, recurring tasks are **projected** as ghost pills, and your **habits** show up in the calendar as a daily chip. Habits can have an **active period** and **vacations**, and the Habit Tracker views are picked with round icon buttons. [See details](#news) · [Full changelog](#changelog).
 
 ## Overview
 
@@ -41,7 +41,17 @@ Agenda Tasks transforms your Obsidian vault into a powerful productivity system 
 
 ## 🆕 News
 
-### v1.1.14 (latest)
+### v1.1.15 (latest)
+- **Non-working days and shading**: a new setting with one checkbox per weekday (Saturday and Sunday by default) decides which days are non-working. They are shaded in the calendar's Month, Week, List and Day views and in the Gantt, and hidden in Work Week; the habit frequencies "Weekend" and "Work week" and the recurrences `every weekend` and `every weekday` follow it
+- **Holiday calendars**: add calendars of public holidays for **Mexico** and the **United States** (with optional states), official and/or unofficial, each with its own color. Holidays show their name as a tinted label in every calendar view (a dot in Year, a tinted column in the Gantt), and a day with an **official** holiday is shaded like a non-working day. Unofficial days (Mother's Day, Halloween…) keep their label but do not shade the day
+- **International days**: a new **International** holiday calendar with 58 days of the UN and other international bodies in four topics — **Women and children**, **Health**, **Environment** and **Society and rights** — that you tick in the settings
+- **Projected recurring tasks**: recurring tasks (🔁) appear in the calendar ahead of time as read-only, outline-only pills (10 occurrences by default, 0 to 50 in the settings); clicking one opens the real task, and completing the real task writes the next occurrence as usual
+- **More from the calendar filter bar**: **Start date**, **Scheduled date** and **Due date** in **+ Filter** choose which date pills are drawn, and the **Recurring tasks**, **Habits** and **Holidays** items (ticked by default) hide projected tasks, habit chips and holidays. The pill's left margin now takes the color of the task's area, and pills are slimmer
+- **Habits in the calendar**: each day shows a chip with the habits done out of those due (for example 🌅 2/4); click it to tick habits and open their notes without leaving the calendar. It follows the area filter and the search, and a vacation day adds a 🌴
+- **Habit active period and vacations**: a habit can have **Active from / Active until** dates, and **vacation periods** (Settings ▸ Habits, or the 🌴 button in the toolbar) apply to all habits: a vacation day you did not tick neither breaks a streak nor lowers a percentage
+- **Habit Tracker toolbar**: the five views are picked with round icon buttons, and Sort and Group are chips like the ones in the task views
+
+### v1.1.14
 - **Lanes**: a new **Lanes** button in the filter bar splits a view into independent widgets, one per value of a field — **Area**, **Sub-area**, **Status**, **Priority**, **Tag**, **Folder** or **File** (the default, *None*, shows the view as before). In **Kanban** each lane is its own board with the same columns, so you finally get one board per area; in **List** each lane is a section; in **Table** each lane is its own block with the column header repeated and the same widths in every lane; in the **Gantt** each lane is its own chart over one shared window and zoom, with the date header repeated. Fold a lane with its ▼ (remembered); empty lanes are hidden, *Root* and *No tag* go last, and area lanes carry the area color. By *Tag* a task appears in each of its tags. Lanes are read-only: you cannot drag a card to another lane
 - **Group and Sort as buttons**: the old dropdowns became compact buttons placed next to **+ Filter** with the same look; clicking one opens the same menu as **+ Filter** with the current choice checked, and the **Sort** button has an arrow to reverse the direction. The **List | Table** switch moved next to the search box. The group labels are shorter (*None*, *Area and sub*)
 - **Lanes and Group never repeat a field**: if you pick for one the field the other uses, Kanban does not allow it (its columns are required) and List, Table and Gantt switch the other button to *None* for you. Area, Sub-area and Folder count as the same field
@@ -171,6 +181,10 @@ See the [full changelog](#changelog) below for older versions.
 #### Calendar View
 - Multiple calendar layouts (day, week, work week, month, year, and list)
 - **Filter bar** (new in 1.1.14): search, Priority, Status and Area filters in all six layouts
+- **Holidays and non-working days** (new in 1.1.15): weekends and days with an official holiday are shaded; holiday calendars for Mexico, the United States and International UN days, each with its own color
+- **Projected recurring tasks** (new in 1.1.15): future occurrences of recurring tasks as read-only ghost pills, hideable from the filter bar
+- **Habits in the calendar** (new in 1.1.15): a daily chip with the habits done out of those due, with a list to tick them
+- **Filter bar items** (new in 1.1.15): choose which date pills to draw (Start, Scheduled, Due) and show or hide Recurring tasks, Habits and Holidays
 - Day view supports a 1/3/5-day mode with the reference day centered
 - List view shows a continuous, configurable 7–14 day window, one row per day
 - Task visualization on calendar grid
@@ -202,7 +216,9 @@ See the [full changelog](#changelog) below for older versions.
 - **Habit Dashboard** - Today's raw/weighted completion, current and best streaks, side-by-side breakdowns by area and daytime, a 30-day history chart, and a GitHub-style yearly heatmap you can navigate by year (this is now the default habit view)
 - **Weekly view** - 7-day matrix sharing the same visual language as the Grid (pills, circles, sorting)
 - **Habit Table/List** - Sortable catalog of all habits with area, related-file link, frequency, priority, daytime, time and streak columns
-- **Habit Creator** - A modal to create and edit habits: a circular time dial, priority/max-gap sliders, an active/inactive switch, and an area combobox suggested from your vault's root folders (free-form, not a fixed list)
+- **Habit Creator** - A modal to create and edit habits: a circular time dial, priority/max-gap sliders, an active/inactive switch, optional **Active from / Active until** dates (new in 1.1.15), and an area combobox suggested from your vault's root folders (free-form, not a fixed list)
+- **Vacations** (new in 1.1.15) - Global vacation periods that apply to all habits: an untouched vacation day is neutral for streaks and percentages
+- **Round view buttons** (new in 1.1.15) - The five views are picked with round icon buttons, and Sort and Group are chips like in the task views
 
 ### 🔧 General Capabilities
 - ✅ Parse and track tasks from your entire vault
@@ -298,7 +314,8 @@ A quick reference of clicks, double-clicks and drags across the plugin — handy
 | Click | A view-type icon button (header) | Switches to that calendar view (Day/Week/Work Week/Month/Year/List), keeping the current reference date |
 | Click | A day cell/row (Month/Week/Work Week/Year/List) | Selects and highlights that date as the shared reference date |
 | Click | A day number (Month/Week/Work Week/Year/List) | Jumps to the **Day view** for that date |
-| Click | **+ Filter** (all calendar views) | Opens menus to pick Priority, Status or Area; a checklist lets you tick several values, and the search box filters by text |
+| Click | **+ Filter** (all calendar views) | Opens menus to pick Priority, Status or Area; a checklist lets you tick several values, and the search box filters by text. The one-click items (Start/Scheduled/Due date, Recurring tasks, Habits, Holidays) are ticked and unticked right in the menu |
+| Click | A habit chip (top-right of a day) | Opens a list of that day's habits, grouped by time of day, to tick them; ↗ opens a habit's note |
 | Double-click | Empty space in a day cell/row | Opens **Create Task** prefilled with that date |
 | Click | The date picker trigger (header, Month/Week/Work Week/Year/Day/List) | Opens a popover to jump to any day, month or year |
 | Click | A date in the date picker (popover or Day view sidebar) | Jumps to that date, updating the shared reference date |
@@ -418,6 +435,9 @@ The plugin recognizes and properly handles all standard Obsidian Tasks metadata,
 - **Show Due/Start/Scheduled Dates** - Independently choose which date types appear on calendar views, each with its own icon + color badge
 - **Show Completed Tasks** - Keep completed tasks dimmed on the calendar, or hide them entirely
 - **List View: Days to Show** (new in 1.1.10) - Number of days shown in the calendar's List view window (7–14, default 14)
+- **Projected recurring tasks** (new in 1.1.15) - Future occurrences of each recurring task (0 to 50, default 10) drawn as faded, read-only copies in the Month, Week, Work Week, Day and List views
+- **Non-working days** (new in 1.1.15) - One checkbox per weekday (Saturday and Sunday by default)
+- **Holiday calendars** (new in 1.1.15) - A list of calendars (none active by default), each with a country (Mexico, United States or International), an optional region, official/unofficial checkboxes (or topic checkboxes for International) and a color
 
 ### Filtering & Sorting
 - **Type filters** (+ Filter; List, Table, Kanban, Gantt and the Calendar views) - Priority, Status and Area (with sub-area) accept several values at once; Start, Scheduled and Due (not in the Calendar) take one; Area and Sub-area also offer **Root**
@@ -432,9 +452,7 @@ The plugin recognizes and properly handles all standard Obsidian Tasks metadata,
 - **Widget Configuration** - Personalize dashboard widgets
 - **Display Preferences** - Adjust how tasks are displayed
 - **Show what's new after an update** - Opens a window with the news the first time you start Obsidian after updating (on by default)
-- **Projected recurring tasks** - Future occurrences of each recurring task (0 to 50, default 10) drawn as faded, read-only copies in the Month, Week, Work Week, Day and List calendar views
-- **Non-working days** - One checkbox per weekday (Saturday and Sunday by default): shaded in the calendar's Month, Week and List views and in the Gantt, hidden in Work Week, and used by the habit frequencies "Weekend" and "Work week" and the recurrences `every weekend` and `every weekday`
-- **Holiday calendars** - Public holidays of Mexico and the United States (with optional states), official and/or unofficial, each calendar with its own color; marked in the six calendar views and in the Gantt, visual only (none active by default)- **Task Modal mode** - The "More fields" (advanced) section of the Create/Edit Task modal remembers whether you left it expanded or collapsed, per device
+- **Task Modal mode** - The "More fields" (advanced) section of the Create/Edit Task modal remembers whether you left it expanded or collapsed, per device
 
 ### Habit Tracker Settings
 - **Habit Folder Path** - Vault folder scanned (recursively) for habit notes
@@ -443,12 +461,23 @@ The plugin recognizes and properly handles all standard Obsidian Tasks metadata,
 - **Show daytime for single-daytime habits** - Show a small localized daytime badge beside the habit name in Grid and Weekly (on by default; multi-daytime rows always show the badge)
 - **Default Max Gap** - Default tolerance (in days) before a streak breaks
 - **Tab Visibility** - Show/hide each habit view (Grid, Routine, Dashboard, Weekly, Table) independently
+- **Vacations** (new in 1.1.15) - A list of vacation periods (start, end and an optional name) that apply to all habits
 
 Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks**. The panel is split into three tabs: **General**, **Calendar** and **Habits**
 
 ---
 
 ## 📋 Changelog
+
+### Version 1.1.15 📆
+- **Non-working days** (`non-working-days.ts`): the new setting `nonWorkingDays` (ISO weekdays, default Saturday and Sunday) replaces the fixed `weekday >= 6` of the Gantt and is shared by the calendar shading, the Work Week view, the habit frequencies "Weekend" and "Work week" and the recurrences `every weekend` and `every weekday`. The settings screen is split into **General**, **Calendar** and **Habits** tabs
+- **Holiday engine** (`src/core/holidays/`): embedded, offline rules (fixed date, nth or last weekday, relative to Easter, observed, six-year cycle and explicit lists) for Mexico and the United States with their regions, plus an **International** calendar whose rules belong to topics (`group`) that the calendar ticks (`groups`). `HolidayLookup` answers per day; `sanitizeHolidayCalendars()` cleans the saved setting and `changeHolidayCountry()` resets what depends on the country. `hasOfficialHoliday()` decides the shading: only official holidays shade the day (also the Gantt tint), unofficial ones keep their label
+- **Projection** (`task-projection.ts`): `projectOccurrences()` chains `getNextOccurrenceDate()` to draw up to N (`calendarProjectionCount`, 0 to 50) read-only ghost pills per recurring task; `when done` rules are not projected
+- **Calendar filter bar** (`calendar-state.ts`, `task-filter-bar.ts`): date types, **Recurring tasks** (`projected`), **Habits** (`habits`) and **Holidays** (`holidays`) as one-click items, saved with the calendar state; the pill's left margin takes the area color
+- **Habits in the calendar** (`habit-calendar.ts`): `buildHabitDaySummary()` and `filterHabitsForCalendar()` feed a per-day chip and a popover that toggles occurrences through `HabitManager`; the holiday label and the chip share a wrapping row
+- **Habits** (`habit-calendar.ts`, `habit-view-icons.ts`): `from`/`until` active period and global vacation periods with one counting rule, `countsOn()`, used by cells, streaks and statistics; round icon buttons for the sub-views and Sort/Group chips
+- **Tests**: new Node tests for the non-working days, the holiday rules and calendars, the projection, the calendar filters, the shading, the habit day summary and the habits in the calendar (`node --test "tests/*.test.cjs"`)
+- **Documentation**: the user manual (English and Spanish) covers the shading, holidays, the International calendar, the projected tasks, the filter-bar items and the habits in the calendar. International dates are written from memory and are worth a review
 
 ### Version 1.1.14 🛤️
 - **Several values per filter** (`task-view-state.ts`, `area.ts`, `task-filter-chips.ts`): `TaskViewState.priority` and `status` became lists and the area and sub-area became one list of routes (`Work`, `Work/Proj`, `Work/` for notes directly in the folder, `/` for the vault root); an empty list means "all". OR inside a type, AND across types, and the most specific area route wins. A saved state in the old format is converted when read. A checkbox popover (`task-filter-popover.ts`) stays open while you tick values; a chip with several values shows only its count and a tooltip lists them
@@ -639,7 +668,6 @@ Access settings via: **Obsidian Settings → Community Plugins → Agenda Tasks*
 
 ## 🗓️ Planned for Future Versions
 
-- ⬜ Calendar: weekend shading and configurable non-working days, holidays, projected recurring tasks and habits in the calendar
 - ⬜ Dashboard: a task heatmap, habit widgets and a "life dashboard" with tabs
 - ⬜ Table: customizable columns and layout, and CSV export
 - ⬜ A clock-face time picker, closer compatibility with the Tasks plugin and custom task statuses

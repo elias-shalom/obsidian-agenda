@@ -124,7 +124,7 @@ Qué días de la semana está **programado** el hábito. Formato en YAML (tokens
 - **Día no programado** (`!isScheduled`): es **neutral** — no cuenta como cumplido ni como falta, no rompe racha, y en las vistas se atenúa (grid/semanal) o se oculta (rutina → solo hábitos programados ese día).
 - **Toggle en día no programado**: permitido (queda en `completions` y se refleja en el espejo `entries`) pero **no afecta** stats ni rachas.
 
-> **Cambio v1.1.15 (diseño)**: `workweek` y `weekend` dejan de ser fijos (`{1..5}` y `{6,7}`) y siguen el ajuste de días no laborables; ver §8.6. Con el ajuste por defecto el resultado es el mismo.
+> **Cambio v1.1.15 (implementado)**: `workweek` y `weekend` dejan de ser fijos (`{1..5}` y `{6,7}`) y siguen el ajuste de días no laborables; ver §8.6. Con el ajuste por defecto el resultado es el mismo.
 
 ### 2.6 Prioridad (`priority`)
 

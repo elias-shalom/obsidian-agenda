@@ -45,6 +45,10 @@ export interface IHabit {
   color: string;
   maxGap: number;
   status: string;
+  /** Primer día activo (`fm.from`, `AAAA-MM-DD` válido) o `null` (v1.1.15, HA1). */
+  activeFrom: string | null;
+  /** Último día activo (`fm.until`, `AAAA-MM-DD` válido) o `null`; el plugin lo escribe al desactivar el hábito. */
+  activeUntil: string | null;
   completions: ICompletions;
   /** Espejo HT21 day-level, derivado de completions (nunca se lee directo del disco) */
   entries: Set<string>;
@@ -65,6 +69,11 @@ export interface IHabitCell {
   streakCount: number;
   deadline: boolean;
   classes: string;
+  /** El día cae en un periodo de vacaciones (v1.1.15, HV1); `vacationName` es el nombre del periodo, si lo tiene. */
+  vacation: boolean;
+  vacationName?: string;
+  /** Se puede marcar: toca por su frecuencia y está en el periodo activo, aunque sea de vacaciones y por tanto neutral. */
+  markable: boolean;
 }
 
 export interface IHabitStreakStats {
@@ -81,6 +90,9 @@ export interface IHabitDayStat {
   weightDone: number;
   weightTotal: number;
   pctWeighted: number;
+  /** El día es de vacaciones (v1.1.15, HV1); sin ninguna marca queda con `total` 0 y el heatmap lo atenúa. */
+  vacation: boolean;
+  vacationName?: string;
 }
 
 export interface HabitDashboardData {

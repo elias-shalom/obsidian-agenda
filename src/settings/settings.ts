@@ -1,3 +1,6 @@
+import type { HolidayCalendarConfig } from '../core/holidays/holiday-calendar';
+import type { IHabitVacation } from '../habits/habit-calendar';
+
 export interface AgendaPluginSettings {
   // Define your plugin settings here
   showOverviewTab: boolean;
@@ -16,6 +19,21 @@ export interface AgendaPluginSettings {
   calendarShowCompletedTasks: boolean;
   /** Días visibles en la vista de lista del calendario (v1.1.10, §4.10): mínimo 7, máximo 14. */
   calendarListDaysToShow: number;
+  /**
+   * Días no laborables (v1.1.15, NL1): días ISO (1 = lunes … 7 = domingo). Los comparten el sombreado del
+   * calendario, la Semana laboral y el Gantt. Siempre hay al menos uno marcado y uno sin marcar.
+   */
+  nonWorkingDays: number[];
+  /**
+   * Calendarios de feriados activos (v1.1.15, FE2): país, región opcional, casillas Oficiales y No oficiales y un
+   * color. Vacío por defecto («ninguno activo»). Solo visual.
+   */
+  holidayCalendars: HolidayCalendarConfig[];
+  /**
+   * Ocurrencias futuras que el calendario proyecta por cada tarea recurrente (v1.1.15, PR2): entre 0 y 50, por
+   * defecto 10; con 0 no se proyecta nada. Cuenta ocurrencias, no tiempo.
+   */
+  calendarProjectionCount: number;
 
   // Habits settings
   habitFolderPath: string;
@@ -25,6 +43,11 @@ export interface AgendaPluginSettings {
   habitDefaultMaxGap: number;
   habitDefaultPriority: number;
   habitDefaultColor: string;
+  /**
+   * Periodos de vacaciones (v1.1.15, HV1): fechas ISO inclusivas y un nombre opcional. Son la fuente única para
+   * todos los hábitos; un día sin marcar en vacaciones es neutral. Vacía por defecto.
+   */
+  habitVacations: IHabitVacation[];
   showHabitSubAreaField: boolean;
   showHabitGridTab: boolean;
   showHabitDashboardTab: boolean;
@@ -48,6 +71,9 @@ export const DEFAULT_SETTINGS: AgendaPluginSettings = {
   calendarShowScheduledDates: true,
   calendarShowCompletedTasks: true,
   calendarListDaysToShow: 14,
+  nonWorkingDays: [6, 7],
+  holidayCalendars: [],
+  calendarProjectionCount: 10,
 
   habitFolderPath: "daily plan/daily routine/habit",
   habitDaysToShow: 21,
@@ -56,6 +82,7 @@ export const DEFAULT_SETTINGS: AgendaPluginSettings = {
   habitDefaultMaxGap: 0,
   habitDefaultPriority: 3,
   habitDefaultColor: "",
+  habitVacations: [],
   showHabitSubAreaField: false,
   showHabitGridTab: true,
   showHabitDashboardTab: true,

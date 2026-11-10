@@ -64,11 +64,11 @@ Proveer dentro del plugin **Obsidian Agenda** un conjunto de vistas de **hábito
 Decididas el 2026-11-02; ver [[Especificación de vistas]] §11–§14, [[Modelo de datos]] §8, [[Arquitectura técnica]] §10 y las fases HA1, HV1 y HU1 en [[Plan de implementación]].
 
 **v1.1.15 — Calendario y hábitos**
-- [ ] **Periodo activo** por hábito (`desde`/`hasta` opcionales en la nota): el porcentaje de una fecha o rango cuenta solo los hábitos activos ese día; desactivar un hábito ya no cambia el historial (HA1).
-- [ ] **Vacaciones**: lista global de periodos en los ajustes; un día de vacaciones no cuenta como cumplido ni incumplido, salvo para el hábito que el usuario marque; atenuado con icono en Cuadrícula, Semanal y heatmap; botón «Vacaciones» en la barra de Hábitos (HV1).
-- [ ] **Selector de subvistas con botones circulares** en lugar del `<select>` (HU1).
+- [ ] **Periodo activo** por hábito (`from`/`until` opcionales en la nota): el porcentaje de una fecha o rango cuenta solo los hábitos activos ese día; desactivar un hábito ya no cambia el historial (HA1).
+- [x] **Vacaciones** (implementado el 2026-11-09): lista global de periodos en los ajustes; un día de vacaciones no cuenta como cumplido ni incumplido, salvo para el hábito que el usuario marque; atenuado con icono en Cuadrícula y Semanal y con rayas en el heatmap; botón «Vacaciones» en la barra de Hábitos (HV1).
+- [x] **Selector de subvistas con botones circulares** en lugar del `<select>` (HU1, implementado el 2026-11-09).
 - [ ] **Frecuencias «Fin de semana» y «Lunes a viernes»** que siguen el ajuste de días no laborables, con aviso (NL2, en el Plan de agenda-tasks).
-- [ ] **Hábitos en el calendario**: entradas virtuales (no son tareas), chip `🔁 3/5` con popover, sección por franja en Día y ajuste «Mostrar hábitos en el calendario» desactivado por defecto (HC1, en el Plan de agenda-tasks; detalle en `docs/agenda-tasks/Especificación de vistas.md` §21).
+- [ ] **Hábitos en el calendario**: entradas virtuales (no son tareas), chip `🌅 3/5` con popover (también en Día) y filtro «Hábitos» marcado por defecto en el menú «+ Filtro» (HC1, en el Plan de agenda-tasks; detalle en `docs/agenda-tasks/Especificación de vistas.md` §21).
 
 **v1.1.16 — Dashboard**
 - [ ] **Widgets de hábitos** en el Dashboard (Hábitos de hoy, Racha actual, Esta semana con anillos y heatmap anual) y **heatmap de hábitos compartido**: migra al componente reutilizable y debe quedar idéntico (DW1 y HM1, en el Plan de agenda-tasks; detalle en `docs/agenda-tasks/Especificación de vistas.md` §22).
@@ -94,11 +94,11 @@ Decididas el 2026-11-02; ver [[Especificación de vistas]] §11–§14, [[Modelo
 | US-13 | Como usuario, quiero crear y editar mis hábitos desde el plugin | Un **modal** permite crear (nota nueva en la ruta) y editar (frontmatter) un hábito: name, description, time (dial), área (string libre sugerido por carpetas del vault), subÁrea, frecuencia, prioridad (slider 1–5), daytime (multi), status (switch), maxGap (slider) y color (default = acento del tema); se preservan `completions`. |
 | US-14 | Como usuario, quiero marcar solo las ocurrencias que hice | En un hábito multi-daytime, el grid muestra **una fila por `daytime`** (`morning`/`afternoon`/…) para marcarlas de forma independiente; `entries` solo refleja los días con **todas** las ocurrencias. |
 | US-15 | Como usuario, quiero que un día parcial no me rompa la racha | Marcar 1 de 3 ocurrencias no completa el día (`entries`/racha del hábito agregado en Dashboard), pero **no corta** la racha; en la Grid, cada ocurrencia lleva su propia racha independiente. |
-| US-16 *(v1.1.15, diseño)* | Como usuario, quiero desactivar un hábito sin que cambie mi porcentaje de días pasados | Al desactivarlo el plugin escribe `hasta` = hoy; el porcentaje de una fecha o rango cuenta solo los hábitos activos ese día; sin fechas el hábito se comporta como hoy. |
+| US-16 *(v1.1.15, diseño)* | Como usuario, quiero desactivar un hábito sin que cambie mi porcentaje de días pasados | Al desactivarlo el plugin escribe `until` = hoy; el porcentaje de una fecha o rango cuenta solo los hábitos activos ese día; sin fechas el hábito se comporta como hoy. |
 | US-17 *(v1.1.15, diseño)* | Como usuario, quiero marcar unas vacaciones en las que mis hábitos no cuenten | Los días de vacaciones no cuentan como cumplidos ni incumplidos (no rompen ni suman a la racha, no entran en el porcentaje); si marco un hábito ese día, cuenta solo para él; se ven atenuados con icono y un botón «Vacaciones» abre los ajustes. |
 | US-18 *(v1.1.15, diseño)* | Como usuario, quiero cambiar de subvista con botones de icono | El selector de subvistas son botones circulares con tooltip y `aria-label`, que respetan los ajustes de visibilidad de cada pestaña. |
 | US-19 *(v1.1.15, diseño)* | Como usuario, quiero que «Fin de semana» y «Lunes a viernes» respeten mis días no laborables | Ambas frecuencias siguen el ajuste de días no laborables y el ajuste avisa de que cambia rachas y porcentajes. |
-| US-20 *(v1.1.15–v1.1.16, diseño)* | Como usuario, quiero ver mis hábitos en el calendario y en el Dashboard | Los hábitos aparecen como entradas virtuales (chip `🔁 3/5`) sin ser tareas, y el Dashboard ofrece los widgets «Hábitos de hoy», «Racha actual», «Esta semana» y el heatmap anual. |
+| US-20 *(v1.1.15–v1.1.16, diseño)* | Como usuario, quiero ver mis hábitos en el calendario y en el Dashboard | Los hábitos aparecen como entradas virtuales (chip `🌅 3/5`) sin ser tareas, y el Dashboard ofrece los widgets «Hábitos de hoy», «Racha actual», «Esta semana» y el heatmap anual. |
 
 ## 4. Requerimientos funcionales
 
@@ -109,7 +109,7 @@ Decididas el 2026-11-02; ver [[Especificación de vistas]] §11–§14, [[Modelo
 - `habitShowStreaks: boolean` — mostrar indicadores y conteos de racha. Defecto `true`.
 - `habitDefaultMaxGap: number` — tolerancia de huecos por defecto (0 = ninguno).
 - `showHabitGridTab`, `showHabitDashboardTab`, `showHabitRoutineTab`, `showHabitWeeklyTab`, `showHabitListTab: boolean` — visibilidad de pestañas (patrón existente).
-- *(v1.1.15, diseño)* `habitVacations` — lista global de periodos de vacaciones (desde, hasta, nombre opcional), RF-9.
+- *(v1.1.15)* `habitVacations` — lista global de periodos de vacaciones (`from`, `to`, nombre opcional), RF-9.
 
 ### RF-2 Carga de datos
 
@@ -161,15 +161,15 @@ Decididas el 2026-11-02; ver [[Especificación de vistas]] §11–§14, [[Modelo
 
 ### RF-8 Periodo activo (v1.1.15, diseño)
 
-- Campos opcionales `desde` y `hasta` (`AAAA-MM-DD`) en la nota del hábito, además de `status`; un solo periodo; sin fechas, comportamiento actual ([[Modelo de datos]] §8.1 y §8.3).
-- El porcentaje de una fecha o rango, por hábito, área y daytime, cuenta solo los hábitos activos ese día; desactivar escribe `hasta` = hoy y reactivar lo borra.
-- El Habit Creator gana dos selectores de fecha (`desde` y `hasta`).
+- Campos opcionales `from` y `until` (`AAAA-MM-DD`) en la nota del hábito, además de `status`; un solo periodo; sin fechas, comportamiento actual ([[Modelo de datos]] §8.1 y §8.3).
+- El porcentaje de una fecha o rango, por hábito, área y daytime, cuenta solo los hábitos activos ese día; desactivar escribe `until` = hoy y reactivar lo borra.
+- El Habit Creator gana dos selectores de fecha (`from` y `until`).
 
-### RF-9 Vacaciones (v1.1.15, diseño)
+### RF-9 Vacaciones (v1.1.15, implementado el 2026-11-09)
 
-- Lista global `habitVacations` en los ajustes (desde, hasta y nombre opcional); fuente única para todos los hábitos.
+- Lista global `habitVacations` en los ajustes (`from`, `to` y nombre opcional); fuente única para todos los hábitos.
 - Un día de vacaciones no cuenta como cumplido ni incumplido (no rompe ni suma a la racha, no entra en el denominador); si el usuario marca un hábito ese día, cuenta solo para ese hábito ([[Modelo de datos]] §8.5).
-- Se muestran atenuados con icono en Cuadrícula, Semanal y heatmap; botón «Vacaciones» en la barra de Hábitos que abre los ajustes con `app.setting.open()` y `openTabById('agenda-tasks')` (API no documentada; si falla, un `Notice` indica la ruta).
+- Se muestran atenuados con icono en Cuadrícula y Semanal y con rayas en el heatmap (si no tienen marcas); botón «Vacaciones» en la barra de Hábitos que abre los ajustes con `app.setting.open()` y `openTabById('agenda-tasks')` (API no documentada; si falla, un `Notice` indica la ruta).
 
 ### RF-10 Selector de subvistas y frecuencias (v1.1.15, diseño)
 
@@ -178,7 +178,7 @@ Decididas el 2026-11-02; ver [[Especificación de vistas]] §11–§14, [[Modelo
 
 ### RF-11 Hábitos en el calendario y en el Dashboard (v1.1.15 y v1.1.16, diseño)
 
-- Entradas virtuales en el calendario (Mes, Semana, Semana laboral, Día y Lista; no Año), sin escribir en archivos y sin ser tareas; ajuste «Mostrar hábitos en el calendario» desactivado por defecto ([[Especificación de vistas]] §13).
+- Entradas virtuales en el calendario (Mes, Semana, Semana laboral, Día y Lista; no Año), sin escribir en archivos y sin ser tareas; filtro «Hábitos» marcado por defecto en el menú «+ Filtro» del calendario ([[Especificación de vistas]] §13).
 - Widgets de hábitos y heatmap compartido en el Dashboard; el heatmap de hábitos migra al componente reutilizable y queda idéntico ([[Especificación de vistas]] §14).
 
 ## 5. Requerimientos no funcionales
@@ -205,7 +205,7 @@ Decididas el 2026-11-02; ver [[Especificación de vistas]] §11–§14, [[Modelo
 8. El plugin sigue funcionando si la ruta no existe (mensaje claro, sin crash).
 9. En un hábito con 2+ daytimes, la Grid muestra una fila por cada `daytime`; marcar una sola fila NO completa el día agregado del hábito — `entries` solo contiene la fecha cuando **todas** las filas/ocurrencias quedan marcadas.
 10. Crear un hábito desde el modal genera la nota en la ruta configurada con su frontmatter completo; editar preserva `completions`.
-11. *(v1.1.15, diseño)* Desactivar un hábito no cambia el porcentaje de fechas pasadas; una nota sin `desde`/`hasta` se comporta igual que antes.
+11. *(v1.1.15, diseño)* Desactivar un hábito no cambia el porcentaje de fechas pasadas; una nota sin `from`/`until` se comporta igual que antes.
 12. *(v1.1.15, diseño)* En un día de vacaciones un hábito sin marcar no rompe ni suma a la racha ni entra en el porcentaje; uno marcado cuenta solo para sí mismo.
 13. *(v1.1.15, diseño)* Con los días no laborables por defecto, «Fin de semana» y «Lunes a viernes» dan exactamente los mismos días que antes; con otro ajuste los siguen y se avisa.
 14. *(v1.1.16, diseño)* El heatmap anual de hábitos migrado al componente compartido es idéntico al actual (valores, niveles y aspecto).

@@ -41,7 +41,7 @@ export class CalendarWeekView extends CalendarView {
     let currentDay = startOfWeek;
     
     for (let i = 0; i < daysToGenerate; i++) {
-      const dayTasks = this.getTasksForDate(currentDay);
+      const dayTasks = this.getTasksForDate(currentDay, true);
       const dayIndex = (currentDay.weekday - this.getWeekStartDay() + 7) % 7;
       
       days.push({
@@ -53,6 +53,9 @@ export class CalendarWeekView extends CalendarView {
         // Usar el nombre localizado del día en lugar de toFormat()
         dayName: localizedDayNames[dayIndex],
         formattedDate: `${localizedDayNames[dayIndex]} ${currentDay.day}`,
+        isNonWorking: this.isNonWorking(currentDay),
+        holidays: this.getHolidays(currentDay),
+        habits: this.getHabitDay(currentDay),
         tasksForDay: dayTasks
       });
       

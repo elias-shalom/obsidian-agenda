@@ -6,7 +6,7 @@ import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import { CalendarViewType } from "../types/enums";
 
-import { MonthViewData } from '../types/interfaces';
+import { MonthViewData, HolidayLabel, HabitDayView } from '../types/interfaces';
 export const CALENDAR_MONTH_VIEW_TYPE = "calendar-month-view";
 
 export class CalendarMonthView extends CalendarView {
@@ -43,6 +43,9 @@ export class CalendarMonthView extends CalendarView {
       isToday: boolean;
       isSelected: boolean;
       dayOfMonth: number;
+      isNonWorking: boolean;
+      holidays: HolidayLabel[];
+      habits: HabitDayView | null;
       tasksForDay: ITask[];
     };
     
@@ -65,7 +68,10 @@ export class CalendarMonthView extends CalendarView {
         isToday: currentDay.hasSame(DateTime.now(), 'day'),
         isSelected: currentDay.hasSame(this.currentDate, 'day'),
         dayOfMonth: currentDay.day,
-        tasksForDay: this.getTasksForDate(currentDay)
+        isNonWorking: this.isNonWorking(currentDay),
+        holidays: this.getHolidays(currentDay),
+        habits: this.getHabitDay(currentDay),
+        tasksForDay: this.getTasksForDate(currentDay, true)
       };
       
       currentWeekDays.push(dayData);

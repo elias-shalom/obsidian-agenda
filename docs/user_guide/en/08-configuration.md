@@ -1,10 +1,9 @@
 # 9. Configuration
 
-Access every plugin setting via **Obsidian Settings → Community Plugins → Agenda Tasks**. Settings are grouped exactly as they appear in that panel.
+Access every plugin setting via **Obsidian Settings → Community Plugins → Agenda Tasks**. The panel has three tabs at the top — **General**, **Calendar** and **Habits** — and each tab shows only its own settings, as listed below.
 
 ## General settings
 
-- **Week starts on** — which weekday calendar views treat as the first day of the week.
 - **Show what's new after an update** — opens a window with the news the first time you start Obsidian after updating the plugin (on by default). It appears once per update and, if you skipped several versions, lists them all.
 
 ## Tab Visibility
@@ -15,9 +14,13 @@ Access every plugin setting via **Obsidian Settings → Community Plugins → Ag
 
 ## Calendar
 
+- **Week starts on** — which weekday calendar views treat as the first day of the week.
 - **Show Due/Start/Scheduled Dates** — independently choose which date types appear on calendar views, each with its own icon + color badge (see [7. Task Format and Metadata](06-task-format.md)).
 - **Show Completed Tasks** — keep completed tasks dimmed on the calendar, or hide them entirely.
 - **List view: days to show** — the rolling window size for the calendar's List view (minimum 7, maximum 14, default 14). See [5. Calendar Views](04-calendar-views.md).
+- **Projected recurring tasks** — how many future occurrences of each recurring task (🔁) the calendar shows (0 to 50, default 10; 0 turns it off). They appear in the Month, Week, Work Week, Day and List views as outline-only pills (no fill, dashed border, italic title) with a 🔁 badge at the start, so they are not mistaken for completed tasks (which stay filled, faded and struck through). They are read-only: you cannot drag, resize, complete or change their status; click opens the real task and double click opens its note. Completing the real task writes the next occurrence as usual (the copy that took its place is then replaced by the new line), and a daily task stops being drawn after N days. Tasks that end in `when done` are not projected, and the calendar filters apply to the copies too. You can also hide all the copies at once with the **Recurring tasks** item of the calendar's **+ Filter** menu (ticked by default), without changing this setting.
+- **Non-working days** — one checkbox per weekday, Monday to Sunday (Saturday and Sunday by default). The marked days are shaded in the calendar's Month, Week, List and Day views and in the Gantt; the Work Week view hides them. They are also the days of the habit frequencies "Weekend" and "Work week" and of the recurrences `every weekend` and `every weekday`, so changing them changes habit streaks and percentages and the dates of those recurring tasks. At least one working day and one non-working day must remain; a checkbox that would break this stays as it was and a notice explains why.
+- **Holiday calendars** — a list of public-holiday calendars (none is active by default). Each one has a country (Mexico, United States or **International**), an optional region (state) that adds that state's holidays to the national ones, the **Official** and **Unofficial** checkboxes (Mother's Day, Day of the Dead and Halloween are unofficial) and a color; use **Add holiday calendar** to add one and the trash button to remove it. **International** gathers 58 days from the UN and other international bodies (Women's Day, Earth Day, Human Rights Day…); it has no region or Official / Unofficial checkboxes but one checkbox per topic (**Women and children**, **Health**, **Environment** and **Society and rights**, all ticked when you create it) and shows only the days of the ticked topics. Holidays are drawn with a soft tint of that color: a name label in Month, Week, Work Week and List, under the date in Day, a dot with a tooltip in Year and a tinted column in the Gantt. A day with an **official** holiday is also shaded like a non-working day (Month, Week, Work Week, List and Day); unofficial ones are not. You can hide them from the **Holidays** item of the calendar's **+ Filter** menu. They are visual only: they do not affect the Work Week, habit streaks or tasks.
 
 ## Habits
 
@@ -28,6 +31,10 @@ Access every plugin setting via **Obsidian Settings → Community Plugins → Ag
 - **Default max gap (days)** — default tolerance before a streak breaks, used as the starting value when creating a new habit.
 - **Default priority** — starting priority value (1–5) for new habits.
 - **Default color** and **sub-area field visibility** — additional Habit Creator defaults.
+
+### Vacations
+
+- **Vacation periods** — a list of periods (start date, end date and an optional name) that apply to all habits: an unticked vacation day neither breaks a streak nor lowers a percentage, and a ticked one counts only for that habit. **Add period** adds one and the trash button removes it; an end date before the start date is rejected. The 🌴 button in the Habit Tracker toolbar opens this list.
 
 ### Habit tabs visibility
 

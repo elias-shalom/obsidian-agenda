@@ -4,15 +4,30 @@ import { CalendarViewType } from './enums';
 import { Plugin, WorkspaceLeaf } from 'obsidian';
 import { AgendaPluginSettings } from '../settings/settings';
 import type { LaneViewModel } from '../core/task-lanes';
+import type { HabitManager } from '../habits/habit-manager';
 
 export interface AgendaPlugin extends Plugin {
   viewManager: {
     activateView: (viewType: string, leaf: WorkspaceLeaf) => void;    
   };
   settings: AgendaPluginSettings;
+  /** Abre los ajustes del plugin en la lista de vacaciones de hábitos (v1.1.15, HV1). */
+  openHabitSettings: () => void;
+  /** El gestor de hábitos, del que el calendario lee y marca los hábitos del día (v1.1.15, HC1). Opcional: las pruebas no lo tienen. */
+  getHabitManager?: () => HabitManager;
   modalManager: {
     openModal: (modalType: string, options?: ModalOptions) => void;
   };
+}
+
+/**
+ * Un feriado que se dibuja en un día (v1.1.15, FE2): nombre ya traducido y color del calendario de feriados que lo
+ * incluye. Solo visual.
+ */
+export interface HolidayLabel {
+  name: string;
+  color: string;
+  official: boolean;
 }
 
 /**
@@ -30,6 +45,47 @@ export interface WeekDayData {
   /** Mes abreviado y localizado (p. ej. "oct"); solo lo usa la vista de Lista (v1.1.11, fix), ya
    * que su ventana de días puede cruzar un límite de mes y Semana/Semana laboral no lo necesitan. */
   monthAbbr?: string;
+  /** Día marcado como no laborable en los ajustes (v1.1.15, NL1); Mes, Semana y Lista lo sombrean. */
+  isNonWorking?: boolean;
+  /** Feriados del día según los calendarios de feriados activos (v1.1.15, FE2). */
+  holidays?: HolidayLabel[];
+  /** Hábitos del día como entradas virtuales (v1.1.15, HC1); ausente si no hay ninguno que toque o están ocultos. */
+  habits?: HabitDayView | null;
+}
+
+/** Una ocurrencia de hábito (hábito + franja) tal como la dibuja el calendario (v1.1.15, HC1). */
+export interface HabitDayRow {
+  /** `ruta de la nota::franja`, la misma clave de fila que usan las vistas de hábitos. */
+  id: string;
+  title: string;
+  daytime: string;
+  ticked: boolean;
+  /** Neutral: en vacaciones sin marcar (atenuada, sigue siendo marcable). */
+  muted: boolean;
+  /** Color del área del hábito. */
+  areaColor: string;
+}
+
+/** Una franja del día con sus ocurrencias (la sección «Hábitos» de la vista Día). */
+export interface HabitDayGroup {
+  daytime: string;
+  label: string;
+  rows: HabitDayRow[];
+}
+
+/**
+ * Los hábitos de un día para el calendario (v1.1.15, HC1): el chip resumen (`label` es `3/5`, vacío si ninguna cuenta
+ * porque el día es de vacaciones y no hay marcas) y las ocurrencias por franja para el popover y la vista Día.
+ */
+export interface HabitDayView {
+  date: string;
+  label: string;
+  done: number;
+  total: number;
+  vacation: boolean;
+  /** Texto del tooltip del chip: «3 de 5 hábitos cumplidos», con el periodo de vacaciones si lo hay. */
+  tooltip: string;
+  groups: HabitDayGroup[];
 }
 
 /**
@@ -41,6 +97,8 @@ export interface WeekViewData {
   days: WeekDayData[];
   dayNames: string[];
   periodName: string;
+  /** Solo la Semana laboral: los estilos de cuadrícula alternativos solo valen con cinco días. */
+  gridStylesAvailable?: boolean;
 }
 
 /**
@@ -359,6 +417,10 @@ export interface HourSlot {
   /** `true` si alguna de las dos mitades tiene segmentos; ambas se renderizan juntas para que cada
    * una ocupe siempre el 50% de la franja, aunque una quede vacía (evita que la otra se estire). */
   hasDurationSegments: boolean;
+  /** El día de la columna tiene un feriado oficial (v1.1.15): la franja se sombrea como los días no laborables. */
+  isOfficialHoliday: boolean;
+  /** El día de la columna es no laborable según los ajustes (v1.1.15): la franja se sombrea igual. */
+  isNonWorking: boolean;
 }
 
 /** Una fila de hora compartida entre todas las columnas visibles del modo de varios días
@@ -387,6 +449,12 @@ export interface DayColumnData {
   allDayStart: ITask[];
   /** Tareas con `scheduled` como ancla pero sin hora asignada (caso límite, ver Plan de implementación) */
   allDayScheduled: ITask[];
+  /** Feriados del día según los calendarios de feriados activos (v1.1.15, FE2). */
+  holidays: HolidayLabel[];
+  /** Día marcado como no laborable en los ajustes (v1.1.15): la columna se sombrea como en Mes, Semana y Lista. */
+  isNonWorking: boolean;
+  /** Hábitos del día (v1.1.15, HC1): alimentan el chip del encabezado de la columna. */
+  habits: HabitDayView | null;
 }
 
 export type DaysToShow = 1 | 3 | 5;
@@ -533,6 +601,9 @@ export interface MonthViewData {
       isToday: boolean;
       isSelected: boolean;
       dayOfMonth: number;
+      isNonWorking: boolean;
+      holidays: HolidayLabel[];
+      habits: HabitDayView | null;
       tasksForDay: ITask[];
     }[];
     weekNumber: number;
@@ -560,6 +631,9 @@ export interface YearViewData {
         dayOfMonth: number;
         hasTasksDue: boolean;
         taskCount: number;
+        /** Feriados del día (v1.1.15, FE2): el punto usa el color del primero y el tooltip lista los nombres. */
+        holidays: HolidayLabel[];
+        holidayTitle: string;
       }[];
       weekNumber: number;
     }[];

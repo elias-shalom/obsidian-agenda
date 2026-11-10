@@ -703,59 +703,76 @@ Cambiar el texto de «Sin área» en el agrupado; los títulos «By area» y «B
 ### Fuera de alcance
 Varios valores en los filtros de fecha; excluir valores («no es»); agrupado y orden en el calendario; arrastrar tareas entre carriles; orden manual de Kanban (descartado).
 
-## Próxima fase — v1.1.15: calendario y hábitos (diseño)
+## Fase v1.1.15: calendario y hábitos (implementada; falta el cierre CV15)
 
-> Comportamiento: [[Especificación de vistas]] §21. Mecanismo: [[Arquitectura técnica]] §30. Los hábitos tienen su propio diseño en `docs/habit-tracker-agenda/` (periodo activo, vacaciones y selector circular, fases HA1, HV1 y HU1 de [[habit-tracker-agenda/Plan de implementación]]). **Nada de esta versión está implementado.** Decidido el 2026-11-01 y el 2026-11-02.
+> Comportamiento: [[Especificación de vistas]] §21. Mecanismo: [[Arquitectura técnica]] §30. Los hábitos tienen su propio diseño en `docs/habit-tracker-agenda/` (periodo activo, vacaciones y selector circular, fases HA1, HV1 y HU1 de [[habit-tracker-agenda/Plan de implementación]]). **Todas sus fases están implementadas y probadas a mano** (2026-11-09); solo queda el cierre CV15. Decidido el 2026-11-01 y el 2026-11-02.
 >
 > **Orden de trabajo**: NL1 → NL2; FE1 → FE2; PR1 → PR2; HC1 al final, cuando HA1 y HV1 del plan de hábitos estén hechas. NL1, FE1 y PR1 son independientes entre sí. CV15 cierra la versión.
 
-### Fase NL1 — Días no laborables y sombreado (independiente; Especificación §21, Arquitectura §30)
-- [ ] Ajuste con siete casillas de días no laborables, por defecto sábado y domingo (nombre propuesto `nonWorkingDays`, ver Modelo de datos §13), en ambas rutas de `setting-tab.ts`.
-- [ ] Sombreado de esos días en Mes, Semana y Lista del calendario; no en Día, Año ni Semana laboral.
-- [ ] Semana laboral: oculta los días marcados; nunca queda vacía porque el ajuste exige al menos un día marcado y uno sin marcar (`sanitizeNonWorkingDays()`; el ajuste rechaza el cambio y muestra un `Notice`).
-- [ ] Gantt: el sombreado deja de ser fijo (`date.weekday >= 6` en `gantt-view.ts`) y usa el ajuste.
-- [ ] Verificable sola: Node (función de día no laborable, días visibles de la Semana laboral y regla de extremos: ninguno marcado y los siete marcados se rechazan); prueba manual cambiando el ajuste con el calendario y el Gantt abiertos.
+### Fase NL1 — Días no laborables y sombreado (independiente; Especificación §21, Arquitectura §30) — **implementada y probada a mano (2026-11-08 y 2026-11-09)**
+- [x] Ajuste con siete casillas de días no laborables, por defecto sábado y domingo (`nonWorkingDays` en `settings.ts`, Modelo de datos §13), en ambas rutas de `setting-tab.ts` (`renderNonWorkingDays()`); `loadSettings()` lo sanea (`sanitizeNonWorkingDays()`).
+- [x] Sombreado de esos días en Mes, Semana y Lista del calendario (clase `oa-calendar-non-working`, un tinte como imagen de fondo para sumarse a «hoy» y «seleccionado»); no en Día, Año ni Semana laboral.
+- [x] Semana laboral: oculta los días marcados; nunca queda vacía porque el ajuste exige al menos un día marcado y uno sin marcar (`toggleNonWorkingDay()` rechaza el cambio y muestra un `Notice`). Usa la misma semana de lunes a domingo que la Semana (resuelto el 2026-11-08) y el número de columnas sale de `--oa-workweek-days`; los once estilos de cuadrícula solo se ofrecen con cinco días (`gridStylesAvailable`).
+- [x] Gantt: el sombreado deja de ser fijo (`date.weekday >= 6`) y usa el ajuste.
+- [x] Al cambiar una casilla se refrescan el calendario (con la Lista) y el Gantt abiertos.
+- [x] Verificable con Node (`tests/non-working-days.test.cjs`, 17 pruebas, y 8 pruebas nuevas en `tests/calendar-weekday-labels.test.cjs`): función de día no laborable, días de la Semana laboral con 1 a 6 días, regla de extremos, saneo de valores inválidos, la Semana laboral por defecto idéntica a la de antes y el sombreado en Semana y Lista.
+- [x] Prueba manual (2026-11-09, hecha por el usuario) cambiando el ajuste con el calendario y el Gantt abiertos: sombreado en Mes, Semana y Lista (también sobre «hoy» y el día seleccionado), Semana laboral con 4, 5 y 6 días, el aviso al desmarcar el último día no laborable y al marcar el séptimo, escritorio, `is-tablet` e `is-phone`.
 
-### Fase NL2 — Frecuencias de hábitos con el ajuste y aviso (depende de NL1)
-- [ ] Las frecuencias «Fin de semana» y «Lunes a viernes» de los hábitos usan el ajuste en lugar de `[6, 7]` fijo (`FREQUENCY_PRESETS` y `resolveFrequencyMode()` en `habit-editor.ts`, `habit-table-view.ts` y el caso `weekend` de `habit-parser.ts`).
-- [ ] Las recurrentes `every weekday` y `every weekend` siguen el ajuste (decidido el 2026-11-03): `TaskSection.convertToRRuleFormat()` y `getNextOccurrenceDate()` reciben `nonWorkingDays`; con `[6, 7]` el resultado es idéntico al actual (prueba de Node de regresión); nota bajo el campo de recurrencia del Task Modal cuando el ajuste no es sábado y domingo; el texto fijo y el `Notice` del ajuste mencionan las recurrentes.
-- [ ] Aviso al cambiar el ajuste: texto fijo bajo las casillas y un `Notice` breve (rachas y porcentajes de hábitos se ven afectados).
-- [ ] Verificable sola: Node (frecuencias con el ajuste por defecto, con otros días y la conversión del editor); el cálculo de rachas con el ajuste por defecto no cambia.
+### Fase NL2 — Frecuencias de hábitos con el ajuste y aviso (depende de NL1) — **implementada el 2026-11-08 y probada a mano el 2026-11-09**
+- [x] Las frecuencias «Fin de semana» y «Lunes a viernes» de los hábitos usan el ajuste en lugar de `[6, 7]` fijo: `getFrequencyPresetDays()` y `matchFrequencyPreset()` (`non-working-days.ts`) las leen `normalizeFrequencySet()` de `habit-parser.ts`, `resolveFrequencyMode()` y la sincronía del combo de `habit-editor.ts` y `frequencyLabel()` de `habit-table-view.ts` (se retiró `FREQUENCY_PRESETS`).
+- [x] Las recurrentes `every weekday` y `every weekend` siguen el ajuste (decidido el 2026-11-03): `TaskSection.convertToRRuleFormat()` y `getNextOccurrenceDate()` reciben `nonWorkingDays` (opcional, por defecto sábado y domingo, así que el resultado es idéntico al de antes: prueba de regresión); `changeTaskStatus()`, `buildRecurrenceOccurrence()` y `TaskModal` lo reciben de los ajustes (`attachTaskGestures()`, el arrastre del Kanban y `ModalManager`); nota bajo el campo de recurrencia del Task Modal cuando el ajuste no es sábado y domingo (`describeRecurrenceDays()`, claves `recurrence_weekend_note` y `recurrence_weekday_note`).
+- [x] Aviso al cambiar el ajuste: el texto fijo bajo las casillas menciona hábitos y recurrentes, y un `Notice` breve (`non_working_days_changed`) avisa de que rachas, porcentajes y recurrentes lo siguen; el cambio vuelve a leer los hábitos (`ObsidianAgenda.refreshHabits()`) y emite `obsidian-agenda:habits-refresh`.
+- [x] Verificable con Node: `tests/habit-frequency.test.cjs` (9 pruebas: frecuencias con el ajuste por defecto y con otros, token dentro de una lista, listas explícitas que no siguen el ajuste), `tests/task-recurrence-weekdays.test.cjs` (13 pruebas: la conversión a RRULE por defecto idéntica a la de antes, con otro ajuste, siguiente ocurrencia y línea resultante) y 13 pruebas más en `tests/non-working-days.test.cjs`. El cálculo de rachas con el ajuste por defecto no cambia.
+- [x] Ajustes en tres pestañas (decidido y hecho el 2026-11-08, a petición del usuario): **General**, **Calendario** y **Hábitos** (Arquitectura §30.2); `week_start_day` pasa al grupo Calendario y las casillas de días no laborables se muestran en horizontal bajo la descripción.
+- [x] Prueba manual (2026-11-08, Obsidian ≥ 1.13): cambiar de pestaña con `refreshDomState()` funciona y cada pestaña muestra solo sus grupos. Pendiente: la ruta `display()` (Obsidian < 1.13), la tira de siete casillas en horizontal y un panel estrecho.
+- [x] Prueba manual (2026-11-09, hecha por el usuario): cambiar el ajuste y comprobar en la Tabla de hábitos y en el editor que «Fin de semana» y «Lunes a viernes» muestran los días nuevos y que un hábito con días explícitos no cambia; completar una recurrente `every weekday` y otra `every weekend` con el ajuste por defecto y con otro (por ejemplo viernes y sábado), desde el calendario, la Lista, el Kanban y el modal; la nota del Task Modal; el `Notice` al cambiar una casilla.
 
-### Fase FE1 — Motor de reglas de feriados (independiente; Especificación §21, Arquitectura §30)
-- [ ] Motor embebido, sin red, con las reglas: fecha fija; n-ésimo o último día de la semana del mes; relativo a la Pascua; observado (si cae en fin de semana se recorre); ciclo de años (transmisión del Poder Ejecutivo de México, cada 6 años) y lista explícita por año.
-- [ ] Datos de México y EE. UU. con sus estados o regiones; cada regla es oficial o no oficial (Día de las Madres, Día de Muertos, Halloween…); el formato queda documentado y abierto para añadir países (sin archivo del usuario por ahora).
-- [ ] Verificable sola: `node --test` con cada tipo de regla y fechas conocidas de varios años (los lunes de feb, mar y nov de México, MLK, Memorial Day, Acción de Gracias, Semana Santa, observado y el ciclo de 6 años).
+### Fase FE1 — Motor de reglas de feriados (independiente; Especificación §21, Arquitectura §30) — **implementada el 2026-11-08; falta revisar los datos regionales**
+- [x] Motor embebido, sin red, con las reglas: fecha fija; n-ésimo o último día de la semana del mes; relativo a la Pascua; observado (si cae en fin de semana se recorre); ciclo de años (transmisión del Poder Ejecutivo de México, cada 6 años) y lista explícita por año (`src/core/holidays/holiday-rules.ts`, `evaluateRule()`).
+- [x] Datos de México y EE. UU. con sus estados o regiones; cada regla es oficial o no oficial (Día de las Madres, Día de Muertos, Halloween…); el formato queda documentado en la cabecera de `holiday-rules.ts` y abierto para añadir países (sin archivo del usuario por ahora). Consulta por rango en `holiday-calendar.ts` (`getHolidaysForRange()`). Las claves de traducción de los nombres (`holiday_mx_*`, `holiday_us_*`) se añaden a los 6 idiomas en FE2, cuando se muestran.
+- [x] Verificable sola: `tests/holiday-rules.test.cjs` (26 pruebas): cada tipo de regla con fechas conocidas de varios años (los lunes de feb, mar y nov de México, MLK, Memorial Day, Acción de Gracias, Semana Santa, observado dentro y fuera del año y el ciclo de 6 años), consistencia de los datos y consulta por rango.
+- [ ] Revisar los datos regionales (solo Chiapas y Puebla en México; Alaska, California, Hawái, Luisiana, Massachusetts, Maine y Texas en EE. UU.) y las traducciones de los nombres antes de publicar.
 
-### Fase FE2 — Calendarios de feriados y marcado (depende de FE1; Especificación §21, Arquitectura §30)
-- [ ] Ajustes: lista de calendarios de feriados con país, región opcional, casillas Oficiales y No oficiales y un color; ninguno activo por defecto (Modelo de datos §13).
-- [ ] Marcado con tinte tenue en las 6 vistas del calendario y en el Gantt: etiqueta con el nombre en Mes, Semana, Semana laboral y Lista; encabezado en Día; punto con tooltip en Año; columna tintada en el Gantt.
-- [ ] Solo visual: no afectan a la Semana laboral, las rachas ni las tareas.
-- [ ] Verificable sola: con un calendario de México activo, el 1 de enero y el tercer lunes de noviembre aparecen en las vistas; con ninguno activo no cambia nada.
+### Fase FE2 — Calendarios de feriados y marcado (depende de FE1; Especificación §21, Arquitectura §30) — **implementada el 2026-11-08 y probada a mano el 2026-11-09**
+- [x] Ajustes: lista de calendarios de feriados con país, región opcional, casillas Oficiales y No oficiales y un color; ninguno activo por defecto (Modelo de datos §13). `holidayCalendars` en `settings.ts`, saneado al cargar (`sanitizeHolidayCalendars()`); lista en `setting-tab.ts` (`renderHolidayCalendars()`, ambas rutas) dentro de la pestaña Calendario; cada cambio refresca el calendario y el Gantt abiertos.
+- [x] Marcado con tinte tenue en las 6 vistas del calendario y en el Gantt: etiqueta con el nombre en Mes, Semana, Semana laboral y Lista; encabezado en Día; punto con tooltip en Año; columna tintada en el Gantt. Los nombres están traducidos a los 6 idiomas (`holiday_mx_*`, `holiday_us_*`).
+- [x] Solo visual: no afectan a la Semana laboral, las rachas ni las tareas.
+- [x] Verificable con Node: `tests/holiday-rules.test.cjs` (35 pruebas: ajuste guardado, consulta día a día, claves de traducción en los 6 idiomas) y `tests/calendar-weekday-labels.test.cjs` (los feriados llegan a los datos de Semana, Semana laboral y Lista y no ocultan días).
 
-### Fase PR1 — Proyección de recurrentes: cálculo y fantasmas (independiente; Especificación §21, Arquitectura §30)
-- [ ] Cálculo de N ocurrencias posteriores a la real con `getNextOccurrenceDate()` (`src/core/task-recurrence.ts`); las reglas `when done` no se proyectan.
-- [ ] Entradas fantasma de solo lectura (no se escriben en la nota, no se arrastran ni se completan) con la insignia `🔁` y aspecto atenuado; clic y doble clic llevan a la tarea real.
-- [ ] Verificable sola: `node --test` (N ocurrencias en diarias, semanales y mensuales; `when done` excluida; sin duplicar la real; con 0 no proyecta).
+### Fase FE3 — Solo los oficiales sombrean e «Internacional» (depende de FE2; Especificación §21.2, Arquitectura §30.3) — **implementada y probada a mano el 2026-11-09**
+- [x] El sombreado del día usa `hasOfficialHoliday()` en las 5 plantillas y en las franjas de la vista Día (`HourSlot.isOfficialHoliday`); el Gantt tiñe la columna solo con un feriado oficial. Los no oficiales conservan etiqueta (y punto en el Año).
+- [x] Calendario «Internacional»: `holiday-data-int.ts` (58 días fijos no oficiales en 4 temas), `group` en las reglas, `groups` en el calendario, `isVisible()` por tema, `sanitizeHolidayCalendars()` y `changeHolidayCountry()` para el país con temas; la fila del ajuste muestra una casilla por tema en lugar de región y categorías. Claves `holiday_country_int`, `holiday_group_*` y 58 `holiday_int_*` en los 6 idiomas.
+- [x] Verificable con Node: `tests/holiday-rules.test.cjs` (temas, visibilidad, sanitize, cambio de país, `hasOfficialHoliday`) y `tests/calendar-holiday-shading.test.cjs` (los no oficiales no sombrean en ninguna vista).
+- [ ] Revisar las fechas (de memoria) y las traducciones de los nombres internacionales antes de publicar.
+- [x] Prueba manual (2026-11-09, hecha por el usuario): con un calendario de México activo, el 1 de enero y el tercer lunes de noviembre aparecen en Mes, Semana, Semana laboral, Lista, Día, Año y Gantt (claro y oscuro, escritorio y `is-phone`); con ninguno activo no cambia nada; región, casillas, color y quitar; dos calendarios que coinciden en un día; ajustes en las dos rutas (Obsidian ≥ 1.13 y `display()`).
 
-### Fase PR2 — Ajuste N y vistas (depende de PR1)
-- [ ] Ajuste numérico N, por defecto 10; con 0 se desactiva.
-- [ ] Fantasmas en Mes, Semana, Semana laboral, Día y Lista del calendario; no en Año, Gantt, Lista, Tabla, Kanban ni Overview; respetan los filtros de la barra del calendario.
-- [ ] Al completar la real se escribe la siguiente como hoy (ADR-R1); una diaria desaparece pasados N días (consecuencia asumida).
-- [ ] Verificable sola: prueba manual con una diaria, una semanal y una mensual; completar la real no duplica la siguiente.
+### Fase PR1 — Proyección de recurrentes: cálculo y fantasmas (independiente; Especificación §21, Arquitectura §30) — **implementada el 2026-11-08 (cálculo y modelo del fantasma); el dibujado pasa a PR2**
+- [x] Cálculo de N ocurrencias posteriores a la real con `getNextOccurrenceDate()` (`src/core/task-recurrence.ts`), encadenadas como al completar una tras otra; las reglas `when done` no se proyectan (`projectOccurrences()` en `src/core/task-projection.ts`).
+- [x] Modelo de la entrada fantasma (`ProjectedOccurrence`: copia de la tarea con las fechas desplazadas, en estado pendiente, con el `file` y la `line` de la real, más `source` e `index`). La insignia `🔁`, el aspecto atenuado, el solo lectura (sin arrastrar ni completar) y los clics hacia la tarea real son de dibujado y se hacen en PR2.
+- [x] Verificable sola: `tests/task-projection.test.cjs` (22 pruebas: N ocurrencias en diarias, semanales y mensuales; `when done` excluida; terminadas y canceladas excluidas; sin duplicar la real; con 0 no proyecta; referencia `scheduled > due > start`; hora y duración; `every weekday` con el ajuste de días no laborables).
 
-### Fase HC1 — Hábitos en el calendario (depende de HA1 y HV1 de [[habit-tracker-agenda/Plan de implementación]]; Especificación §21, Arquitectura §30)
-- [ ] Ajuste «Mostrar hábitos en el calendario», desactivado por defecto; sin efecto si la pestaña Hábitos está oculta.
-- [ ] Entradas virtuales por día en que toca el hábito, respetando el periodo activo y los días de vacaciones; sin escribir en archivos y sin ser tareas (no entran en Lista, Tabla, Kanban, Gantt ni en los conteos).
-- [ ] Mes, Semana, Semana laboral y Lista: un chip resumen `🔁 3/5` por día con un popover de casillas; clic marca o desmarca (escritura de `completions` con `habit-writer.ts`) y doble clic abre la nota; Día: sección «Hábitos» por franja (despertar, mañana, tarde, noche); no en Año.
-- [ ] La barra de filtros del calendario afecta a los hábitos por área y búsqueda; prioridad y estado no aplican.
-- [ ] Verificable sola: con el ajuste activado, marcar un hábito desde el popover actualiza la nota del hábito y el Dashboard de hábitos; desactivado, no aparece nada.
+### Fase PR2 — Ajuste N y vistas (depende de PR1) — **implementada el 2026-11-08 y probada a mano el 2026-11-09**
+- [x] Ajuste numérico N (`calendarProjectionCount`), por defecto 10 y entre 0 y 50; con 0 se desactiva (control deslizante en la pestaña Calendario, ambas rutas; `loadSettings()` lo sanea con `sanitizeProjectionCount()`).
+- [x] Fantasmas en Mes, Semana, Semana laboral, Día y Lista del calendario con la insignia `🔁` al inicio y aspecto de solo contorno (borde discontinuo con el margen izquierdo sólido del color del área, título en cursiva), de solo lectura (sin arrastrar, sin cambiar el tamaño en Día, sin menú de estado; clic y doble clic llevan a la tarea real); no en Año, Gantt, Tabla, Kanban ni Overview; respetan los filtros de la barra del calendario.
+- [x] Al completar la real se escribe la siguiente como hoy (ADR-R1); una diaria desaparece pasados N días (consecuencia asumida). Una tarea terminada no proyecta, así que el fantasma que ocupaba su lugar lo pasa a ocupar la línea nueva.
+- [x] Verificable con Node: `tests/calendar-filters.test.cjs` (el calendario pide los fantasmas aparte, detrás de las reales; con N en 0 no hay; sin el ajuste son 10; un filtro oculta los fantasmas con su tarea real) y `tests/task-projection.test.cjs` (el ajuste y `projectAllOccurrences()`).
+- [x] Prueba manual (2026-11-09, hecha por el usuario) con una diaria, una semanal y una mensual (también `every weekday`): los fantasmas en las cinco vistas, atenuados y con `🔁`; clic abre la tarea real y doble clic su nota; no se arrastran ni se redimensionan en Día; completar la real no duplica la siguiente; con N = 0, 10 y 50; con un filtro de prioridad o área; escritorio y `is-phone`.
 
-### Fase CV15 — Cierre de v1.1.15: pruebas manuales y documentación (depende de NL1 a HC1)
-- [ ] Pruebas manuales: sombreado y Semana laboral con distintos días marcados; hábitos con frecuencias que siguen el ajuste; feriados de México y EE. UU. en las 6 vistas y el Gantt; fantasmas con N = 0, 10 y 50; hábitos en el calendario con filtros y en móvil; selector circular de Hábitos, periodo activo y vacaciones (fases del plan de hábitos).
-- [ ] README (badge, What's New, News, Features, Gestures, Configuration, Changelog y lista de próximas versiones), manual de usuario en/es, `whats_new.v1_1_15` en los 6 idiomas, `'1.1.15'` en `WHATS_NEW_VERSIONS` de `src/core/whats-new.ts`.
-- [ ] Documentación de desarrollo: pasar §21 y §30 a «implementado».
-- [ ] `npm version 1.1.15 --no-git-tag-version`, `npm run build` y ESLint sobre los archivos tocados.
+### Fase HC1 — Hábitos en el calendario (depende de HA1 y HV1 de [[habit-tracker-agenda/Plan de implementación]]; Especificación §21, Arquitectura §30) — **implementada y probada a mano el 2026-11-09**
+- [x] Filtro «Hábitos» al final del menú «+ Filtro» del calendario, marcado por defecto (decidido el 2026-11-09, en lugar de un ajuste): al desmarcarlo se ocultan los hábitos y aparece el chip «Hábitos: Ocultos»; no se ofrece si la pestaña Hábitos está oculta ni si no hay hábitos (`TaskViewState.habits`, `FilterChipId` `'habits'`, `TaskFilterBar.setFilterTypes()`).
+- [x] Entradas virtuales por día en que toca el hábito, respetando el periodo activo y los días de vacaciones; sin escribir en archivos y sin ser tareas (no entran en Lista, Tabla, Kanban, Gantt ni en los conteos). Módulo puro `buildHabitDaySummary()` en `habit-calendar.ts`.
+- [x] Mes, Semana, Semana laboral y Lista: un chip resumen por día con el icono `sunrise` de Rutina y un popover de casillas (el de `task-filter-popover.ts`, ampliado); clic marca o desmarca (escritura de `completions` con `habit-writer.ts`); Día: el mismo chip en el encabezado de cada columna (sin sección aparte); no en Año. Para abrir la nota: botón ↗ en cada fila del popover (el doble clic sobre una casilla marcaría y desmarcaría).
+- [x] La barra de filtros del calendario afecta a los hábitos por área y búsqueda; prioridad y estado no aplican (`filterHabitsForCalendar()`).
+- [x] Vacaciones: la 🌴 en el chip y en las filas del día; los neutrales atenuados y marcables; el chip de un día de vacaciones sin marcas no lleva fracción.
+- [x] Casos vacíos: sin hábitos no se dibuja nada ni se ofrece el filtro; un día en que no toca ninguno no lleva chip (nunca `0/0`).
+- [x] Pruebas Node `habit-calendar-day.test.cjs` (17: resumen, orden, vacaciones, filtros) y `calendar-habits.test.cjs` (25: modelo del día en `CalendarView`, disponibilidad del filtro, parcial del chip y chip del encabezado del Día), más los casos de «Hábitos» en `filter-bar-direct.test.cjs` y de reparto a las subvistas en `calendar-weekday-labels.test.cjs`.
+- [x] Prueba manual (hecha por el usuario el 2026-11-09): con hábitos, marcar uno desde el popover del chip y desde la vista Día actualiza la nota y el Dashboard de hábitos; el ↗ abre la nota; con «Hábitos» desmarcado, o sin hábitos, o con la pestaña oculta, no aparece nada; con un periodo de vacaciones; filtros de área y búsqueda; móvil.
+
+### Fase CV15 — Cierre de v1.1.15: pruebas manuales y documentación (depende de NL1 a HC1) — **hecha el 2026-11-10**
+- [x] Pruebas manuales (hechas por el usuario el 2026-11-09): sombreado y Semana laboral con distintos días marcados; hábitos con frecuencias que siguen el ajuste; feriados de México, EE. UU. e Internacional en las 6 vistas y el Gantt; fantasmas con N = 0, 10 y 50; hábitos en el calendario con filtros y en móvil; selector circular de Hábitos, periodo activo y vacaciones (fases del plan de hábitos).
+- [x] README (badge, What's New, News, Features, Gestures, Configuration, Changelog y lista de próximas versiones), manual de usuario en/es, `whats_new.v1_1_15` en los 6 idiomas, `'1.1.15'` en `WHATS_NEW_VERSIONS` de `src/core/whats-new.ts`.
+- [x] Documentación de desarrollo: §21 y §30 pasan a «implementado».
+- [x] `npm version 1.1.15 --no-git-tag-version`, `npm run build` y ESLint sobre los archivos tocados.
 
 ### Fuera de alcance
 Archivo de feriados del usuario (feriados personales o un país nuevo); feriados que cambian la Semana laboral, las rachas o las tareas; proyectar en Año, Gantt, Lista, Tabla, Kanban u Overview; proyectar reglas `when done`; escribir los hábitos como tareas en las notas; marcar los días de vacaciones en el calendario.
@@ -796,7 +813,7 @@ Archivo de feriados del usuario (feriados personales o un país nuevo); feriados
 - [ ] Verificable sola: arrastre con ratón y táctil (`app.emulateMobile(true)` y dispositivo real); fuera del modo Editar el scroll no se interrumpe.
 
 ### Fase DA1 — Panel «Agenda de hoy» (depende de DP1)
-- [ ] Lista del día ordenada por hora: tareas con `🕐` (con su duración y el color de su área), debajo las de todo el día y los hábitos del día como el chip `🔁 3/5`; reutiliza los datos y las entradas del calendario (HC1 de v1.1.15).
+- [ ] Lista del día ordenada por hora: tareas con `🕐` (con su duración y el color de su área), debajo las de todo el día y los hábitos del día como el chip `🌅 3/5`; reutiliza los datos y las entradas del calendario (HC1 de v1.1.15).
 - [ ] Verificable sola: con tareas con y sin hora y con hábitos, el orden y los conteos coinciden con la vista Día del calendario.
 
 ### Fase DR1 — Paneles «Resumen del día» y «Revisión de la semana» (depende de DP1)

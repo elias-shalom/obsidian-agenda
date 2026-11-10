@@ -1,9 +1,9 @@
-import { WorkspaceLeaf } from 'obsidian';
+import { WorkspaceLeaf, Menu, setIcon } from 'obsidian';
 import { BaseView } from './base-view';
 import { AgendaPlugin, ViewData } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { TaskManager } from '../core/task-manager';
-import { HabitManager, IHabit } from '../habits';
+import { HabitManager, IHabit, IHabitCalcContext, HABIT_VIEW_BUTTON_ICONS } from '../habits';
 
 export type HabitViewSubtype = 'grid' | 'dashboard' | 'routine' | 'weekly' | 'table';
 
@@ -12,7 +12,7 @@ export const HABIT_DEFAULT_VIEW_TYPE = 'habit-overview-view';
 /**
  * Clase base para las vistas de hábitos.
  * Sigue el modelo de CalendarView: un único tab principal en el header y
- * el resto de vistas conmutables mediante un dropdown (#oa-habit-view-dropdown).
+ * el resto de vistas conmutables mediante botones circulares (`data-habit-subtype`).
  */
 export abstract class HabitView extends BaseView {
   protected plugin: AgendaPlugin;
@@ -36,7 +36,7 @@ export abstract class HabitView extends BaseView {
   }
 
   /**
-   * Identificador corto de esta vista, usado como valor <option> en el dropdown
+   * Identificador corto de esta vista, usado como `data-habit-subtype` de su botón en el selector
    */
   protected abstract get viewSubtype(): HabitViewSubtype;
 
@@ -84,7 +84,7 @@ export abstract class HabitView extends BaseView {
 
   /**
    * Combina los datos específicos de cada vista con los campos comunes
-   * (subtype, título y settings) necesarios para el toolbar y el dropdown.
+   * (subtype, título y settings) necesarios para el toolbar y el selector de subvistas.
    */
   protected buildViewData(extra: Record<string, unknown> = {}): ViewData {
     return {
@@ -118,21 +118,64 @@ export abstract class HabitView extends BaseView {
   protected abstract getViewData(): Record<string, unknown>;
 
   /**
-   * Listener común del dropdown que conmuta entre las subvistas de hábitos
+   * Listener común de los botones circulares que conmutan entre las subvistas de hábitos: pone el ícono de cada uno
+   * y, al pulsarlo, cambia de subvista.
    */
   protected setupViewSpecificEventListeners(container: HTMLElement, _data: ViewData): void {
-    const viewDropdown = container.querySelector('#oa-habit-view-dropdown') as HTMLSelectElement;
+    container.querySelectorAll<HTMLButtonElement>('.oa-calendar-view-btn[data-habit-subtype]').forEach(button => {
+      const subtype = button.dataset.habitSubtype as HabitViewSubtype | undefined;
+      const iconId = subtype && HABIT_VIEW_BUTTON_ICONS[subtype];
+      if (iconId) setIcon(button, iconId);
 
-    if (viewDropdown) {
-      viewDropdown.addEventListener('change', () => {
-        this.switchToViewType(viewDropdown.value as HabitViewSubtype);
+      button.addEventListener('click', () => {
+        if (subtype) this.switchToViewType(subtype);
       });
-    }
+    });
 
     const newHabitBtn = container.querySelector('#oa-habit-new-btn');
     newHabitBtn?.addEventListener('click', () => {
       this.habitManager.openEditor();
     });
+
+    container.querySelector('#oa-habit-vacations-btn')?.addEventListener('click', () => {
+      this.plugin.openHabitSettings();
+    });
+  }
+
+  /**
+   * Chip de orden o de agrupado (`oa-axis-chip`, el mismo aspecto que Sort y Group de las tareas): al pulsarlo abre un
+   * menú con la opción actual marcada; elegir otra la aplica. `labelKey` da la clave i18n de cada opción.
+   */
+  protected mountChipMenu<T extends string>(
+    container: HTMLElement,
+    selector: string,
+    options: readonly T[],
+    labelKey: (value: T) => string,
+    current: T,
+    onPick: (value: T) => void
+  ): void {
+    const button = container.querySelector<HTMLButtonElement>(selector);
+    button?.addEventListener('click', () => {
+      const menu = new Menu();
+      for (const value of options) {
+        menu.addItem(item => item
+          .setTitle(this.i18n.t(labelKey(value)))
+          .setChecked(value === current)
+          .onClick(() => { if (value !== current) onPick(value); }));
+      }
+      const rect = button.getBoundingClientRect();
+      menu.showAtPosition({ x: rect.left, y: rect.bottom });
+    });
+  }
+
+  /** Vacaciones de los ajustes para las funciones puras de cálculo (v1.1.15, HV1). */
+  protected get calcContext(): IHabitCalcContext {
+    return this.habitManager.getCalcContext();
+  }
+
+  /** Texto de una celda o día de vacaciones: el nombre del periodo o, si no lo tiene, «Vacaciones». */
+  protected vacationLabel(name?: string): string {
+    return name ? `🌴 ${name}` : `🌴 ${this.i18n.t('habit_vacation')}`;
   }
 
   private getViewIdForSubtype(subtype: HabitViewSubtype): string {

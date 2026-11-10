@@ -216,6 +216,16 @@
   }
 }
 
+// Hábitos en la vista Día (v1.1.15, HC1): el mismo chip de las demás vistas (`.oa-calendar-habit-chip`), en la
+// esquina superior derecha del encabezado de cada columna; el nombre del día se aparta de él.
+.oa-calendar-day-column-header {
+  position: relative;
+
+  &:has(.oa-calendar-habit-chip) {
+    padding-right: 56px;
+  }
+}
+
 .oa-calendar-day-hours {
   display: flex;
   flex-direction: column;

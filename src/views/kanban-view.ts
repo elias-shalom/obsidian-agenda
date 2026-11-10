@@ -296,7 +296,7 @@ export class KanbanView extends BaseView {
     if (!task || !drop || taskColumnKey(task, this.viewState.group) === columnKey) return;
 
     const changed = drop.kind === 'status'
-      ? await changeTaskStatus(task, drop.status, { taskWriter: this.taskWriter, i18n: this.i18n })
+      ? await changeTaskStatus(task, drop.status, { taskWriter: this.taskWriter, i18n: this.i18n, nonWorkingDays: this.plugin.settings.nonWorkingDays })
       : await this.changeTaskPriority(task, drop.priority);
     if (changed) {
       // La columna destino se despliega sola: ya no está vacía y se descarta lo que el usuario hubiera elegido.

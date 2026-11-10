@@ -116,7 +116,7 @@ export class HabitOverviewView extends HabitView {
     const gridStart = yearStart.minus({ days: sundayIndex(yearStart) });
     const gridEnd = yearEnd.plus({ days: 6 - sundayIndex(yearEnd) });
 
-    const statsByDate = new Map(computeYearHistory(this.habits, year).map(day => [day.date, day]));
+    const statsByDate = new Map(computeYearHistory(this.habitManager.getHabitsForStats(), year, this.calcContext).map(day => [day.date, day]));
 
     const weekdayLabels: string[] = [];
     for (let i = 0; i < 7; i += 1) {
@@ -124,7 +124,7 @@ export class HabitOverviewView extends HabitView {
       weekdayLabels.push(DateTime.local().set({ weekday }).toFormat('ccc'));
     }
 
-    const cells: { date: string; level: number; pct: number; inYear: boolean; isToday: boolean; column: number; row: number }[] = [];
+    const cells: { date: string; level: number; pct: number; inYear: boolean; isToday: boolean; column: number; row: number; vacation: boolean; tooltip: string }[] = [];
     const monthLabels: { label: string; column: number }[] = [];
     const seenMonths = new Set<number>();
 
@@ -142,6 +142,11 @@ export class HabitOverviewView extends HabitView {
       const iso = date.toISODate() ?? '';
       const dayStat = inYear ? statsByDate.get(iso) : undefined;
       const pct = dayStat ? Math.round(dayStat.pctWeighted * 100) : 0;
+      // Un día de vacaciones sin ninguna marca no tiene dato: se atenúa en vez de pintarse como 0 %
+      const vacation = !!dayStat?.vacation && dayStat.total === 0;
+      const tooltip = dayStat?.vacation
+        ? `${iso}: ${this.vacationLabel(dayStat.vacationName)}${vacation ? '' : ` · ${pct}%`}`
+        : `${iso}: ${pct}%`;
 
       cells.push({
         date: iso,
@@ -151,6 +156,8 @@ export class HabitOverviewView extends HabitView {
         isToday: iso === todayIso,
         column,
         row,
+        vacation,
+        tooltip,
       });
 
       if (row === 8) weekIndex += 1; // sábado: pasar a la siguiente columna/semana

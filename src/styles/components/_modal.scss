@@ -354,6 +354,17 @@
   position: relative;
 }
 
+// Nota bajo el campo de recurrencia cuando `every weekday`/`every weekend` siguen los días no laborables de los ajustes (v1.1.15, NL2)
+.oa-recurrence-note {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+
+  &:empty {
+    display: none;
+  }
+}
+
 .oa-file-suggestions {
   position: absolute;
   top: 100%;

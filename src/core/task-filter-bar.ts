@@ -62,9 +62,17 @@ export interface TaskFilterBarOptions {
   laneOptions?: FilterBarOption[];
   /** Cómo resuelve la vista un campo que ya usa el otro chip (Kanban lo bloquea; las demás lo cambian a Ninguno). */
   axisRules?: AxisConflictOptions;
-  /** Si se pasa, el menú «+ Filtro» ofrece solo estos tipos (el calendario no ofrece fechas). */
+  /** Si se pasa, el menú «+ Filtro» ofrece solo estos tipos (el calendario no ofrece los filtros de fecha relativos). */
   filterTypes?: readonly FilterChipId[];
+  /**
+   * Tipos de fecha que se activan con un solo clic en el primer menú (marcados con ✓), sin segundo paso: valen
+   * «con fecha» (`hasdate`) o «todos». Los usa el calendario: con fecha de inicio, programada o de vencimiento.
+   */
+  directFilterTypes?: readonly DirectFilterType[];
 }
+
+/** Filtros de fecha que el primer menú puede activar directamente. */
+export type DirectFilterType = 'start' | 'scheduled' | 'due';
 
 /** Dónde abrir un menú: bajo el botón o el chip pulsado, medido una vez porque el chip se redibuja al elegir. */
 interface MenuAnchor {
@@ -107,6 +115,12 @@ export class TaskFilterBar {
     this.state.sortColumn = column;
     this.state.sortDirection = direction;
     this.renderAxes();
+  }
+
+  /** Cambia los tipos que ofrece «+ Filtro»; el calendario ofrece «Hábitos» solo cuando hay hábitos que dibujar (v1.1.15, HC1). */
+  setFilterTypes(types: readonly FilterChipId[]): void {
+    this.options = { ...this.options, filterTypes: types };
+    this.renderChips();
   }
 
   mount(root: HTMLElement): void {
@@ -180,7 +194,9 @@ export class TaskFilterBar {
     const { i18n } = this.options;
     container.empty();
 
-    const chips = getActiveFilterChips(this.state, key => i18n.t(key));
+    const offered = this.options.filterTypes;
+    // Un chip de un tipo que la barra no ofrece (p. ej. «Hábitos: ocultos» sin hábitos) no se dibuja
+    const chips = getActiveFilterChips(this.state, key => i18n.t(key)).filter(chip => !offered || offered.includes(chip.id));
     for (const chip of chips) {
       const chipEl = container.createDiv({ cls: 'oa-filter-chip' });
       const text = `${chip.typeLabel}: ${chip.valueLabel}`;
@@ -267,15 +283,44 @@ export class TaskFilterBar {
     const active = new Set(getActiveFilterChips(this.state, key => this.options.i18n.t(key)).map(chip => chip.id));
     const menu = new Menu();
     for (const id of this.options.filterTypes ?? FILTER_CHIP_IDS) {
+      // «Tareas recurrentes», «Hábitos» y «Días festivos» (solo el calendario) van marcados por defecto y se desmarcan para ocultarlos
+      if (id === 'projected' || id === 'habits' || id === 'holidays') {
+        const shown = this.state[id] !== 'hide';
+        menu.addItem(item => item
+          .setTitle(getFilterTypeLabel(id, key => this.options.i18n.t(key)))
+          .setChecked(shown)
+          .onClick(() => this.update({ [id]: shown ? 'hide' : 'show' })));
+        continue;
+      }
+      const direct = this.isDirectType(id);
       menu.addItem(item => item
         .setTitle(getFilterTypeLabel(id, key => this.options.i18n.t(key)))
         .setChecked(active.has(id))
-        .onClick(() => this.showNext(() => this.openValueMenu(id, anchor))));
+        // Los tipos directos se marcan y desmarcan aquí mismo; los demás abren su lista de valores
+        .onClick(() => direct
+          ? this.update({ [id]: active.has(id) ? 'all' : 'hasdate' })
+          : this.showNext(() => this.openValueMenu(id, anchor))));
     }
     menu.showAtPosition(anchor);
   }
 
+  private isDirectType(id: FilterChipId): id is DirectFilterType {
+    return (this.options.directFilterTypes as readonly FilterChipId[] | undefined)?.includes(id) ?? false;
+  }
+
   private openValueMenu(id: FilterChipId, anchor: MenuAnchor): void {
+    // Los chips «Tareas recurrentes: ocultas», «Hábitos: ocultos» y «Días festivos: ocultos» solo tienen un valor: pulsarlos vuelve a mostrar, igual que su ×
+    if (id === 'projected' || id === 'habits' || id === 'holidays') {
+      this.update({ [id]: 'show' });
+      return;
+    }
+
+    // Un filtro directo solo tiene un valor: pulsar su chip lo quita, igual que su ×
+    if (this.isDirectType(id)) {
+      this.update({ [id]: 'all' });
+      return;
+    }
+
     // Prioridad, estado y área aceptan varios valores: popover con casillas que no se cierra al marcar
     if (id === 'area') {
       this.openAreaPopover(anchor);

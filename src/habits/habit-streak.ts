@@ -1,24 +1,42 @@
 import { DateTime } from 'luxon';
 import type { Daytime, IHabit, IHabitCell, IHabitStreakStats } from './habit';
-import { dayCompleted, isScheduled, occurrencesFor } from './habit';
+import { dayCompleted, occurrencesFor } from './habit';
+import type { IHabitCalcContext } from './habit-calendar';
+import { NO_VACATIONS, countsOn, findVacation } from './habit-calendar';
 
 function toIsoDate(date: DateTime): string {
   return date.toISODate() ?? date.toFormat('yyyy-MM-dd');
+}
+
+/** Campos de vacaciones y de «se puede marcar» que comparten las celdas de día completo y de ocurrencia. */
+function vacationFields(
+  habit: IHabit,
+  date: DateTime,
+  iso: string,
+  ctx: IHabitCalcContext
+): Pick<IHabitCell, 'vacation' | 'vacationName' | 'markable'> {
+  const vacation = findVacation(ctx.vacations, iso);
+  return {
+    vacation: vacation !== null,
+    ...(vacation?.name ? { vacationName: vacation.name } : {}),
+    markable: countsOn(habit, date, true),
+  };
 }
 
 export function computeCells(
   habit: IHabit,
   dates: DateTime[],
   maxGap: number,
-  showStreaks: boolean
+  showStreaks: boolean,
+  ctx: IHabitCalcContext = NO_VACATIONS
 ): IHabitCell[] {
   const orderedDates = [...dates].sort((a, b) => a.toMillis() - b.toMillis());
   const multiDaytime = habit.daytimes.length > 1;
 
   const cells: IHabitCell[] = orderedDates.map(date => {
     const iso = toIsoDate(date);
-    const scheduled = isScheduled(habit, date);
     const ticked = dayCompleted(habit, iso);
+    const scheduled = countsOn(habit, date, ticked, ctx);
     const occurrences = occurrencesFor(habit, iso);
     const done = occurrences.filter(o => o.done).length;
     const total = habit.daytimes.length;
@@ -36,6 +54,7 @@ export function computeCells(
       streakEnd: false,
       streakCount: 0,
       deadline: false,
+      ...vacationFields(habit, date, iso, ctx),
       classes: !scheduled
         ? '--oa-unscheduled'
         : ticked
@@ -128,13 +147,13 @@ export function computeCells(
 }
 
 /** Cuenta cuántos días programados (no neutrales) hay estrictamente entre dos fechas */
-function isRunContinuous(habit: IHabit, previous: DateTime, next: DateTime): boolean {
+function isRunContinuous(habit: IHabit, previous: DateTime, next: DateTime, ctx: IHabitCalcContext): boolean {
   let scheduledGapDays = 0;
   let cursor = previous.plus({ days: 1 });
 
   while (cursor < next) {
     const iso = toIsoDate(cursor);
-    const scheduled = isScheduled(habit, cursor);
+    const scheduled = countsOn(habit, cursor, dayCompleted(habit, iso), ctx);
     const isPartial = scheduled && !dayCompleted(habit, iso) && (habit.completions[iso]?.length ?? 0) > 0;
 
     if (scheduled && !isPartial) {
@@ -147,7 +166,7 @@ function isRunContinuous(habit: IHabit, previous: DateTime, next: DateTime): boo
   return scheduledGapDays <= habit.maxGap;
 }
 
-export function computeStats(habit: IHabit): IHabitStreakStats {
+export function computeStats(habit: IHabit, ctx: IHabitCalcContext = NO_VACATIONS): IHabitStreakStats {
   const sortedEntries = [...habit.entries].sort((a, b) => a.localeCompare(b));
 
   if (sortedEntries.length === 0) {
@@ -161,7 +180,7 @@ export function computeStats(habit: IHabit): IHabitStreakStats {
   for (const value of sortedEntries) {
     const currentDate = DateTime.fromISO(value, { zone: 'local' });
 
-    if (!isScheduled(habit, currentDate)) {
+    if (!countsOn(habit, currentDate, true, ctx)) {
       continue;
     }
 
@@ -172,7 +191,7 @@ export function computeStats(habit: IHabit): IHabitStreakStats {
       continue;
     }
 
-    if (isRunContinuous(habit, previous, currentDate)) {
+    if (isRunContinuous(habit, previous, currentDate, ctx)) {
       current += 1;
       max = Math.max(max, current);
     } else {
@@ -195,14 +214,15 @@ export function computeOccurrenceCells(
   daytime: Daytime,
   dates: DateTime[],
   maxGap: number,
-  showStreaks: boolean
+  showStreaks: boolean,
+  ctx: IHabitCalcContext = NO_VACATIONS
 ): IHabitCell[] {
   const orderedDates = [...dates].sort((a, b) => a.toMillis() - b.toMillis());
 
   const cells: IHabitCell[] = orderedDates.map(date => {
     const iso = toIsoDate(date);
-    const scheduled = isScheduled(habit, date);
     const ticked = (habit.completions[iso] ?? []).includes(daytime);
+    const scheduled = countsOn(habit, date, ticked, ctx);
 
     return {
       date: iso,
@@ -216,6 +236,7 @@ export function computeOccurrenceCells(
       streakEnd: false,
       streakCount: 0,
       deadline: false,
+      ...vacationFields(habit, date, iso, ctx),
       classes: !scheduled ? '--oa-unscheduled' : ticked ? '--oa-ticked' : '--oa-empty',
     };
   });
@@ -294,12 +315,12 @@ export function computeOccurrenceCells(
   return cells;
 }
 
-function isOccurrenceRunContinuous(habit: IHabit, previous: DateTime, next: DateTime): boolean {
+function isOccurrenceRunContinuous(habit: IHabit, previous: DateTime, next: DateTime, ctx: IHabitCalcContext): boolean {
   let scheduledGapDays = 0;
   let cursor = previous.plus({ days: 1 });
 
   while (cursor < next) {
-    if (isScheduled(habit, cursor)) {
+    if (countsOn(habit, cursor, false, ctx)) {
       scheduledGapDays += 1;
     }
     cursor = cursor.plus({ days: 1 });
@@ -309,7 +330,7 @@ function isOccurrenceRunContinuous(habit: IHabit, previous: DateTime, next: Date
 }
 
 /** Variante de computeStats para una sola ocurrencia (daytime) de un hábito multi-daytime */
-export function computeOccurrenceStats(habit: IHabit, daytime: Daytime): IHabitStreakStats {
+export function computeOccurrenceStats(habit: IHabit, daytime: Daytime, ctx: IHabitCalcContext = NO_VACATIONS): IHabitStreakStats {
   const dates = Object.keys(habit.completions)
     .filter(date => (habit.completions[date] ?? []).includes(daytime))
     .sort((a, b) => a.localeCompare(b));
@@ -325,7 +346,7 @@ export function computeOccurrenceStats(habit: IHabit, daytime: Daytime): IHabitS
   for (const value of dates) {
     const currentDate = DateTime.fromISO(value, { zone: 'local' });
 
-    if (!isScheduled(habit, currentDate)) {
+    if (!countsOn(habit, currentDate, true, ctx)) {
       continue;
     }
 
@@ -336,7 +357,7 @@ export function computeOccurrenceStats(habit: IHabit, daytime: Daytime): IHabitS
       continue;
     }
 
-    if (isOccurrenceRunContinuous(habit, previous, currentDate)) {
+    if (isOccurrenceRunContinuous(habit, previous, currentDate, ctx)) {
       current += 1;
       max = Math.max(max, current);
     } else {

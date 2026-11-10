@@ -2,12 +2,15 @@ import { App, Plugin, PluginManifest, Notice, Menu, MarkdownView } from "obsidia
 import { ViewManager } from "./core/view-manager";
 import { I18n } from "./core/i18n";
 import { TaskManager } from "./core/task-manager";
-import { HabitManager } from "./habits";
+import { HabitManager, openPluginSettings, sanitizeVacations } from "./habits";
 import { SettingTab } from "./settings/setting-tab";
 import { TASK_MODAL_TYPE, ModalManager } from "./core/modal-manager";
 import { addTaskFieldMenuItems } from "./core/task-field-menu";
 import { isTaskLine } from "./core/task-line-fields";
 import { DEFAULT_SETTINGS, AgendaPluginSettings, migrateTabSettings } from "./settings/settings";
+import { sanitizeNonWorkingDays } from "./core/non-working-days";
+import { sanitizeHolidayCalendars } from "./core/holidays/holiday-calendar";
+import { sanitizeProjectionCount } from "./core/task-projection";
 import { DayChangeWatcher } from "./core/day-change";
 import { getWhatsNewEntries, planUpdateAnnouncement } from "./core/whats-new";
 import { WhatsNewModal } from "./modals/whats-new-modal";
@@ -21,6 +24,7 @@ export default class ObsidianAgenda extends Plugin {
   private taskManager: TaskManager;
   private habitManager: HabitManager;
   public modalManager: ModalManager;
+  private settingTab: SettingTab | null = null;
 
   /// Constructor de la clase ObsidianAgendaPlugin.
   constructor(app: App, manifest: PluginManifest) {
@@ -29,7 +33,7 @@ export default class ObsidianAgenda extends Plugin {
       this.taskManager = new TaskManager(app, this.i18n, this);
       this.habitManager = new HabitManager(app, () => this.settings, this.i18n, () => this.saveSettings());
       this.viewManager = new ViewManager(this, this.i18n, this.taskManager, this.habitManager); // Pasar la instancia del plugin
-      this.modalManager = new ModalManager(app, this.i18n, this.taskManager);
+      this.modalManager = new ModalManager(app, this.i18n, this.taskManager, () => this.settings.nonWorkingDays);
   }
 
   /// Método de inicializa del plugin.
@@ -44,7 +48,8 @@ export default class ObsidianAgenda extends Plugin {
       await this.i18n.loadLanguage();
 
       // Añadir la pestaña de configuración
-      this.addSettingTab(new SettingTab(this.app, this, this.i18n));
+      this.settingTab = new SettingTab(this.app, this, this.i18n);
+      this.addSettingTab(this.settingTab);
 
       this.addRibbonIcon("notebook-tabs", this.i18n.t("agenda_title"), async () => {
         await this.viewManager.activateView(OVERVIEW_VIEW_TYPE);
@@ -147,10 +152,39 @@ export default class ObsidianAgenda extends Plugin {
 
     // Merge genérico: cualquier clave guardada sobrescribe su default, sin necesidad de listarla aquí.
     this.settings = { ...DEFAULT_SETTINGS, ...data };
+    // Una lista de días no laborables inválida (editada a mano) vuelve a sábado y domingo; además se copia para
+    // no compartir la lista del valor por defecto.
+    this.settings.nonWorkingDays = sanitizeNonWorkingDays(this.settings.nonWorkingDays);
+    this.settings.holidayCalendars = sanitizeHolidayCalendars(this.settings.holidayCalendars);
+    this.settings.calendarProjectionCount = sanitizeProjectionCount(this.settings.calendarProjectionCount);
+    this.settings.habitVacations = sanitizeVacations(this.settings.habitVacations);
   }
 
   async saveSettings(): Promise<void> {
     await this.saveData(this.settings);
+  }
+
+  /** El gestor de hábitos del calendario (v1.1.15, HC1). */
+  getHabitManager(): HabitManager {
+    return this.habitManager;
+  }
+
+  /**
+   * Abre los ajustes en la pestaña Hábitos, donde está la lista de vacaciones (botón «Vacaciones», v1.1.15, HV1).
+   * `app.setting` no está documentada: si falla, un aviso da la ruta.
+   */
+  openHabitSettings(): void {
+    this.settingTab?.prepareHabitSettings();
+    if (!openPluginSettings(this.app, this.manifest.id)) {
+      new Notice(this.i18n.t("habit_vacations_open_failed"));
+      return;
+    }
+    this.settingTab?.revealVacations();
+  }
+
+  /** Vuelve a leer los hábitos con los ajustes de ahora (p. ej. tras cambiar los días no laborables, v1.1.15 NL2). */
+  async refreshHabits(): Promise<void> {
+    await this.habitManager.refreshHabits();
   }
 
   /** Muestra una sola vez las novedades de la versión instalada; la versión vista se guarda antes de abrir el modal. */

@@ -1,6 +1,7 @@
 import { App, EventRef, TFile, TFolder, parseYaml } from 'obsidian';
 import type { AgendaPluginSettings } from '../settings/settings';
 import type { Daytime, IHabit } from './habit';
+import type { IHabitCalcContext } from './habit-calendar';
 import { parseHabit } from './habit-parser';
 import { ensureFolderPath } from './habit-folder';
 import { computeDashboard } from './habit-stats';
@@ -267,6 +268,15 @@ export class HabitManager {
     return [...this.habitCache.values()].sort((a, b) => a.name.localeCompare(b.name));
   }
 
+  /**
+   * Hábitos para los porcentajes históricos (v1.1.15, HA1): los activos y los desactivados que tienen `until`. Los
+   * desactivados siguen contando hasta ese día, así el porcentaje de una fecha pasada no cambia al desactivar un
+   * hábito; los inactivos sin `until` (notas anteriores) siguen fuera. No son filas de ninguna vista.
+   */
+  getHabitsForStats(): IHabit[] {
+    return this.getAllHabits().filter(habit => habit.status !== 'inactive' || habit.activeUntil !== null);
+  }
+
   getHabit(file: TFile): IHabit | null {
     const cached = this.habitCache.get(file.path);
     if (cached) return cached;
@@ -290,8 +300,13 @@ export class HabitManager {
     this.habitCache.set(file.path, { ...habit, completions: nextCompletions, entries: nextEntries });
   }
 
+  /** Lo que las funciones puras de cálculo necesitan de los ajustes (v1.1.15, HV1): hoy, las vacaciones. */
+  getCalcContext(): IHabitCalcContext {
+    return { vacations: this.settingsGetter().habitVacations ?? [] };
+  }
+
   computeDashboard() {
-    return computeDashboard(this.getHabits());
+    return computeDashboard(this.getHabits(), this.getHabitsForStats(), this.getCalcContext());
   }
 
   /** Abre el modal de crear/editar hábito (crear si no se pasa hábito) */

@@ -80,6 +80,7 @@ export class HabitGridView extends HabitView {
       actual: date.toISODate() === todayIso,
     }));
 
+    const ctx = this.calcContext;
     const records: GridRowRecord[] = [];
 
     for (const habit of this.habits) {
@@ -87,7 +88,7 @@ export class HabitGridView extends HabitView {
       const isMulti = daytimes.length > 1;
 
       for (const daytime of daytimes) {
-        const cells = computeOccurrenceCells(habit, daytime, dates, habit.maxGap, this.plugin.settings.habitShowStreaks);
+        const cells = computeOccurrenceCells(habit, daytime, dates, habit.maxGap, this.plugin.settings.habitShowStreaks, ctx);
         const bridges = computeUnscheduledBridges(cells);
         const scheduledCells = cells.filter(cell => cell.scheduled);
         const doneCount = scheduledCells.filter(cell => cell.ticked).length;
@@ -100,7 +101,7 @@ export class HabitGridView extends HabitView {
           daytimeLabel: this.i18n.t(daytimeLabelKey(daytime)),
           showDaytimeLabel: isMulti || this.plugin.settings.habitShowSingleDaytimeLabel,
           color: habit.color,
-          streak: computeOccurrenceStats(habit, daytime).current,
+          streak: computeOccurrenceStats(habit, daytime, ctx).current,
           pct,
           area: habit.area,
           priority: habit.priority,
@@ -111,6 +112,7 @@ export class HabitGridView extends HabitView {
               ...cell,
               actual: cell.date === todayIso,
               bridge: bridges[index],
+              vacationLabel: cell.vacation ? this.vacationLabel(cell.vacationName) : '',
               // Marcado como hecho pero fuera de la frecuencia actual (se cambió la config después de completarlo)
               unscheduledTicked: !cell.scheduled && cell.ticked,
               runSingle: isRun && cell.streakStart && cell.streakEnd,
@@ -131,6 +133,7 @@ export class HabitGridView extends HabitView {
       habits: rows,
       columns,
       sortBy: this.sortBy,
+      sortLabel: this.i18n.t(`habit_sort_${this.sortBy}`),
       windowLabel: `${dates[0].toFormat('dd MMM')} \u2013 ${dates[dates.length - 1].toFormat('dd MMM yyyy')}`,
       emptyMessage: this.getEmptyMessage(),
     };
@@ -180,14 +183,10 @@ export class HabitGridView extends HabitView {
       this.refreshHabitView().catch(console.error);
     });
 
-    const sortSelect = container.querySelector<HTMLSelectElement>('#oa-habit-grid-sort');
-    sortSelect?.addEventListener('change', () => {
-      const value = sortSelect.value as GridSortMode;
-      if ((SORT_MODES as readonly string[]).includes(value)) {
-        this.sortBy = value;
-        this.app.saveLocalStorage(GRID_SORT_STORAGE_KEY, value);
-        this.refreshHabitView().catch(console.error);
-      }
+    this.mountChipMenu(container, '#oa-habit-grid-sort', SORT_MODES, mode => `habit_sort_${mode}`, this.sortBy, mode => {
+      this.sortBy = mode;
+      this.app.saveLocalStorage(GRID_SORT_STORAGE_KEY, mode);
+      this.refreshHabitView().catch(console.error);
     });
 
     container.querySelectorAll<HTMLButtonElement>('.oa-habit-grid-cell:not([disabled])').forEach(button => {

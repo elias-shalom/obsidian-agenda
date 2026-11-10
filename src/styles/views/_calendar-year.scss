@@ -127,6 +127,7 @@
 }
 
 .oa-year-day-content {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -134,6 +135,17 @@
   width: 100%;
   height: 100%;
   gap: 1px;
+}
+
+/* Feriado en el Año (v1.1.15, FE2): un punto en la esquina con el color de su calendario; el nombre va en el tooltip. */
+.oa-year-holiday-dot {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--oa-holiday-color, var(--text-faint));
 }
 
 .oa-year-day-number {

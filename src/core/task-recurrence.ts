@@ -8,6 +8,7 @@ import { TaskSection } from "../entities/task-section";
 import { ITask } from "../types/interfaces";
 import { CoreTaskStatus } from "../types/enums";
 import { upsertTaskStatus } from "./task-line-fields";
+import { DEFAULT_NON_WORKING_DAYS } from "./non-working-days";
 
 const WHEN_DONE_SUFFIX_REGEX = /\s+when\s+done\s*$/i;
 const DATE_FIELD_REGEX: Record<"📅" | "🛫" | "⏳", RegExp> = {
@@ -30,12 +31,17 @@ function buildRRuleWithDtStart(rrule: string, from: DateTime): string {
  * de referencia (ADR-R2: `scheduled > due > start`, ya resuelta por quien llama). Si el texto
  * termina en `when done`, la fecha base para la regla es hoy en vez de `referenceDate` (ADR-R3).
  * Delega los casos límite (fin de mes/año) en la librería `rrule`. `null` si el texto de
- * recurrencia o la regla resultante son inválidos. */
-export function getNextOccurrenceDate(recurrenceText: string, referenceDate: DateTime): DateTime | null {
+ * recurrencia o la regla resultante son inválidos. `nonWorkingDays` (v1.1.15, NL2) da los días de
+ * `every weekday` y `every weekend`; sin él, sábado y domingo. */
+export function getNextOccurrenceDate(
+  recurrenceText: string,
+  referenceDate: DateTime,
+  nonWorkingDays: readonly number[] = DEFAULT_NON_WORKING_DAYS
+): DateTime | null {
   const isWhenDone = WHEN_DONE_SUFFIX_REGEX.test(recurrenceText);
   const baseText = recurrenceText.replace(WHEN_DONE_SUFFIX_REGEX, "").trim();
 
-  const rrule = TaskSection.convertToRRuleFormat(baseText);
+  const rrule = TaskSection.convertToRRuleFormat(baseText, nonWorkingDays);
   if (!rrule) return null;
 
   const from = (isWhenDone ? DateTime.now() : referenceDate).startOf("day");
@@ -76,14 +82,18 @@ export function buildNextOccurrenceLine(originalLine: string, referenceDate: Dat
 /** Si `task` tiene recurrencia y el nuevo estado es `Done`, calcula la línea de la siguiente
  * ocurrencia a insertar una línea arriba de la original (ADR-R1). `null` si no aplica (sin
  * recurrencia, sin ninguna fecha presente, o texto/regla de recurrencia inválidos). */
-export function buildRecurrenceOccurrence(task: ITask, newStatus: CoreTaskStatus): string | null {
+export function buildRecurrenceOccurrence(
+  task: ITask,
+  newStatus: CoreTaskStatus,
+  nonWorkingDays: readonly number[] = DEFAULT_NON_WORKING_DAYS
+): string | null {
   if (newStatus !== CoreTaskStatus.Done) return null;
   if (!task.flow.repeat) return null;
 
   const referenceDate = task.date.scheduled ?? task.date.due ?? task.date.start;
   if (!referenceDate) return null;
 
-  const nextDate = getNextOccurrenceDate(task.flow.repeat, referenceDate);
+  const nextDate = getNextOccurrenceDate(task.flow.repeat, referenceDate, nonWorkingDays);
   if (!nextDate) return null;
 
   const resetLine = upsertTaskStatus(task.line.text, CoreTaskStatus.Todo, "");

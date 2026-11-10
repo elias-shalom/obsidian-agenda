@@ -41,6 +41,21 @@ export interface TaskViewState {
   scheduled: string;
   /** `'all'` o un valor de `DATE_FILTER_VALUES`, sobre la fecha de vencimiento. */
   due: string;
+  /**
+   * Solo el calendario (v1.1.15): `'hide'` oculta las ocurrencias proyectadas de las tareas recurrentes y
+   * `'show'` (por defecto) las dibuja. Es el único filtro activo por defecto, de modo que se desmarca para quitarlo.
+   */
+  projected: 'show' | 'hide';
+  /**
+   * Solo el calendario (v1.1.15, HC1): `'hide'` oculta los hábitos que se dibujan como entradas virtuales y
+   * `'show'` (por defecto) los dibuja. Como `projected`, se desmarca para quitarlo.
+   */
+  habits: 'show' | 'hide';
+  /**
+   * Solo el calendario (v1.1.15): `'hide'` oculta los días festivos (etiqueta, sombreado y punto del Año) y `'show'`
+   * (por defecto) los dibuja. Como `projected` y `habits`, se desmarca para quitarlos.
+   */
+  holidays: 'show' | 'hide';
   /** Agrupado elegido entre los que ofrece la vista; vacío = el que cada vista usa por defecto. */
   group: string;
   /** Campo por el que la vista se divide en carriles (`LaneField`); vacío = sin carriles (v1.1.14, Fase L2). */
@@ -59,6 +74,9 @@ export const DEFAULT_TASK_VIEW_STATE: Readonly<TaskViewState> = {
   start: 'all',
   scheduled: 'all',
   due: 'all',
+  projected: 'show',
+  habits: 'show',
+  holidays: 'show',
   group: '',
   lanes: '',
   sortColumn: 'priority',
@@ -98,6 +116,9 @@ export function parseTaskViewState(raw: unknown): TaskViewState {
     start: source.start === 'all' || isOneOf(DATE_FILTER_VALUES, source.start) ? source.start : defaults.start,
     scheduled: source.scheduled === 'all' || isOneOf(DATE_FILTER_VALUES, source.scheduled) ? source.scheduled : defaults.scheduled,
     due: source.due === 'all' || isOneOf(DATE_FILTER_VALUES, source.due) ? source.due : defaults.due,
+    projected: source.projected === 'hide' ? 'hide' : defaults.projected,
+    habits: source.habits === 'hide' ? 'hide' : defaults.habits,
+    holidays: source.holidays === 'hide' ? 'hide' : defaults.holidays,
     group: text(source.group, defaults.group),
     lanes: isLaneField(source.lanes) ? source.lanes : defaults.lanes,
     sortColumn: text(source.sortColumn, defaults.sortColumn) || defaults.sortColumn,

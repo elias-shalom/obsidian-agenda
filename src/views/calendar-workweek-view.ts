@@ -5,6 +5,7 @@ import { WeekDayData, WeekViewData, CalendarViewData } from '../types/interfaces
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import { CalendarViewType } from "../types/enums";
+import { getWorkweekDates } from '../core/non-working-days';
 
 export const CALENDAR_WORK_WEEK_VIEW_TYPE = "calendar-workweek-view";
 
@@ -23,8 +24,10 @@ export class CalendarWorkWeekView extends CalendarView {
     return this.i18n.t("week_view_title");
   }
 
- /**
-   * Genera datos para la vista mensual del calendario
+  /**
+   * Genera los datos de la Semana laboral: la semana de lunes a domingo que contiene la fecha actual (la misma
+   * que usa la Semana) sin los días marcados como no laborables (v1.1.15, NL1). Con el ajuste por defecto son
+   * los cinco días de lunes a viernes de siempre; con otro, entre uno y seis.
    */
   protected generateViewData(): WeekViewData {
     // Obtener la fecha actual
@@ -34,24 +37,19 @@ export class CalendarWorkWeekView extends CalendarView {
     const currentWeekday = currentDate.weekday; // 1=lunes, 7=domingo
     const daysToPreviousMonday = (currentWeekday === 1) ? 0 : (currentWeekday === 7) ? 6 : currentWeekday - 1;
     const mondayOfWeek = currentDate.minus({ days: daysToPreviousMonday });
-    
-    // Usar este lunes como fecha de inicio
-    const weekStartDate = mondayOfWeek;
 
-    const daysToGenerate =  5;
+    // Los días laborables de esa semana, en orden; nunca queda vacía porque el ajuste exige un día sin marcar
+    const workDates = getWorkweekDates(mondayOfWeek, this.getNonWorkingDays());
 
     // Obtener los nombres de los días localizados
     const localizedDayNames = this.getLocalizedDayNames();
 
     // Prepara los datos de los días
-    const days: WeekDayData[] = [];
-    let currentDay = weekStartDate;
-    
-    for (let i = 0; i < daysToGenerate; i++) {
-      const dayTasks = this.getTasksForDate(currentDay);
+    const days: WeekDayData[] = workDates.map((currentDay) => {
+      const dayTasks = this.getTasksForDate(currentDay, true);
       const dayIndex = (currentDay.weekday - this.getWeekStartDay() + 7) % 7;
-      
-      days.push({
+
+      return {
         date: currentDay,
         isToday: currentDay.hasSame(DateTime.now(), 'day'),
         isSelected: currentDay.hasSame(this.currentDate, 'day'),
@@ -59,22 +57,25 @@ export class CalendarWorkWeekView extends CalendarView {
         dayOfWeek: currentDay.weekday,
         dayName: localizedDayNames[dayIndex],
         formattedDate: `${localizedDayNames[dayIndex]} ${currentDay.day}`,
+        holidays: this.getHolidays(currentDay),
+        habits: this.getHabitDay(currentDay),
         tasksForDay: dayTasks
-      });
-      
-      currentDay = currentDay.plus({ days: 1 });
-    }
-    
-    // Calcular el nombre del periodo (rango de fechas)
-    const weekEnd = weekStartDate.plus({ days: daysToGenerate - 1 });
-    const periodName = `${weekStartDate.toFormat('MMM d')} - ${weekEnd.toFormat('MMM d, yyyy')}`;
+      };
+    });
+
+    // Calcular el nombre del periodo (rango de fechas mostrado)
+    const periodStart = workDates[0];
+    const periodEnd = workDates[workDates.length - 1];
+    const periodName = `${periodStart.toFormat('MMM d')} - ${periodEnd.toFormat('MMM d, yyyy')}`;
     
     return {
       viewType:  CalendarViewType.WorkWeek ,
-      weekNumber: weekStartDate.weekNumber,
+      weekNumber: mondayOfWeek.weekNumber,
       days: days,
-      dayNames: localizedDayNames, // Solo lunes a viernes
-      periodName: periodName
+      dayNames: localizedDayNames,
+      periodName: periodName,
+      // Los once estilos de cuadrícula están pensados para cinco días
+      gridStylesAvailable: days.length === 5
     };
   }
 
@@ -96,6 +97,11 @@ export class CalendarWorkWeekView extends CalendarView {
   protected setupViewSpecificEventListeners(container: HTMLElement, data: CalendarViewData): void {
     // Primero ejecuta los event listeners comunes
     super.setupViewSpecificEventListeners(container, data);
+
+    // El número de columnas sigue a los días laborables del ajuste (entre 1 y 6); sin estilo de cuadrícula elegido
+    // manda esta variable.
+    const weekDaysRowEl = container.querySelector<HTMLElement>('.oa-calendar-week-days-row');
+    if (weekDaysRowEl?.dataset.dayCount) weekDaysRowEl.setCssProps({ '--oa-workweek-days': weekDaysRowEl.dataset.dayCount });
     
     // Añadir manejo del selector de estilo de cuadrícula
     const gridStyleSelector = container.querySelector('#oa-calendar-grid-style') as HTMLSelectElement;

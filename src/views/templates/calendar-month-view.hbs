@@ -51,18 +51,27 @@
 
           <div class="oa-calendar-month-days-row">
             {{#each days}}
-              <div class="oa-calendar-month-day {{#unless isCurrentMonth}}oa-calendar-other-month{{/unless}} {{#if isToday}}oa-calendar-today{{/if}} {{#if isSelected}}oa-calendar-selected{{/if}}" data-date="{{toISODate date}}">
+              <div class="oa-calendar-month-day {{#unless isCurrentMonth}}oa-calendar-other-month{{/unless}} {{#if isToday}}oa-calendar-today{{/if}} {{#if isSelected}}oa-calendar-selected{{/if}} {{#if isNonWorking}}oa-calendar-non-working{{/if}} {{#if (hasOfficialHoliday holidays)}}oa-calendar-holiday-day{{/if}}" data-date="{{toISODate date}}">
                 <div class="oa-calendar-month-day-header">
                   <span class="oa-calendar-month-day-number">{{dayOfMonth}}</span>
                 </div>
                 <div class="oa-calendar-month-day-content">
+                  <div class="oa-calendar-day-meta">
+                    {{> calendarHabitChip}}
+                    {{#each holidays}}
+                      <div class="oa-calendar-holiday" data-holiday-color="{{color}}" title="{{name}}">{{name}}</div>
+                    {{/each}}
+                  </div>
                   {{#each tasksForDay}}
-                    <div class="oa-calendar-task oa-calendar-task--{{calendarDateType}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
-                        draggable="true"
+                    <div class="oa-calendar-task oa-calendar-task--{{calendarDateType}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}} {{#if isProjected}}oa-calendar-task--projected{{/if}}"
+                        draggable="{{#if isProjected}}false{{else}}true{{/if}}"
+                        {{#if isProjected}}data-projected="true"{{/if}}
+                        {{#if areaColor}}data-area-color="{{areaColor}}"{{/if}}
                         data-file-path="{{file.path}}" 
                         data-line-number="{{line.number}}"
                         data-date-type="{{calendarDateType}}"
                         title="{{file.name}}:{{line.number}} - {{section.desc}}">
+                      {{#if isProjected}}<span class="oa-calendar-task-projected-badge" title="{{t 'calendar_projected_task'}}">🔁</span>{{/if}}
                       <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
                       <span class="oa-task-title">{{section.desc}}</span>
                     </div>

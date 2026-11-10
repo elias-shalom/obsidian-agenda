@@ -107,49 +107,51 @@ tags:
 - [x] Changelog/MANIFEST bump: versión `1.1.0` en `package.json`/`manifest.json`/`versions.json` (mismo `minAppVersion: 1.8.7`). De paso se corrigió un bug en `version-bump.mjs` (rutas relativas `../manifest.json`/`../versions.json` apuntaban fuera del repo porque el script corre con cwd = raíz del paquete, no `src/`).
 - [ ] Prueba de escritura en vault real (hacer toggle en un hábito de prueba y revertir) — **pendiente, requiere verificación manual**: no hay un `test-vault` en este workspace ni forma de automatizar la escritura real sobre un vault de Obsidian desde aquí; todo lo verificado en esta sesión fue vía `npm run build`.
 
-## Ampliaciones v1.1.15–v1.1.16 (diseño, no implementado)
+## Ampliaciones v1.1.15–v1.1.16 (HA1, HV1 y HU1 implementadas en v1.1.15)
 
 Decididas el 2026-11-02 y organizadas por fases con prefijo propio (`HA1`, `HV1`, `HU1`), independientes de las fases 0–7. Especificación en [[Especificación de vistas]] §11–§14, datos en [[Modelo de datos]] §8 y mecanismo en [[Arquitectura técnica]] §10. **Orden recomendado**: HA1 → HV1 (HU1 puede ir en cualquier momento). Las tres pertenecen a v1.1.15 y cada una se puede probar a mano completa.
 
-### Fase HA1 — Periodo activo (v1.1.15)
+### Fase HA1 — Periodo activo (v1.1.15) — **implementada y probada el 2026-11-09**
 
 **Dependencias**: ninguna. **Verificable por separado**: sí (con vacaciones aún sin implementar).
 
-- [ ] `src/habits/habit-calendar.ts` (puro, sin `obsidian`): `isActiveOn()`, `countsOn()` con contexto de vacaciones opcional (vacío por ahora) y el tipo `IHabitCalcContext`.
-- [ ] `habit.ts` y `habit-parser.ts`: `activeFrom`/`activeUntil` desde `desde`/`hasta` (solo `AAAA-MM-DD`; inválido = ausente).
-- [ ] `HabitManager.getHabitsForStats()` (activos + inactivos con `hasta`); `getHabits()` y `getAllHabits()` no cambian.
-- [ ] `habit-stats.ts` y `habit-streak.ts`: usar `countsOn()` en denominadores y rachas (los días fuera del periodo son neutrales).
-- [ ] `habit-editor.ts`: selectores `desde` y `hasta`, el switch de estado escribe `hasta` = hoy al desactivar y lo borra al reactivar, validación `desde ≤ hasta`; `createHabit()`/`updateHabit()` escriben o borran los campos sin tocar `completions`/`entries`.
-- [ ] i18n en los 6 locales (`habit_active_from`, `habit_active_until`, `habit_period_invalid`).
-- [ ] Pruebas Node `habit-period.test.cjs` ([[Arquitectura técnica]] §10.10): extremos del periodo, `inactive` con y sin `hasta`, historial estable al desactivar.
+- [x] `src/habits/habit-calendar.ts` (puro, sin `obsidian`): `parseActiveDate()`, `isInPeriod()`, `isActiveOn()`, `countsOn()`, `isValidPeriod()` y `activeUntilForStatus()`. El contexto de vacaciones (`IHabitCalcContext`) se añade en HV1, no se dejó un parámetro vacío por adelantado.
+- [x] `habit.ts` y `habit-parser.ts`: `activeFrom`/`activeUntil` desde `from`/`until` (solo `AAAA-MM-DD` válido, también como fecha real; inválido = ausente).
+- [x] `HabitManager.getHabitsForStats()` (activos + inactivos con `until`); `getHabits()` y `getAllHabits()` no cambian. `computeDashboard()` y el heatmap anual lo usan.
+- [x] `habit-stats.ts` y `habit-streak.ts`: usar `countsOn()` en denominadores y rachas (los días fuera del periodo son neutrales); también la Rutina (lista del día) y la Tabla (`pct30d`).
+- [x] `habit-editor.ts`: selectores `from` y `until` con botón de vaciar, el switch de estado escribe `until` = hoy al desactivar (un `until` anterior a hoy se respeta, uno futuro pasa a hoy) y lo borra al reactivar, validación `from ≤ until`; `createHabit()`/`updateHabit()` escriben o borran los campos sin tocar `completions`/`entries`.
+- [x] i18n en los 6 locales (`habit_active_from`, `habit_active_until`, `habit_period_invalid`, `habit_period_clear`).
+- [x] Pruebas Node `tests/habit-period.test.cjs` (22): lectura de las fechas, extremos inclusivos, `inactive` con y sin `until`, reglas del editor, rachas y celdas con días fuera del periodo, historial estable al desactivar, Dashboard con la lista de estadísticas y traducciones.
 
 **Verificar**: `npm run build`, `npm run lint`, `node --test tests`; manual: desactivar y reactivar un hábito de prueba y comprobar que el porcentaje de fechas pasadas no cambia y que una nota sin fechas se comporta igual que antes.
 
-### Fase HV1 — Vacaciones (v1.1.15)
+### Fase HV1 — Vacaciones (v1.1.15) — **implementada y probada a mano el 2026-11-09**
 
 **Dependencias**: HA1 (comparte `habit-calendar.ts` y la propagación del contexto). **Verificable por separado**: sí, con los hábitos mostrados solo en Cuadrícula, Semanal y heatmap.
 
-- [ ] Ajuste `habitVacations` en `settings.ts` (defecto `[]`, validación al cargar) y `findVacation()`.
-- [ ] Sección «Vacaciones» en `setting-tab.ts` (con `render:`), en `getSettingDefinitions()` y en el `display()` de respaldo; guardar → `refreshHabits()` + `obsidian-agenda:habits-refresh`.
-- [ ] Cálculo: día de vacaciones neutral sin marca y contado solo para ese hábito si está marcado (rachas, `maxGap` y porcentajes por hábito, área y daytime; [[Modelo de datos]] §8.5).
-- [ ] Cuadrícula y Semanal: `IHabitCell.vacation`, clase `--oa-vacation` (atenuado + icono + tooltip con el nombre) y SCSS.
-- [ ] Heatmap actual del Dashboard: `IHabitDayStat.vacation` con celda atenuada e icono/tooltip.
-- [ ] Botón «Vacaciones» en las cinco plantillas; `openPluginSettings()` con `app.setting.open()`/`openTabById()` y `Notice` de respaldo con la ruta.
-- [ ] i18n en los 6 locales (`habit_vacations*`, `habit_vacation_*`).
-- [ ] Pruebas Node `habit-vacations.test.cjs`: día sin marcar, denominador, marca en vacaciones, multi-daytime, día no programado, fuera del periodo.
+- [x] Ajuste `habitVacations` en `settings.ts` (defecto `[]`), `sanitizeVacations()` al cargar (`main.ts`) y `findVacation()` en `habit-calendar.ts`.
+- [x] Sección «Vacaciones» en `setting-tab.ts` (con `render:`), como grupo propio de la pestaña Hábitos en `getSettingDefinitions()` y en el `display()` de respaldo; cada cambio guarda y emite `obsidian-agenda:habits-refresh` (no hace falta `refreshHabits()`: las vacaciones no intervienen en el parseo y `HabitManager.getCalcContext()` las lee en vivo).
+- [x] Cálculo: `countsOn(habit, date, done, ctx)` con `IHabitCalcContext`; `computeCells`, `computeOccurrenceCells`, `computeStats`, `computeOccurrenceStats`, los porcentajes por área y franja (por ocurrencia), `computeHistory30d`, `computeYearHistory` y `computeDashboard` reciben el contexto (opcional, por defecto sin vacaciones). La Rutina mantiene en la lista los hábitos de un día de vacaciones, para poder marcarlos, pero no los cuenta en sus porcentajes si no están marcados; la Tabla usa el contexto en `streak` y `pct30d`.
+- [x] Cuadrícula y Semanal: `IHabitCell.vacation`, `vacationName` y `markable`, clase `--vacation` (atenuado + 🌴 + tooltip con el nombre) y SCSS; la celda de vacaciones sigue siendo marcable.
+- [x] Heatmap del Dashboard: `IHabitDayStat.vacation` y `vacationName`; un día de vacaciones sin marcas se dibuja con rayas diagonales (la celda mide 11 px y no cabe un icono) y el tooltip lleva el nombre.
+- [x] Botón «Vacaciones» (🌴) en las cinco plantillas; `openPluginSettings()` (`open-habit-settings.ts`) con `app.setting.open()`/`openTabById()` y `Notice` de respaldo con la ruta; `ObsidianAgenda.openHabitSettings()` deja elegida la pestaña Hábitos y desplaza la vista hasta la lista.
+- [x] i18n en los 6 locales (12 claves `habit_vacation*`).
+- [x] Pruebas Node `habit-vacations.test.cjs` (36): lista (`sanitizeVacations`, `findVacation`, solapes), `countsOn`, rachas (con `maxGap`), celdas y píldora de racha, porcentajes por área y franja, historial, heatmap, Dashboard, `openPluginSettings` y traducciones.
 
 **Verificar**: `npm run build`, `npm run lint`, `node --test tests`; manual: vacaciones que incluyan hoy con un hábito marcado y otro no, y botón «Vacaciones» en escritorio y móvil (la API es no documentada; probar también el camino del `Notice`).
 
-### Fase HU1 — Selector circular de subvistas (v1.1.15)
+### Fase HU1 — Selector circular de subvistas (v1.1.15) — **implementada y probada a mano el 2026-11-09**
 
 **Dependencias**: ninguna. **Verificable por separado**: sí.
 
-- [ ] Las 5 plantillas `habit-*-view.hbs`: el `<select id="oa-habit-view-dropdown">` pasa a `oa-calendar-view-segmented` con un `oa-calendar-view-btn` por subvista, solo icono con `title` y `aria-label`.
-- [ ] `HabitView.setupViewSpecificEventListeners()`: mapa de iconos (`layout-dashboard`, `sunrise`, `calendar-check-2`, `grid-3x3`, `list-checks`) con `setIcon` y clic → `switchToViewType()`.
-- [ ] Respeta `showHabitDashboardTab`, `showHabitRoutineTab`, `showHabitWeeklyTab`, `showHabitGridTab` y `showHabitListTab`; casos de un botón y de ninguno.
-- [ ] Los selectores de orden y agrupado con etiqueta no cambian; retirar los estilos que queden huérfanos.
+- [x] Las 5 plantillas `habit-*-view.hbs`: el `<select id="oa-habit-view-dropdown">` pasa a `oa-calendar-view-segmented` con un `oa-calendar-view-btn` por subvista, solo icono con `title` y `aria-label`.
+- [x] `HabitView.setupViewSpecificEventListeners()`: mapa de iconos `HABIT_VIEW_BUTTON_ICONS` (`src/habits/habit-view-icons.ts`: `layout-dashboard`, `sunrise`, `calendar-check-2`, `layout-grid`, `list-checks`) con `setIcon` y clic → `switchToViewType()`.
+- [x] Tras la prueba manual: el icono de la Cuadrícula pasó de `grid-3x3` (inexistente en Obsidian) a `layout-grid`, y los selectores de orden y agrupado pasaron a chips `oa-axis-chip` con el aspecto de Sort/Group de las tareas (ver [[Arquitectura técnica]] §10.5).
+- [x] Respeta `showHabitDashboardTab`, `showHabitRoutineTab`, `showHabitWeeklyTab`, `showHabitGridTab` y `showHabitListTab`; casos de un botón y de ninguno.
+- [x] Los selectores de orden y agrupado con etiqueta pasaron a chips `oa-axis-chip` (como Sort/Group de las tareas); se retiraron los estilos del `<select>` que quedaron huérfanos.
+- [x] Pruebas Node `habit-view-selector.test.cjs` (8): compila las cinco plantillas y comprueba un botón por subvista en orden, solo el actual con `oa-active`, solo icono con `title`/`aria-label`, `role="group"`, ningún `<select>` de vista, cada `showHabit*Tab` en cada plantilla, un botón y ninguno, el mapa de iconos y las traducciones.
 
-**Verificar**: `npm run build`, `npm run lint`; manual: recorrer las 5 subvistas, combinar los `showHabit*Tab`, comprobar tooltip y `aria-label` y la pulsación larga en móvil.
+**Verificar**: `npm run build`, `npm run lint`; manual: recorrer las 5 subvistas, combinar los `showHabit*Tab`, comprobar tooltip y `aria-label`, la pulsación larga en móvil y que los cinco iconos se ven.
 
 ### Fases relacionadas en el Plan de agenda-tasks
 
@@ -177,7 +179,7 @@ Estas fases viven en `docs/agenda-tasks/Plan de implementación.md` y tocan háb
 | Cambios de vault concurrentes (sync) | Ignorar errores de `cache` estaleado + re-intento único tras `modify`. Listener `offref` limpio en `onunload`. |
 | **(v1.1.15)** El ajuste de días no laborables **altera rachas y porcentajes** de los hábitos `weekend`/`workweek` | Aviso fijo y `Notice` en el ajuste; los tokens no reescriben notas; con el ajuste por defecto el resultado es idéntico; pruebas Node de regresión (`habit-frequency.test.cjs`). |
 | **(v1.1.15)** `app.setting.open()` y `openTabById()` son **API no documentada** de Obsidian | Acceso defensivo con comprobación de tipos y `try/catch`; `Notice` con la ruta «Ajustes → Agenda Tasks → Vacaciones»; probar en la versión mínima y en la actual. |
-| **(v1.1.15)** Desactivar un hábito cambiaba el porcentaje de fechas pasadas | `hasta` = hoy al desactivar y `getHabitsForStats()`; prueba de historial estable (HA1). |
+| **(v1.1.15)** Desactivar un hábito cambiaba el porcentaje de fechas pasadas | `until` = hoy al desactivar y `getHabitsForStats()`; prueba de historial estable (HA1). |
 | **(v1.1.16)** La **migración del heatmap** de hábitos al componente reutilizable (HM1) cambia su aspecto o valores, o pierde la marca de vacaciones | Criterio «idéntico» con prueba de paridad de la métrica y revisión visual en claro/oscuro; la marca de vacaciones forma parte del contrato del componente. |
 
 ## Orden de commits sugerido
@@ -192,6 +194,6 @@ Estas fases viven en `docs/agenda-tasks/Plan de implementación.md` y tocan háb
 
 Ampliaciones v1.1.15 (una por fase, en este orden):
 
-8. `feat(habits): periodo activo desde/hasta` (HA1)
-9. `feat(habits): vacaciones globales y botón de ajustes` (HV1)
-10. `feat(habits): selector circular de subvistas` (HU1)
+8. `feat(habits): periodo activo from/until` (HA1)
+9. `feat(habits): vacaciones globales y botón de ajustes` (HV1; implementado)
+10. `feat(habits): selector circular de subvistas` (HU1; implementado)

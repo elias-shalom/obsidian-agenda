@@ -4,7 +4,7 @@ import { TaskManager } from "../core/task-manager";
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import { CalendarViewType } from "../types/enums";
-import { YearViewData } from '../types/interfaces';
+import { YearViewData, HolidayLabel } from '../types/interfaces';
 
 export const CALENDAR_YEAR_VIEW_TYPE = "calendar-year-view";
 
@@ -40,6 +40,8 @@ export class CalendarYearView extends CalendarView {
           dayOfMonth: number;
           hasTasksDue: boolean;
           taskCount: number;
+          holidays: HolidayLabel[];
+          holidayTitle: string;
         }[];
         weekNumber: number;
       }[];
@@ -60,6 +62,8 @@ export class CalendarYearView extends CalendarView {
           dayOfMonth: number;
           hasTasksDue: boolean;
           taskCount: number;
+          holidays: HolidayLabel[];
+          holidayTitle: string;
         }[];
         weekNumber: number;
       }[] = [];
@@ -72,6 +76,8 @@ export class CalendarYearView extends CalendarView {
         dayOfMonth: number;
         hasTasksDue: boolean;
         taskCount: number;
+        holidays: HolidayLabel[];
+        holidayTitle: string;
       }[] = [];
 
       let currentDay = startDate;
@@ -79,6 +85,8 @@ export class CalendarYearView extends CalendarView {
       while (currentDay <= endDate) {
         const tasksForDay = this.getTasksForDate(currentDay);
         const isCurrentMonth = currentDay.month === monthNumber;
+        // Los días vecinos repiten el día de otro mes: solo el del mes actual lleva punto, para no duplicarlo
+        const holidays = isCurrentMonth ? this.getHolidays(currentDay) : [];
 
         currentWeekDays.push({
           date: currentDay,
@@ -88,7 +96,9 @@ export class CalendarYearView extends CalendarView {
           isSelected: isCurrentMonth && currentDay.hasSame(this.currentDate, 'day'),
           dayOfMonth: currentDay.day,
           hasTasksDue: tasksForDay.length > 0,
-          taskCount: tasksForDay.length
+          taskCount: tasksForDay.length,
+          holidays,
+          holidayTitle: holidays.map(holiday => holiday.name).join(', ')
         });
 
         if (currentWeekDays.length === 7) {

@@ -13,6 +13,7 @@ import { CalendarDatePicker } from "../core/calendar-date-picker";
 import { TaskTimePickerModal } from "./task-time-picker-modal";
 import { TaskDurationModal } from "./task-duration-modal";
 import { clearTooltips, installTooltips } from "../core/tooltips";
+import { DEFAULT_NON_WORKING_DAYS, describeRecurrenceDays } from "../core/non-working-days";
 
 /** Recuerda el último modo (básico/avanzado) usado en el Task Modal (v1.1.4, Fase E). */
 const ADVANCED_MODE_STORAGE_KEY = "oa_task_modal_advanced_mode";
@@ -67,7 +68,14 @@ export class TaskModal extends Modal {
    * del date picker; se puebla una vez al abrir el modal, no se mantiene sincronizada después. */
   private cachedTasks: ITask[] = [];
 
-  constructor(app: App, modalType: ModalType, i18n: I18n, taskManager: TaskManager, modalOptions?: ModalOptions) {
+  constructor(
+    app: App,
+    modalType: ModalType,
+    i18n: I18n,
+    taskManager: TaskManager,
+    modalOptions?: ModalOptions,
+    private getNonWorkingDays: () => readonly number[] = () => DEFAULT_NON_WORKING_DAYS
+  ) {
     super(app);
     this.modalType = modalType;
     this.modalOptions = modalOptions;
@@ -429,6 +437,7 @@ export class TaskModal extends Modal {
         li.addEventListener("mousedown", (e) => {
           e.preventDefault();
           if (recurrenceInput) recurrenceInput.value = suggestion;
+          updateRecurrenceNote();
           hideRecurrenceSuggestions();
         });
       });
@@ -439,6 +448,22 @@ export class TaskModal extends Modal {
     recurrenceInput?.addEventListener("input", () => showRecurrenceSuggestions(recurrenceInput.value.trim()));
     recurrenceInput?.addEventListener("focus", () => showRecurrenceSuggestions(recurrenceInput.value.trim()));
     recurrenceInput?.addEventListener("blur", () => window.setTimeout(hideRecurrenceSuggestions, 150));
+
+    // `every weekday` y `every weekend` siguen los días no laborables de los ajustes (v1.1.15, NL2): con un ajuste
+    // distinto del habitual, una nota dice qué días son, porque el plugin Tasks mantiene sábado y domingo.
+    const recurrenceNote = this.contentEl.querySelector<HTMLElement>("#oa-recurrence-note");
+    const updateRecurrenceNote = () => {
+      if (!recurrenceNote) return;
+      const note = describeRecurrenceDays(recurrenceInput?.value ?? "", this.getNonWorkingDays());
+      if (!note) {
+        recurrenceNote.setText("");
+        return;
+      }
+      const days = note.days.map(iso => this.i18n.t(WEEKDAY_KEYS.find(day => day.iso === iso)?.key ?? "")).join(", ");
+      recurrenceNote.setText(this.i18n.t(note.kind === "weekend" ? "recurrence_weekend_note" : "recurrence_weekday_note", { days }));
+    };
+    recurrenceInput?.addEventListener("input", updateRecurrenceNote);
+    updateRecurrenceNote();
 
     if (onCompletionInput) onCompletionInput.value = onCompletionInput.dataset.value ?? "";
 
@@ -563,7 +588,7 @@ export class TaskModal extends Modal {
         if (editingTask) {
           const line = applyStatus(buildLine(selectedStatus, editingTask.flow.blockLink), editingTask);
           // Calculado antes de escribir: necesita la recurrencia/fechas tal como estaban al abrir el modal (ADR-R1).
-          const nextOccurrenceLine = buildRecurrenceOccurrence(editingTask, selectedStatus);
+          const nextOccurrenceLine = buildRecurrenceOccurrence(editingTask, selectedStatus, this.getNonWorkingDays());
           try {
             console.debug(`Actualizando línea ${editingTask.line.number} de ${editingTask.file.path}: ${line}`); // Debugging line
             const written = await this.taskWriter.updateTaskLine(editingTask.file.path, editingTask.line.number, editingTask.line.text, () => line);

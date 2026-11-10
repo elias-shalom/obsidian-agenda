@@ -10,10 +10,16 @@ export const QUICK_CAPTURE_MODAL_TYPE: ModalType = "quick-capture";
 
 
 export class ModalManager {
-  constructor(private app: App, private i18n: I18n, private taskManager: TaskManager) {}
+  /** `getNonWorkingDays` da los días de las recurrentes `every weekday`/`every weekend` (v1.1.15, NL2). */
+  constructor(
+    private app: App,
+    private i18n: I18n,
+    private taskManager: TaskManager,
+    private getNonWorkingDays?: () => readonly number[]
+  ) {}
 
   public openModal(modalType: ModalType, options?: ModalOptions): void {
     // TaskModal maneja internamente qué template y lógica usar
-    new TaskModal(this.app, modalType, this.i18n, this.taskManager, options).open();
+    new TaskModal(this.app, modalType, this.i18n, this.taskManager, options, this.getNonWorkingDays).open();
   }
 }

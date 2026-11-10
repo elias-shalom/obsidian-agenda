@@ -18,22 +18,22 @@
 .oa-habit-routine-nav {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
+// Triángulos ◀ ▶ con el mismo aspecto que los de la Cuadrícula (`.oa-habit-grid-nav`)
 .oa-habit-routine-nav-btn {
-  padding: 4px 8px;
+  padding: 4px 10px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-s, 4px);
-  background: var(--background-primary);
+  border-radius: 6px;
+  background-color: var(--background-secondary);
   color: var(--text-normal);
   cursor: pointer;
-  font-size: var(--font-smaller, 0.75rem);
   transition: background-color 0.15s ease;
 }
 
 .oa-habit-routine-nav-btn:hover {
-  background: var(--background-modifier-hover);
+  background-color: var(--background-modifier-hover);
 }
 
 .oa-habit-routine-nav-btn:disabled {

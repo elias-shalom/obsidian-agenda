@@ -55,7 +55,7 @@ export class CalendarListView extends CalendarView {
     const locale = getLanguage() || 'en';
 
     for (let i = 0; i < daysToShow; i++) {
-      const dayTasks = this.getTasksForDate(currentDay);
+      const dayTasks = this.getTasksForDate(currentDay, true);
       const dayIndex = (currentDay.weekday - this.getWeekStartDay() + 7) % 7;
 
       days.push({
@@ -66,6 +66,9 @@ export class CalendarListView extends CalendarView {
         dayOfWeek: currentDay.weekday,
         dayName: localizedDayNames[dayIndex],
         formattedDate: `${localizedDayNames[dayIndex]} ${currentDay.day}`,
+        isNonWorking: this.isNonWorking(currentDay),
+        holidays: this.getHolidays(currentDay),
+        habits: this.getHabitDay(currentDay),
         // La ventana de días puede cruzar un límite de mes (fix v1.1.11, §4.10).
         monthAbbr: currentDay.setLocale(locale).toFormat('MMM'),
         tasksForDay: dayTasks,

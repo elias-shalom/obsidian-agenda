@@ -1,10 +1,9 @@
 # 9. Configuración
 
-Accede a todos los ajustes del plugin desde **Configuración de Obsidian → Plugins de la comunidad → Agenda Tasks**. Los ajustes están agrupados exactamente como aparecen en ese panel.
+Accede a todos los ajustes del plugin desde **Configuración de Obsidian → Plugins de la comunidad → Agenda Tasks**. El panel tiene tres pestañas arriba —**General**, **Calendario** y **Hábitos**— y cada una muestra solo sus ajustes, como se listan a continuación.
 
 ## Configuración general
 
-- **La semana empieza el** — qué día de la semana tratan las vistas de calendario como el primero de la semana.
 - **Mostrar novedades al actualizar** — abre una ventana con las novedades la primera vez que inicias Obsidian tras actualizar el plugin (activado por defecto). Aparece una sola vez por actualización y, si saltaste varias versiones, las muestra todas.
 
 ## Visibilidad de pestañas
@@ -15,9 +14,13 @@ Accede a todos los ajustes del plugin desde **Configuración de Obsidian → Plu
 
 ## Calendario
 
+- **La semana empieza el** — qué día de la semana tratan las vistas de calendario como el primero de la semana.
 - **Mostrar fechas de vencimiento/inicio/programada** — elige de forma independiente qué tipos de fecha aparecen en las vistas de calendario, cada uno con su propio ícono y color (ver [7. Formato de tareas y metadatos](06-task-format.md)).
 - **Mostrar tareas completadas** — mantén las tareas completadas atenuadas en el calendario, u ocúltalas por completo.
 - **Vista de lista: días a mostrar** — el tamaño de la ventana continua para la vista de Lista del calendario (mínimo 7, máximo 14, por defecto 14). Ver [5. Vistas de calendario](04-calendar-views.md).
+- **Recurrentes proyectadas** — cuántas ocurrencias futuras de cada tarea recurrente (🔁) muestra el calendario (de 0 a 50, por defecto 10; 0 lo desactiva). Aparecen en las vistas Mes, Semana, Semana laboral, Día y Lista como píldoras de solo contorno (sin relleno, borde discontinuo y título en cursiva) con la insignia 🔁 al inicio, para no confundirlas con las tareas terminadas (que siguen rellenas, atenuadas y tachadas). Son de solo lectura: no se arrastran, no se redimensionan, no se completan ni cambian de estado; el clic abre la tarea real y el doble clic su nota. Al completar la tarea real se escribe la siguiente ocurrencia como siempre (la copia que ocupaba su lugar pasa a ser la línea nueva) y una tarea diaria deja de dibujarse pasados N días. Las tareas que terminan en `when done` no se proyectan y los filtros del calendario también se aplican a las copias. También puedes ocultar todas las copias a la vez con el elemento **Tareas recurrentes** del menú **+ Filtro** del calendario (marcado por defecto), sin cambiar este ajuste.
+- **Días no laborables** — una casilla por día, de lunes a domingo (sábado y domingo por defecto). Los días marcados se sombrean en las vistas Mes, Semana, Lista y Día del calendario y en el Gantt; la Semana laboral los oculta. También son los días de las frecuencias de hábitos «Fin de semana» y «Lunes a viernes» y de las recurrencias `every weekend` y `every weekday`, así que cambiarlos modifica las rachas y los porcentajes de los hábitos y las fechas de esas tareas recurrentes. Debe quedar al menos un día laborable y uno no laborable; la casilla que rompería esa regla vuelve a su estado y un aviso lo explica.
+- **Calendarios de feriados** — una lista de calendarios de feriados (ninguno está activo por defecto). Cada uno tiene un país (México, Estados Unidos o **Internacional**), una región (estado) opcional que suma los feriados de ese estado a los nacionales, las casillas **Oficiales** y **No oficiales** (el Día de las Madres, el Día de Muertos y Halloween son no oficiales) y un color; **Añadir calendario de feriados** crea uno y el botón de la papelera lo quita. **Internacional** reúne 58 días de la ONU y de organismos internacionales (el Día de la Mujer, el Día de la Tierra, el Día de los Derechos Humanos…); no tiene región ni casillas Oficiales / No oficiales, sino una casilla por tema (**Mujer e infancia**, **Salud**, **Medio ambiente** y **Sociedad y derechos**, todos marcados al crearlo) y solo muestra los días de los temas marcados. Los feriados se dibujan con un tinte tenue de ese color: una etiqueta con el nombre en Mes, Semana, Semana laboral y Lista, bajo la fecha en Día, un punto con tooltip en Año y una columna tintada en el Gantt. Un día con feriado **oficial** además se sombrea como un día no laborable (Mes, Semana, Semana laboral, Lista y Día); los no oficiales no. Se pueden ocultar desde el elemento **Días festivos** de **+ Filtro** del calendario. Son solo visuales: no afectan a la Semana laboral, las rachas de hábitos ni las tareas.
 
 ## Hábitos
 
@@ -28,6 +31,10 @@ Accede a todos los ajustes del plugin desde **Configuración de Obsidian → Plu
 - **Tolerancia máxima por defecto (días)** — tolerancia por defecto antes de que una racha se rompa, usada como valor inicial al crear un hábito nuevo.
 - **Prioridad por defecto** — valor de prioridad inicial (1–5) para hábitos nuevos.
 - **Color por defecto** y **visibilidad del campo de sub-área** — otros valores por defecto del Habit Creator.
+
+### Vacaciones
+
+- **Periodos de vacaciones** — una lista de periodos (fecha de inicio, de fin y un nombre opcional) que aplican a todos los hábitos: un día de vacaciones sin marcar ni rompe una racha ni baja un porcentaje, y uno marcado cuenta solo para ese hábito. **Añadir periodo** crea uno y el botón de la papelera lo quita; una fecha final anterior a la inicial se rechaza. El botón 🌴 de la barra del Seguimiento de hábitos abre esta lista.
 
 ### Visibilidad de pestañas de hábitos
 

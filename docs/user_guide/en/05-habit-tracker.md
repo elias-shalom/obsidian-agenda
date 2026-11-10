@@ -20,9 +20,12 @@ Open the Habit Creator (from any Habit Tracker view, via its "create" action or 
 - **Max gap** — a slider setting how many days a streak tolerates missing before it breaks.
 - **Area** — a free-form field (not a fixed list) suggested from your vault's root folders.
 - **Related files** — optional wikilinks to supporting notes, added and removed individually.
-- **Active/Inactive** — a switch to pause a habit without deleting it.
+- **Active period** — optional **Active from** and **Active until** dates (each with a button to clear it). Days outside that period are neutral for the habit, like days it is not scheduled: they do not break or add to a streak and do not count in its percentages. With no dates the habit behaves as before.
+- **Active/Inactive** — a switch to pause a habit without deleting it. Turning it **off** fills **Active until** with today (a date earlier than today that you had already set is kept) and turning it **on** clears it, so deactivating a habit does not change the percentages of past dates in the Dashboard and the heatmap: the habit keeps counting up to that day. Days between deactivating and reactivating count as missed.
 
 ## The five views
+
+Switch between them with the row of round icon buttons at the right of the toolbar (hover or long-press a button to see its name); the current view is highlighted. Which buttons appear depends on the **Habit tabs visibility** settings.
 
 ### Habit Grid
 
@@ -53,6 +56,20 @@ A sortable catalog of all habits (including inactive ones, shown read-only) with
 ## Streaks and gaps
 
 A streak counts consecutive completed occurrences. The **max gap** setting controls how many unscheduled/missed days in a row are still tolerated before the streak resets — useful for habits that aren't scheduled every single day. A habit completed on a day that's since been removed from its frequency shows a distinct "conflict" marker instead of silently breaking the streak.
+
+## Vacations
+
+Define vacation periods in **Settings → Agenda Tasks → Habits → Vacations** (each period has a start date, an end date and an optional name, such as "Christmas"), or click the **🌴** button in the Habit Tracker toolbar to jump straight there. They apply to **all** habits:
+
+- A vacation day you **didn't** tick is neutral: it doesn't break the streak, doesn't count as missed and doesn't lower any percentage.
+- A vacation day you **did** tick counts, but only for that habit: it extends its streak and enters its percentage.
+- The Grid and Weekly views show vacation days dimmed with a 🌴 icon (the tooltip shows the period name), and the yearly heatmap shows untouched vacation days with diagonal stripes instead of 0%. You can still tick any dimmed cell.
+
+If the button can't open the settings (it relies on an undocumented Obsidian API), a notice shows the path to follow by hand.
+
+## Habits in the calendar
+
+The Calendar tab shows a small chip on each day with the habits done out of those due that day, so you can see them next to your tasks. Click it to tick habits and open their notes without leaving the calendar; hide it with the **Habits** item of the calendar's **+ Filter** menu. It is shown by default and only offered when you have habits and the Habits tab is visible. See [5. Calendar Views](04-calendar-views.md) for the details.
 
 ## Next steps
 

@@ -7,6 +7,10 @@ export interface FilterPopoverOption {
   value: string;
   label: string;
   checked: boolean;
+  /** Se dibuja atenuada pero se puede marcar igual (hábitos neutrales de un día de vacaciones, v1.1.15). */
+  muted?: boolean;
+  /** Color del margen izquierdo de la fila; los hábitos usan el de su área. */
+  color?: string;
 }
 
 export interface FilterPopoverSection {
@@ -21,6 +25,11 @@ export interface FilterPopoverConfig {
   /** Se vuelve a pedir tras cada marca: las secciones pueden cambiar (el área añade y quita sub-áreas). */
   getSections: () => FilterPopoverSection[];
   onToggle: (value: string) => void;
+  /**
+   * Si se pasa, cada fila lleva al final un botón (con este texto como tooltip y `aria-label`) que llama a
+   * `onOpen` con su valor sin marcar la casilla: el popover de hábitos del calendario abre así la nota del hábito.
+   */
+  openOption?: { label: string; onOpen: (value: string) => void };
 }
 
 const MARGIN = 8;
@@ -56,10 +65,25 @@ export function openFilterPopover(config: FilterPopoverConfig): void {
       if (section.title) panel.createDiv({ cls: 'oa-filter-popover__title', text: section.title });
 
       for (const option of section.options) {
-        const row = panel.createEl('label', { cls: 'oa-filter-popover__option' });
+        const row = panel.createEl('label', { cls: `oa-filter-popover__option${option.muted ? ' oa-filter-popover__option--muted' : ''}` });
+        if (option.color) row.setCssProps({ '--oa-area-color': option.color });
         const input = row.createEl('input', { type: 'checkbox', attr: { 'data-value': option.value } });
         input.checked = option.checked;
         row.createSpan({ cls: 'oa-filter-popover__label', text: option.label });
+
+        const { openOption } = config;
+        if (openOption) {
+          const open = row.createEl('button', {
+            cls: 'oa-filter-popover__open',
+            text: '↗',
+            attr: { type: 'button', 'aria-label': openOption.label, title: openOption.label },
+          });
+          open.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            openOption.onOpen(option.value);
+          });
+        }
 
         input.addEventListener('change', () => {
           config.onToggle(option.value);

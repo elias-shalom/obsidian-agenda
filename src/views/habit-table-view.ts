@@ -4,9 +4,11 @@ import { HabitView } from './habit-view';
 import { AgendaPlugin, ViewData } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { TaskManager } from '../core/task-manager';
-import { HabitManager, getAreaColor, getAreaLabel, dayCompleted, isScheduled } from '../habits';
+import { HabitManager, getAreaColor, getAreaLabel, dayCompleted } from '../habits';
+import { countsOn } from '../habits/habit-calendar';
 import type { Daytime, IHabit } from '../habits';
 import { computeStats } from '../habits/habit-streak';
+import { matchFrequencyPreset } from '../core/non-working-days';
 
 export const HABIT_TABLE_VIEW_TYPE = 'habit-table-view';
 
@@ -74,9 +76,9 @@ export class HabitTableView extends HabitView {
 
   private frequencyLabel(habit: IHabit): string {
     const set = habit.frequencySet;
-    if (set.size === 7 && [1, 2, 3, 4, 5, 6, 7].every(day => set.has(day))) return this.i18n.t('habit_freq_everyday');
-    if (set.size === 5 && [1, 2, 3, 4, 5].every(day => set.has(day))) return this.i18n.t('habit_freq_workweek');
-    if (set.size === 2 && [6, 7].every(day => set.has(day))) return this.i18n.t('habit_freq_weekend');
+    // Las frecuencias predefinidas siguen el ajuste de días no laborables (v1.1.15, NL2)
+    const preset = matchFrequencyPreset(set, this.habitManager.getSettings().nonWorkingDays);
+    if (preset !== 'custom') return this.i18n.t(`habit_freq_${preset}`);
 
     return [1, 2, 3, 4, 5, 6, 7]
       .filter(day => set.has(day))
@@ -86,15 +88,17 @@ export class HabitTableView extends HabitView {
 
   private pct30d(habit: IHabit): number {
     const today = DateTime.local();
+    const ctx = this.calcContext;
     let done = 0;
     let scheduled = 0;
 
     for (let offset = 29; offset >= 0; offset -= 1) {
       const date = today.minus({ days: offset });
-      if (!isScheduled(habit, date)) continue;
+      const completed = dayCompleted(habit, date.toISODate() ?? '');
+      if (!countsOn(habit, date, completed, ctx)) continue;
 
       scheduled += 1;
-      if (dayCompleted(habit, date.toISODate() ?? '')) done += 1;
+      if (completed) done += 1;
     }
 
     return scheduled === 0 ? 0 : Math.round((done / scheduled) * 100);
@@ -136,7 +140,7 @@ export class HabitTableView extends HabitView {
       priority: habit.priority,
       daytimes: habit.daytimes.map(daytime => this.i18n.t(daytimeLabelKey(daytime))),
       time: habit.time,
-      streak: computeStats(habit).current,
+      streak: computeStats(habit, this.calcContext).current,
       pct30d: this.pct30d(habit),
       active: habit.status !== 'inactive',
     }));

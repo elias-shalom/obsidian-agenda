@@ -7,6 +7,7 @@ import { DateTime } from 'luxon';
 import { CalendarViewType } from "../types/enums";
 import { upsertScheduledDate, upsertScheduledTime, upsertScheduledDuration, clearScheduledTime } from "../core/task-line-fields";
 import { CalendarDatePicker } from "../core/calendar-date-picker";
+import { hasOfficialHoliday } from "../core/holidays/holiday-calendar";
 
 export const CALENDAR_DAY_VIEW_TYPE = "calendar-day-view";
 
@@ -85,7 +86,7 @@ export class CalendarDayView extends CalendarView {
   /** Genera los datos de una sola columna de día (todo-el-día + segmentos de hora), de forma
    * independiente: los carriles de solapamiento no se comparten entre columnas (v1.1.10, §13.2). */
   private buildDayColumn(date: DateTime): { column: DayColumnData; hourSlotsByHour: HourSlot[] } {
-    const dayTasks = this.getTasksForDate(date);
+    const dayTasks = this.getTasksForDate(date, true);
     const dateIso = date.toISODate() ?? '';
 
     // Tareas ancladas por `scheduled` con hora asignada -> franjas horarias (modo punto/bloque, ADR-T2)
@@ -179,6 +180,8 @@ export class CalendarDayView extends CalendarView {
 
     // Organizar tareas programadas por hora (24 horas); cada hora expone su mitad superior
     // (:00–:29) e inferior (:30–:59) por separado para los bloques con duración.
+    const holidays = this.getHolidays(date);
+    const isNonWorking = this.isNonWorking(date);
     const hourSlotsByHour: HourSlot[] = [];
     for (let hour = 0; hour < 24; hour++) {
       const upperHalfSegments = segmentsByHalfSlot[hour * 2] ?? [];
@@ -188,6 +191,8 @@ export class CalendarDayView extends CalendarView {
         upperHalfSegments,
         lowerHalfSegments,
         hasDurationSegments: upperHalfSegments.length > 0 || lowerHalfSegments.length > 0,
+        isOfficialHoliday: hasOfficialHoliday(holidays),
+        isNonWorking,
       });
     }
 
@@ -200,6 +205,9 @@ export class CalendarDayView extends CalendarView {
       allDayDue,
       allDayStart,
       allDayScheduled,
+      holidays,
+      isNonWorking,
+      habits: this.getHabitDay(date),
     };
 
     return { column, hourSlotsByHour };

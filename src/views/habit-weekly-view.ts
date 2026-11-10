@@ -77,6 +77,7 @@ export class HabitWeeklyView extends HabitView {
       isToday: date.toISODate() === todayIso,
     }));
 
+    const ctx = this.calcContext;
     const rows: WeeklyRowRecord[] = [];
 
     for (const habit of this.habits) {
@@ -84,7 +85,7 @@ export class HabitWeeklyView extends HabitView {
       const isMulti = daytimes.length > 1;
 
       for (const daytime of daytimes) {
-        const cells = computeOccurrenceCells(habit, daytime, dates, habit.maxGap, this.plugin.settings.habitShowStreaks);
+        const cells = computeOccurrenceCells(habit, daytime, dates, habit.maxGap, this.plugin.settings.habitShowStreaks, ctx);
         const bridges = computeUnscheduledBridges(cells);
         const scheduledCells = cells.filter(cell => cell.scheduled);
         const doneCount = scheduledCells.filter(cell => cell.ticked).length;
@@ -97,7 +98,7 @@ export class HabitWeeklyView extends HabitView {
           daytimeLabel: this.i18n.t(daytimeLabelKey(daytime)),
           showDaytimeLabel: isMulti || this.plugin.settings.habitShowSingleDaytimeLabel,
           color: habit.color,
-          streak: computeOccurrenceStats(habit, daytime).current,
+          streak: computeOccurrenceStats(habit, daytime, ctx).current,
           pct,
           area: habit.area,
           priority: habit.priority,
@@ -108,6 +109,7 @@ export class HabitWeeklyView extends HabitView {
               ...cell,
               actual: cell.date === todayIso,
               bridge: bridges[index],
+              vacationLabel: cell.vacation ? this.vacationLabel(cell.vacationName) : '',
               // Marcado como hecho pero fuera de la frecuencia actual (se cambió la config después de completarlo)
               unscheduledTicked: !cell.scheduled && cell.ticked,
               runSingle: isRun && cell.streakStart && cell.streakEnd,
@@ -126,6 +128,7 @@ export class HabitWeeklyView extends HabitView {
       habits: rows.map((row, index) => ({ ...row, alt: index % 2 === 1 })),
       weekDays,
       sortBy: this.sortBy,
+      sortLabel: this.i18n.t(`habit_sort_${this.sortBy}`),
       weekStart: this.weekStart.toISODate(),
       weekEnd: this.weekStart.plus({ days: 6 }).toISODate(),
       emptyMessage: this.getEmptyMessage(),
@@ -174,14 +177,10 @@ export class HabitWeeklyView extends HabitView {
       this.refreshHabitView().catch(console.error);
     });
 
-    const sortSelect = container.querySelector<HTMLSelectElement>('#oa-habit-weekly-sort');
-    sortSelect?.addEventListener('change', () => {
-      const value = sortSelect.value as WeeklySortMode;
-      if ((SORT_MODES as readonly string[]).includes(value)) {
-        this.sortBy = value;
-        this.app.saveLocalStorage(WEEKLY_SORT_STORAGE_KEY, value);
-        this.refreshHabitView().catch(console.error);
-      }
+    this.mountChipMenu(container, '#oa-habit-weekly-sort', SORT_MODES, mode => `habit_sort_${mode}`, this.sortBy, mode => {
+      this.sortBy = mode;
+      this.app.saveLocalStorage(WEEKLY_SORT_STORAGE_KEY, mode);
+      this.refreshHabitView().catch(console.error);
     });
 
     container.querySelectorAll<HTMLButtonElement>('.oa-habit-weekly-cell:not([disabled])').forEach(button => {

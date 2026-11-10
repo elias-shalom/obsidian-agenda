@@ -9,6 +9,7 @@
     
     <div class="oa-calendar-nav-container">
       {{#equals calendar.viewType "workweek"}}
+      {{#if calendar.gridStylesAvailable}}
       <div class="oa-calendar-grid-style-selector">
         <select id="oa-calendar-grid-style" class="oa-calendar-grid-style-dropdown">
           <option value="default">{{t "default_grid"}}</option>
@@ -25,6 +26,7 @@
           <option value="style11">{{t "grid_style11"}}</option>
         </select>
       </div>
+      {{/if}}
       {{/equals}}
       <div class="oa-calendar-view-selector">
         <div class="oa-calendar-view-segmented" role="group" aria-label="{{t 'calendar_view_title'}}">
@@ -53,21 +55,30 @@
   {{#equals calendar.viewType "workweek"}}
   <div class="oa-calendar-workweek-view">
     <div class="oa-calendar-week-body">
-      <div class="oa-calendar-week-days-row">
+      <div class="oa-calendar-week-days-row" data-day-count="{{calendar.days.length}}">
         {{#each calendar.days}}
-          <div class="oa-calendar-week-day-container {{#if isToday}}oa-calendar-today{{/if}} {{#if isSelected}}oa-calendar-selected{{/if}}" data-date="{{toISODate date}}">
+          <div class="oa-calendar-week-day-container {{#if isToday}}oa-calendar-today{{/if}} {{#if isSelected}}oa-calendar-selected{{/if}} {{#if (hasOfficialHoliday holidays)}}oa-calendar-holiday-day{{/if}}" data-date="{{toISODate date}}">
             <div class="oa-calendar-week-day-header">
               <div class="oa-calendar-day-name">{{dayName}}</div>              
             </div>
             <div class="oa-calendar-day-content">
+              <div class="oa-calendar-day-meta">
+                {{> calendarHabitChip}}
+                {{#each holidays}}
+                  <div class="oa-calendar-holiday" data-holiday-color="{{color}}" title="{{name}}">{{name}}</div>
+                {{/each}}
+              </div>
               {{#each tasksForDay}}
-                <div class="oa-calendar-task oa-calendar-task--{{calendarDateType}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}}"
-                    draggable="true"
+                <div class="oa-calendar-task oa-calendar-task--{{calendarDateType}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}} {{#if isProjected}}oa-calendar-task--projected{{/if}}"
+                    draggable="{{#if isProjected}}false{{else}}true{{/if}}"
+                    {{#if isProjected}}data-projected="true"{{/if}}
+                    {{#if areaColor}}data-area-color="{{areaColor}}"{{/if}}
                     data-file-path="{{file.path}}" 
                     data-line-number="{{line.number}}"
                     data-date-type="{{calendarDateType}}"
                     title="{{file.name}}:{{line.number}} - {{section.desc}}">
                   {{#if date.scheduledTime}}<span class="oa-calendar-task-time">{{date.scheduledTime}}</span>{{/if}}
+                  {{#if isProjected}}<span class="oa-calendar-task-projected-badge" title="{{t 'calendar_projected_task'}}">🔁</span>{{/if}}
                   <span class="oa-calendar-task-status-icon">{{state.emoji}}</span>
                   <span class="oa-task-title">{{section.desc}}</span>
                 </div>

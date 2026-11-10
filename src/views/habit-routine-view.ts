@@ -4,7 +4,8 @@ import { HabitView } from './habit-view';
 import { AgendaPlugin, ViewData } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { TaskManager } from '../core/task-manager';
-import { HabitManager, isScheduled, getAreaColor, getAreaTextColor, getAreaLabel } from '../habits';
+import { HabitManager, getAreaColor, getAreaTextColor, getAreaLabel } from '../habits';
+import { countsOn } from '../habits/habit-calendar';
 import type { Daytime, HabitArea } from '../habits';
 import { computeOccurrenceCells, computeOccurrenceStats } from '../habits/habit-streak';
 
@@ -37,6 +38,8 @@ interface RoutineHabitRow {
   pct: number;
   ticked: boolean;
   scheduled: boolean;
+  /** Cuenta en los porcentajes del día: falso en vacaciones si no está marcado (neutral, pero se puede marcar). */
+  counted: boolean;
   hasRelatedFile: boolean;
 }
 
@@ -93,8 +96,11 @@ export class HabitRoutineView extends HabitView {
       windowDates.push(this.selectedDate.minus({ days: offset }));
     }
 
+    const ctx = this.calcContext;
+
     for (const habit of this.habits) {
-      if (!isScheduled(habit, this.selectedDate)) continue;
+      // En un día de vacaciones el hábito sigue en la lista para poder marcarlo; solo deja de contar si no lo está
+      if (!countsOn(habit, this.selectedDate, true)) continue;
 
       const doneToday = habit.completions[dateIso] ?? [];
 
@@ -110,7 +116,8 @@ export class HabitRoutineView extends HabitView {
         }
 
         const ticked = doneToday.includes(daytime);
-        const cells = computeOccurrenceCells(habit, daytime, windowDates, habit.maxGap, this.plugin.settings.habitShowStreaks);
+        const counted = countsOn(habit, this.selectedDate, ticked, ctx);
+        const cells = computeOccurrenceCells(habit, daytime, windowDates, habit.maxGap, this.plugin.settings.habitShowStreaks, ctx);
         const scheduledCells = cells.filter(cell => cell.scheduled);
         const doneCount = scheduledCells.filter(cell => cell.ticked).length;
         const pct = scheduledCells.length === 0 ? 0 : Math.round((doneCount / scheduledCells.length) * 100);
@@ -127,12 +134,15 @@ export class HabitRoutineView extends HabitView {
           areaColor: getAreaColor(habit.area),
           areaTextColor: getAreaTextColor(habit.area),
           subArea: habit.subArea,
-          streak: computeOccurrenceStats(habit, daytime).current,
+          streak: computeOccurrenceStats(habit, daytime, ctx).current,
           pct,
           ticked,
           scheduled: true,
+          counted,
           hasRelatedFile: !!habit.relatedFile,
         });
+
+        if (!counted) continue;
 
         const totals = areaTotals[habit.area] ?? { done: 0, scheduled: 0, weightDone: 0, weightTotal: 0 };
         totals.scheduled += 1;
@@ -156,11 +166,12 @@ export class HabitRoutineView extends HabitView {
 
       this.sortRows(section.habits);
 
-      const done = section.habits.filter(row => row.ticked).length;
-      const weightTotal = section.habits.reduce((sum, row) => sum + row.priority, 0);
-      const weightDone = section.habits.filter(row => row.ticked).reduce((sum, row) => sum + row.priority, 0);
+      const counted = section.habits.filter(row => row.counted);
+      const done = counted.filter(row => row.ticked).length;
+      const weightTotal = counted.reduce((sum, row) => sum + row.priority, 0);
+      const weightDone = counted.filter(row => row.ticked).reduce((sum, row) => sum + row.priority, 0);
 
-      section.pct = Math.round((done / section.habits.length) * 100);
+      section.pct = counted.length === 0 ? 0 : Math.round((done / counted.length) * 100);
       section.pctWeighted = weightTotal === 0 ? 0 : Math.round((weightDone / weightTotal) * 100);
 
       nonEmptySections[key] = section;
@@ -185,6 +196,8 @@ export class HabitRoutineView extends HabitView {
       emptyMessage: this.getEmptyMessage(),
       sortBy: this.sortBy,
       groupBy: this.groupBy,
+      sortLabel: this.i18n.t(`habit_sort_${this.sortBy}`),
+      groupLabel: this.i18n.t(`habit_${this.groupBy}`),
       areaStats,
     };
   }
@@ -236,22 +249,14 @@ export class HabitRoutineView extends HabitView {
       this.refreshHabitView().catch(console.error);
     });
 
-    const sortSelect = container.querySelector<HTMLSelectElement>('#oa-habit-routine-sort');
-    sortSelect?.addEventListener('change', () => {
-      const value = sortSelect.value as RoutineSortMode;
-      if ((SORT_MODES as readonly string[]).includes(value)) {
-        this.sortBy = value;
-        this.refreshHabitView().catch(console.error);
-      }
+    this.mountChipMenu(container, '#oa-habit-routine-sort', SORT_MODES, mode => `habit_sort_${mode}`, this.sortBy, mode => {
+      this.sortBy = mode;
+      this.refreshHabitView().catch(console.error);
     });
 
-    const groupSelect = container.querySelector<HTMLSelectElement>('#oa-habit-routine-group');
-    groupSelect?.addEventListener('change', () => {
-      const value = groupSelect.value as RoutineGroupMode;
-      if ((GROUP_MODES as readonly string[]).includes(value)) {
-        this.groupBy = value;
-        this.refreshHabitView().catch(console.error);
-      }
+    this.mountChipMenu(container, '#oa-habit-routine-group', GROUP_MODES, mode => `habit_${mode}`, this.groupBy, mode => {
+      this.groupBy = mode;
+      this.refreshHabitView().catch(console.error);
     });
 
     container.querySelectorAll<HTMLElement>('.oa-habit-routine-section').forEach(section => {

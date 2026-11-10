@@ -27,7 +27,7 @@
       <div class="oa-gantt-label"></div>
       <div class="oa-gantt-days">
         {{#each @root.days}}
-        <span class="oa-gantt-day{{#if this.today}} oa-gantt-day--today{{/if}}{{#if this.weekend}} oa-gantt-day--weekend{{/if}}"><small>{{this.weekday}}</small><b>{{this.day}}</b></span>
+        <span class="oa-gantt-day{{#if this.today}} oa-gantt-day--today{{/if}}{{#if this.weekend}} oa-gantt-day--weekend{{/if}}{{#if this.holidayColor}} oa-gantt-day--holiday{{/if}}"{{#if this.holidayColor}} data-holiday-color="{{this.holidayColor}}" title="{{this.holidayTitle}}"{{/if}}><small>{{this.weekday}}</small><b>{{this.day}}</b></span>
         {{/each}}
       </div>
     </div>
@@ -39,7 +39,7 @@
   <div class="oa-gantt-body">
     {{#if rows.length}}
       <div class="oa-gantt-grid" aria-hidden="true">
-        {{#each @root.days}}<span class="oa-gantt-grid-day{{#if this.weekend}} oa-gantt-grid-day--weekend{{/if}}{{#if this.weekStart}} oa-gantt-grid-day--week-start{{/if}}"></span>{{/each}}
+        {{#each @root.days}}<span class="oa-gantt-grid-day{{#if this.weekend}} oa-gantt-grid-day--weekend{{/if}}{{#if this.weekStart}} oa-gantt-grid-day--week-start{{/if}}{{#if this.holidayColor}} oa-gantt-grid-day--holiday{{/if}}"{{#if this.holidayColor}} data-holiday-color="{{this.holidayColor}}"{{/if}}></span>{{/each}}
       </div>
       {{#each rows}}
         {{#if this.isGroup}}

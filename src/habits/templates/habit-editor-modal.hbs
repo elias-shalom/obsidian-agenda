@@ -103,6 +103,23 @@
       </div>
     </div>
 
+    <div class="oa-habit-form__row">
+      <div class="oa-form-group">
+        <label class="oa-form-label" for="oa-habit-active-from">{{t "habit_active_from"}}</label>
+        <div class="oa-habit-form-date">
+          <input id="oa-habit-active-from" type="date" class="oa-form-input" value="{{activeFrom}}" />
+          <button type="button" class="oa-habit-form-date__clear" data-clear-for="oa-habit-active-from" aria-label="{{t 'habit_period_clear'}}" title="{{t 'habit_period_clear'}}">&times;</button>
+        </div>
+      </div>
+      <div class="oa-form-group">
+        <label class="oa-form-label" for="oa-habit-active-until">{{t "habit_active_until"}}</label>
+        <div class="oa-habit-form-date">
+          <input id="oa-habit-active-until" type="date" class="oa-form-input" value="{{activeUntil}}" />
+          <button type="button" class="oa-habit-form-date__clear" data-clear-for="oa-habit-active-until" aria-label="{{t 'habit_period_clear'}}" title="{{t 'habit_period_clear'}}">&times;</button>
+        </div>
+      </div>
+    </div>
+
     <div class="oa-form-group">
       <label class="oa-form-label">{{t "habit_field_daytime"}}</label>
       <div class="oa-habit-form-daytimes">

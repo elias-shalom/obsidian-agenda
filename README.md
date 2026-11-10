@@ -245,6 +245,8 @@ See the [full changelog](#changelog) below for older versions.
 | **Month Calendar** | ![Month View](screenshots/MonthView.png) |
 | **Week Calendar** | ![Week View](screenshots/WeekView.png) |
 | **Day View** | ![Day View](screenshots/DayView.png) |
+| **Kanban View** | ![Day View](screenshots/KanbanView.png) |
+| **Gantt View** | ![Day View](screenshots/GanttView.png) |
 
 ---
 

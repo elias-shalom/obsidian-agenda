@@ -79,7 +79,7 @@ La vista **Grid** se basa en la referencia de código abierto **Habit Tracker 21
 - [ ] Fase 5: Semanal + Lista/Tabla
 - [x] **v1.1.15** HA1 — periodo activo (`from`/`until`) (implementado el 2026-11-09)
 - [x] **v1.1.15** HV1 — vacaciones y botón «Vacaciones» (implementado el 2026-11-09)
-- [ ] **v1.1.15** HU1 — selector circular de subvistas
+- [x] **v1.1.15** HU1 — selector circular de subvistas (implementado el 2026-11-09)
 - [ ] **v1.1.15** frecuencias con días no laborables (NL2) y hábitos en el calendario (HC1), fases del Plan de agenda-tasks
 - [ ] **v1.1.16** heatmap compartido (HM1) y widgets de hábitos (DW1), fases del Plan de agenda-tasks
 

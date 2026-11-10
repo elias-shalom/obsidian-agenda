@@ -133,6 +133,7 @@ export class HabitGridView extends HabitView {
       habits: rows,
       columns,
       sortBy: this.sortBy,
+      sortLabel: this.i18n.t(`habit_sort_${this.sortBy}`),
       windowLabel: `${dates[0].toFormat('dd MMM')} \u2013 ${dates[dates.length - 1].toFormat('dd MMM yyyy')}`,
       emptyMessage: this.getEmptyMessage(),
     };
@@ -182,14 +183,10 @@ export class HabitGridView extends HabitView {
       this.refreshHabitView().catch(console.error);
     });
 
-    const sortSelect = container.querySelector<HTMLSelectElement>('#oa-habit-grid-sort');
-    sortSelect?.addEventListener('change', () => {
-      const value = sortSelect.value as GridSortMode;
-      if ((SORT_MODES as readonly string[]).includes(value)) {
-        this.sortBy = value;
-        this.app.saveLocalStorage(GRID_SORT_STORAGE_KEY, value);
-        this.refreshHabitView().catch(console.error);
-      }
+    this.mountChipMenu(container, '#oa-habit-grid-sort', SORT_MODES, mode => `habit_sort_${mode}`, this.sortBy, mode => {
+      this.sortBy = mode;
+      this.app.saveLocalStorage(GRID_SORT_STORAGE_KEY, mode);
+      this.refreshHabitView().catch(console.error);
     });
 
     container.querySelectorAll<HTMLButtonElement>('.oa-habit-grid-cell:not([disabled])').forEach(button => {

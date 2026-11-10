@@ -7,3 +7,4 @@ export * from './habit-writer';
 export * from './habit-manager';
 export * from './habit-editor';
 export * from './open-habit-settings';
+export * from './habit-view-icons';

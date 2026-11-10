@@ -253,9 +253,9 @@ Rol: catálogo de hábitos con metadata y stats.
 
 > **Ampliación v1.1.15**: el modal gana dos selectores de fecha (`from` y `until`) y el switch de `status` pasa a escribir/borrar `until`; ver §12.1. Las frecuencias «Fin de semana» y «Lunes a viernes» pasan a seguir el ajuste de días no laborables; ver §12.3.
 
-## 11. Selector de subvistas con botones circulares (v1.1.15 — diseño, no implementado)
+## 11. Selector de subvistas con botones circulares (v1.1.15 — implementado el 2026-11-09)
 
-Decidido el 2026-11-02. Hoy las cinco subvistas de hábitos se conmutan con un `<select id="oa-habit-view-dropdown" class="oa-habit-view-dropdown">` repetido en las cinco plantillas (`habit-grid-view.hbs`, `habit-overview-view.hbs`, `habit-routine-view.hbs`, `habit-weekly-view.hbs`, `habit-table-view.hbs`, en `src/views/templates/`). Pasa a un grupo de **botones circulares con solo icono**, el mismo componente que usan el selector de vista del calendario y el conmutador Lista | Tabla.
+Decidido el 2026-11-02. Antes las cinco subvistas de hábitos se conmutaban con un `<select id="oa-habit-view-dropdown" class="oa-habit-view-dropdown">` repetido en las cinco plantillas (`habit-grid-view.hbs`, `habit-overview-view.hbs`, `habit-routine-view.hbs`, `habit-weekly-view.hbs`, `habit-table-view.hbs`, en `src/views/templates/`). Ahora es un grupo de **botones circulares con solo icono**, el mismo componente que usan el selector de vista del calendario y el conmutador Lista | Tabla.
 
 ### 11.1 Wireframe
 
@@ -278,11 +278,11 @@ Ahora:  ┌ Dashboard Hábitos [+] ──  (◫)(☀)(✓)(▦)(☰)       ┐  
 | Dashboard | `dashboard` | `layout-dashboard` |
 | Rutina | `routine` | `sunrise` |
 | Semanal | `weekly` | `calendar-check-2` |
-| Cuadrícula | `grid` | `grid-3x3` |
+| Cuadrícula | `grid` | `layout-grid` |
 | Lista | `table` | `list-checks` |
 
 - **Clic**: conmuta la subvista igual que el `change` del `<select>` actual (`HabitView.switchToViewType()`); pulsar la subvista activa no hace nada.
-- **Sin cambios**: los selectores de **orden** (`oa-habit-grid-sort`, `oa-habit-weekly-sort`, `oa-habit-routine-sort`) y de **agrupado** (`oa-habit-routine-group`) conservan su etiqueta y su `<select>`; la clase `oa-habit-view-dropdown` se sigue usando para ellos.
+- **Orden y agrupado** (cambio posterior a la prueba manual del 2026-11-09): los selectores de **orden** (`oa-habit-grid-sort`, `oa-habit-weekly-sort`, `oa-habit-routine-sort`) y de **agrupado** (`oa-habit-routine-group`) pasaron de `<select>` a chips `oa-axis-chip`, con el mismo aspecto y el mismo menú con la opción marcada que Sort y Group de las listas y tablas de tareas («Orden: Prioridad»); sin flecha de dirección, porque el sentido de cada modo es fijo.
 
 > **ADR-SUB1 — Reutilizar el segmentado del calendario**: se reutiliza `oa-calendar-view-segmented`/`oa-calendar-view-btn` en vez de un componente propio de hábitos. Racional: un solo aspecto circular en calendario, Lista | Tabla y hábitos; cero estilos nuevos. Consecuencia: el selector de hábitos hereda cualquier cambio futuro de ese componente.
 
@@ -298,7 +298,7 @@ Cambiar el orden de las subvistas, mostrar la etiqueta junto al icono, y tocar l
 
 ### 11.5 Por resolver al diseñar
 
-- Los iconos de Lucide propuestos (`calendar-check-2`, `grid-3x3`…) deben existir en la versión de Lucide que incluye el `minAppVersion` del plugin; si alguno no existe, se elige el alias vigente.
+- Los iconos de Lucide (`calendar-check-2`, `layout-grid`…) deben existir en la versión de Lucide que incluye el `minAppVersion` del plugin; si alguno no existe, se elige el alias vigente. Ya pasó con `grid-3x3`, que Obsidian trae como `grid-3x-3`: se cambió a `layout-grid`.
 
 ## 12. Periodo activo y vacaciones (v1.1.15 — periodo activo implementado el 2026-11-09 (HA1); vacaciones, diseño)
 

@@ -140,16 +140,18 @@ Decididas el 2026-11-02 y organizadas por fases con prefijo propio (`HA1`, `HV1`
 
 **Verificar**: `npm run build`, `npm run lint`, `node --test tests`; manual: vacaciones que incluyan hoy con un hábito marcado y otro no, y botón «Vacaciones» en escritorio y móvil (la API es no documentada; probar también el camino del `Notice`).
 
-### Fase HU1 — Selector circular de subvistas (v1.1.15)
+### Fase HU1 — Selector circular de subvistas (v1.1.15) — **implementada el 2026-11-09; falta la prueba manual**
 
 **Dependencias**: ninguna. **Verificable por separado**: sí.
 
-- [ ] Las 5 plantillas `habit-*-view.hbs`: el `<select id="oa-habit-view-dropdown">` pasa a `oa-calendar-view-segmented` con un `oa-calendar-view-btn` por subvista, solo icono con `title` y `aria-label`.
-- [ ] `HabitView.setupViewSpecificEventListeners()`: mapa de iconos (`layout-dashboard`, `sunrise`, `calendar-check-2`, `grid-3x3`, `list-checks`) con `setIcon` y clic → `switchToViewType()`.
-- [ ] Respeta `showHabitDashboardTab`, `showHabitRoutineTab`, `showHabitWeeklyTab`, `showHabitGridTab` y `showHabitListTab`; casos de un botón y de ninguno.
-- [ ] Los selectores de orden y agrupado con etiqueta no cambian; retirar los estilos que queden huérfanos.
+- [x] Las 5 plantillas `habit-*-view.hbs`: el `<select id="oa-habit-view-dropdown">` pasa a `oa-calendar-view-segmented` con un `oa-calendar-view-btn` por subvista, solo icono con `title` y `aria-label`.
+- [x] `HabitView.setupViewSpecificEventListeners()`: mapa de iconos `HABIT_VIEW_BUTTON_ICONS` (`src/habits/habit-view-icons.ts`: `layout-dashboard`, `sunrise`, `calendar-check-2`, `layout-grid`, `list-checks`) con `setIcon` y clic → `switchToViewType()`.
+- [x] Tras la prueba manual: el icono de la Cuadrícula pasó de `grid-3x3` (inexistente en Obsidian) a `layout-grid`, y los selectores de orden y agrupado pasaron a chips `oa-axis-chip` con el aspecto de Sort/Group de las tareas (ver [[Arquitectura técnica]] §10.5).
+- [x] Respeta `showHabitDashboardTab`, `showHabitRoutineTab`, `showHabitWeeklyTab`, `showHabitGridTab` y `showHabitListTab`; casos de un botón y de ninguno.
+- [x] Los selectores de orden y agrupado con etiqueta pasaron a chips `oa-axis-chip` (como Sort/Group de las tareas); se retiraron los estilos del `<select>` que quedaron huérfanos.
+- [x] Pruebas Node `habit-view-selector.test.cjs` (8): compila las cinco plantillas y comprueba un botón por subvista en orden, solo el actual con `oa-active`, solo icono con `title`/`aria-label`, `role="group"`, ningún `<select>` de vista, cada `showHabit*Tab` en cada plantilla, un botón y ninguno, el mapa de iconos y las traducciones.
 
-**Verificar**: `npm run build`, `npm run lint`; manual: recorrer las 5 subvistas, combinar los `showHabit*Tab`, comprobar tooltip y `aria-label` y la pulsación larga en móvil.
+**Verificar**: `npm run build`, `npm run lint`; manual: recorrer las 5 subvistas, combinar los `showHabit*Tab`, comprobar tooltip y `aria-label`, la pulsación larga en móvil y que los cinco iconos se ven.
 
 ### Fases relacionadas en el Plan de agenda-tasks
 
@@ -194,4 +196,4 @@ Ampliaciones v1.1.15 (una por fase, en este orden):
 
 8. `feat(habits): periodo activo from/until` (HA1)
 9. `feat(habits): vacaciones globales y botón de ajustes` (HV1; implementado)
-10. `feat(habits): selector circular de subvistas` (HU1)
+10. `feat(habits): selector circular de subvistas` (HU1; implementado)

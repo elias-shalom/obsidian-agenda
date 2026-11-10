@@ -84,65 +84,6 @@
     display: contents;
   }
 
-  // Chips de ejes: mismo aspecto que el botón «+ Filtro» (borde, fondo, esquinas de 4px, alto de 32px y hover)
-  .oa-axis-chip {
-    display: inline-flex;
-    align-items: stretch;
-    max-width: 100%;
-    height: 32px;
-    overflow: hidden;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: 4px;
-    background-color: $primary-bg-color !important;
-    color: var(--text-normal);
-    font-size: 0.88em;
-    transition: all 0.2s ease;
-
-    &:hover,
-    &:focus-within {
-      background-color: $hover-bg-color !important;
-      border-color: $active-border-color;
-      color: var(--color-base-100);
-    }
-  }
-
-  // Lanes = Ninguno: no hay carriles activos
-  .oa-axis-chip--muted {
-    color: var(--text-muted);
-  }
-
-  // Los botones de dentro no pintan nada propio: el aspecto lo da el chip entero
-  .oa-axis-chip__label,
-  .oa-axis-chip__direction {
-    height: auto;
-    border: 0;
-    border-radius: 0;
-    background: transparent !important;
-    box-shadow: none;
-    color: inherit;
-    cursor: pointer;
-    font-size: inherit;
-
-    &:focus-visible {
-      outline: 2px solid var(--interactive-accent);
-      outline-offset: -2px;
-    }
-  }
-
-  .oa-axis-chip__label {
-    min-width: 0;
-    overflow: hidden;
-    padding: 4px 12px !important; // `.is-tablet button` de Obsidian impone 20 px laterales
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .oa-axis-chip__direction {
-    width: 30px;
-    padding: 0 !important;
-    border-left: 1px solid var(--background-modifier-border);
-  }
-
   // Tercera fila: un chip por filtro activo; sin chips queda vacía y no se muestra
   .oa-filter-bar__chips {
     display: none;
@@ -221,6 +162,69 @@
       color: var(--text-normal);
       text-decoration: underline;
     }
+  }
+}
+
+// Chips de ejes: mismo aspecto que el botón «+ Filtro» (borde, fondo, esquinas de 4px, alto de 32px y hover). Los
+// usan la barra de filtros de las tareas (Lanes, Group y Sort) y la barra de Hábitos (Sort y Group, v1.1.15).
+.oa-filter-bar,
+.oa-habit-toolbar {
+  .oa-axis-chip {
+    display: inline-flex;
+    align-items: stretch;
+    max-width: 100%;
+    height: 32px;
+    overflow: hidden;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background-color: $primary-bg-color !important;
+    color: var(--text-normal);
+    font-size: 0.88em;
+    transition: all 0.2s ease;
+
+    &:hover,
+    &:focus-within {
+      background-color: $hover-bg-color !important;
+      border-color: $active-border-color;
+      color: var(--color-base-100);
+    }
+  }
+
+  // Lanes = Ninguno: no hay carriles activos
+  .oa-axis-chip--muted {
+    color: var(--text-muted);
+  }
+
+  // Los botones de dentro no pintan nada propio: el aspecto lo da el chip entero
+  .oa-axis-chip__label,
+  .oa-axis-chip__direction {
+    height: auto;
+    border: 0;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: inherit;
+
+    &:focus-visible {
+      outline: 2px solid var(--interactive-accent);
+      outline-offset: -2px;
+    }
+  }
+
+  .oa-axis-chip__label {
+    min-width: 0;
+    overflow: hidden;
+    padding: 4px 12px !important; // `.is-tablet button` de Obsidian impone 20 px laterales
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .oa-axis-chip__direction {
+    width: 30px;
+    padding: 0 !important;
+    border-left: 1px solid var(--background-modifier-border);
   }
 }
 

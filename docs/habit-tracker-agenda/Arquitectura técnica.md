@@ -323,9 +323,9 @@ this.addCommand({ id: "oa-habit-edit", name: this.i18n.t("habit_edit_habit"),
 - [ ] `npm run build` y `npm run lint` en verde.
 - [ ] Limpieza de listeners en `onunload`/`onClose`.
 
-## 10. Periodo activo, vacaciones, selector circular y frecuencias con días no laborables (v1.1.15 — HA1 y HV1 implementadas el 2026-11-09 y frecuencias (NL2) el 2026-11-08; selector, diseño)
+## 10. Periodo activo, vacaciones, selector circular y frecuencias con días no laborables (v1.1.15 — HA1, HV1 y HU1 implementadas el 2026-11-09 y frecuencias (NL2) el 2026-11-08)
 
-Decidido el 2026-11-02 (hábitos en el calendario y widgets del Dashboard, en §10.7 y §10.8). Comportamiento en [[Especificación de vistas]] §11–§14; datos en [[Modelo de datos]] §8; fases HA1, HV1 y HU1 en [[Plan de implementación]]. Lo ya implementado (HA1, HV1 y NL2) se describe como es; el selector circular, los hábitos en el calendario y los widgets siguen siendo **diseño**, y los archivos y funciones marcados «por crear» son propuestas.
+Decidido el 2026-11-02 (hábitos en el calendario y widgets del Dashboard, en §10.7 y §10.8). Comportamiento en [[Especificación de vistas]] §11–§14; datos en [[Modelo de datos]] §8; fases HA1, HV1 y HU1 en [[Plan de implementación]]. Lo ya implementado (HA1, HV1, HU1 y NL2) se describe como es; los hábitos en el calendario y los widgets siguen siendo **diseño**, y los archivos y funciones marcados «por crear» son propuestas.
 
 ### 10.1 Archivos
 
@@ -340,11 +340,11 @@ Decidido el 2026-11-02 (hábitos en el calendario y widgets del Dashboard, en §
 | `src/habits/habit-stats.ts` | `computeAreaStats`, `computeDaytimeStats`, `computeHistory30d`, `computeYearHistory` y `computeDashboard` usan `countsOn()` en el denominador y rellenan `vacation` en `IHabitDayStat`. |
 | `src/habits/habit-editor.ts` | Dos `<input type="date">` (`from`, `until`) con botón de vaciar; el switch de `status` autocompleta/borra `until`; `FREQUENCY_PRESETS` y `resolveFrequencyMode()` salen de los días no laborables; escribe `from`/`until` en `createHabit()` y `updateHabit()` (y los borra si están vacíos). |
 | `src/habits/habit-writer.ts` | **Sin cambios**: el toggle sigue escribiendo solo `completions` y `entries`; el cálculo decide después qué cuenta. |
-| `src/views/habit-view.ts` | El `change` del `<select>` pasa a clic sobre los botones circulares (HU1, por hacer); el botón «Vacaciones» (§10.4) ya está (HV1), junto con `calcContext` y `vacationLabel()` para las vistas. |
-| `src/views/templates/habit-{grid,overview,routine,weekly,table}-view.hbs` | Se reemplaza el `<select id="oa-habit-view-dropdown">` por el grupo de botones (§10.5, HU1); el botón «Vacaciones» (🌴) ya está en las cinco (HV1). Grid y Weekly: clase `--vacation`, `title` con el nombre y `disabled` según `markable`; Overview: celdas del heatmap con `--vacation` y `tooltip`. |
+| `src/views/habit-view.ts` | El `change` del `<select>` pasó a clic sobre los botones circulares (HU1, con `HABIT_VIEW_BUTTON_ICONS` de `src/habits/habit-view-icons.ts`); el botón «Vacaciones» (§10.4) (HV1), junto con `calcContext` y `vacationLabel()` para las vistas. |
+| `src/views/templates/habit-{grid,overview,routine,weekly,table}-view.hbs` | El `<select id="oa-habit-view-dropdown">` se reemplazó por el grupo de botones (§10.5, HU1); el botón «Vacaciones» (🌴) está en las cinco (HV1). Grid y Weekly: clase `--vacation`, `title` con el nombre y `disabled` según `markable`; Overview: celdas del heatmap con `--vacation` y `tooltip`. |
 | `src/views/habit-grid-view.ts`, `habit-weekly-view.ts`, `habit-routine-view.ts`, `habit-table-view.ts`, `habit-overview-view.ts` | Pasan el contexto de vacaciones a celdas, rachas y porcentajes; la Rutina deja en la lista los hábitos de un día de vacaciones pero solo cuenta (`counted`) los marcados. |
 | `src/settings/settings.ts`, `setting-tab.ts` y `src/main.ts` | Ajuste `habitVacations` (cargado con `sanitizeVacations()`), su grupo con `render:` propio (§10.3) y `openHabitSettings()`. |
-| `src/styles/_habit-common.scss`, `_habit-grid.scss`, `_habit-weekly.scss`, `_habit-overview.scss`, `components/_settings.scss` | Estado `--vacation` (atenuado + icono en celdas, rayas en el heatmap), botón «Vacaciones» y fila de la lista de vacaciones; el selector circular reutilizará `_calendar-common.scss`. |
+| `src/styles/_habit-common.scss`, `_habit-grid.scss`, `_habit-weekly.scss`, `_habit-overview.scss`, `components/_settings.scss` | Estado `--vacation` (atenuado + icono en celdas, rayas en el heatmap), botón «Vacaciones» y fila de la lista de vacaciones; el selector circular reutiliza `_calendar-common.scss` sin estilos nuevos. |
 | `src/locales/*.json` (6 locales) | Claves nuevas (§10.9). |
 | `tests/habit-*.test.cjs` | **Por crear** (§10.10). |
 
@@ -398,22 +398,24 @@ export function openPluginSettings(app: App, pluginId: string): boolean {
 - El botón (🌴, `#oa-habit-vacations-btn`) vive en la barra de Hábitos (las cinco plantillas) junto al botón `+` y se cablea en `HabitView.setupViewSpecificEventListeners()`; llama a `plugin.openHabitSettings()` (`main.ts`), que hace `SettingTab.prepareHabitSettings()` (deja elegida la pestaña Hábitos), `openPluginSettings()` y, si abrió, `SettingTab.revealVacations()` (`refreshDomState()` si existe, para repintar con la ruta declarativa, y `scrollIntoView` hasta la lista a los 200 ms).
 - **Resuelto en HV1**: la sección «Vacaciones» es un grupo propio de la pestaña Hábitos (no hay una pestaña aparte), así que «abrirla» es elegir esa pestaña y desplazar la vista; funciona igual con `getSettingDefinitions()` (1.13) y con `display()`. Falta la prueba manual en escritorio y móvil.
 
-### 10.5 Selector de subvistas con botones circulares (HU1)
+### 10.5 Selector de subvistas con botones circulares (HU1, implementado el 2026-11-09)
 
-- **Plantillas**: en cada `habit-*-view.hbs`, el `<div class="oa-habit-view-selector">` con el `<select id="oa-habit-view-dropdown">` pasa a:
+- **Plantillas**: en cada `habit-*-view.hbs`, el `<div class="oa-habit-view-selector">` con el `<select id="oa-habit-view-dropdown">` pasó a:
 
 ```hbs
 <div class="oa-calendar-view-segmented" role="group" aria-label="{{t 'habit_view_tab'}}">
-  {{#if settings.showHabitDashboardTab}}<button type="button" class="oa-calendar-view-btn {{#eq viewSubtype "dashboard"}}oa-active{{/eq}}" data-habit-subtype="dashboard" title="{{t 'habit_dashboard_tab'}}" aria-label="{{t 'habit_dashboard_tab'}}"></button>{{/if}}
+  {{#if settings.showHabitDashboardTab}}<button type="button" class="oa-calendar-view-btn{{#eq viewSubtype "dashboard"}} oa-active{{/eq}}" data-habit-subtype="dashboard" title="{{t 'habit_dashboard_tab'}}" aria-label="{{t 'habit_dashboard_tab'}}"></button>{{/if}}
   {{!-- idem routine, weekly, grid, table con sus claves --}}
 </div>
 ```
 
-  El plugin **no registra parciales** de Handlebars, así que el bloque se repite en las cinco plantillas (igual que hoy el `<select>`); si se prefiere un parcial, hay que registrarlo en `BaseView`.
-- **Iconos**: se inyectan con `setIcon(button, iconId)` desde un mapa `HABIT_VIEW_BUTTON_ICONS` (por crear, análogo a `CALENDAR_VIEW_BUTTON_ICONS` de `calendar-view.ts`): `dashboard → layout-dashboard`, `routine → sunrise`, `weekly → calendar-check-2`, `grid → grid-3x3`, `table → list-checks`.
-- **TS**: `HabitView.setupViewSpecificEventListeners()` deja de buscar `#oa-habit-view-dropdown` y recorre `.oa-calendar-view-btn[data-habit-subtype]` (`setIcon` + clic → `switchToViewType()`); su comentario de clase («dropdown») se actualiza.
-- **Estilos**: ninguno nuevo; `.oa-habit-view-dropdown` (`_habit-common.scss`) se sigue usando en los selectores de orden y agrupado con etiqueta. Se retiran, si quedan huérfanas, solo las reglas del contenedor del `<select>` de vista.
-- **Riesgos**: iconos inexistentes en la versión de Lucide de la `minAppVersion` (`setIcon` no lanza: deja el botón vacío; probar los cinco); con una sola subvista visible no hay que ocultar el grupo.
+  El plugin **no registra parciales** de Handlebars, así que el bloque se repite en las cinco plantillas (igual que antes el `<select>`); si se prefiere un parcial, hay que registrarlo en `BaseView`.
+- **Iconos**: se inyectan con `setIcon(button, iconId)` desde el mapa `HABIT_VIEW_BUTTON_ICONS` (`src/habits/habit-view-icons.ts`, un archivo sin `obsidian` para poder probarlo en Node; análogo a `CALENDAR_VIEW_BUTTON_ICONS` de `calendar-view.ts`): `dashboard → layout-dashboard`, `routine → sunrise`, `weekly → calendar-check-2`, `grid → layout-grid` (corregido tras la prueba manual: `grid-3x3` no existe en Obsidian, que trae ese icono como `grid-3x-3`), `table → list-checks`.
+- **Orden y agrupado como chips**: tras la prueba manual los `<select>` de orden (Cuadrícula, Semanal y Rutina) y de agrupado (Rutina) pasaron a chips `oa-axis-chip` con el mismo aspecto que Sort y Group de las tareas (texto «Orden: Prioridad», borde, hover y menú nativo con la opción actual marcada); `HabitView.mountChipMenu()` abre el menú, y `sortLabel`/`groupLabel` llevan el valor actual en el texto. No tienen flecha de dirección: el orden de cada modo es fijo. Las reglas `.oa-axis-chip*` salieron de `.oa-filter-bar` a un bloque compartido con `.oa-habit-toolbar` en `_task-filter-bar.scss`, y se retiraron de `_habit-common.scss` las reglas del `<select>` (`.oa-habit-view-selector`, `--labeled` y `.oa-habit-view-dropdown`), que quedaron huérfanas.
+- **TS**: `HabitView.setupViewSpecificEventListeners()` recorre `.oa-calendar-view-btn[data-habit-subtype]` (`setIcon` + clic → `switchToViewType()`, que no hace nada si ya es la subvista actual); los comentarios de clase se actualizaron.
+- **Estilos**: el selector circular no añade ninguno (reutiliza `_calendar-common.scss`). Los chips de orden y agrupado usan las reglas `.oa-axis-chip*` de `_task-filter-bar.scss`, ahora compartidas con `.oa-habit-toolbar`; las del `<select>` (`.oa-habit-view-selector`, `--labeled` y `.oa-habit-view-dropdown`) se retiraron de `_habit-common.scss`.
+- **Pruebas**: `habit-view-selector.test.cjs` compila las cinco plantillas con Handlebars (mismo helper `eq` que `BaseView`).
+- **Riesgos**: iconos inexistentes en la versión de Lucide de la `minAppVersion` (`setIcon` no lanza: deja el botón vacío; probar los cinco). Con una sola subvista visible el grupo se mantiene, y con ninguna queda vacío. Si la subvista abierta está oculta por su ajuste, no hay botón activo (igual que antes con la `<option>`).
 
 ### 10.6 Frecuencias con días no laborables (NL2)
 
@@ -473,6 +475,6 @@ Claves de vacaciones (HV1, implementadas en los 6 locales): `habit_vacations`, `
 
 - [x] HA1: `from`/`until` leídos y escritos; el porcentaje de días pasados no cambia al desactivar (implementada y probada el 2026-11-09).
 - [x] HV1: lista de vacaciones en ajustes, cálculo, atenuado en Cuadrícula/Semanal/heatmap y botón «Vacaciones» (implementada el 2026-11-09; falta la prueba manual).
-- [ ] HU1: cinco plantillas con botones circulares y `showHabit*Tab` respetados.
+- [x] HU1: cinco plantillas con botones circulares y `showHabit*Tab` respetados (implementada el 2026-11-09; falta la prueba manual).
 - [ ] NL2 (Plan de agenda-tasks): frecuencias `weekend`/`workweek` siguen los días no laborables, con aviso.
 - [ ] i18n en los 6 locales; `npm run build` y `npm run lint` en verde; `node --test tests` en verde.

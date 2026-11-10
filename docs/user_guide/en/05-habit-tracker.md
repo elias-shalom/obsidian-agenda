@@ -25,6 +25,8 @@ Open the Habit Creator (from any Habit Tracker view, via its "create" action or 
 
 ## The five views
 
+Switch between them with the row of round icon buttons at the right of the toolbar (hover or long-press a button to see its name); the current view is highlighted. Which buttons appear depends on the **Habit tabs visibility** settings.
+
 ### Habit Grid
 
 A GitHub-style day-by-day grid: rows are habits (or one row per occurrence, for multi-daytime habits), columns are days. Click a cell to toggle that day as done/not done. Completed streaks are rendered as a single merged "pill" with a configurable sort order (alphabetical, area, daytime, priority, streak, completion %).

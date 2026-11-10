@@ -128,6 +128,7 @@ export class HabitWeeklyView extends HabitView {
       habits: rows.map((row, index) => ({ ...row, alt: index % 2 === 1 })),
       weekDays,
       sortBy: this.sortBy,
+      sortLabel: this.i18n.t(`habit_sort_${this.sortBy}`),
       weekStart: this.weekStart.toISODate(),
       weekEnd: this.weekStart.plus({ days: 6 }).toISODate(),
       emptyMessage: this.getEmptyMessage(),
@@ -176,14 +177,10 @@ export class HabitWeeklyView extends HabitView {
       this.refreshHabitView().catch(console.error);
     });
 
-    const sortSelect = container.querySelector<HTMLSelectElement>('#oa-habit-weekly-sort');
-    sortSelect?.addEventListener('change', () => {
-      const value = sortSelect.value as WeeklySortMode;
-      if ((SORT_MODES as readonly string[]).includes(value)) {
-        this.sortBy = value;
-        this.app.saveLocalStorage(WEEKLY_SORT_STORAGE_KEY, value);
-        this.refreshHabitView().catch(console.error);
-      }
+    this.mountChipMenu(container, '#oa-habit-weekly-sort', SORT_MODES, mode => `habit_sort_${mode}`, this.sortBy, mode => {
+      this.sortBy = mode;
+      this.app.saveLocalStorage(WEEKLY_SORT_STORAGE_KEY, mode);
+      this.refreshHabitView().catch(console.error);
     });
 
     container.querySelectorAll<HTMLButtonElement>('.oa-habit-weekly-cell:not([disabled])').forEach(button => {

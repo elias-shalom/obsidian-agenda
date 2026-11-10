@@ -6,15 +6,8 @@
     <button id="oa-habit-vacations-btn" type="button" class="oa-habit-vacations-btn" aria-label="{{t 'habit_vacations'}}" title="{{t 'habit_vacations'}}">🌴</button>
   </div>
   <div class="oa-habit-nav-container">
-    <div class="oa-habit-view-selector oa-habit-view-selector--labeled" data-label="{{t 'habit_sort_label'}}">
-      <select id="oa-habit-grid-sort" class="oa-habit-view-dropdown" aria-label="{{t 'habit_sort_label'}}" title="{{t 'habit_sort_label'}}">
-        <option value="alphabetical" {{#eq sortBy "alphabetical"}}selected{{/eq}}>{{t "habit_sort_alphabetical"}}</option>
-        <option value="area" {{#eq sortBy "area"}}selected{{/eq}}>{{t "habit_sort_area"}}</option>
-        <option value="daytime" {{#eq sortBy "daytime"}}selected{{/eq}}>{{t "habit_sort_daytime"}}</option>
-        <option value="priority" {{#eq sortBy "priority"}}selected{{/eq}}>{{t "habit_sort_priority"}}</option>
-        <option value="streak" {{#eq sortBy "streak"}}selected{{/eq}}>{{t "habit_sort_streak"}}</option>
-        <option value="pct" {{#eq sortBy "pct"}}selected{{/eq}}>{{t "habit_sort_pct"}}</option>
-      </select>
+    <div class="oa-axis-chip oa-axis-chip--sort">
+      <button type="button" id="oa-habit-grid-sort" class="oa-axis-chip__label" aria-haspopup="menu" aria-label="{{t 'habit_sort_label'}} {{sortLabel}}">{{t 'habit_sort_label'}} {{sortLabel}}</button>
     </div>
     <div class="oa-habit-grid-nav">
       <button class="oa-habit-grid-prev" aria-label="{{t 'previous'}}">
@@ -24,14 +17,12 @@
         <span class="icon">▶</span>
       </button>
     </div>
-    <div class="oa-habit-view-selector">
-      <select id="oa-habit-view-dropdown" class="oa-habit-view-dropdown">        
-        {{#if settings.showHabitDashboardTab}}<option value="dashboard" {{#eq viewSubtype "dashboard"}}selected{{/eq}}>{{t "habit_dashboard_tab"}}</option>{{/if}}
-        {{#if settings.showHabitRoutineTab}}<option value="routine" {{#eq viewSubtype "routine"}}selected{{/eq}}>{{t "habit_routine_tab"}}</option>{{/if}}
-        {{#if settings.showHabitWeeklyTab}}<option value="weekly" {{#eq viewSubtype "weekly"}}selected{{/eq}}>{{t "habit_weekly_tab"}}</option>{{/if}}
-        {{#if settings.showHabitGridTab}}<option value="grid" {{#eq viewSubtype "grid"}}selected{{/eq}}>{{t "habit_grid_tab"}}</option>{{/if}}
-        {{#if settings.showHabitListTab}}<option value="table" {{#eq viewSubtype "table"}}selected{{/eq}}>{{t "habit_list_tab"}}</option>{{/if}}
-      </select>
+    <div class="oa-calendar-view-segmented" role="group" aria-label="{{t 'habit_view_tab'}}">
+      {{#if settings.showHabitDashboardTab}}<button type="button" class="oa-calendar-view-btn{{#eq viewSubtype "dashboard"}} oa-active{{/eq}}" data-habit-subtype="dashboard" title="{{t 'habit_dashboard_tab'}}" aria-label="{{t 'habit_dashboard_tab'}}"></button>{{/if}}
+      {{#if settings.showHabitRoutineTab}}<button type="button" class="oa-calendar-view-btn{{#eq viewSubtype "routine"}} oa-active{{/eq}}" data-habit-subtype="routine" title="{{t 'habit_routine_tab'}}" aria-label="{{t 'habit_routine_tab'}}"></button>{{/if}}
+      {{#if settings.showHabitWeeklyTab}}<button type="button" class="oa-calendar-view-btn{{#eq viewSubtype "weekly"}} oa-active{{/eq}}" data-habit-subtype="weekly" title="{{t 'habit_weekly_tab'}}" aria-label="{{t 'habit_weekly_tab'}}"></button>{{/if}}
+      {{#if settings.showHabitGridTab}}<button type="button" class="oa-calendar-view-btn{{#eq viewSubtype "grid"}} oa-active{{/eq}}" data-habit-subtype="grid" title="{{t 'habit_grid_tab'}}" aria-label="{{t 'habit_grid_tab'}}"></button>{{/if}}
+      {{#if settings.showHabitListTab}}<button type="button" class="oa-calendar-view-btn{{#eq viewSubtype "table"}} oa-active{{/eq}}" data-habit-subtype="table" title="{{t 'habit_list_tab'}}" aria-label="{{t 'habit_list_tab'}}"></button>{{/if}}
     </div>
   </div>
 </div>

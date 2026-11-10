@@ -66,7 +66,7 @@ Decididas el 2026-11-02; ver [[Especificación de vistas]] §11–§14, [[Modelo
 **v1.1.15 — Calendario y hábitos**
 - [ ] **Periodo activo** por hábito (`from`/`until` opcionales en la nota): el porcentaje de una fecha o rango cuenta solo los hábitos activos ese día; desactivar un hábito ya no cambia el historial (HA1).
 - [x] **Vacaciones** (implementado el 2026-11-09): lista global de periodos en los ajustes; un día de vacaciones no cuenta como cumplido ni incumplido, salvo para el hábito que el usuario marque; atenuado con icono en Cuadrícula y Semanal y con rayas en el heatmap; botón «Vacaciones» en la barra de Hábitos (HV1).
-- [ ] **Selector de subvistas con botones circulares** en lugar del `<select>` (HU1).
+- [x] **Selector de subvistas con botones circulares** en lugar del `<select>` (HU1, implementado el 2026-11-09).
 - [ ] **Frecuencias «Fin de semana» y «Lunes a viernes»** que siguen el ajuste de días no laborables, con aviso (NL2, en el Plan de agenda-tasks).
 - [ ] **Hábitos en el calendario**: entradas virtuales (no son tareas), chip `🔁 3/5` con popover, sección por franja en Día y ajuste «Mostrar hábitos en el calendario» desactivado por defecto (HC1, en el Plan de agenda-tasks; detalle en `docs/agenda-tasks/Especificación de vistas.md` §21).
 

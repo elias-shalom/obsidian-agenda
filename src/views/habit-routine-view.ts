@@ -196,6 +196,8 @@ export class HabitRoutineView extends HabitView {
       emptyMessage: this.getEmptyMessage(),
       sortBy: this.sortBy,
       groupBy: this.groupBy,
+      sortLabel: this.i18n.t(`habit_sort_${this.sortBy}`),
+      groupLabel: this.i18n.t(`habit_${this.groupBy}`),
       areaStats,
     };
   }
@@ -247,22 +249,14 @@ export class HabitRoutineView extends HabitView {
       this.refreshHabitView().catch(console.error);
     });
 
-    const sortSelect = container.querySelector<HTMLSelectElement>('#oa-habit-routine-sort');
-    sortSelect?.addEventListener('change', () => {
-      const value = sortSelect.value as RoutineSortMode;
-      if ((SORT_MODES as readonly string[]).includes(value)) {
-        this.sortBy = value;
-        this.refreshHabitView().catch(console.error);
-      }
+    this.mountChipMenu(container, '#oa-habit-routine-sort', SORT_MODES, mode => `habit_sort_${mode}`, this.sortBy, mode => {
+      this.sortBy = mode;
+      this.refreshHabitView().catch(console.error);
     });
 
-    const groupSelect = container.querySelector<HTMLSelectElement>('#oa-habit-routine-group');
-    groupSelect?.addEventListener('change', () => {
-      const value = groupSelect.value as RoutineGroupMode;
-      if ((GROUP_MODES as readonly string[]).includes(value)) {
-        this.groupBy = value;
-        this.refreshHabitView().catch(console.error);
-      }
+    this.mountChipMenu(container, '#oa-habit-routine-group', GROUP_MODES, mode => `habit_${mode}`, this.groupBy, mode => {
+      this.groupBy = mode;
+      this.refreshHabitView().catch(console.error);
     });
 
     container.querySelectorAll<HTMLElement>('.oa-habit-routine-section').forEach(section => {

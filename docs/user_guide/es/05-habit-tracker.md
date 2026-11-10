@@ -25,6 +25,8 @@ Abre el Habit Creator (desde cualquier vista de Seguimiento de hábitos, mediant
 
 ## Las cinco vistas
 
+Cambia entre ellas con la fila de botones redondos con icono a la derecha de la barra (pasa el cursor o mantén pulsado un botón para ver su nombre); la vista actual aparece resaltada. Los botones que se muestran dependen de los ajustes de **Visibilidad de pestañas de hábitos**.
+
 ### Cuadrícula de hábitos (Grid)
 
 Una cuadrícula día por día estilo GitHub: las filas son hábitos (o una fila por ocurrencia, para hábitos con varios momentos del día), las columnas son días. Haz clic en una celda para alternar ese día entre cumplido/no cumplido. Las rachas cumplidas se representan como una única "píldora" fusionada, con un orden configurable (alfabético, área, momento del día, prioridad, racha, % de cumplimiento).

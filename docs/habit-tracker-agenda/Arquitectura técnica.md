@@ -427,7 +427,7 @@ export function openPluginSettings(app: App, pluginId: string): boolean {
 
 ### 10.7 Hábitos en el calendario (HC1, v1.1.15) — resumen
 
-El detalle (cómo se pintan las entradas virtuales en cada vista, el chip `🔁 3/5` con popover, la sección «Hábitos» por franja en Día, el ajuste «Mostrar hábitos en el calendario» y los filtros) está en `docs/agenda-tasks/Arquitectura técnica.md` §30. Desde el lado de hábitos:
+El detalle (cómo se pintan las entradas virtuales en cada vista, el chip `🌅 3/5` con popover, el filtro «Hábitos» del menú «+ Filtro» y los filtros) está en `docs/agenda-tasks/Arquitectura técnica.md` §30. Desde el lado de hábitos:
 
 - Los datos salen de `HabitManager`: `getHabits()` para las filas y `isScheduled()`/`countsOn()`/`getCalcContext()` para decidir qué «toca» cada día, respetando periodo activo y vacaciones.
 - Marcar o desmarcar reutiliza `HabitManager.toggleOccurrence()` → `habit-writer.ts` (§2.4); **no se escribe nada más** en archivos y los hábitos no entran en `TaskManager`.

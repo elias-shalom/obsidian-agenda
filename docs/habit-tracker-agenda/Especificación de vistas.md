@@ -384,7 +384,7 @@ Lista de periodos activos por hábito; vacaciones por hábito o por área; que e
 - **Habit Creator**: si el usuario ya fijó un `until` futuro y apaga el switch, se sobrescribe con hoy (resuelto el 2026-11-09); un `until` anterior a hoy se respeta.
 - **Rutina diaria** en un día de vacaciones: qué lista y qué porcentaje muestra (los hábitos sin marcar no cuentan; falta decidir si se listan atenuados u ocultos) y el de la Lista/Tabla (columnas de racha y 30 d).
 
-## 13. Hábitos en el calendario (v1.1.15 — diseño, no implementado)
+## 13. Hábitos en el calendario (v1.1.15 — implementado el 2026-11-09)
 
 > Resumen; **el detalle (dibujo en cada vista, chip, popover, filtros y ajuste) está en `docs/agenda-tasks/Especificación de vistas.md` §21 y la arquitectura en `docs/agenda-tasks/Arquitectura técnica.md` §30**. Fase HC1 del Plan de agenda-tasks, que depende de HA1 y HV1 de [[Plan de implementación]].
 
@@ -392,17 +392,19 @@ Decidido el 2026-11-02; reemplaza al ítem «ajuste para que los hábitos genere
 
 - **Entradas virtuales**: los hábitos se dibujan en el calendario sin escribir nada en ningún archivo (mismo enfoque que las recurrentes proyectadas). Cada día en que «toca» un hábito aparece una entrada con su nombre, en su franja (`daytime`) y con el color de su área; respeta el **periodo activo** (§12.1) y los **días de vacaciones** (§12.2).
 - **No son tareas**: no aparecen en Lista, Tabla, Kanban ni Gantt, ni en los conteos de tareas (para eso están los widgets y el heatmap, §14).
-- **Interacción**: clic marca o desmarca (reutiliza la escritura de `completions` de `habit-writer.ts`, [[Arquitectura técnica]] §2.4); doble clic abre la nota del hábito.
+- **Interacción**: clic marca o desmarca (reutiliza la escritura de `completions` de `habit-writer.ts`, [[Arquitectura técnica]] §2.4); para abrir la nota, un botón ↗ por fila del popover (el doble clic sobre una casilla marcaría y desmarcaría).
 - **Vistas**: Mes, Semana, Semana laboral, Día y Lista del calendario; **no** en Año.
-- **Presentación**: en Mes, Semana, Semana laboral y Lista, un **chip resumen por día** (`🔁 3/5`, cumplidos de los que tocan ese día) que abre un **popover** con la lista de hábitos de ese día y su casilla; en **Día**, una sección «Hábitos» completa **agrupada por franja** (despertar, mañana, tarde, noche).
-- **Ajuste «Mostrar hábitos en el calendario»**, desactivado por defecto; sin efecto si la pestaña Hábitos está oculta.
+- **Presentación**: en Mes, Semana, Semana laboral y Lista, un **chip resumen por día** (`🌅 3/5`, cumplidos de los que tocan ese día; el icono es el `sunrise` de la vista Rutina) que abre un **popover** con la lista de hábitos de ese día y su casilla; en **Día**, el mismo chip en el encabezado de cada columna (sin sección aparte; decidido el 2026-11-09).
+- **Filtro, no ajuste** (decidido el 2026-11-09): el interruptor es el ítem «Hábitos» al final del menú «+ Filtro» del calendario, **marcado por defecto**, como «Tareas recurrentes»; al desmarcarlo aparece el chip «Hábitos: Ocultos». No se ofrece si la pestaña Hábitos está oculta.
 - **Filtros**: la barra de filtros del calendario los afecta por **área** (el área del hábito) y por **búsqueda** (su nombre); prioridad y estado no aplican y no los ocultan.
 
 > **ADR-CAL1 — Entradas virtuales, no líneas `[x]`**: descartado escribir líneas `[x]` en la nota del hábito (riesgo de duplicados, líneas editadas a mano y notas que crecen) y descartado que cada ocurrencia sea una tarea. Racional: el estado del hábito ya vive en `completions`; el calendario solo lo muestra y lo edita por el mismo camino que las demás vistas.
 
 **Fuera de alcance**: que los hábitos generen tareas (descartado); hábitos en Año, Gantt, Lista, Tabla o Kanban; que el calendario marque los días de vacaciones (por ahora no).
 
-**Por resolver al diseñar**: cómo se ve en el calendario un hábito marcado dentro de un periodo de vacaciones (el hábito sin marcar no «toca» ese día, §12.2); se resuelve junto con agenda-tasks §21.
+**Resuelto el 2026-11-09 — hábitos en un día de vacaciones**: el calendario **no** marca el día, pero la entrada del hábito lleva una **marca visual de vacaciones (🌴)**, la misma que ya usan la Cuadrícula y el Semanal (HV1). Se aplica la regla de [[Modelo de datos]] §8.5: en un día de vacaciones el hábito sin marcar es neutral (no entra en `total` del chip `🌅 x/y`, pero se puede marcar) y el marcado cuenta solo para sí mismo. Detalle en `docs/agenda-tasks/Especificación de vistas.md` §21.4.
+
+**Por resolver al implementar**: que la vista de calendario escuche `EVENTS.HABITS_UPDATED` para refrescarse cuando se marca un hábito desde otra vista.
 
 ## 14. Widgets de hábitos y heatmap compartido en el Dashboard (v1.1.16 — diseño, no implementado)
 

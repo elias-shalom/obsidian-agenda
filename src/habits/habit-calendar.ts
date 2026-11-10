@@ -3,8 +3,9 @@
 // §8.3–§8.5 y Arquitectura técnica.md §10.2–§10.3). Funciones puras, sin `obsidian`: es el único sitio con la regla,
 // así las rachas, los porcentajes y las vistas no la repiten.
 import { DateTime } from 'luxon';
-import type { IHabit } from './habit';
+import type { Daytime, IHabit } from './habit';
 import { isScheduled } from './habit';
+import { matchesAreaRoutes } from '../core/area';
 
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -105,4 +106,84 @@ export function countsOn(
   const iso = date.toISODate() ?? date.toFormat('yyyy-MM-dd');
   if (!isScheduled(habit, date) || !isInPeriod(habit, iso)) return false;
   return done || findVacation(ctx.vacations, iso) === null;
+}
+
+/** Franjas del día en el orden en que se muestran. */
+export const HABIT_DAYTIME_ORDER: readonly Daytime[] = ['wake up', 'morning', 'afternoon', 'evening', 'night'];
+
+/** Una ocurrencia (hábito + franja) que toca ese día, tal como la dibuja el calendario (v1.1.15, HC1). */
+export interface IHabitDayItem {
+  habit: IHabit;
+  daytime: Daytime;
+  ticked: boolean;
+  /** Entra en el total del resumen; falso solo en vacaciones si no está marcada (neutral, pero se puede marcar). */
+  counted: boolean;
+}
+
+/** Lo que el calendario dibuja de los hábitos en un día: el chip `done/total`, la marca de vacaciones y las ocurrencias. */
+export interface IHabitDaySummary {
+  date: string;
+  done: number;
+  total: number;
+  vacation: boolean;
+  vacationName?: string;
+  items: IHabitDayItem[];
+}
+
+/**
+ * Resumen de los hábitos de un día para el calendario (HC1). Una ocurrencia aparece si toca por su frecuencia y cae
+ * en el periodo activo del hábito, incluso en vacaciones, para poder marcarla; `total` y `done` cuentan solo las
+ * que `countsOn()` da por buenas (en vacaciones, las marcadas: ADR-DM2). Las ocurrencias salen por franja y título.
+ * Sin ningún hábito que toque, `items` queda vacío y el calendario no dibuja nada ese día.
+ */
+export function buildHabitDaySummary(habits: readonly IHabit[], date: DateTime, ctx: IHabitCalcContext = NO_VACATIONS): IHabitDaySummary {
+  const iso = date.toISODate() ?? date.toFormat('yyyy-MM-dd');
+  const vacation = findVacation(ctx.vacations, iso);
+  const items: IHabitDayItem[] = [];
+  let done = 0;
+  let total = 0;
+
+  for (const habit of habits) {
+    if (!countsOn(habit, date, true)) continue;
+
+    const daytimes = habit.daytimes.length > 0 ? habit.daytimes : (['morning'] as Daytime[]);
+    const completed = habit.completions[iso] ?? [];
+    for (const daytime of daytimes) {
+      const ticked = completed.includes(daytime);
+      const counted = countsOn(habit, date, ticked, ctx);
+      items.push({ habit, daytime, ticked, counted });
+      if (counted) {
+        total += 1;
+        if (ticked) done += 1;
+      }
+    }
+  }
+
+  const rank = (daytime: Daytime): number => {
+    const index = HABIT_DAYTIME_ORDER.indexOf(daytime);
+    return index === -1 ? HABIT_DAYTIME_ORDER.length : index;
+  };
+  items.sort((a, b) => rank(a.daytime) - rank(b.daytime) || a.habit.title.localeCompare(b.habit.title));
+
+  return {
+    date: iso,
+    done,
+    total,
+    vacation: vacation !== null,
+    ...(vacation?.name ? { vacationName: vacation.name } : {}),
+    items,
+  };
+}
+
+/**
+ * Hábitos que pasan los filtros del calendario (HC1): solo el área (la del hábito, con su sub-área) y la búsqueda
+ * (su título, sin distinguir mayúsculas ni acentos); la prioridad y el estado no aplican y no los ocultan.
+ */
+export function filterHabitsForCalendar(habits: readonly IHabit[], state: { search: string; areas: readonly string[] }): IHabit[] {
+  const fold = (text: string): string => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const query = fold(state.search.trim());
+
+  return habits.filter(habit =>
+    matchesAreaRoutes({ area: habit.area, subArea: habit.subArea }, state.areas)
+    && (query === '' || fold(habit.title).includes(query)));
 }

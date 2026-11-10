@@ -26,6 +26,8 @@ function loadView(file, exportName, locale) {
         monday.plus({ days: this.getWeekStartDay() - 1 + index }).toFormat('ccc'));
     }
     getTasksForDate(date) { return this.tasksByDate.get(date.toISODate()) ?? []; }
+    // Los hábitos del día (v1.1.15, HC1): el doble devuelve lo que la prueba pone en `habitsByDate`
+    getHabitDay(date) { return this.habitsByDate?.get(date.toISODate()) ?? null; }
   }
   const module = { exports: {} };
   const source = readFileSync(path.join(__dirname, '../src/views', file), 'utf8');
@@ -178,4 +180,26 @@ test('with no holiday calendar no day has holidays', () => {
 test('a holiday never hides a day of the Work Week', () => {
   const result = buildView('calendar-workweek-view.ts', 'CalendarWorkWeekView', { holidayCalendars: [MEXICO] }, '2026-11-16').generateViewData();
   assert.deepEqual(isoDays(result), ['2026-11-16', '2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20']);
+});
+
+// --- Habits in the calendar (v1.1.15, HC1) -----------------------------------------
+
+test('Week, Work Week and List carry the habits of each day and only of the day that has them', () => {
+  for (const [file, name] of [['calendar-week-view.ts', 'CalendarWeekView'], ['calendar-workweek-view.ts', 'CalendarWorkWeekView'], ['calendar-list-view.ts', 'CalendarListView']]) {
+    const view = buildView(file, name, {}, '2026-11-18');
+    const habits = { date: '2026-11-18', label: '1/2', done: 1, total: 2, vacation: false, tooltip: '', groups: [] };
+    view.habitsByDate = new Map([['2026-11-18', habits]]);
+
+    const result = view.generateViewData();
+    const withHabits = result.days.filter(day => day.habits !== null);
+    assert.deepEqual(withHabits.map(day => day.date.toISODate()), ['2026-11-18'], name);
+    assert.strictEqual(withHabits[0].habits, habits, name);
+  }
+});
+
+test('with no habits no day of Week, Work Week or List has them', () => {
+  for (const [file, name] of [['calendar-week-view.ts', 'CalendarWeekView'], ['calendar-workweek-view.ts', 'CalendarWorkWeekView'], ['calendar-list-view.ts', 'CalendarListView']]) {
+    const result = buildView(file, name, {}, '2026-11-18').generateViewData();
+    assert.equal(result.days.every(day => day.habits === null), true, name);
+  }
 });

@@ -68,7 +68,7 @@ Decididas el 2026-11-02; ver [[Especificación de vistas]] §11–§14, [[Modelo
 - [x] **Vacaciones** (implementado el 2026-11-09): lista global de periodos en los ajustes; un día de vacaciones no cuenta como cumplido ni incumplido, salvo para el hábito que el usuario marque; atenuado con icono en Cuadrícula y Semanal y con rayas en el heatmap; botón «Vacaciones» en la barra de Hábitos (HV1).
 - [x] **Selector de subvistas con botones circulares** en lugar del `<select>` (HU1, implementado el 2026-11-09).
 - [ ] **Frecuencias «Fin de semana» y «Lunes a viernes»** que siguen el ajuste de días no laborables, con aviso (NL2, en el Plan de agenda-tasks).
-- [ ] **Hábitos en el calendario**: entradas virtuales (no son tareas), chip `🔁 3/5` con popover, sección por franja en Día y ajuste «Mostrar hábitos en el calendario» desactivado por defecto (HC1, en el Plan de agenda-tasks; detalle en `docs/agenda-tasks/Especificación de vistas.md` §21).
+- [ ] **Hábitos en el calendario**: entradas virtuales (no son tareas), chip `🌅 3/5` con popover (también en Día) y filtro «Hábitos» marcado por defecto en el menú «+ Filtro» (HC1, en el Plan de agenda-tasks; detalle en `docs/agenda-tasks/Especificación de vistas.md` §21).
 
 **v1.1.16 — Dashboard**
 - [ ] **Widgets de hábitos** en el Dashboard (Hábitos de hoy, Racha actual, Esta semana con anillos y heatmap anual) y **heatmap de hábitos compartido**: migra al componente reutilizable y debe quedar idéntico (DW1 y HM1, en el Plan de agenda-tasks; detalle en `docs/agenda-tasks/Especificación de vistas.md` §22).
@@ -98,7 +98,7 @@ Decididas el 2026-11-02; ver [[Especificación de vistas]] §11–§14, [[Modelo
 | US-17 *(v1.1.15, diseño)* | Como usuario, quiero marcar unas vacaciones en las que mis hábitos no cuenten | Los días de vacaciones no cuentan como cumplidos ni incumplidos (no rompen ni suman a la racha, no entran en el porcentaje); si marco un hábito ese día, cuenta solo para él; se ven atenuados con icono y un botón «Vacaciones» abre los ajustes. |
 | US-18 *(v1.1.15, diseño)* | Como usuario, quiero cambiar de subvista con botones de icono | El selector de subvistas son botones circulares con tooltip y `aria-label`, que respetan los ajustes de visibilidad de cada pestaña. |
 | US-19 *(v1.1.15, diseño)* | Como usuario, quiero que «Fin de semana» y «Lunes a viernes» respeten mis días no laborables | Ambas frecuencias siguen el ajuste de días no laborables y el ajuste avisa de que cambia rachas y porcentajes. |
-| US-20 *(v1.1.15–v1.1.16, diseño)* | Como usuario, quiero ver mis hábitos en el calendario y en el Dashboard | Los hábitos aparecen como entradas virtuales (chip `🔁 3/5`) sin ser tareas, y el Dashboard ofrece los widgets «Hábitos de hoy», «Racha actual», «Esta semana» y el heatmap anual. |
+| US-20 *(v1.1.15–v1.1.16, diseño)* | Como usuario, quiero ver mis hábitos en el calendario y en el Dashboard | Los hábitos aparecen como entradas virtuales (chip `🌅 3/5`) sin ser tareas, y el Dashboard ofrece los widgets «Hábitos de hoy», «Racha actual», «Esta semana» y el heatmap anual. |
 
 ## 4. Requerimientos funcionales
 
@@ -178,7 +178,7 @@ Decididas el 2026-11-02; ver [[Especificación de vistas]] §11–§14, [[Modelo
 
 ### RF-11 Hábitos en el calendario y en el Dashboard (v1.1.15 y v1.1.16, diseño)
 
-- Entradas virtuales en el calendario (Mes, Semana, Semana laboral, Día y Lista; no Año), sin escribir en archivos y sin ser tareas; ajuste «Mostrar hábitos en el calendario» desactivado por defecto ([[Especificación de vistas]] §13).
+- Entradas virtuales en el calendario (Mes, Semana, Semana laboral, Día y Lista; no Año), sin escribir en archivos y sin ser tareas; filtro «Hábitos» marcado por defecto en el menú «+ Filtro» del calendario ([[Especificación de vistas]] §13).
 - Widgets de hábitos y heatmap compartido en el Dashboard; el heatmap de hábitos migra al componente reutilizable y queda idéntico ([[Especificación de vistas]] §14).
 
 ## 5. Requerimientos no funcionales

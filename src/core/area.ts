@@ -213,11 +213,15 @@ function matchesAreaRoute(task: TaskArea, route: AreaRoute): boolean {
   return actual === wanted || actual.startsWith(`${wanted}/`);
 }
 
+/** ¿Esa área y sub-área (la de una tarea o la de un hábito) cumple la selección? O entre las rutas efectivas; una lista vacía no filtra. */
+export function matchesAreaRoutes(area: TaskArea, routes: readonly string[]): boolean {
+  if (routes.length === 0) return true;
+  return effectiveAreaRoutes(routes).some(route => matchesAreaRoute(area, parseAreaRoute(route)));
+}
+
 /** ¿La nota en `filePath` cumple la selección? O entre las rutas efectivas; una lista vacía no filtra. */
 export function matchesTaskAreas(filePath: string, routes: readonly string[]): boolean {
-  if (routes.length === 0) return true;
-  const task = resolveTaskArea(filePath);
-  return effectiveAreaRoutes(routes).some(route => matchesAreaRoute(task, parseAreaRoute(route)));
+  return matchesAreaRoutes(resolveTaskArea(filePath), routes);
 }
 
 /**

@@ -36,6 +36,11 @@ export type HolidayRule = {
   nameKey: string;
   category: HolidayCategory;
   region?: string;
+  /**
+   * Tema de la regla en un calendario con temas (el internacional, v1.1.15): el calendario la muestra solo si ese
+   * tema está marcado, sin mirar `category` ni `region`.
+   */
+  group?: string;
 } & HolidayRuleSpec;
 
 /** Región de un país (estado). `name` es un nombre propio y no se traduce. */
@@ -44,10 +49,12 @@ export interface HolidayRegion {
   name: string;
 }
 
-/** Todo lo que un país aporta: sus regiones y sus reglas (nacionales y regionales). */
+/** Todo lo que un país aporta: sus regiones, sus temas (si los tiene) y sus reglas (nacionales y regionales). */
 export interface HolidayCountryData {
   country: string;
   regions: readonly HolidayRegion[];
+  /** Temas en que se agrupan las reglas (`group`); solo los calendarios con temas, como el internacional. */
+  groups?: readonly string[];
   rules: readonly HolidayRule[];
 }
 

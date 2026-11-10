@@ -9,7 +9,8 @@ import { toggleNonWorkingDay } from '../core/non-working-days';
 import { MAX_PROJECTION_COUNT } from '../core/task-projection';
 import { isValidPeriod, type IHabitVacation } from '../habits/habit-calendar';
 import { DateTime } from 'luxon';
-import { createHolidayCalendar, getHolidayCountries, getHolidayCountry, type HolidayCalendarConfig } from '../core/holidays/holiday-calendar';
+import { changeHolidayCountry, createHolidayCalendar, getHolidayCountries, getHolidayCountry, type HolidayCalendarConfig } from '../core/holidays/holiday-calendar';
+import { intGroupLabelKey } from '../core/holidays/holiday-data-int';
 
 const CALENDAR_VIEW_TYPES = ['calendar-month-view', 'calendar-year-view', 'calendar-week-view', 'calendar-workweek-view', 'calendar-day-view'];
 /** Vistas que cambian al tocar los días no laborables: el calendario completo (con la Lista) y el Gantt. */
@@ -131,11 +132,33 @@ export class SettingTab extends PluginSettingTab {
     }
     country.value = calendar.country;
     country.addEventListener('change', () => {
-      calendar.country = country.value;
-      delete calendar.region; // las regiones son de cada país
+      changeHolidayCountry(calendar, country.value);
       this.saveHolidayCalendars(list);
     });
 
+    const data = getHolidayCountry(calendar.country);
+    if (data?.groups) {
+      this.drawHolidayGroups(row, calendar, data.groups, list);
+    } else {
+      this.drawHolidayRegionAndCategories(row, calendar, list);
+    }
+
+    const color = row.createEl('input', { cls: 'oa-holiday-color', type: 'color', attr: { 'aria-label': this.i18n.t('holiday_color') } });
+    color.value = calendar.color;
+    color.addEventListener('change', () => {
+      calendar.color = color.value;
+      this.saveHolidayCalendars(list, false);
+    });
+
+    const remove = row.createEl('button', { cls: 'clickable-icon oa-holiday-remove', attr: { type: 'button', 'aria-label': this.i18n.t('holiday_remove_calendar') } });
+    setIcon(remove, 'trash-2');
+    remove.addEventListener('click', () => {
+      this.plugin.settings.holidayCalendars.splice(index, 1);
+      this.saveHolidayCalendars(list);
+    });
+  }
+
+  private drawHolidayRegionAndCategories(row: HTMLElement, calendar: HolidayCalendarConfig, list: HTMLElement): void {
     const region = row.createEl('select', { cls: 'dropdown', attr: { 'aria-label': this.i18n.t('holiday_region') } });
     region.createEl('option', { value: '', text: this.i18n.t('holiday_region_national') });
     for (const { code, name } of getHolidayCountry(calendar.country)?.regions ?? []) {
@@ -158,20 +181,23 @@ export class SettingTab extends PluginSettingTab {
         this.saveHolidayCalendars(list, false);
       });
     }
+  }
 
-    const color = row.createEl('input', { cls: 'oa-holiday-color', type: 'color', attr: { 'aria-label': this.i18n.t('holiday_color') } });
-    color.value = calendar.color;
-    color.addEventListener('change', () => {
-      calendar.color = color.value;
-      this.saveHolidayCalendars(list, false);
-    });
-
-    const remove = row.createEl('button', { cls: 'clickable-icon oa-holiday-remove', attr: { type: 'button', 'aria-label': this.i18n.t('holiday_remove_calendar') } });
-    setIcon(remove, 'trash-2');
-    remove.addEventListener('click', () => {
-      this.plugin.settings.holidayCalendars.splice(index, 1);
-      this.saveHolidayCalendars(list);
-    });
+  /** El calendario internacional no tiene región ni oficiales: se eligen sus temas con una casilla cada uno. */
+  private drawHolidayGroups(row: HTMLElement, calendar: HolidayCalendarConfig, groups: readonly string[], list: HTMLElement): void {
+    for (const group of groups) {
+      const label = row.createEl('label', { cls: 'oa-holiday-category' });
+      const box = label.createEl('input', { type: 'checkbox' });
+      box.checked = calendar.groups?.includes(group) ?? false;
+      label.createSpan({ text: this.i18n.t(intGroupLabelKey(group)) });
+      box.addEventListener('change', () => {
+        const selected = new Set(calendar.groups ?? []);
+        if (box.checked) selected.add(group);
+        else selected.delete(group);
+        calendar.groups = groups.filter(entry => selected.has(entry));
+        this.saveHolidayCalendars(list, false);
+      });
+    }
   }
 
   /** Guarda los calendarios de feriados y refresca las vistas; `redraw` vuelve a dibujar la lista (alta, baja o país). */

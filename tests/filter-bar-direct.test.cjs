@@ -42,11 +42,13 @@ function makeBar(options = {}) {
 const calendarBar = () => makeBar({ filterTypes: CALENDAR_FILTER_TYPES, directFilterTypes: CALENDAR_DIRECT_FILTER_TYPES });
 const openTypeMenu = (bar) => { bar.openTypeMenu({ x: 0, y: 0 }); return FakeMenu.last.items; };
 
-test('el primer menú del calendario ofrece siete tipos: los de fecha y, al final, «Tareas recurrentes»', () => {
+test('el primer menú del calendario ofrece nueve tipos: los de fecha y, al final, «Tareas recurrentes», «Hábitos» y «Días festivos»', () => {
   const { bar } = calendarBar();
   const items = openTypeMenu(bar);
-  assert.equal(items.length, 7);
+  assert.equal(items.length, 9);
   assert.equal(items[6].title, 'filter_recurring_tasks');
+  assert.equal(items[7].title, 'filter_habits');
+  assert.equal(items[8].title, 'filter_holidays');
 });
 
 test('pulsar un tipo de fecha directo lo activa con «con fecha» y lo marca con ✓', () => {
@@ -159,4 +161,106 @@ test('el estado del calendario conserva «ocultas» y cualquier otro valor vuelv
   assert.equal(parseCalendarState({ projected: 'hide' }).projected, 'hide');
   assert.equal(parseCalendarState({ projected: 'otra cosa' }).projected, 'show');
   assert.equal(parseCalendarState({}).projected, 'show');
+});
+
+// --- «Hábitos» (v1.1.15, HC1): marcado por defecto, como «Tareas recurrentes», y solo si hay hábitos -----------
+
+const HABITS_ITEM = 7;
+
+test('«Hábitos» está marcado por defecto y no tiene chip', () => {
+  const { bar } = calendarBar();
+  assert.equal(bar.getState().habits, 'show');
+  assert.equal(openTypeMenu(bar)[HABITS_ITEM].checked, true);
+  assert.deepEqual(getActiveFilterChips(bar.getState(), i18n.t), []);
+});
+
+test('desmarcar «Hábitos» los oculta y muestra el chip «Hábitos: ocultos»; volver a marcarlo los devuelve', () => {
+  const { bar, changes } = calendarBar();
+  openTypeMenu(bar)[HABITS_ITEM].click();
+  assert.equal(bar.getState().habits, 'hide');
+  assert.deepEqual(changes[0].changed, ['habits']);
+  assert.equal(openTypeMenu(bar)[HABITS_ITEM].checked, false);
+
+  const [chip] = getActiveFilterChips(bar.getState(), i18n.t);
+  assert.deepEqual([chip.id, chip.typeLabel, chip.valueLabel], ['habits', 'filter_habits', 'filter_habits_hidden']);
+
+  openTypeMenu(bar)[HABITS_ITEM].click();
+  assert.equal(bar.getState().habits, 'show');
+  assert.equal(bar.getState().projected, 'show', 'no toca «Tareas recurrentes»');
+});
+
+test('los dos interruptores son independientes', () => {
+  const { bar } = calendarBar();
+  openTypeMenu(bar)[6].click();
+  assert.deepEqual([bar.getState().projected, bar.getState().habits], ['hide', 'show']);
+  openTypeMenu(bar)[HABITS_ITEM].click();
+  assert.deepEqual([bar.getState().projected, bar.getState().habits], ['hide', 'hide']);
+  assert.deepEqual(getActiveFilterChips(bar.getState(), i18n.t).map(chip => chip.id), ['projected', 'habits']);
+});
+
+test('el chip «Hábitos: ocultos» se quita al pulsarlo, con la × y con Limpiar', () => {
+  const { bar } = calendarBar();
+  openTypeMenu(bar)[HABITS_ITEM].click();
+  bar.openValueMenu('habits', { x: 0, y: 0 });
+  assert.equal(bar.getState().habits, 'show');
+
+  const hidden = { ...parseCalendarState({}), habits: 'hide' };
+  assert.equal(clearFilterChip(hidden, 'habits').habits, 'show');
+  assert.equal(clearAllFilters(hidden).habits, 'show');
+});
+
+test('el estado del calendario conserva «ocultos» y cualquier otro valor vuelve a mostrar', () => {
+  assert.equal(parseCalendarState({ habits: 'hide' }).habits, 'hide');
+  assert.equal(parseCalendarState({ habits: 'otra cosa' }).habits, 'show');
+  assert.equal(parseCalendarState({}).habits, 'show');
+});
+
+test('la barra deja de ofrecer «Hábitos» cuando no hay hábitos y lo vuelve a ofrecer cuando los hay', () => {
+  const withoutHabits = CALENDAR_FILTER_TYPES.filter(type => type !== 'habits');
+  const { bar } = makeBar({ filterTypes: withoutHabits, directFilterTypes: CALENDAR_DIRECT_FILTER_TYPES });
+  assert.equal(openTypeMenu(bar).length, 8);
+
+  bar.setFilterTypes(CALENDAR_FILTER_TYPES);
+  assert.equal(openTypeMenu(bar).length, 9);
+  assert.equal(openTypeMenu(bar)[HABITS_ITEM].title, 'filter_habits');
+
+  bar.setFilterTypes(withoutHabits);
+  assert.equal(openTypeMenu(bar).length, 8);
+});
+
+// --- «Días festivos» (v1.1.15) ----------------------------------------------------------
+
+const HOLIDAYS_ITEM = 8;
+
+test('«Días festivos» va marcado por defecto y desmarcarlo lo oculta con un chip «Ocultos» que se quita con un clic', () => {
+  const { bar, changes } = calendarBar();
+  assert.equal(bar.getState().holidays, 'show');
+  assert.equal(openTypeMenu(bar)[HOLIDAYS_ITEM].checked, true);
+
+  openTypeMenu(bar)[HOLIDAYS_ITEM].click();
+  assert.equal(bar.getState().holidays, 'hide');
+  assert.deepEqual(changes[0].changed, ['holidays']);
+  assert.equal(openTypeMenu(bar)[HOLIDAYS_ITEM].checked, false);
+
+  const [chip] = getActiveFilterChips(bar.getState(), i18n.t);
+  assert.deepEqual([chip.id, chip.typeLabel, chip.valueLabel], ['holidays', 'filter_holidays', 'filter_holidays_hidden']);
+
+  bar.openValueMenu('holidays', { x: 0, y: 0 });
+  assert.equal(bar.getState().holidays, 'show');
+});
+
+test('«Días festivos» es independiente de «Hábitos» y de «Tareas recurrentes» y «Limpiar» lo restablece', () => {
+  const { bar } = calendarBar();
+  openTypeMenu(bar)[HOLIDAYS_ITEM].click();
+  assert.deepEqual([bar.getState().projected, bar.getState().habits, bar.getState().holidays], ['show', 'show', 'hide']);
+
+  const hidden = { ...parseCalendarState({}), holidays: 'hide', habits: 'hide' };
+  assert.equal(clearFilterChip(hidden, 'holidays').holidays, 'show');
+  assert.deepEqual([clearAllFilters(hidden).habits, clearAllFilters(hidden).holidays], ['show', 'show']);
+});
+
+test('el estado del calendario conserva los días festivos «ocultos» y cualquier otro valor vuelve a mostrar', () => {
+  assert.equal(parseCalendarState({ holidays: 'hide' }).holidays, 'hide');
+  assert.equal(parseCalendarState({ holidays: 'otra cosa' }).holidays, 'show');
+  assert.equal(parseCalendarState({}).holidays, 'show');
 });

@@ -290,6 +290,31 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
+  // Popover de hábitos del calendario (v1.1.15, HC1): fila con el color del área, atenuada si es neutral y con un
+  // botón al final que abre la nota
+  .oa-filter-popover__option[style*="--oa-area-color"] {
+    border-left: 3px solid var(--oa-area-color);
+  }
+
+  .oa-filter-popover__option--muted {
+    opacity: 0.55;
+  }
+
+  .oa-filter-popover__open {
+    height: auto;
+    margin-left: auto;
+    padding: 0 4px !important; // `.is-tablet button` de Obsidian impone 20 px laterales
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--text-muted);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--text-normal);
+    }
+  }
 }
 
 // Objetivo táctil más grande en móvil y tableta

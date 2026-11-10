@@ -4,6 +4,7 @@
 // puro: el ajuste `holidayCalendars` y el marcado en las vistas llegan en FE2.
 import { MX_HOLIDAYS } from './holiday-data-mx';
 import { US_HOLIDAYS } from './holiday-data-us';
+import { INT_HOLIDAYS } from './holiday-data-int';
 import { evaluateRule, type HolidayCategory, type HolidayCountryData, type HolidayRule } from './holiday-rules';
 
 /** Un calendario de feriados activo: país, región opcional, qué categorías se ven y de qué color. */
@@ -11,6 +12,11 @@ export interface HolidayCalendarConfig {
   country: string;
   /** Sin región, solo las reglas nacionales; con ella, las nacionales y las de esa región. */
   region?: string;
+  /**
+   * Solo los países con temas (el internacional): los temas marcados; una regla con tema se ve solo si el suyo está
+   * marcado. Los demás países no lo tienen.
+   */
+  groups?: string[];
   official: boolean;
   unofficial: boolean;
   color: string;
@@ -30,6 +36,7 @@ export interface HolidayEntry {
 const COUNTRIES: Readonly<Record<string, HolidayCountryData>> = {
   [MX_HOLIDAYS.country]: MX_HOLIDAYS,
   [US_HOLIDAYS.country]: US_HOLIDAYS,
+  [INT_HOLIDAYS.country]: INT_HOLIDAYS,
 };
 
 /** Colores que se reparten entre los calendarios nuevos para que no empiecen todos iguales. */
@@ -49,9 +56,31 @@ export function createHolidayCalendar(existingCount: number): HolidayCalendarCon
 }
 
 /**
+ * Cambia el país de un calendario: la región es de cada país y se quita; un país con temas (el internacional) parte
+ * con todos sus temas marcados y solo con fechas «no oficiales» (no tiene oficiales), y uno sin temas vuelve a las
+ * casillas de siempre (solo oficiales). Conserva el color.
+ */
+export function changeHolidayCountry(calendar: HolidayCalendarConfig, country: string): void {
+  const data = COUNTRIES[country];
+  calendar.country = country;
+  delete calendar.region;
+
+  if (data?.groups) {
+    calendar.groups = [...data.groups];
+    calendar.official = false;
+    calendar.unofficial = true;
+  } else {
+    delete calendar.groups;
+    calendar.official = true;
+    calendar.unofficial = false;
+  }
+}
+
+/**
  * Deja el ajuste guardado en una lista válida: descarta lo que no es un calendario de un país conocido, quita la
- * región que el país no tiene y corrige el color o las casillas ausentes. Cualquier otro valor da la lista vacía
- * («ninguno activo»).
+ * región que el país no tiene y corrige el color o las casillas ausentes. En un país con temas, los temas
+ * desconocidos se descartan y, si faltan, se marcan todos; sin temas, no los lleva. Cualquier otro valor da la lista
+ * vacía («ninguno activo»).
  */
 export function sanitizeHolidayCalendars(raw: unknown): HolidayCalendarConfig[] {
   if (!Array.isArray(raw)) return [];
@@ -66,13 +95,19 @@ export function sanitizeHolidayCalendars(raw: unknown): HolidayCalendarConfig[] 
     const region = typeof entry.region === 'string' && data.regions.some(r => r.code === entry.region) ? entry.region : undefined;
     const calendar: HolidayCalendarConfig = {
       country: data.country,
-      official: typeof entry.official === 'boolean' ? entry.official : true,
-      unofficial: typeof entry.unofficial === 'boolean' ? entry.unofficial : false,
+      // Un país con temas solo tiene fechas «no oficiales»: las casillas no cuentan
+      official: data.groups ? false : typeof entry.official === 'boolean' ? entry.official : true,
+      unofficial: data.groups ? true : typeof entry.unofficial === 'boolean' ? entry.unofficial : false,
       color: typeof entry.color === 'string' && HEX_COLOR.test(entry.color)
         ? entry.color
         : HOLIDAY_COLOR_PALETTE[result.length % HOLIDAY_COLOR_PALETTE.length],
     };
     if (region) calendar.region = region;
+    if (data.groups) {
+      calendar.groups = Array.isArray(entry.groups)
+        ? data.groups.filter(group => (entry.groups as unknown[]).includes(group))
+        : [...data.groups];
+    }
     result.push(calendar);
   }
   return result;
@@ -109,8 +144,18 @@ function evaluateCountryYear(data: HolidayCountryData, year: number): EvaluatedR
 }
 
 function isVisible(rule: HolidayRule, calendar: HolidayCalendarConfig): boolean {
+  // Una regla con tema se ve solo si su tema está marcado; no mira la categoría ni la región
+  if (rule.group !== undefined) return calendar.groups?.includes(rule.group) ?? false;
   if (rule.region !== undefined && rule.region !== calendar.region) return false;
   return rule.category === 'official' ? calendar.official : calendar.unofficial;
+}
+
+/**
+ * ¿Alguno de los feriados del día es oficial? Solo un feriado oficial sombrea el día en el calendario; los no
+ * oficiales (Día de las Madres, los días internacionales…) llevan su etiqueta pero el día se ve como cualquier otro.
+ */
+export function hasOfficialHoliday(holidays: readonly { official: boolean }[] | null | undefined): boolean {
+  return holidays?.some(holiday => holiday.official) ?? false;
 }
 
 /**

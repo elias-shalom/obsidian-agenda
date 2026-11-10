@@ -1,7 +1,7 @@
 import { WorkspaceLeaf, Plugin, Notice, setIcon } from 'obsidian';
 import { BaseView } from '../views/base-view'; 
 import { TaskManager } from '../core/task-manager';
-import { ITask, CalendarViewData, ViewData, AgendaPlugin, HolidayLabel } from '../types/interfaces';
+import { ITask, CalendarViewData, ViewData, AgendaPlugin, HolidayLabel, HabitDayView, HabitDayGroup } from '../types/interfaces';
 import { I18n } from '../core/i18n';
 import { DateTime } from 'luxon';
 import Handlebars from 'handlebars';
@@ -15,13 +15,22 @@ import { clearTooltips, installTooltips } from '../core/tooltips';
 import { TaskViewState } from '../core/task-view-state';
 import { CALENDAR_DIRECT_FILTER_TYPES, CALENDAR_FILTER_TYPES, filterTasksForCalendar, getActiveCalendarDateTypes, loadCalendarState, parseCalendarState, saveCalendarState } from '../core/calendar-state';
 import { TaskFilterBar } from '../core/task-filter-bar';
-import { closeFilterPopover } from '../core/task-filter-popover';
+import { closeFilterPopover, openFilterPopover } from '../core/task-filter-popover';
 import { DEFAULT_NON_WORKING_DAYS, isNonWorkingDay } from '../core/non-working-days';
-import { getHolidayLookup } from '../core/holidays/holiday-calendar';
+import { getHolidayLookup, hasOfficialHoliday } from '../core/holidays/holiday-calendar';
 import { getAreaColor, resolveTaskArea } from '../core/area';
 import { projectAllOccurrences, sanitizeProjectionCount } from '../core/task-projection';
+import { buildHabitDaySummary, filterHabitsForCalendar } from '../habits/habit-calendar';
+import type { Daytime, IHabit } from '../habits/habit';
+import type { HabitManager } from '../habits/habit-manager';
 
 export const CALENDAR_VIEW_TYPE = 'calendar-view';
+
+/** Separador de la clave de una ocurrencia de hábito (`ruta de la nota::franja`), el mismo de las vistas de hábitos. */
+const HABIT_ROW_SEPARATOR = '::';
+
+/** Clave i18n del nombre de una franja del día (`habit_daytime_wake_up`…). */
+const habitDaytimeLabelKey = (daytime: string): string => `habit_daytime_${daytime.replace(/\s+/g, '_')}`;
 
 /** Íconos Lucide del selector de vista segmentado (v1.1.9, §12 Arquitectura técnica); Semana/Semana laboral deben distinguirse claramente. */
 const CALENDAR_VIEW_BUTTON_ICONS: Record<string, string> = {
@@ -58,6 +67,8 @@ export abstract class CalendarView extends BaseView {
   protected visibleTasks: ITask[] = [];
   /** Ocurrencias proyectadas de las tareas recurrentes visibles (v1.1.15, PR2); se recalculan en cada dibujado. */
   private projectedTasks: ITask[] = [];
+  /** Hábitos que se dibujan como entradas virtuales (v1.1.15, HC1): vacío si están ocultos, no hay ninguno o la pestaña Hábitos está oculta; se recalculan en cada dibujado. */
+  protected visibleHabits: IHabit[] = [];
   /** Barra de filtros del calendario (v1.1.14, CF2): se crea en `onOpen()` y se monta tras cada dibujado completo. */
   protected filterBar: TaskFilterBar | null = null;
   /** Contenedor de la barra montada: un redibujado parcial lo conserva para que el buscador no pierda el foco. */
@@ -93,6 +104,8 @@ export abstract class CalendarView extends BaseView {
     if (reference) this.currentDate = reference;
     this.showLoadingOverlay(8, true);
     this.tasks = await this.getAllTasks(this.taskManager);
+    // Los hábitos se leen de su propia caché: se espera a la primera carga para decidir si se ofrece su filtro
+    await this.getHabitManager()?.waitForInitialCache();
 
     // La barra se crea antes de filtrar porque reajusta un área guardada que ya no tiene tareas; si no,
     // esa ruta vaciaría el calendario sin mostrar ningún chip.
@@ -100,7 +113,7 @@ export abstract class CalendarView extends BaseView {
       i18n: this.i18n,
       tasks: this.tasks,
       state: loadCalendarState(this.app),
-      filterTypes: CALENDAR_FILTER_TYPES,
+      filterTypes: this.getCalendarFilterTypes(),
       directFilterTypes: CALENDAR_DIRECT_FILTER_TYPES,
       onChange: (state) => this.onCalendarFiltersChanged(state),
     });
@@ -141,10 +154,82 @@ export abstract class CalendarView extends BaseView {
       this.getNonWorkingDays()
     );
 
+    // Los hábitos pasan solo el área y la búsqueda de la barra; «Hábitos» desmarcado los oculta todos
+    const habitManager = this.getHabitManager();
+    this.visibleHabits = habitManager && this.areHabitsOffered() && this.calendarState.habits !== 'hide'
+      ? filterHabitsForCalendar(habitManager.getHabits(), this.calendarState)
+      : [];
+
     return {
       tasks: this.tasks,
       currentDate: this.currentDate,
       calendar: this.generateViewData()
+    };
+  }
+
+  /** El gestor de hábitos del plugin; las pruebas y un plugin sin hábitos no lo tienen. */
+  private getHabitManager(): HabitManager | null {
+    return (this.plugin as AgendaPlugin).getHabitManager?.() ?? null;
+  }
+
+  /** ¿Hay hábitos que dibujar? Con la pestaña Hábitos oculta o sin ningún hábito, el calendario queda como antes y no ofrece el filtro. */
+  private areHabitsOffered(): boolean {
+    const plugin = this.plugin as AgendaPlugin;
+    if (plugin.settings?.showHabitTab === false) return false;
+    return (this.getHabitManager()?.getHabits().length ?? 0) > 0;
+  }
+
+  /** Tipos de «+ Filtro»: «Hábitos» solo se ofrece si hay hábitos que mostrar y «Días festivos» solo si hay un calendario de feriados activo. */
+  private getCalendarFilterTypes(): readonly (typeof CALENDAR_FILTER_TYPES)[number][] {
+    const offersHabits = this.areHabitsOffered();
+    const offersHolidays = this.areHolidaysOffered();
+    return CALENDAR_FILTER_TYPES.filter(type => (type !== 'habits' || offersHabits) && (type !== 'holidays' || offersHolidays));
+  }
+
+  /** ¿Hay algún calendario de feriados en los ajustes? Sin ninguno no hay días festivos que ocultar y el filtro no se ofrece. */
+  private areHolidaysOffered(): boolean {
+    return ((this.plugin as AgendaPlugin).settings?.holidayCalendars?.length ?? 0) > 0;
+  }
+
+  /**
+   * Los hábitos de un día para el chip resumen, el popover y la sección de la vista Día (v1.1.15, HC1); `null` si
+   * están ocultos o ninguno toca ese día (nunca un `0/0`). En vacaciones el chip cuenta solo los marcados y, sin
+   * ninguno, queda sin fracción (solo la 🌴 que añade la plantilla).
+   */
+  protected getHabitDay(date: DateTime): HabitDayView | null {
+    const habitManager = this.getHabitManager();
+    if (!habitManager || this.visibleHabits.length === 0) return null;
+
+    const summary = buildHabitDaySummary(this.visibleHabits, date, habitManager.getCalcContext());
+    if (summary.items.length === 0) return null;
+
+    const groups: HabitDayGroup[] = [];
+    for (const item of summary.items) {
+      let group = groups[groups.length - 1];
+      if (!group || group.daytime !== item.daytime) {
+        group = { daytime: item.daytime, label: this.i18n.t(habitDaytimeLabelKey(item.daytime)), rows: [] };
+        groups.push(group);
+      }
+      group.rows.push({
+        id: `${item.habit.file.path}${HABIT_ROW_SEPARATOR}${item.daytime}`,
+        title: item.habit.title,
+        daytime: item.daytime,
+        ticked: item.ticked,
+        muted: !item.counted,
+        areaColor: getAreaColor(item.habit.area),
+      });
+    }
+
+    const counts = summary.total > 0 ? this.i18n.t('calendar_habits_summary', { done: summary.done, total: summary.total }) : '';
+    const vacation = summary.vacation ? `🌴 ${summary.vacationName ?? this.i18n.t('habit_vacation')}` : '';
+    return {
+      date: summary.date,
+      label: summary.total > 0 ? `${summary.done}/${summary.total}` : '',
+      done: summary.done,
+      total: summary.total,
+      vacation: summary.vacation,
+      tooltip: [counts, vacation].filter(Boolean).join(' · '),
+      groups,
     };
   }
 
@@ -155,6 +240,9 @@ export abstract class CalendarView extends BaseView {
   private mountFilterBar(): void {
     const content = this.containerEl.children[1]?.querySelector<HTMLElement>('.agenda-content-container');
     if (!content || !this.filterBar) return;
+
+    // Los ajustes pueden haber cambiado (un calendario de feriados nuevo) desde que se abrió la vista
+    this.filterBar.setFilterTypes(this.getCalendarFilterTypes());
 
     const barRoot = createDiv({ cls: 'oa-calendar-filter-bar' });
     content.prepend(barRoot);
@@ -216,8 +304,9 @@ export abstract class CalendarView extends BaseView {
     return isNonWorkingDay(date, this.getNonWorkingDays());
   }
 
-  /** Feriados del día según los calendarios de feriados activos (v1.1.15, FE2); vacío si no hay ninguno. */
+  /** Feriados del día según los calendarios de feriados activos (v1.1.15, FE2); vacío si no hay ninguno o si «Días festivos» está desmarcado en la barra. */
   protected getHolidays(date: DateTime): HolidayLabel[] {
+    if (this.calendarState.holidays === 'hide') return [];
     const plugin = this.plugin as AgendaPlugin;
     const lookup = getHolidayLookup(plugin.settings?.holidayCalendars ?? []);
     return lookup.get(date.toISODate() ?? '').map(entry => ({
@@ -352,6 +441,15 @@ export abstract class CalendarView extends BaseView {
    * @param i18n Instancia de I18n para la internacionalización
    */
   protected registerViewSpecificHelpers(_i18n: I18n): void {
+    // Chip resumen de los hábitos de un día (v1.1.15, HC1): lo comparten Mes, Semana, Semana laboral y Lista
+    Handlebars.registerPartial('calendarHabitChip',
+      '{{#if habits}}<button type="button" class="oa-calendar-habit-chip{{#if habits.vacation}} oa-calendar-habit-chip--vacation{{/if}}"'
+      + ' data-habit-date="{{habits.date}}" title="{{habits.tooltip}}" aria-label="{{habits.tooltip}}" aria-haspopup="dialog">'
+      + '<span class="oa-calendar-habit-icon" aria-hidden="true"></span>'
+      + '{{#if habits.label}}<span class="oa-calendar-habit-count">{{habits.label}}</span>{{/if}}'
+      + '{{#if habits.vacation}}<span class="oa-calendar-habit-vacation" aria-hidden="true">🌴</span>{{/if}}'
+      + '</button>{{/if}}');
+
     // Register calendar-specific helpers
     Handlebars.registerHelper('formatDateHeader', (date) => {
       if (!date) return '';
@@ -402,6 +500,9 @@ export abstract class CalendarView extends BaseView {
     // Helper para saber si una tarea está completada (usado para el atenuado visual, ADR-T6)
     Handlebars.registerHelper('isTaskDone', (status: unknown) => status === 'x');
 
+    // Solo un feriado oficial sombrea el día; los no oficiales llevan su etiqueta pero el día se ve normal
+    Handlebars.registerHelper('hasOfficialHoliday', (holidays: unknown) => hasOfficialHoliday(holidays as { official: boolean }[]));
+
     Handlebars.registerHelper('toISODate', (date) => {
       if (!date) return '';
       if (typeof date === 'string') {
@@ -433,6 +534,77 @@ export abstract class CalendarView extends BaseView {
   }
 
   /**
+   * Los hábitos del calendario (v1.1.15, HC1): el icono del chip (el `sunrise` de la vista Rutina) y el chip, que abre
+   * su popover. Es el mismo chip en todas las vistas, también en el encabezado de cada columna de la vista Día.
+   */
+  private setupHabitListeners(container: HTMLElement): void {
+    container.querySelectorAll<HTMLElement>('.oa-calendar-habit-icon').forEach(icon => setIcon(icon, 'sunrise'));
+
+    container.querySelectorAll<HTMLButtonElement>('.oa-calendar-habit-chip').forEach(chip => {
+      // El chip vive dentro de la celda del día: sin esto, su clic y su doble clic seleccionarían el día o crearían una tarea
+      chip.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const date = chip.dataset.habitDate;
+        if (date) this.openHabitPopover(date, chip);
+      });
+      chip.addEventListener('dblclick', (event) => event.stopPropagation());
+    });
+  }
+
+  /** Popover con los hábitos del día y su casilla; no se cierra al marcar y cada fila lleva un botón que abre la nota. */
+  private openHabitPopover(date: string, anchorEl: HTMLElement): void {
+    const day = this.getHabitDay(DateTime.fromISO(date));
+    if (!day) return;
+
+    const rect = anchorEl.getBoundingClientRect();
+    // Las casillas se actualizan al momento; la nota y el calendario se actualizan cuando termina la escritura
+    const ticked = new Map(day.groups.flatMap(group => group.rows.map(row => [row.id, row.ticked] as const)));
+    const vacationMark = day.vacation ? ' 🌴' : '';
+
+    openFilterPopover({
+      anchor: { x: rect.left, y: rect.bottom },
+      ariaLabel: day.tooltip || this.i18n.t('filter_habits'),
+      getSections: () => day.groups.map(group => ({
+        title: group.label,
+        options: group.rows.map(row => ({
+          value: row.id,
+          label: `${row.title}${vacationMark}`,
+          checked: ticked.get(row.id) ?? false,
+          muted: row.muted && !ticked.get(row.id),
+          color: row.areaColor,
+        })),
+      })),
+      onToggle: (id) => {
+        ticked.set(id, !ticked.get(id));
+        this.toggleHabitRow(id, date).catch(console.error);
+      },
+      openOption: { label: this.i18n.t('open_file'), onOpen: (id) => { this.openHabitNote(id).catch(console.error); } },
+    });
+  }
+
+  /** Marca o desmarca una ocurrencia de hábito (`habit-writer.ts`, la misma escritura de las vistas de hábitos) y redibuja el calendario. */
+  private async toggleHabitRow(rowId: string, date: string): Promise<void> {
+    const habit = this.findHabitByRowId(rowId);
+    const daytime = rowId.slice(rowId.lastIndexOf(HABIT_ROW_SEPARATOR) + HABIT_ROW_SEPARATOR.length) as Daytime;
+    const habitManager = this.getHabitManager();
+    if (!habit || !habitManager) return;
+
+    await habitManager.toggleOccurrence(habit.file, date, daytime);
+    await this.redrawCalendarBody();
+  }
+
+  private async openHabitNote(rowId: string): Promise<void> {
+    const habit = this.findHabitByRowId(rowId);
+    if (habit) await this.openTaskFile(habit.file.path);
+  }
+
+  private findHabitByRowId(rowId: string): IHabit | null {
+    const separator = rowId.lastIndexOf(HABIT_ROW_SEPARATOR);
+    const path = separator === -1 ? rowId : rowId.slice(0, separator);
+    return this.visibleHabits.find(habit => habit.file.path === path) ?? null;
+  }
+
+  /**
    * El color de cada feriado y el del área de cada tarea viajan en `data-holiday-color` y `data-area-color` (las
    * plantillas no llevan estilos en línea) y aquí pasan a las variables CSS que usan el tinte, el punto del Año y
    * el margen izquierdo de las píldoras (v1.1.15).
@@ -453,6 +625,7 @@ export abstract class CalendarView extends BaseView {
    */
   protected setupViewSpecificEventListeners(container: HTMLElement, _data: CalendarViewData): void {
     this.applyHolidayColors(container);
+    this.setupHabitListeners(container);
 
     // Add event listeners for navigation buttons
     const prevButton = container.querySelector('.oa-calendar-prev');

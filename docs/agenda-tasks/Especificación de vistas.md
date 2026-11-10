@@ -1218,15 +1218,15 @@ Las cuatro piezas coinciden en las vistas del calendario (Mes, Semana, Semana la
 
 | Pieza | Mes | Semana | Semana laboral | Día | Año | Lista | Gantt |
 |---|---|---|---|---|---|---|---|
-| Sombreado de días no laborables | ✓ | ✓ | no aplica (oculta esos días) | — | — | ✓ | ✓ (ya sombrea) |
+| Sombreado de días no laborables | ✓ | ✓ | no aplica (oculta esos días) | ✓ (columna entera, desde el 2026-11-09) | — | ✓ | ✓ (ya sombrea) |
 | Feriados | etiqueta | etiqueta | etiqueta | encabezado | punto con tooltip | etiqueta | columna tintada |
 | Recurrentes proyectadas | ✓ | ✓ | ✓ | ✓ | — | ✓ | — |
-| Hábitos | chip `🔁 3/5` | chip | chip | sección «Hábitos» | — | chip | — |
+| Hábitos | chip `🌅 3/5` | chip | chip | chip (en el encabezado de cada columna) | — | chip | — |
 
 ### 21.1 Días no laborables (fase NL1) y frecuencias de hábitos (fase NL2)
 
 - **Ajuste nuevo**: siete casillas de **días no laborables**, por defecto sábado y domingo. Lo comparten el calendario, el Gantt, la Semana laboral y las frecuencias de hábitos.
-- **Sombreado**: se sombrean los días marcados en Mes, Semana y Lista; no en Día, Año ni Semana laboral. El **Gantt** ya sombrea los fines de semana, pero con un criterio fijo (`weekday >= 6` en `src/views/gantt-view.ts`); pasa a usar el ajuste.
+- **Sombreado**: se sombrean los días marcados en Mes, Semana y Lista y, desde el 2026-11-09 (pedido tras la prueba manual), también en Día, donde se sombrea la columna entera (encabezado, «Todo el día» y las franjas de hora: `DayColumnData.isNonWorking` y `HourSlot.isNonWorking`); no en Año ni Semana laboral. El **Gantt** ya sombrea los fines de semana, pero con un criterio fijo (`weekday >= 6` en `src/views/gantt-view.ts`); pasa a usar el ajuste.
 - **Semana laboral** (hoy fija en cinco días, `daysToGenerate = 5` en `src/views/calendar-workweek-view.ts`): **oculta los días marcados**; como el ajuste siempre deja al menos un día sin marcar, nunca queda vacía.
 - **Hábitos**: las frecuencias «Fin de semana» y «Lunes a viernes» (hoy fijas en `[6, 7]` y `[1, 2, 3, 4, 5]` en `src/habits/habit-editor.ts`, con el token en `habit-parser.ts`) pasan a seguir el ajuste: «Fin de semana» son los días no laborables y «Lunes a viernes» el resto.
 - **Recurrentes** (decidido el 2026-11-03): las reglas `every weekday` y `every weekend` también siguen el ajuste (hoy fijas en `MO,TU,WE,TH,FR` y `SA,SU` en `TaskSection.convertToRRuleFormat()`): `every weekend` = los días no laborables y `every weekday` = los demás. Consecuencia asumida: con un ajuste distinto del sábado y domingo, la misma línea puede dar fechas distintas en este plugin y en Tasks, que mantiene sus días fijos; se avisa al usuario (abajo) y se explica en el manual.
@@ -1257,7 +1257,9 @@ recurrentes «every weekday» y «every weekend».
 
 - **Países de la primera versión**: **México y EE. UU.**, con sus estados o regiones. Cada regla es **oficial** o **no oficial** (Día de las Madres, Día de Muertos, Halloween…). El formato de las reglas queda documentado y abierto para añadir países en versiones posteriores.
 - **Ajustes**: una **lista de calendarios de feriados**; cada uno tiene país, región opcional, casillas **Oficiales** y **No oficiales** y un color. **Ninguno está activo por defecto.**
-- **Marcado** (tinte tenue del color del calendario): etiqueta con el nombre en Mes, Semana, Semana laboral y Lista; **encabezado** en Día; **punto con tooltip** en Año; **columna tintada** en el Gantt.
+- **Marcado** (tinte tenue del color del calendario): etiqueta con el nombre en Mes, Semana, Semana laboral y Lista; **encabezado** en Día; **punto con tooltip** en Año; **columna tintada** en el Gantt. Además (decidido el 2026-11-09, tras la prueba manual) **el día con un feriado oficial se sombrea igual que un día no laborable** en Mes, Semana, Semana laboral, Lista y Día (en Día la columna entera: encabezado, «Todo el día» y las franjas de hora), con la clase `oa-calendar-holiday-day`; es solo visual, no hace laborable ni no laborable al día y se suma al sombreado de fin de semana sin duplicarlo. **Un feriado no oficial** (Día de las Madres, los días internacionales…) **lleva su etiqueta pero no sombrea el día** ni tiñe la columna del Gantt (pedido el 2026-11-09); el punto del Año se conserva.
+- **Calendario «Internacional»** (pedido el 2026-11-09): un tercer «país» con **58 días internacionales** de la ONU y de organismos internacionales, todos de fecha fija y **no oficiales**, agrupados en **cuatro temas**: *Mujer e infancia* (6), *Salud* (9), *Medio ambiente* (9) y *Sociedad y derechos* (34). En el ajuste no tiene región ni casillas Oficiales / No oficiales: se marca **una casilla por tema** (todos al crearlo) y solo se ven los días de los temas marcados. Las fechas están escritas de memoria y hay que revisarlas antes de publicar.
+- **Filtro «Días festivos»** (pedido el 2026-11-09): último ítem del menú «+ Filtro» del calendario, marcado por defecto como «Tareas recurrentes» y «Hábitos». Desmarcado oculta etiquetas, sombreado y punto del Año en las seis vistas y muestra el chip «Días festivos: Ocultos»; solo se ofrece si hay algún calendario de feriados en los ajustes y no afecta al Gantt.
 - **Solo visual**: no afectan a la Semana laboral, las rachas ni las tareas.
 
 ```
@@ -1284,19 +1286,20 @@ Hoy una tarea recurrente solo crea la siguiente ocurrencia al completarla (§4.9
 Se dibujan como **entradas virtuales**: no se escribe nada en ningún archivo, no pasan por el gestor de tareas y **no son tareas**. (Se descartó escribir líneas `[x]` en la nota del hábito: duplicados, líneas editadas a mano y notas que crecen.)
 
 - Cada día en que toca el hábito hay una entrada con su nombre, en su franja (`daytime`: despertar, mañana, tarde, noche) y con el color de su área; respeta el periodo activo (`from`/`until`) y los días de vacaciones de los hábitos.
-- **Clic** marca o desmarca (reutiliza la escritura de `completions` de `src/habits/habit-writer.ts`); **doble clic** abre la nota del hábito.
-- **Mes, Semana, Semana laboral y Lista**: un solo **chip resumen por día** (`🔁 3/5`, cumplidos de los que tocan ese día) que abre un popover con la lista de hábitos del día y su casilla; ocupa una línea sin importar cuántos hábitos haya y cabe en móvil. **Día**: una sección «Hábitos» completa, agrupada por franja.
+- **Clic** en el chip abre el popover y marca o desmarca (reutiliza la escritura de `completions` de `src/habits/habit-writer.ts`); para abrir la nota del hábito, un **botón ↗** por fila del popover (el doble clic sobre una casilla marcaría y desmarcaría; decidido al implementar).
+- **Mes, Semana, Semana laboral, Lista y Día**: un solo **chip resumen por día** (`🌅 3/5`, cumplidos de los que tocan ese día; el icono es el `sunrise` de la vista Rutina, distinto del 🔁 de las recurrentes fantasma) que abre un popover con la lista de hábitos del día por franja y su casilla; ocupa una línea sin importar cuántos hábitos haya y cabe en móvil, y va **en la primera fila del día, a la derecha, junto al feriado** (el número del día está abajo a la derecha; decidido el 2026-11-09): el feriado queda a su izquierda con un ancho mínimo de 70 px y se recorta con «…» (nombre completo en el tooltip) y, si en una columna estrecha no cabe a su lado, baja a su propia fila debajo del chip, que se queda arriba; un segundo feriado va siempre en su fila. **Día** (decidido el 2026-11-09, tras la prueba manual): se ve igual que en las demás vistas, con el chip en la esquina superior derecha del encabezado de cada columna; no hay sección «Hábitos» aparte.
 
 ```
-Mes (celda)                     Día (sección «Hábitos»)
-┌──────────────┐                Hábitos
-│ 12           │                 Despertar   [✓] Agua   [ ] Estirar
-│ 09:00 Reunión│                 Mañana      [✓] Leer
-│ 🔁 3/5       │ → popover       Noche       [ ] Diario
+Mes (celda)                     Popover (al pulsar el chip)
+┌──────────────┐ 🌅 3/5        Despertar   [✓] Agua   [ ] Estirar  ↗
+│ 12           │                Mañana      [✓] Leer
+│ 09:00 Reunión│                Noche       [ ] Diario
 └──────────────┘
 ```
 
-- **Ajuste «Mostrar hábitos en el calendario»**, desactivado por defecto; sin efecto si la pestaña Hábitos está oculta.
+- **Filtro «Hábitos», no ajuste** (decidido el 2026-11-09): el interruptor es un ítem «Hábitos» al final del menú «+ Filtro» del calendario (§19.2), **marcado por defecto**, como «Tareas recurrentes»; al desmarcarlo se ocultan los hábitos y aparece el chip «Hábitos: Ocultos». No se ofrece si la pestaña Hábitos está oculta. El estado es solo del calendario y se guarda con el resto del estado del calendario (por dispositivo).
+- **Vacaciones** (decidido el 2026-11-09): el calendario no marca los días de vacaciones, pero **los hábitos de un día de vacaciones llevan una marca visual 🌴** (con el nombre del periodo en el tooltip), como en la Cuadrícula y el Semanal. Cada entrada de hábito sigue siendo marcable; la regla de conteo es la de HV1 (`countsOn()` con el contexto de vacaciones): el hábito sin marcar es neutral y no entra en el `total` del chip `🌅 x/y`, y el marcado cuenta solo para sí mismo. En el popover los neutrales se ven atenuados y los marcados conservan su casilla marcada con la 🌴; el chip lleva la 🌴 cuando el día es de vacaciones.
+- **Casos vacíos** (decidido el 2026-11-09): sin ningún hábito (o sin carpeta de hábitos) no se dibuja nada y el ítem «Hábitos» no se ofrece en «+ Filtro» ni hay chip «Hábitos: Ocultos»; con hábitos, un día en que no toca ninguno no lleva chip ni sección (nunca `🌅 0/0`); en un día de vacaciones donde tocan hábitos pero ninguno está marcado el chip es `🌅 🌴` (sin fracción) y el popover los lista atenuados y marcables.
 - **Filtros**: la barra del calendario (§19.2) los afecta solo por **área** (la del hábito) y **búsqueda** (su nombre); prioridad y estado no aplican y no los ocultan.
 - **No aparecen** en Lista, Tabla, Kanban ni Gantt, ni en el Año, ni en los conteos de tareas (para eso están los widgets y el heatmap, §22).
 - Dependencias: necesita el periodo activo (fase HA1) y las vacaciones (fase HV1) del Plan de hábitos.
@@ -1313,7 +1316,7 @@ Un archivo de reglas del usuario (feriados personales o un país nuevo); que los
 | ADR-CL2 | Los feriados se calculan con un motor de reglas embebido, sin red, para México y EE. UU.; ninguno activo por defecto; solo visuales. |
 | ADR-CL3 | Las recurrentes se proyectan N veces (por defecto 10, 0 desactiva) como fantasmas de solo lectura; el tope por tiempo se descartó. |
 | ADR-CL4 | Los hábitos son entradas virtuales del calendario, no tareas; clic marca, doble clic abre la nota; reemplaza a la idea de escribir `[x]` en la nota. |
-| ADR-CL5 | Un chip resumen `🔁 3/5` por día con popover; en Día, una sección por franja; ajuste desactivado por defecto. |
+| ADR-CL5 | Un chip resumen `🌅 3/5` por día con popover, también en Día (en el encabezado de cada columna); filtro «Hábitos» marcado por defecto en «+ Filtro», sin ajuste (2026-11-09). |
 | ADR-CL6 | El ajuste de días no laborables exige al menos un día marcado y uno sin marcar (2026-11-03): no existen conjuntos vacíos y ninguna función necesita una regla especial. |
 
 ### 21.7 Por resolver al diseñar
@@ -1345,7 +1348,7 @@ Normal     [Hoy] [Tareas] [Hábitos]                              [✎ Editar]
 │ 09:00 Reunión   ⏱ 1 h        │ │ 4 tareas hoy (2 con hora)│ │ 3/5 ▰▰▰▱▱       │
 │ 14:30 Informe                │ │ 2 vencidas             │ └─────────────────┘
 │ Todo el día: Pagar luz       │ └────────────────────────┘
-│ 🔁 3/5                        │
+│ 🌅 3/5                        │
 └─────────────────────────────┘
 
 Editando   [Hoy] [Tareas] [Hábitos] [＋]                         [✓ Listo]
@@ -1386,7 +1389,7 @@ Si la pestaña **Hábitos está oculta**, estos widgets no aparecen en «Añadir
 
 ### 22.5 Paneles nuevos: «Agenda de hoy» (DA1), «Resumen del día» y «Revisión de la semana» (DR1)
 
-- **Agenda de hoy**: central en la pestaña «Hoy». Lista del día **ordenada por hora**, con las tareas que tienen `🕐` (con su duración y el color de su área), y debajo las de todo el día; los hábitos del día aparecen como el chip `🔁 3/5`. Reutiliza datos y entradas del calendario (§21): es sobre todo presentación.
+- **Agenda de hoy**: central en la pestaña «Hoy». Lista del día **ordenada por hora**, con las tareas que tienen `🕐` (con su duración y el color de su área), y debajo las de todo el día; los hábitos del día aparecen como el chip `🌅 3/5`. Reutiliza datos y entradas del calendario (§21): es sobre todo presentación.
 - **Resumen del día**: panel **seleccionable** (no fijo) que puede ir por defecto en las pestañas iniciales. Pocas líneas, cada una con un número: tareas para hoy (y cuántas con hora), vencidas, hábitos de hoy (y cuántos cumplidos), la próxima tarea con hora y, si aplica, el aviso de unas vacaciones que empiezan. **Las líneas sin datos se ocultan**; pulsar una línea abre la vista correspondiente (p. ej. «2 vencidas» abre la Lista filtrada por vencidas).
 - **Revisión de la semana**: panel seleccionable con la misma regla de disposición por defecto. Siete anillos por día con el porcentaje cumplido, el porcentaje semanal con la comparación contra la semana anterior (▲/▼), el mejor día, el día a mejorar, la racha y las tareas completadas contra la semana pasada.
 - Los dos últimos son **números y comparaciones calculados en local**, sin frases de una IA, sin red, sin notificaciones del sistema (Obsidian no puede avisar con la app cerrada) y sin «agente» nocturno: se ven al abrir el Dashboard.

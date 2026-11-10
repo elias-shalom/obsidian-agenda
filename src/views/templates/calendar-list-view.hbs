@@ -38,16 +38,19 @@
   {{#equals calendar.viewType "list"}}
   <div class="oa-calendar-list-view">
     {{#each calendar.days}}
-      <div class="oa-calendar-list-row {{#if isToday}}oa-calendar-today{{/if}} {{#if isSelected}}oa-calendar-selected{{/if}} {{#if isNonWorking}}oa-calendar-non-working{{/if}}" data-date="{{toISODate date}}">
+      <div class="oa-calendar-list-row {{#if isToday}}oa-calendar-today{{/if}} {{#if isSelected}}oa-calendar-selected{{/if}} {{#if isNonWorking}}oa-calendar-non-working{{/if}} {{#if (hasOfficialHoliday holidays)}}oa-calendar-holiday-day{{/if}}" data-date="{{toISODate date}}">
         <div class="oa-calendar-list-row-header">
           <span class="oa-calendar-list-row-day-name">{{dayName}}</span>
           <span class="oa-calendar-list-row-date">{{dayOfMonth}}</span>
           <span class="oa-calendar-list-row-month">{{monthAbbr}}</span>
         </div>
         <div class="oa-calendar-list-row-content">
-          {{#each holidays}}
-            <div class="oa-calendar-holiday" data-holiday-color="{{color}}" title="{{name}}">{{name}}</div>
-          {{/each}}
+          <div class="oa-calendar-day-meta">
+            {{> calendarHabitChip}}
+            {{#each holidays}}
+              <div class="oa-calendar-holiday" data-holiday-color="{{color}}" title="{{name}}">{{name}}</div>
+            {{/each}}
+          </div>
           {{#each tasksForDay}}
             <div class="oa-calendar-task oa-calendar-task--{{calendarDateType}} {{#if (isTaskDone state.status)}}oa-calendar-task--done{{/if}} {{#if isProjected}}oa-calendar-task--projected{{/if}}"
                 draggable="{{#if isProjected}}false{{else}}true{{/if}}"

@@ -5,8 +5,9 @@ const { loadSource } = require('./helpers/load-source.cjs');
 const { evaluateRule, getEasterDate } = loadSource('core/holidays/holiday-rules.ts');
 const {
   getHolidaysForRange, getHolidayCountries, getHolidayCountry, sanitizeHolidayCalendars, createHolidayCalendar,
-  HolidayLookup, getHolidayLookup,
+  HolidayLookup, getHolidayLookup, changeHolidayCountry, hasOfficialHoliday,
 } = loadSource('core/holidays/holiday-calendar.ts');
+const { INT_GROUPS, intGroupLabelKey } = loadSource('core/holidays/holiday-data-int.ts');
 
 const rule = (spec) => ({ id: 'r', nameKey: 'k', category: 'official', ...spec });
 
@@ -110,8 +111,8 @@ test('lista explícita: solo los años dados', () => {
 
 // --- Datos de los países ----------------------------------------------------
 
-test('hay datos de México y EE. UU.', () => {
-  assert.deepEqual(getHolidayCountries().map(c => c.country).sort(), ['MX', 'US']);
+test('hay datos de México, EE. UU. y los días internacionales', () => {
+  assert.deepEqual(getHolidayCountries().map(c => c.country).sort(), ['INT', 'MX', 'US']);
   assert.equal(getHolidayCountry('FR'), undefined);
 });
 
@@ -275,6 +276,79 @@ test('getHolidayLookup se reutiliza mientras el ajuste no cambia y se rehace cua
   assert.deepEqual([...changed.get('2026-11-16')], []);
 });
 
+// --- Calendario internacional con temas (v1.1.15) ----------------------------
+
+const INT = { country: 'INT', official: false, unofficial: true, color: '#8e4ec6', groups: [...INT_GROUPS] };
+
+test('internacional: todas las reglas son no oficiales, de un tema declarado, sin región', () => {
+  const data = getHolidayCountry('INT');
+  assert.deepEqual([...data.groups], ['women-children', 'health', 'environment', 'society-rights']);
+  assert.equal(data.regions.length, 0);
+  for (const r of data.rules) {
+    assert.equal(r.category, 'unofficial', r.id);
+    assert.ok(data.groups.includes(r.group), `${r.id}: tema ${r.group} sin declarar`);
+    assert.equal(r.region, undefined, r.id);
+  }
+  for (const group of data.groups) assert.ok(data.rules.some(r => r.group === group), `tema ${group} vacío`);
+});
+
+test('internacional: el Día de la Mujer cae el 8 de marzo y se ve solo con su tema marcado', () => {
+  const all = getHolidaysForRange([INT], '2026-03-08', '2026-03-08');
+  assert.deepEqual(all.get('2026-03-08').map(h => h.ruleId), ['womens-day']);
+
+  const withoutWomen = getHolidaysForRange([{ ...INT, groups: ['health'] }], '2026-03-08', '2026-03-08');
+  assert.equal(withoutWomen.size, 0);
+});
+
+test('internacional: sin temas marcados no hay fechas, y los temas no dependen de las casillas oficial/no oficial', () => {
+  assert.equal(getHolidaysForRange([{ ...INT, groups: [] }], '2026-01-01', '2026-12-31').size, 0);
+  const health = getHolidaysForRange([{ ...INT, groups: ['health'] }], '2026-01-01', '2026-12-31');
+  assert.deepEqual(datesOf(health), [
+    '2026-02-04', '2026-04-02', '2026-04-07', '2026-05-31', '2026-06-14', '2026-10-10', '2026-10-16', '2026-11-14', '2026-12-01',
+  ]);
+  const flagsOff = getHolidaysForRange([{ ...INT, groups: ['health'], unofficial: false }], '2026-12-01', '2026-12-01');
+  assert.equal(flagsOff.size, 1);
+});
+
+test('internacional: el 21 de marzo reúne varios días y todos son no oficiales', () => {
+  const day = getHolidaysForRange([INT], '2026-03-21', '2026-03-21').get('2026-03-21');
+  assert.deepEqual(day.map(h => h.ruleId).sort(), ['forests', 'poetry', 'racial-discrimination']);
+  assert.ok(day.every(h => h.category === 'unofficial'));
+});
+
+test('sanitizeHolidayCalendars: el internacional fuerza solo no oficiales, filtra temas y sin temas marca todos', () => {
+  const [kept, missing, unknown] = sanitizeHolidayCalendars([
+    { country: 'INT', region: 'X', official: true, unofficial: false, groups: ['health', 'inventado'], color: '#112233' },
+    { country: 'INT', color: '#112233' },
+    { country: 'INT', groups: 'health', color: '#112233' },
+  ]);
+  assert.deepEqual(kept, { country: 'INT', official: false, unofficial: true, color: '#112233', groups: ['health'] });
+  assert.deepEqual(missing.groups, [...INT_GROUPS]);
+  assert.deepEqual(unknown.groups, [...INT_GROUPS]);
+  assert.deepEqual(sanitizeHolidayCalendars([{ ...INT, groups: [] }])[0].groups, []);
+});
+
+test('sanitizeHolidayCalendars: un país sin temas no conserva los temas', () => {
+  const [calendar] = sanitizeHolidayCalendars([{ country: 'MX', groups: ['health'], color: '#112233' }]);
+  assert.equal('groups' in calendar, false);
+});
+
+test('changeHolidayCountry: entrar al internacional marca todos los temas y salir restablece oficiales', () => {
+  const calendar = { country: 'MX', region: 'PUE', official: true, unofficial: true, color: '#abcdef' };
+  changeHolidayCountry(calendar, 'INT');
+  assert.deepEqual(calendar, { country: 'INT', official: false, unofficial: true, color: '#abcdef', groups: [...INT_GROUPS] });
+
+  changeHolidayCountry(calendar, 'US');
+  assert.deepEqual(calendar, { country: 'US', official: true, unofficial: false, color: '#abcdef' });
+});
+
+test('hasOfficialHoliday: solo un feriado oficial sombrea el día', () => {
+  assert.equal(hasOfficialHoliday([]), false);
+  assert.equal(hasOfficialHoliday(undefined), false);
+  assert.equal(hasOfficialHoliday([{ official: false }, { official: false }]), false);
+  assert.equal(hasOfficialHoliday([{ official: false }, { official: true }]), true);
+});
+
 // --- Traducciones -----------------------------------------------------------
 
 test('cada feriado y cada texto del ajuste tienen traducción en los 6 idiomas', () => {
@@ -285,6 +359,7 @@ test('cada feriado y cada texto del ajuste tienen traducción en los 6 idiomas',
     keys.add(`holiday_country_${data.country.toLowerCase()}`);
     for (const r of data.rules) keys.add(r.nameKey);
   }
+  for (const group of INT_GROUPS) keys.add(intGroupLabelKey(group));
   for (const key of ['holiday_calendars', 'holiday_calendars_desc', 'holiday_calendars_empty', 'holiday_add_calendar',
     'holiday_remove_calendar', 'holiday_country', 'holiday_region', 'holiday_region_national', 'holiday_official',
     'holiday_unofficial', 'holiday_color']) keys.add(key);

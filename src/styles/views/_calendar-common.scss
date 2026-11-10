@@ -9,17 +9,32 @@
   padding: 10px;
 }
 
-/* Día no laborable (v1.1.15, NL1): un tinte sobre el fondo del día en Mes, Semana y Lista. Va como imagen de
-   fondo para sumarse a «hoy» y «seleccionado» (que pintan `background-color`) en vez de taparlos, y con el mismo
-   color que las columnas de fin de semana del Gantt. */
+/* Día no laborable (v1.1.15, NL1) y feriado: un tinte sobre el fondo del día en Mes, Semana, Semana laboral, Lista y
+   Día. Va como imagen de fondo para sumarse a «hoy» y «seleccionado» (que pintan `background-color`) en vez de
+   taparlos, y con el mismo color que las columnas de fin de semana del Gantt. Un feriado se sombrea igual que un fin
+   de semana, además de su etiqueta con el color de su calendario; es solo visual y no hace laborable ni no laborable
+   al día. En Día se sombrea la columna entera (encabezado, «Todo el día» y las franjas de hora), tanto para los días
+   no laborables como para los feriados; la Semana laboral no muestra los no laborables. */
+$calendar-day-shade: linear-gradient(
+  color-mix(in srgb, var(--background-modifier-hover) 60%, transparent),
+  color-mix(in srgb, var(--background-modifier-hover) 60%, transparent)
+);
+
 .oa-calendar-month-day,
 .oa-calendar-week-day-container,
 .oa-calendar-list-row {
-  &.oa-calendar-non-working {
-    background-image: linear-gradient(
-      color-mix(in srgb, var(--background-modifier-hover) 60%, transparent),
-      color-mix(in srgb, var(--background-modifier-hover) 60%, transparent)
-    );
+  &.oa-calendar-non-working,
+  &.oa-calendar-holiday-day {
+    background-image: $calendar-day-shade;
+  }
+}
+
+.oa-calendar-day-column-header,
+.oa-calendar-allday-content,
+.oa-calendar-hour-slot {
+  &.oa-calendar-non-working,
+  &.oa-calendar-holiday-day {
+    background-image: $calendar-day-shade;
   }
 }
 
@@ -52,6 +67,84 @@
     margin: 2px auto 0;
     max-width: 100%;
   }
+}
+
+/* Chip resumen de los hábitos de un día (v1.1.15, HC1): una línea por día sin importar cuántos hábitos haya, con el
+   icono `sunrise` de la vista Rutina, la fracción cumplidos/que tocan y, en vacaciones, la 🌴. Al pulsarlo abre el
+   popover con sus casillas. En Mes, Semana, Semana laboral y Lista va en la primera fila del día, a la derecha, junto
+   al feriado (`.oa-calendar-day-meta`); en Día, en la esquina superior derecha del encabezado de cada columna. */
+.oa-calendar-habit-chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 1px 6px !important; // `.is-tablet button` de Obsidian impone 20 px laterales
+  border: 1px solid color-mix(in srgb, var(--interactive-accent) 40%, var(--background-modifier-border));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--interactive-accent) 12%, var(--background-primary));
+  box-shadow: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: var(--font-ui-smaller);
+  line-height: 1.3;
+
+  &:hover,
+  &:focus-visible {
+    background: color-mix(in srgb, var(--interactive-accent) 22%, var(--background-primary));
+    color: var(--text-normal);
+  }
+
+  .oa-calendar-habit-icon {
+    display: inline-flex;
+
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+}
+
+/* Primera fila de un día en Mes, Semana, Semana laboral y Lista: el chip de hábitos y el feriado. La fila va invertida
+   (`row-reverse`) para que el chip, primero en el HTML, quede a la derecha y el feriado a su izquierda; el feriado
+   tiene un ancho mínimo y, si en una columna estrecha no cabe a su lado, salta a su propia fila debajo del chip, que
+   se queda arriba. Un segundo feriado va siempre en su propia fila. Sin chip ni feriados la fila no se dibuja. */
+.oa-calendar-day-meta {
+  display: flex;
+  flex: 0 0 100%;
+  flex-flow: row-reverse wrap;
+  align-items: flex-start;
+  gap: 2px 4px;
+  min-width: 0;
+
+  &:not(:has(*)) {
+    display: none;
+  }
+
+  .oa-calendar-holiday {
+    flex: 1 1 70px;
+    min-width: 70px;
+    margin-bottom: 0;
+
+    & + .oa-calendar-holiday {
+      flex-basis: 100%;
+    }
+  }
+}
+
+// Día: el chip va en la esquina superior derecha del encabezado de cada columna y el nombre del día se aparta de él
+.oa-calendar-day-column-header .oa-calendar-habit-chip {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+}
+
+.oa-calendar-habit-vacation {
+  font-size: 0.9em;
+  line-height: 1;
 }
 
 /* Agrupa el botón del selector de fecha junto al título del período (v1.1.9), para que el

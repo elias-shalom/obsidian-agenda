@@ -48,12 +48,13 @@
         <div class="oa-calendar-day-header">
           <div class="oa-calendar-hour-label-spacer"></div>
           {{#each calendar.columns}}
-            <div class="oa-calendar-day-column-header {{#if isToday}}oa-calendar-today{{/if}} {{#if isReferenceDay}}oa-calendar-selected{{/if}}" data-date="{{dateIso}}">
+            <div class="oa-calendar-day-column-header {{#if isToday}}oa-calendar-today{{/if}} {{#if isReferenceDay}}oa-calendar-selected{{/if}} {{#if isNonWorking}}oa-calendar-non-working{{/if}} {{#if (hasOfficialHoliday holidays)}}oa-calendar-holiday-day{{/if}}" data-date="{{dateIso}}">
               <div class="oa-calendar-day-name">{{dayName}}</div>
               <div class="oa-calendar-date">{{dayOfMonth}}</div>
               {{#each holidays}}
                 <div class="oa-calendar-holiday oa-calendar-holiday--header" data-holiday-color="{{color}}" title="{{name}}">{{name}}</div>
               {{/each}}
+              {{> calendarHabitChip}}
             </div>
           {{/each}}
         </div>
@@ -66,7 +67,7 @@
             <div class="oa-calendar-allday-columns">
               <div class="oa-calendar-hour-label-spacer"></div>
               {{#each calendar.columns}}
-                <div class="oa-calendar-allday-content" data-date="{{dateIso}}">
+                <div class="oa-calendar-allday-content{{#if isNonWorking}} oa-calendar-non-working{{/if}}{{#if (hasOfficialHoliday holidays)}} oa-calendar-holiday-day{{/if}}" data-date="{{dateIso}}">
                   {{#if allDayDue.length}}
                     <div class="oa-calendar-allday-row">
                       {{#each allDayDue}}
@@ -127,7 +128,7 @@
               <div class="oa-calendar-hour-row">
                 <div class="oa-calendar-hour-label">{{formattedHour}}</div>
                 {{#each columns}}
-                <div class="oa-calendar-hour-slot" data-hour="{{../hour}}" data-date="{{dateIso}}">
+                <div class="oa-calendar-hour-slot{{#if isNonWorking}} oa-calendar-non-working{{/if}}{{#if isOfficialHoliday}} oa-calendar-holiday-day{{/if}}" data-hour="{{../hour}}" data-date="{{dateIso}}">
                   {{#if hasDurationSegments}}
                   <div class="oa-calendar-duration-track">
                     <div class="oa-calendar-half-slot oa-calendar-half-slot--upper">

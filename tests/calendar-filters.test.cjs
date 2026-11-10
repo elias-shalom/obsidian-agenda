@@ -48,6 +48,7 @@ test('el calendario solo conserva búsqueda, prioridad, estado, área y «con fe
   // Los filtros de fecha relativos (vencidas, hoy, futuras…) no valen en el calendario
   assert.deepEqual([parsed.due, parsed.start, parsed.scheduled, parsed.group], ['all', 'all', 'all', '']);
   assert.deepEqual([parsed.sortColumn, parsed.sortDirection], ['priority', 'desc']);
+  assert.equal(parsed.holidays, 'show');
 });
 
 test('el calendario conserva «con fecha» de inicio, programada y vencimiento', () => {
@@ -167,6 +168,7 @@ class FakeFilterBar {
   constructor(options) { this.options = options; this.mounted = []; }
   getState() { return this.options.state; }
   mount(root) { this.mounted.push(root); }
+  setFilterTypes(types) { this.options = { ...this.options, filterTypes: types }; }
 }
 
 function loadCalendarView() {

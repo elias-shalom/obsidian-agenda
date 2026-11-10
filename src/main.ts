@@ -164,6 +164,11 @@ export default class ObsidianAgenda extends Plugin {
     await this.saveData(this.settings);
   }
 
+  /** El gestor de hábitos del calendario (v1.1.15, HC1). */
+  getHabitManager(): HabitManager {
+    return this.habitManager;
+  }
+
   /**
    * Abre los ajustes en la pestaña Hábitos, donde está la lista de vacaciones (botón «Vacaciones», v1.1.15, HV1).
    * `app.setting` no está documentada: si falla, un aviso da la ruta.

@@ -117,6 +117,12 @@ export class TaskFilterBar {
     this.renderAxes();
   }
 
+  /** Cambia los tipos que ofrece «+ Filtro»; el calendario ofrece «Hábitos» solo cuando hay hábitos que dibujar (v1.1.15, HC1). */
+  setFilterTypes(types: readonly FilterChipId[]): void {
+    this.options = { ...this.options, filterTypes: types };
+    this.renderChips();
+  }
+
   mount(root: HTMLElement): void {
     const { i18n } = this.options;
     root.empty();
@@ -188,7 +194,9 @@ export class TaskFilterBar {
     const { i18n } = this.options;
     container.empty();
 
-    const chips = getActiveFilterChips(this.state, key => i18n.t(key));
+    const offered = this.options.filterTypes;
+    // Un chip de un tipo que la barra no ofrece (p. ej. «Hábitos: ocultos» sin hábitos) no se dibuja
+    const chips = getActiveFilterChips(this.state, key => i18n.t(key)).filter(chip => !offered || offered.includes(chip.id));
     for (const chip of chips) {
       const chipEl = container.createDiv({ cls: 'oa-filter-chip' });
       const text = `${chip.typeLabel}: ${chip.valueLabel}`;
@@ -275,13 +283,13 @@ export class TaskFilterBar {
     const active = new Set(getActiveFilterChips(this.state, key => this.options.i18n.t(key)).map(chip => chip.id));
     const menu = new Menu();
     for (const id of this.options.filterTypes ?? FILTER_CHIP_IDS) {
-      // «Tareas recurrentes» (solo el calendario) va marcado por defecto y se desmarca para ocultar las proyectadas
-      if (id === 'projected') {
-        const shown = this.state.projected !== 'hide';
+      // «Tareas recurrentes», «Hábitos» y «Días festivos» (solo el calendario) van marcados por defecto y se desmarcan para ocultarlos
+      if (id === 'projected' || id === 'habits' || id === 'holidays') {
+        const shown = this.state[id] !== 'hide';
         menu.addItem(item => item
           .setTitle(getFilterTypeLabel(id, key => this.options.i18n.t(key)))
           .setChecked(shown)
-          .onClick(() => this.update({ projected: shown ? 'hide' : 'show' })));
+          .onClick(() => this.update({ [id]: shown ? 'hide' : 'show' })));
         continue;
       }
       const direct = this.isDirectType(id);
@@ -301,9 +309,9 @@ export class TaskFilterBar {
   }
 
   private openValueMenu(id: FilterChipId, anchor: MenuAnchor): void {
-    // El chip «Tareas recurrentes: ocultas» solo tiene un valor: pulsarlo vuelve a mostrarlas, igual que su ×
-    if (id === 'projected') {
-      this.update({ projected: 'show' });
+    // Los chips «Tareas recurrentes: ocultas», «Hábitos: ocultos» y «Días festivos: ocultos» solo tienen un valor: pulsarlos vuelve a mostrar, igual que su ×
+    if (id === 'projected' || id === 'habits' || id === 'holidays') {
+      this.update({ [id]: 'show' });
       return;
     }
 

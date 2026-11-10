@@ -738,6 +738,12 @@ Varios valores en los filtros de fecha; excluir valores («no es»); agrupado y 
 - [x] Marcado con tinte tenue en las 6 vistas del calendario y en el Gantt: etiqueta con el nombre en Mes, Semana, Semana laboral y Lista; encabezado en Día; punto con tooltip en Año; columna tintada en el Gantt. Los nombres están traducidos a los 6 idiomas (`holiday_mx_*`, `holiday_us_*`).
 - [x] Solo visual: no afectan a la Semana laboral, las rachas ni las tareas.
 - [x] Verificable con Node: `tests/holiday-rules.test.cjs` (35 pruebas: ajuste guardado, consulta día a día, claves de traducción en los 6 idiomas) y `tests/calendar-weekday-labels.test.cjs` (los feriados llegan a los datos de Semana, Semana laboral y Lista y no ocultan días).
+
+### Fase FE3 — Solo los oficiales sombrean e «Internacional» (depende de FE2; Especificación §21.2, Arquitectura §30.3) — **implementada el 2026-11-09; falta probarla a mano**
+- [x] El sombreado del día usa `hasOfficialHoliday()` en las 5 plantillas y en las franjas de la vista Día (`HourSlot.isOfficialHoliday`); el Gantt tiñe la columna solo con un feriado oficial. Los no oficiales conservan etiqueta (y punto en el Año).
+- [x] Calendario «Internacional»: `holiday-data-int.ts` (58 días fijos no oficiales en 4 temas), `group` en las reglas, `groups` en el calendario, `isVisible()` por tema, `sanitizeHolidayCalendars()` y `changeHolidayCountry()` para el país con temas; la fila del ajuste muestra una casilla por tema en lugar de región y categorías. Claves `holiday_country_int`, `holiday_group_*` y 58 `holiday_int_*` en los 6 idiomas.
+- [x] Verificable con Node: `tests/holiday-rules.test.cjs` (temas, visibilidad, sanitize, cambio de país, `hasOfficialHoliday`) y `tests/calendar-holiday-shading.test.cjs` (los no oficiales no sombrean en ninguna vista).
+- [ ] Revisar las fechas (de memoria) y las traducciones de los nombres internacionales antes de publicar.
 - [x] Prueba manual (2026-11-09, hecha por el usuario): con un calendario de México activo, el 1 de enero y el tercer lunes de noviembre aparecen en Mes, Semana, Semana laboral, Lista, Día, Año y Gantt (claro y oscuro, escritorio y `is-phone`); con ninguno activo no cambia nada; región, casillas, color y quitar; dos calendarios que coinciden en un día; ajustes en las dos rutas (Obsidian ≥ 1.13 y `display()`).
 
 ### Fase PR1 — Proyección de recurrentes: cálculo y fantasmas (independiente; Especificación §21, Arquitectura §30) — **implementada el 2026-11-08 (cálculo y modelo del fantasma); el dibujado pasa a PR2**
@@ -752,12 +758,15 @@ Varios valores en los filtros de fecha; excluir valores («no es»); agrupado y 
 - [x] Verificable con Node: `tests/calendar-filters.test.cjs` (el calendario pide los fantasmas aparte, detrás de las reales; con N en 0 no hay; sin el ajuste son 10; un filtro oculta los fantasmas con su tarea real) y `tests/task-projection.test.cjs` (el ajuste y `projectAllOccurrences()`).
 - [x] Prueba manual (2026-11-09, hecha por el usuario) con una diaria, una semanal y una mensual (también `every weekday`): los fantasmas en las cinco vistas, atenuados y con `🔁`; clic abre la tarea real y doble clic su nota; no se arrastran ni se redimensionan en Día; completar la real no duplica la siguiente; con N = 0, 10 y 50; con un filtro de prioridad o área; escritorio y `is-phone`.
 
-### Fase HC1 — Hábitos en el calendario (depende de HA1 y HV1 de [[habit-tracker-agenda/Plan de implementación]]; Especificación §21, Arquitectura §30)
-- [ ] Ajuste «Mostrar hábitos en el calendario», desactivado por defecto; sin efecto si la pestaña Hábitos está oculta.
-- [ ] Entradas virtuales por día en que toca el hábito, respetando el periodo activo y los días de vacaciones; sin escribir en archivos y sin ser tareas (no entran en Lista, Tabla, Kanban, Gantt ni en los conteos).
-- [ ] Mes, Semana, Semana laboral y Lista: un chip resumen `🔁 3/5` por día con un popover de casillas; clic marca o desmarca (escritura de `completions` con `habit-writer.ts`) y doble clic abre la nota; Día: sección «Hábitos» por franja (despertar, mañana, tarde, noche); no en Año.
-- [ ] La barra de filtros del calendario afecta a los hábitos por área y búsqueda; prioridad y estado no aplican.
-- [ ] Verificable sola: con el ajuste activado, marcar un hábito desde el popover actualiza la nota del hábito y el Dashboard de hábitos; desactivado, no aparece nada.
+### Fase HC1 — Hábitos en el calendario (depende de HA1 y HV1 de [[habit-tracker-agenda/Plan de implementación]]; Especificación §21, Arquitectura §30) — **implementada el 2026-11-09; falta la prueba manual**
+- [x] Filtro «Hábitos» al final del menú «+ Filtro» del calendario, marcado por defecto (decidido el 2026-11-09, en lugar de un ajuste): al desmarcarlo se ocultan los hábitos y aparece el chip «Hábitos: Ocultos»; no se ofrece si la pestaña Hábitos está oculta ni si no hay hábitos (`TaskViewState.habits`, `FilterChipId` `'habits'`, `TaskFilterBar.setFilterTypes()`).
+- [x] Entradas virtuales por día en que toca el hábito, respetando el periodo activo y los días de vacaciones; sin escribir en archivos y sin ser tareas (no entran en Lista, Tabla, Kanban, Gantt ni en los conteos). Módulo puro `buildHabitDaySummary()` en `habit-calendar.ts`.
+- [x] Mes, Semana, Semana laboral y Lista: un chip resumen por día con el icono `sunrise` de Rutina y un popover de casillas (el de `task-filter-popover.ts`, ampliado); clic marca o desmarca (escritura de `completions` con `habit-writer.ts`); Día: el mismo chip en el encabezado de cada columna (sin sección aparte); no en Año. Para abrir la nota: botón ↗ en cada fila del popover (el doble clic sobre una casilla marcaría y desmarcaría).
+- [x] La barra de filtros del calendario afecta a los hábitos por área y búsqueda; prioridad y estado no aplican (`filterHabitsForCalendar()`).
+- [x] Vacaciones: la 🌴 en el chip y en las filas del día; los neutrales atenuados y marcables; el chip de un día de vacaciones sin marcas no lleva fracción.
+- [x] Casos vacíos: sin hábitos no se dibuja nada ni se ofrece el filtro; un día en que no toca ninguno no lleva chip (nunca `0/0`).
+- [x] Pruebas Node `habit-calendar-day.test.cjs` (17: resumen, orden, vacaciones, filtros) y `calendar-habits.test.cjs` (25: modelo del día en `CalendarView`, disponibilidad del filtro, parcial del chip y chip del encabezado del Día), más los casos de «Hábitos» en `filter-bar-direct.test.cjs` y de reparto a las subvistas en `calendar-weekday-labels.test.cjs`.
+- [ ] Prueba manual: con hábitos, marcar uno desde el popover del chip y desde la vista Día actualiza la nota y el Dashboard de hábitos; el ↗ abre la nota; con «Hábitos» desmarcado, o sin hábitos, o con la pestaña oculta, no aparece nada; con un periodo de vacaciones; filtros de área y búsqueda; móvil.
 
 ### Fase CV15 — Cierre de v1.1.15: pruebas manuales y documentación (depende de NL1 a HC1)
 - [ ] Pruebas manuales: sombreado y Semana laboral con distintos días marcados; hábitos con frecuencias que siguen el ajuste; feriados de México y EE. UU. en las 6 vistas y el Gantt; fantasmas con N = 0, 10 y 50; hábitos en el calendario con filtros y en móvil; selector circular de Hábitos, periodo activo y vacaciones (fases del plan de hábitos).
@@ -804,7 +813,7 @@ Archivo de feriados del usuario (feriados personales o un país nuevo); feriados
 - [ ] Verificable sola: arrastre con ratón y táctil (`app.emulateMobile(true)` y dispositivo real); fuera del modo Editar el scroll no se interrumpe.
 
 ### Fase DA1 — Panel «Agenda de hoy» (depende de DP1)
-- [ ] Lista del día ordenada por hora: tareas con `🕐` (con su duración y el color de su área), debajo las de todo el día y los hábitos del día como el chip `🔁 3/5`; reutiliza los datos y las entradas del calendario (HC1 de v1.1.15).
+- [ ] Lista del día ordenada por hora: tareas con `🕐` (con su duración y el color de su área), debajo las de todo el día y los hábitos del día como el chip `🌅 3/5`; reutiliza los datos y las entradas del calendario (HC1 de v1.1.15).
 - [ ] Verificable sola: con tareas con y sin hora y con hábitos, el orden y los conteos coinciden con la vista Día del calendario.
 
 ### Fase DR1 — Paneles «Resumen del día» y «Revisión de la semana» (depende de DP1)

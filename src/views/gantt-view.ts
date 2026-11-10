@@ -178,7 +178,8 @@ export class GanttView extends BaseView {
           today: date.hasSame(now, 'day'),
           weekend: isNonWorkingDay(date, nonWorkingDays),
           weekStart: (date.weekday - weekStart + 7) % 7 === 0,
-          holidayColor: dayHolidays[0]?.color ?? '',
+          // Solo un feriado oficial tiñe la columna; los no oficiales no la distinguen
+          holidayColor: dayHolidays.find(entry => entry.category === 'official')?.color ?? '',
           holidayTitle: dayHolidays.map(entry => t(entry.nameKey)).join(', '),
         };
       }),
